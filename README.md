@@ -21,7 +21,7 @@ The wizard asks for your BD site URL and API key, tests the connection, asks whi
 Restart your app, then ask your AI:
 > "List members on my BD site"
 
-Get your API key from **BD Admin > Settings > API Keys > Create New Key**.
+Get your API key from **BD Admin > Developer Hub > Generate API Key**.
 
 ---
 

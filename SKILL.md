@@ -36,7 +36,7 @@ npx brilliant-directories-mcp --setup
 
 The wizard will ask for:
 1. Their BD site URL (e.g., `https://mysite.com`)
-2. Their API key (from BD Admin > Settings > API Keys)
+2. Their API key (generate at BD Admin > Developer Hub > Generate API Key — see https://support.brilliantdirectories.com/support/solutions/articles/12000088768)
 
 Then it writes the config for Cursor, Claude Desktop, Windsurf, or Claude Code automatically. After restarting the client, the tools become available.
 

@@ -117,7 +117,7 @@ Options:
   --debug          Log every HTTP request + response to stderr (or set BD_DEBUG=1)
   --help, -h       Show this help
 
-Get an API key: BD Admin > Settings > API Keys > Create New Key
+Get an API key: BD Admin > Developer Hub > Generate API Key
 Docs: https://github.com/brilliantdirectories/brilliant-directories-mcp`);
 }
 
@@ -458,7 +458,7 @@ async function runSetup() {
   let apiKey = process.env.BD_API_KEY || "";
   if (!apiKey) {
     console.log("");
-    console.log("Get an API key from: BD Admin > Settings > API Keys > Create New Key");
+    console.log("Get an API key from: BD Admin > Developer Hub > Generate API Key");
     while (!apiKey) {
       const raw = await prompt("Your BD API key: ", { hidden: true });
       if (!raw) {
