@@ -7818,7 +7818,7 @@
       "post": {
         "operationId": "createPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required.",
+        "description": "Create a new page record. seo_type and filename are required. IMPORTANT: after creating a page via API, the new URL will 404 on the public site until the user goes to BD Admin > Manage Pages and clicks Save on the record once. This triggers BD's URL router / cache rebuild. Always tell the user this step is needed.",
         "tags": [
           "Pages"
         ],

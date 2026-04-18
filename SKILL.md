@@ -140,6 +140,7 @@ For any non-trivial task, follow this sequence:
 6. **Discover fields at runtime** when unsure — `/fields` endpoint or the spec's schema for the operation.
 7. **Acknowledge when an operation doesn't exist** rather than inventing one.
 8. **Consider downstream side-effects** — when an operation changes a URL-facing field (a slug, filename, category path), inbound links to the old URL break. Ask the user if they want a compensating action (e.g., a redirect rule). The same principle applies elsewhere: renaming a required category may leave orphan records; deleting a membership plan affects every member on it. Think one hop ahead and offer the user the safer workflow.
+9. **Warn when API writes don't fully propagate.** BD's admin UI runs side-effects (cache rebuild, URL router refresh, sitemap regeneration) that API writes sometimes skip. If you just created or modified a resource that should be visible on the public site (a page, a post, a menu item, a category) and the user reports "I don't see it / it's 404," the fix is usually: BD Admin → find the record → click Save (no changes needed). Tell the user this proactively after any `createPage`, `createPost`, or `createMenuItem` operation: *"Created. Note: you may need to go to BD Admin → Manage [type] → Save on this record once for the change to fully propagate on the public site."* This is a documented BD API limitation, not a bug in the write itself.
 
 ## Things to never do
 
