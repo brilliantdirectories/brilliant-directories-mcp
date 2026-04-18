@@ -1,6 +1,6 @@
 {
   "name": "brilliant-directories-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP integration for Brilliant Directories API — manage members, content, leads, and more from any AI agent",
   "main": "index.js",
   "bin": {
@@ -15,10 +15,20 @@
     "mcp",
     "model-context-protocol",
     "brilliant-directories",
+    "brilliantdirectories",
+    "online-directory",
+    "onlinedirectory",
+    "online-directories",
+    "onlinedirectories",
     "api",
     "ai-agent",
+    "agent",
+    "anthropic",
+    "automation",
     "directory",
     "membership",
+    "member-management",
+    "members",
     "claude",
     "cursor",
     "openapi"
