@@ -151,6 +151,7 @@ For any non-trivial task, follow this sequence:
 5. **Never retry indefinitely on 429** — back off at least 60s; offer to pace or raise the limit.
 6. **Never hardcode the site URL** — it's per-customer; always ask or read from config.
 7. **Never rely on memorized endpoint lists** — the API evolves; check the spec.
+8. **Never invent URL prefixes when building a member's public profile link.** Every user record has a `filename` field — that IS the full relative path. The public profile URL is simply `<site-domain>/<user.filename>`. Do NOT prepend `/business/`, `/profile/`, `/member/`, `/listing/`, or any other segment. BD's router resolves `filename` verbatim. Same rule applies to post URLs (use the post's `filename` or `post_token` as documented in the post endpoints).
 
 ## BD terminology glossary
 

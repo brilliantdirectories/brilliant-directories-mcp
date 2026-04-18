@@ -19,6 +19,21 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 ## Field Discovery
 - `GET /api/v2/user/fields` — returns `[{ "key": "first_name", "label": "first_name", "required": 0 }, ...]`
 
+## Profile URL — how to get a member's public profile link
+
+Every member record has a `filename` field. This is the **complete relative URL path** for their public profile (not just a slug). To get the full profile URL, concatenate the site domain with the `filename` value:
+
+```
+profile_url = site_domain + "/" + user.filename
+```
+
+**Example:**
+- Site: `https://launch60031.directoryup.com`
+- User `filename`: `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`
+- Full URL: `https://launch60031.directoryup.com/united-states/monterey-park/doctor/harrison-hasanuddin-d-o`
+
+**DO NOT** guess prefixes like `/business/`, `/profile/`, `/member/`, `/listing/`. BD's server-side router uses `filename` verbatim — whatever path is stored there is what resolves. The path format varies per site based on admin settings (some sites use pretty URLs with country/state/city/category segments; others use flat slugs), but the API consumer never needs to care: **just concatenate domain + filename and the URL works.**
+
 ---
 
 ## Endpoints
