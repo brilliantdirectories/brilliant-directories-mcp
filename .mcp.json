@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "brilliant-directories": {
+      "command": "npx",
+      "args": ["-y", "brilliant-directories-mcp"],
+      "env": {
+        "BD_API_KEY": "${BD_API_KEY}",
+        "BD_API_URL": "${BD_API_URL}"
+      }
+    }
+  }
+}

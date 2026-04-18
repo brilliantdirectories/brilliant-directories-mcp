@@ -1,0 +1,29 @@
+{
+  "name": "brilliant-directories-mcp",
+  "version": "1.5.4",
+  "description": "Official MCP server for Brilliant Directories — manage members, posts, leads, reviews, and more.",
+  "author": {
+    "name": "Brilliant Directories",
+    "url": "https://github.com/brilliantdirectories"
+  },
+  "homepage": "https://www.brilliantdirectories.com",
+  "repository": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "brilliant-directories",
+    "membership",
+    "directory",
+    "crm",
+    "cms",
+    "openapi",
+    "claude",
+    "cursor",
+    "anthropic",
+    "ai-agents"
+  ],
+  "skills": "./",
+  "mcpServers": "./.mcp.json"
+}
