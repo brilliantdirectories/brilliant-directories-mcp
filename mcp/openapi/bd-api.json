@@ -1321,6 +1321,193 @@
                   },
                   "country_code": {
                     "type": "string"
+                  },
+                  "active": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "2",
+                      "3",
+                      "4",
+                      "5"
+                    ],
+                    "description": "The status of the user after the account is created.\\n\\nValid values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status"
+                  },
+                  "listing_type": {
+                    "type": "string",
+                    "enum": [
+                      "Individual",
+                      "Company"
+                    ],
+                    "description": "Select if the newly created user should be marked as an individual person or a company.\\n\\nValid values:\\n  Individual = Individual Person\\n  Company = Company / Organization"
+                  },
+                  "verified": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, a verified icon badge will display on the user's listing.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
+                  },
+                  "signup_date": {
+                    "type": "string",
+                    "description": "OPTIONAL: Defines the join date of this user in your database. Leave blank to use the date the user is created. First use Zapier Formatter to customize date \"TO FORMAT\" to be YYYYMMDDHHmmss."
+                  },
+                  "profession_id": {
+                    "type": "integer",
+                    "description": "Assign this user to a top level category. Input the ID number of the top level category."
+                  },
+                  "services": {
+                    "type": "string",
+                    "description": "Assign this user to a Sub level categories. Input a comma seperated list of the sub levels."
+                  },
+                  "address1": {
+                    "type": "string",
+                    "description": "The user's street address."
+                  },
+                  "address2": {
+                    "type": "string",
+                    "description": "The user's unit or suite number."
+                  },
+                  "auto_geocode": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "OPTIONAL: Allow Google to geocode users. Requires \"Pretty URLs with Google Maps\". Search BD support to learn more.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
+                  },
+                  "zip_code": {
+                    "type": "string",
+                    "description": "The user's zip / postal code."
+                  },
+                  "state_ln": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the full name of the state / province for this user."
+                  },
+                  "country_ln": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the full name of the country for this user."
+                  },
+                  "lat": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter latitude coordinates for the location of this user."
+                  },
+                  "lon": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter longitude coordinates for the location of this user."
+                  },
+                  "nationwide": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, the user's listing will be found in all geographical location searches.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
+                  },
+                  "member_tags": {
+                    "type": "string",
+                    "description": "ADDITIONAL: Assign Member Tag ID"
+                  },
+                  "search_description": {
+                    "type": "string",
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit."
+                  },
+                  "about_me": {
+                    "type": "string",
+                    "description": "The long description about this user."
+                  },
+                  "quote": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the user's personal quote, motto or slogan."
+                  },
+                  "experience": {
+                    "type": "integer",
+                    "description": "OPTIONAL: Enter the year that the user's company was established. Example: 1982"
+                  },
+                  "affiliation": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the accepted forms of payment this user accepts."
+                  },
+                  "awards": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter honors, awards or accolades this user has received."
+                  },
+                  "rep_matters": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the hours of operation for the member. EG: Monday - Friday, 9am - 5pm"
+                  },
+                  "position": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the user's position, title or role at their company. Example: Account Executive"
+                  },
+                  "website": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's website. Must begin with https://"
+                  },
+                  "booking_link": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's booking page. Must begin with https://"
+                  },
+                  "blog": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's blog. Must begin with https://"
+                  },
+                  "facebook": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Facebook account. Must begin with https://"
+                  },
+                  "twitter": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Twitter account. Must begin with https://"
+                  },
+                  "linkedin": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Linkedin account. Must begin with https://"
+                  },
+                  "youtube": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's YouTube account. Must begin with https://"
+                  },
+                  "instagram": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Instagram account. Must begin with https://"
+                  },
+                  "pinterest": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Pinterest account. Must begin with https://"
+                  },
+                  "tiktok": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Tiktok account. Must begin with https://"
+                  },
+                  "snapchat": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Snapchat account. Must begin with https://"
+                  },
+                  "whatsapp": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Whatsapp account. Must begin with https://"
+                  },
+                  "profile_photo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "logo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile logo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "cover_photo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's cover photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "auto_image_import": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, system will import user images and save them to your website. Processing may take several minutes after import.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
                   }
                 }
               }
@@ -1425,10 +1612,183 @@
                     "description": "Format: category=>service1,service2"
                   },
                   "auto_geocode": {
-                    "type": "integer",
+                    "type": "string",
                     "enum": [
-                      1
-                    ]
+                      "0",
+                      "1"
+                    ],
+                    "description": "Use Google Maps to geocode this user's location. Requires the \"Pretty URLs with Google Maps\" feature to be enabled on the site. (string, \"1\" or \"0\").\\n  1 = Yes\\n  0 = No"
+                  },
+                  "active": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "2",
+                      "3",
+                      "4",
+                      "5"
+                    ],
+                    "description": "The status of the user after the account is created.\\n\\nValid values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status"
+                  },
+                  "listing_type": {
+                    "type": "string",
+                    "enum": [
+                      "Individual",
+                      "Company"
+                    ],
+                    "description": "Select if the newly created user should be marked as an individual person or a company.\\n\\nValid values:\\n  Individual = Individual Person\\n  Company = Company / Organization"
+                  },
+                  "verified": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, a verified icon badge will display on the user's listing.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
+                  },
+                  "signup_date": {
+                    "type": "string",
+                    "description": "OPTIONAL: Defines the join date of this user in your database. Leave blank to use the date the user is created. First use Zapier Formatter to customize date \"TO FORMAT\" to be YYYYMMDDHHmmss."
+                  },
+                  "profession_id": {
+                    "type": "integer",
+                    "description": "Assign this user to a top level category. Input the ID number of the top level category."
+                  },
+                  "address1": {
+                    "type": "string",
+                    "description": "The user's street address."
+                  },
+                  "address2": {
+                    "type": "string",
+                    "description": "The user's unit or suite number."
+                  },
+                  "zip_code": {
+                    "type": "string",
+                    "description": "The user's zip / postal code."
+                  },
+                  "state_ln": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the full name of the state / province for this user."
+                  },
+                  "country_ln": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the full name of the country for this user."
+                  },
+                  "lat": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter latitude coordinates for the location of this user."
+                  },
+                  "lon": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter longitude coordinates for the location of this user."
+                  },
+                  "nationwide": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, the user's listing will be found in all geographical location searches.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
+                  },
+                  "search_description": {
+                    "type": "string",
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit."
+                  },
+                  "about_me": {
+                    "type": "string",
+                    "description": "The long description about this user."
+                  },
+                  "quote": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the user's personal quote, motto or slogan."
+                  },
+                  "experience": {
+                    "type": "integer",
+                    "description": "OPTIONAL: Enter the year that the user's company was established. Example: 1982"
+                  },
+                  "affiliation": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the accepted forms of payment this user accepts."
+                  },
+                  "awards": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter honors, awards or accolades this user has received."
+                  },
+                  "rep_matters": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the hours of operation for the member. EG: Monday - Friday, 9am - 5pm"
+                  },
+                  "position": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the user's position, title or role at their company. Example: Account Executive"
+                  },
+                  "website": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's website. Must begin with https://"
+                  },
+                  "booking_link": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's booking page. Must begin with https://"
+                  },
+                  "blog": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's blog. Must begin with https://"
+                  },
+                  "facebook": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Facebook account. Must begin with https://"
+                  },
+                  "twitter": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Twitter account. Must begin with https://"
+                  },
+                  "linkedin": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Linkedin account. Must begin with https://"
+                  },
+                  "youtube": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's YouTube account. Must begin with https://"
+                  },
+                  "instagram": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Instagram account. Must begin with https://"
+                  },
+                  "pinterest": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Pinterest account. Must begin with https://"
+                  },
+                  "tiktok": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Tiktok account. Must begin with https://"
+                  },
+                  "snapchat": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Snapchat account. Must begin with https://"
+                  },
+                  "whatsapp": {
+                    "type": "string",
+                    "description": "Enter the FULL URL of the user's Whatsapp account. Must begin with https://"
+                  },
+                  "profile_photo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "logo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile logo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "cover_photo": {
+                    "type": "string",
+                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's cover photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                  },
+                  "auto_image_import": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "0"
+                    ],
+                    "description": "If YES, system will import user images and save them to your website. Processing may take several minutes after import.\\n\\nValid values:\\n  1 = Yes\\n  0 = No"
                   }
                 }
               }
