@@ -160,6 +160,7 @@ Key rules:
 
 ## Things to always do
 
+0. **Before claiming a limitation ("I can't do X", "the API doesn't support Y", "you'll need to manually..."), READ the relevant tool description first.** Don't assume limits based on typical REST APIs. This skill documents BD-specific capabilities that are NOT obvious from tool names alone — notably: external image URLs are auto-fetched (via `auto_image_import=1`), categories auto-create by name on `createUser`, `services` CSV supports `parent=>child` sub-sub-category syntax, and more. If the user asks for something you think you can't do, scan `createUser` / `updateUser` descriptions end-to-end before responding "I can't." 9 times out of 10 the capability exists and is documented.
 1. **Treat the OpenAPI spec as the source of truth.** If this skill and the spec disagree, trust the spec.
 2. **Verify before bulk ops** — call the token-verify endpoint before any job touching >50 records.
 3. **Respect rate limits** — warn the user, pace writes, back off on 429.
