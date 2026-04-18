@@ -1,0 +1,83 @@
+name: Release — publish to npm + MCP Registry
+
+# Fires on git tags matching v1.2.3.
+# Chains two publishes so the Official MCP Registry stays in sync with npm forever.
+# Uses OIDC trusted publishing for BOTH npm and MCP Registry — no stored secrets.
+#
+# To cut a release:
+#   1. Bump version in mcp/package.json
+#   2. Update CHANGELOG.md
+#   3. git commit + push to main
+#   4. git tag v1.2.3 && git push origin v1.2.3
+#
+# The tag push fires this workflow. Everything else is automatic.
+#
+# One-time setup required (see VISION.md "Release automation" section):
+#   - Link the npm package to this repo as a Trusted Publisher on npmjs.com
+#   - No MCP Registry setup needed — it uses GitHub OIDC natively
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC (both npm trusted publishing AND MCP Registry auth)
+      contents: read    # Read repo contents
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Derive version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      # ---------------------------------------------------------------------
+      # Step 1 — Publish the npm package (via OIDC trusted publishing)
+      # ---------------------------------------------------------------------
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify package.json version matches tag
+        working-directory: mcp
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match git tag ($TAG_VERSION). Bump mcp/package.json before tagging."
+            exit 1
+          fi
+          echo "Version match: $PKG_VERSION"
+
+      - name: Publish to npm
+        working-directory: mcp
+        run: npm publish --provenance --access public
+
+      # ---------------------------------------------------------------------
+      # Step 2 — Sync server.json + publish to MCP Registry (via GitHub OIDC)
+      # ---------------------------------------------------------------------
+
+      - name: Sync server.json versions from tag
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+          echo "server.json synced to $VERSION:"
+          cat server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
