@@ -4250,7 +4250,8 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "format": "email"
+                    "format": "email",
+                    "description": "Email address to unsubscribe from ALL site emails. BD unsubscribe is SITE-WIDE scope — no way to unsub from some lists but not others via this endpoint. Adds the email to the global unsubscribe table."
                   },
                   "definitive": {
                     "type": "integer",
@@ -7635,10 +7636,12 @@
                     "type": "string"
                   },
                   "object_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Primary key of the record being tagged. Which table it lives in depends on tag_type_id — look up via listTagTypes. For tag_type_id=1 (Users), object_id is a user_id from users_data."
                   },
                   "tag_type_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Tag type classifier ID — determines which TABLE the object_id references. Call listTagTypes first to see the tag_type_id to table_relation mapping. Common example: tag_type_id=1 usually means Users (table_relation=users_data), so object_id would be a user_id. Other tag types may target widgets, menus, forms."
                   },
                   "added_by": {
                     "type": "integer"
@@ -7847,7 +7850,7 @@
                   },
                   "smart_list_query_params": {
                     "type": "string",
-                    "description": "Filter criteria"
+                    "description": "Filter criteria. Format depends on smart_list_type: for newsletter type, pass a URL string (used directly as href). For all other types (members, leads, reviews, transaction, forms_inbox), pass a JSON string of filter key-value pairs like {\"subscription_id\":\"1\",\"active\":\"1\"}. If no filters, pass \"NA\". Backend encrypts internally — do NOT pre-encrypt client-side."
                   },
                   "schedule": {
                     "type": "string",
