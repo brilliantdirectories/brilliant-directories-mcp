@@ -1862,7 +1862,7 @@
       "post": {
         "operationId": "searchUsers",
         "summary": "Search members/users",
-        "description": "Full-text search across members with category, location, and sorting options.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`.\n\n**Parameter interactions:**\n- `q` — keyword (matches first name, last name, company, about, search_description)\n- `pid` (category ID), `tid` (sub-category/service ID), `ttid` (sub-sub-category) — taxonomy filters, use IDs from `listCategories` / `listServices`\n- `address` + `dynamic=1` — proximity/geographic filtering\n- `output_type=html` returns server-rendered HTML; `array` (default) returns structured JSON\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
+        "description": "Full-text search across members with category, location, and sorting options.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`.\n\n**Parameter interactions:**\n- `q` — keyword (matches first name, last name, company, about, search_description)\n- `pid` (category ID), `tid` (sub-category/service ID), `ttid` (sub-sub-category) — taxonomy filters, use IDs from `listTopCategories` / `listSubCategories`\n- `address` + `dynamic=1` — proximity/geographic filtering\n- `output_type=html` returns server-rendered HTML; `array` (default) returns structured JSON\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
         "tags": [
           "Users"
         ],
@@ -2706,7 +2706,7 @@
             }
           }
         },
-        "description": "Create a new lead record. Writes live data.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` — category ID; discover via `listCategories`\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n- Response includes `lead_id` AND `token` — token may be needed for customer-facing URLs\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new lead record. Writes live data.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` — category ID; discover via `listTopCategories`\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n- Response includes `lead_id` AND `token` — token may be needed for customer-facing URLs\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/match": {
@@ -6121,221 +6121,9 @@
         "description": "Permanently delete a menuitem record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_item_id`.\n\n**See also:** `updateMenuItem` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
-    "/api/v2/category/get": {
-      "get": {
-        "operationId": "listCategories",
-        "summary": "List categories (professions)",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Paginated category list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Paginated enumeration of category records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getCategory` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**BD taxonomy model:** Returns TOP-LEVEL categories (BD's \"professions\"), NOT sub-categories. For sub-categories under a specific category, use `listServices` filtered by `profession_id`. Each returned record's `category_id` is what populates a user's `profession_id` field.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category/get/{category_id}": {
-      "get": {
-        "operationId": "getCategory",
-        "summary": "Get a single category",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [
-          {
-            "name": "category_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Category record",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Fetch a single category record. Read-only.\n\n**Required:** `category_id`.\n\n**See also:** `listCategories` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category/create": {
-      "post": {
-        "operationId": "createCategory",
-        "summary": "Create a category",
-        "tags": [
-          "Categories"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "name",
-                  "filename",
-                  "group_id"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "filename": {
-                    "type": "string",
-                    "description": "URL-friendly slug"
-                  },
-                  "group_id": {
-                    "type": "integer"
-                  },
-                  "keywords": {
-                    "type": "string"
-                  },
-                  "icon": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**Parameter interactions:**\n- `name` — human-readable category name (e.g. \"Restaurants\")\n- `filename` — URL-slug form of the name (e.g. \"restaurants\")\n- `group_id` — integer; most BD sites use `group_id=1` by default\n\n**See also:** `updateCategory` (modify existing), `deleteCategory` (remove).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID. Use the returned `category_id` to populate user records' `profession_id` field.\n\n**BD taxonomy model:** This creates a TOP-LEVEL category (internally called a \"profession\"). It populates the `profession_id` field on user records. To create sub-classifications under this category, use `createService` after (passing this category's ID as `profession_id`). The 2-tier model: Category (this) → Service. There is NO `createProfession` tool — `createCategory` IS the profession-creator.\n\n**Common workflow — fresh taxonomy setup (\"create Restaurants with Sushi sub-category, assign Alice\"):**\n\n1. `createCategory` with `name=\"Restaurants\"`, `filename=\"restaurants\"`, `group_id=1` → returns `category_id` (e.g. 42). This is what populates a user's `profession_id`.\n2. `createService` with `name=\"Sushi\"`, `profession_id=42`, `filename=\"sushi\"` → returns `service_id` (e.g. 17).\n3. Assign Alice: `updateUser` with `user_id=<Alice>`, `profession_id=42`, `services=\"17\"`. (For per-service pricing/specialty, use `createUserService` instead.)\n\nDo NOT look for a `createProfession` tool — it doesn't exist. `createCategory` IS the profession-creator.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category/update": {
-      "put": {
-        "operationId": "updateCategory",
-        "summary": "Update a category",
-        "tags": [
-          "Categories"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "category_id"
-                ],
-                "properties": {
-                  "category_id": {
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "filename": {
-                    "type": "string"
-                  },
-                  "group_id": {
-                    "type": "integer"
-                  },
-                  "keywords": {
-                    "type": "string"
-                  },
-                  "icon": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Update an existing category record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `category_id`.\n\n**See also:** `createCategory` (add new), `deleteCategory` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category/delete": {
-      "delete": {
-        "operationId": "deleteCategory",
-        "summary": "Delete a category",
-        "tags": [
-          "Categories"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "category_id"
-                ],
-                "properties": {
-                  "category_id": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Permanently delete a category record by ID. Destructive — cannot be undone via API.\n\n**Required:** `category_id`.\n\n**See also:** `updateCategory` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
     "/api/v2/list_services/get": {
       "get": {
-        "operationId": "listServices",
+        "operationId": "listSubCategories",
         "summary": "List services (sub-categories)",
         "tags": [
           "Services"
@@ -6360,12 +6148,12 @@
             }
           }
         },
-        "description": "Paginated enumeration of service records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getService` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**BD taxonomy model:** Returns SUB-CATEGORIES. Filter by `profession_id` to get services under a specific top-level category. For top-level categories themselves, use `listCategories` instead.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of SUB-level member categories (services). Read-only.\n\nSub Categories are level 2 of the 3-tier member classification (e.g., \"Sushi\" under \"Restaurants\"). Each has a `profession_id` pointing at its parent Top Category. `master_id` points at a parent Sub Category for sub-sub-category nesting (`master_id=0` = directly under a Top Category). Backed by BD's `list_services` table.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token.\n\n**Filter/sort:** filter by `profession_id` to scope to sub-categories under one top category. Standard `property`/`property_value`/`property_operator` for other fields.\n\n**See also:** `getSubCategory` (single by ID), `listTopCategories` (parents), `createSubCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`. Each record has `service_id`, `name`, `desc`, `profession_id`, `master_id`, `filename`, `keywords`, `sort_order`, `lead_price`, `image`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/get/{service_id}": {
       "get": {
-        "operationId": "getService",
+        "operationId": "getSubCategory",
         "summary": "Get a single service",
         "tags": [
           "Services"
@@ -6392,12 +6180,12 @@
             }
           }
         },
-        "description": "Fetch a single service record. Read-only.\n\n**Required:** `service_id`.\n\n**See also:** `listServices` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single SUB-level member category (service) by `service_id`. Read-only.\n\n**Required:** `service_id` (path).\n\n**See also:** `listSubCategories` (enumerate; filter by `profession_id` for scope), `getTopCategory` (fetch parent Top by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/create": {
       "post": {
-        "operationId": "createService",
+        "operationId": "createSubCategory",
         "summary": "Create a service",
         "tags": [
           "Services"
@@ -6455,12 +6243,12 @@
             }
           }
         },
-        "description": "Create a new service record. Writes live data.\n\n**Required:** `name`, `profession_id`.\n\n**Parameter interactions:**\n- `profession_id` — the parent category (from `listCategories`)\n- `master_id` — for sub-sub-categories, the parent service ID; 0 for top-level services\n- `lead_price` — per-lead price charged for leads matching this service\n\n**See also:** `updateService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**BD taxonomy model:** This creates a SUB-CATEGORY (internally stored in `list_services`) under a parent Category. `profession_id` must be the ID of an existing top-level Category (from `listCategories` / `createCategory`). To nest under another service (sub-sub-category), pass that service's ID as `master_id` (default 0 = directly under a category). Services are what users get tagged with via the `services` field on users or via `createUserService`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new SUB-level member category under an existing Top Category. Writes live data.\n\nA Sub Category is level 2 of the 3-tier member classification. It MUST have a parent Top Category (via `profession_id`). It may optionally sit under another Sub Category (for sub-sub-category nesting, via `master_id`). Backed by BD's `list_services` table.\n\n**Required:** `name`, `profession_id`.\n\n**Parameter guidance:**\n- `name` — human-readable (e.g. \"Sushi\")\n- `profession_id` — the parent Top Category's ID (from `listTopCategories` or `createTopCategory`)\n- `master_id` — for SUB-SUB-CATEGORY nesting, pass the parent Sub Category's ID; default 0 means \"directly under the Top Category\"\n- `filename` — URL-slug form; `desc`, `keywords`, `sort_order`, `lead_price`, `image` — all optional\n\n**See also:** `updateSubCategory` (modify), `listSubCategories` (list), `createTopCategory` (create parent).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `service_id`. Use that to assign members via `updateUser.services` (CSV) or `createMemberSubCategoryLink`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/update": {
       "put": {
-        "operationId": "updateService",
+        "operationId": "updateSubCategory",
         "summary": "Update a service",
         "tags": [
           "Services"
@@ -6519,12 +6307,12 @@
             }
           }
         },
-        "description": "Update an existing service record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `service_id`.\n\n**See also:** `createService` (add new), `deleteService` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing SUB-level member category by `service_id`. Fields omitted are untouched. Writes live data.\n\n**Required:** `service_id`.\n\n**Parameter notes:**\n- Change `profession_id` to move this Sub Category to a different parent Top Category\n- Change `master_id` to re-nest as a sub-sub-category (non-zero) or flatten to direct-under-Top (0)\n\n**See also:** `createSubCategory` (add new), `deleteSubCategory` (remove).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/delete": {
       "delete": {
-        "operationId": "deleteService",
+        "operationId": "deleteSubCategory",
         "summary": "Delete a service",
         "tags": [
           "Services"
@@ -6559,12 +6347,12 @@
             }
           }
         },
-        "description": "Permanently delete a service record by ID. Destructive — cannot be undone via API.\n\n**Required:** `service_id`.\n\n**See also:** `updateService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a SUB-level member category by `service_id`. Destructive — cannot be undone via API.\n\n**Required:** `service_id`.\n\n**Destructive:** confirm intent. Members whose `users_data.services` CSV contains this ID will have an orphan reference. Any Member ↔ Sub Category links (`rel_services`) pointing at this service_id also become orphaned.\n\n**See also:** `updateSubCategory` (modify without removing).\n\n**Returns:** `{ status: \"success\", message: \"list_services record was deleted\" }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/get": {
       "get": {
-        "operationId": "listUserServices",
+        "operationId": "listMemberSubCategoryLinks",
         "summary": "List user-service relationships",
         "tags": [
           "User Services"
@@ -6589,12 +6377,12 @@
             }
           }
         },
-        "description": "Paginated enumeration of userservice records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUserService` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of MEMBER ↔ SUB CATEGORY links. Read-only.\n\nEach record links a member (`user_id`) to a Sub Category (`service_id`) with per-link metadata: `avg_price`, `specialty`, `num_completed`, `date`. This is level 3 of the member-taxonomy relationship. Backed by BD's `rel_services` table.\n\n**When to use this vs. the simpler `users_data.services` CSV field:** use this resource when you need PER-LINK metadata (pricing tier, specialty flag, completion counter). If you just want \"this member is tagged with these Sub Categories\" with no extra data, set `updateUser.services` (CSV of service IDs) instead.\n\n**Pagination + filter/sort:** standard.\n\n**See also:** `getMemberSubCategoryLink`, `createMemberSubCategoryLink`, `listSubCategories` (available Sub Categories), `updateUser` (sets the `services` CSV for simpler cases).\n\n**Returns:** `{ status: \"success\", ..., message: [...records] }`. Each has `rel_id`, `user_id`, `service_id`, `date`, `avg_price`, `num_completed`, `specialty`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/get/{rel_id}": {
       "get": {
-        "operationId": "getUserService",
+        "operationId": "getMemberSubCategoryLink",
         "summary": "Get a single user-service relationship",
         "tags": [
           "User Services"
@@ -6621,12 +6409,12 @@
             }
           }
         },
-        "description": "Fetch a single userservice record. Read-only.\n\n**Required:** `rel_id`.\n\n**See also:** `listUserServices` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single Member ↔ Sub Category link by `rel_id`. Read-only.\n\n**Required:** `rel_id`.\n\n**See also:** `listMemberSubCategoryLinks` (enumerate, filter by `user_id` or `service_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/create": {
       "post": {
-        "operationId": "createUserService",
+        "operationId": "createMemberSubCategoryLink",
         "summary": "Link a service to a user",
         "tags": [
           "User Services"
@@ -6679,12 +6467,12 @@
             }
           }
         },
-        "description": "Create a new userservice record. Writes live data.\n\n**Required:** `user_id`, `service_id`.\n\n**Parameter interactions:**\n- `user_id` + `service_id` — link a member to a service (service from `listServices`)\n- `specialty`: `0`=No, `1`=Yes (flags this as a specialty offering on the profile)\n- `avg_price` — decimal price the member charges for this service\n\n**See also:** `updateUserService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**BD taxonomy model:** Creates a row in the `rel_services` join table linking a member to a Service (sub-category). Alternative: set the `services` CSV field via `updateUser` if you don't need per-service pricing/specialty/completion-count metadata. Both approaches coexist.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new Member ↔ Sub Category link with optional metadata. Writes live data.\n\nLinks an existing member (`user_id`) to an existing Sub Category (`service_id`) with per-link metadata (pricing, specialty). This is the richer alternative to setting `users_data.services` CSV via `updateUser` — use this when you need per-link data.\n\n**Required:** `user_id`, `service_id`.\n\n**Parameter guidance:**\n- `user_id` — member (from `listUsers` / `searchUsers`)\n- `service_id` — Sub Category (from `listSubCategories`)\n- `avg_price` — decimal, the member's price for this service\n- `specialty` — `0` or `1` flags this Sub Category as a specialty offering on the member's profile\n- `num_completed` — counter of jobs/projects completed in this Sub Category\n- `date` — YYYYMMDDHHmmss timestamp\n\n**See also:** `updateUser` with `services=\"<csv>\"` (simpler, no per-link metadata), `listSubCategories`, `getMemberSubCategoryLink`.\n\n**Writes live data:** appears on the member's public profile immediately.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` with `rel_id`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/update": {
       "put": {
-        "operationId": "updateUserService",
+        "operationId": "updateMemberSubCategoryLink",
         "summary": "Update a user-service relationship",
         "tags": [
           "User Services"
@@ -6731,12 +6519,12 @@
             }
           }
         },
-        "description": "Update an existing userservice record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `rel_id`.\n\n**See also:** `createUserService` (add new), `deleteUserService` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update a Member ↔ Sub Category link by `rel_id`. Fields omitted are untouched. Writes live data.\n\n**Required:** `rel_id`.\n\n**Updatable fields:** `avg_price`, `specialty`, `num_completed`, `date`.\n\n**See also:** `createMemberSubCategoryLink` (add new), `deleteMemberSubCategoryLink` (remove).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/delete": {
       "delete": {
-        "operationId": "deleteUserService",
+        "operationId": "deleteMemberSubCategoryLink",
         "summary": "Remove a service from a user",
         "tags": [
           "User Services"
@@ -6771,7 +6559,7 @@
             }
           }
         },
-        "description": "Permanently delete a userservice record by ID. Destructive — cannot be undone via API.\n\n**Required:** `rel_id`.\n\n**See also:** `updateUserService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a Member ↔ Sub Category link by `rel_id`. Destructive — cannot be undone via API.\n\nRemoves the member's link to this Sub Category in the `rel_services` join table. Does NOT remove the member from `users_data.services` CSV if the service_id is listed there — update that separately via `updateUser` if needed.\n\n**Required:** `rel_id`.\n\n**Returns:** `{ status: \"success\", message: \"rel_services record was deleted\" }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/get": {
@@ -9274,6 +9062,244 @@
             }
           }
         }
+      }
+    },
+    "/api/v2/list_professions/get": {
+      "get": {
+        "operationId": "listTopCategories",
+        "summary": "List categories (professions)",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated category list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Paginated enumeration of TOP-level member categories. Read-only.\n\nTop Categories are the highest level of the 3-tier member classification (e.g., \"Restaurants\", \"Dentists\"). Each record's `profession_id` is what populates `users_data.profession_id` on member records. Backed by BD's `list_professions` table.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTopCategory` (single by ID), `listSubCategories` (sub-categories filtered by `profession_id`), `createTopCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record has `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, `revision_timestamp`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+      }
+    },
+    "/api/v2/list_professions/get/{profession_id}": {
+      "get": {
+        "operationId": "getTopCategory",
+        "summary": "Get a single category",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "profession_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Fetch a single TOP-level member category by `profession_id`. Read-only.\n\nA Top Category is the highest level of the 3-tier member classification. Backed by BD's `list_professions` table.\n\n**Required:** `profession_id` (path parameter).\n\n**See also:** `listTopCategories` (enumerate), `listSubCategories` (sub-categories under this one; filter by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — array of 1 record with full fields.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+      }
+    },
+    "/api/v2/list_professions/create": {
+      "post": {
+        "operationId": "createTopCategory",
+        "summary": "Create a category",
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "filename"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Top-level category name (e.g. \"Restaurants\", \"Dentists\")."
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "URL-slug form of the name (e.g. \"restaurants\"). Used in public profile URL paths."
+                  },
+                  "desc": {
+                    "type": "string",
+                    "description": "Long description / summary for the category."
+                  },
+                  "keywords": {
+                    "type": "string",
+                    "description": "SEO keywords, comma-separated."
+                  },
+                  "icon": {
+                    "type": "string",
+                    "description": "Icon identifier (e.g. a Font Awesome class or image filename)."
+                  },
+                  "sort_order": {
+                    "type": "integer",
+                    "description": "Display order among top-level categories. Lower = earlier."
+                  },
+                  "lead_price": {
+                    "type": "number",
+                    "description": "Per-lead price charged for leads matching this category (decimal)."
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Image filename for the category icon/banner."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Create a new TOP-level member category. Writes live data.\n\nA Top Category is the highest level of the 3-tier member classification (e.g., \"Restaurants\"). It populates the `profession_id` field on user records. Backed by BD's `list_professions` table.\n\n**Required:** `name`, `filename`.\n\n**Parameter guidance:**\n- `name` — human-readable (e.g. \"Restaurants\", \"Dentists\")\n- `filename` — URL-slug form (e.g. \"restaurants\") used in public member profile URLs\n- `desc`, `keywords`, `icon`, `sort_order`, `lead_price`, `image` — all optional\n\n**See also:** `listTopCategories` (list all), `getTopCategory` (by ID), `createSubCategory` (add a sub-category under this top).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including the new `profession_id`. Use that value to populate `users_data.profession_id` on member records.\n\n**Common workflow — full 3-tier setup (\"create Restaurants → Sushi → assign Alice\"):**\n\n1. `createTopCategory` with `name=\"Restaurants\"`, `filename=\"restaurants\"` → returns `profession_id` (e.g. 42)\n2. `createSubCategory` with `name=\"Sushi\"`, `profession_id=42`, `filename=\"sushi\"` → returns `service_id` (e.g. 17)\n3. Assign Alice: `updateUser` with `user_id=<Alice>`, `profession_id=42`, `services=\"17\"` (simple), OR `createMemberSubCategoryLink` with `user_id=<Alice>`, `service_id=17`, `avg_price=...`, `specialty=1` (with per-link metadata)\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+      }
+    },
+    "/api/v2/list_professions/update": {
+      "put": {
+        "operationId": "updateTopCategory",
+        "summary": "Update a category",
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "profession_id"
+                ],
+                "properties": {
+                  "profession_id": {
+                    "type": "integer",
+                    "description": "The top-level category ID to update (from createTopCategory / listTopCategories)."
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  },
+                  "desc": {
+                    "type": "string"
+                  },
+                  "keywords": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "sort_order": {
+                    "type": "integer"
+                  },
+                  "lead_price": {
+                    "type": "number"
+                  },
+                  "image": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Update an existing TOP-level member category by `profession_id`. Fields omitted are untouched. Writes live data.\n\n**Required:** `profession_id`.\n\n**See also:** `createTopCategory` (add new), `deleteTopCategory` (remove).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+      }
+    },
+    "/api/v2/list_professions/delete": {
+      "delete": {
+        "operationId": "deleteTopCategory",
+        "summary": "Delete a category",
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "profession_id"
+                ],
+                "properties": {
+                  "profession_id": {
+                    "type": "integer",
+                    "description": "The top-level category ID to delete."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Permanently delete a TOP-level member category by `profession_id`. Destructive — cannot be undone via API.\n\n**Required:** `profession_id`.\n\n**Destructive:** confirm intent with the user. Members who referenced this `profession_id` will have orphan references. Sub Categories under this top (with matching `profession_id` in `list_services`) also become orphaned — consider reassigning or deleting them first.\n\n**See also:** `updateTopCategory` (modify without removing).\n\n**Returns:** `{ status: \"success\", message: \"list_professions record was deleted\" }`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     }
   },

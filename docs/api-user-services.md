@@ -1,40 +1,56 @@
-# BD API — User Services (Rel Services) Endpoints
+# BD API — Member ↔ Sub Category Links (rel_services) Endpoints
+
+**Tools:** `listMemberSubCategoryLinks`, `getMemberSubCategoryLink`, `createMemberSubCategoryLink`, `updateMemberSubCategoryLink`, `deleteMemberSubCategoryLink`
+**Underlying endpoint:** `/api/v2/rel_services/*`
+**BD table:** `rel_services`
+**Primary key:** `rel_id`
+
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108071_
 
-Links between users (members) and Services (sub-categories). Tracks which services a member offers, with per-service pricing and specialty flags. Stored in `rel_services`.
+Join-table rows linking a member (`user_id`) to a Sub Category (`service_id`) with per-link metadata: price, specialty flag, completion counter. This is LEVEL 3 of the member classification — use when the `users_data.services` CSV isn't rich enough.
 
-## When to use this vs. the user's `services` field
+## When to use this vs. `users_data.services` CSV
 
-BD offers two ways to associate a member with services — use the right one for the use case:
+BD offers two ways to tag a member with Sub Categories:
 
-- **`user.services` field (CSV of service IDs) on `createUser`/`updateUser`** — simplest; use when you just need "this member offers these services" with no per-service metadata. Good for bulk imports, quick taxonomy assignment.
-- **`createUserService` (this resource)** — adds a full join-table row with per-service `avg_price`, `specialty` flag, `num_completed` counter, and `date`. Use when the site tracks price-per-service, completion counts, or specialty designations.
+| Method | Tool | When to use |
+|---|---|---|
+| **Simple:** CSV on the user record | `updateUser` with `services="<id1>,<id2>"` | You just need "this member is tagged with these Sub Categories." No price/specialty metadata. |
+| **Rich:** Join-table rows | `createMemberSubCategoryLink` + friends | You need per-link `avg_price`, `specialty`, `num_completed`, or `date` attached to each member↔subcategory relationship. |
 
-Both can coexist. The canonical taxonomy model lives in `docs/api-categories.md` — read that first if you're building categories/services from scratch.
+Both coexist. Many sites use only the CSV field. The join table is common on sites that charge different rates per-service or display "specialty" badges.
 
 ## Endpoints
 
-### 1. List User Services
-`GET /api/v2/rel_services/get`
+### List
+`GET /api/v2/rel_services/get` — paginated. Filter by `user_id` or `service_id` to scope.
 
-Supports pagination. Returns `rel_id`, `user_id`, `service_id`, `date`, `avg_price`, `num_completed`, `specialty`.
-
-### 2. Get Single User Service
+### Get Single
 `GET /api/v2/rel_services/get/{rel_id}`
 
-### 3. Create User Service
+### Create
 `POST /api/v2/rel_services/create`
+- **Required:** `user_id`, `service_id`
+- **Optional:** `date` (YYYYMMDDHHmmss), `avg_price` (decimal), `specialty` (0/1), `num_completed` (int)
 
-**Required:** `user_id`, `service_id`
-**Optional:** `date` (YYYYMMDDHHmmss), `avg_price` (decimal), `specialty` (0/1)
-
-### 4. Update User Service
+### Update
 `PUT /api/v2/rel_services/update`
+- **Required:** `rel_id`
+- **Optional:** `avg_price`, `specialty`, `num_completed`, `date`
 
-**Required:** `rel_id`
-**Optional:** `avg_price`, `specialty`, `num_completed`, `date`
-
-### 5. Delete User Service
+### Delete
 `DELETE /api/v2/rel_services/delete`
+- **Required:** `rel_id`
+- Note: does NOT remove the `service_id` from the member's `users_data.services` CSV if it's listed there. Update that separately via `updateUser` if needed.
 
-**Required:** `rel_id`
+## Schema
+
+| Field | Type | Description |
+|---|---|---|
+| `rel_id` | integer | Primary key (read-only) |
+| `user_id` | integer | Member (from `listUsers`) |
+| `service_id` | integer | Sub Category (from `listSubCategories`) |
+| `date` | string | YYYYMMDDHHmmss timestamp |
+| `avg_price` | decimal | Member's price for this Sub Category |
+| `num_completed` | integer | Completion counter |
+| `specialty` | integer | `0`=No, `1`=Yes (shows specialty badge on profile) |

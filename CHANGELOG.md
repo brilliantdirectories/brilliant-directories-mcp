@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-04-18
+
+### BREAKING — member-taxonomy tools renamed + rerouted to working BD endpoints
+
+Live testing on 2026-04-18 confirmed:
+- `/api/v2/category/*` endpoints in v2.x were **dead** — the underlying BD model mapped to a non-existent `category` table. All category CRUD was silently failing.
+- `/api/v2/list_professions/*` is the **real, working** top-category endpoint. Full CRUD cycle (create/read/update/delete) verified live.
+
+This release renames the 15 member-taxonomy tools to explicit hierarchy-aware names AND repoints category CRUD at the working endpoint. AI agents now get unambiguous guidance about BD's 3-tier member classification.
+
+**Renamed tools (15):**
+
+| Old v2.x | New v3.0 | Endpoint (unchanged BD-side) |
+|---|---|---|
+| `listCategories` | `listTopCategories` | `/api/v2/list_professions/get` (was `/api/v2/category/get`, broken) |
+| `getCategory` | `getTopCategory` | `/api/v2/list_professions/get/{profession_id}` |
+| `createCategory` | `createTopCategory` | `/api/v2/list_professions/create` |
+| `updateCategory` | `updateTopCategory` | `/api/v2/list_professions/update` |
+| `deleteCategory` | `deleteTopCategory` | `/api/v2/list_professions/delete` |
+| `listServices` | `listSubCategories` | `/api/v2/list_services/get` |
+| `getService` | `getSubCategory` | `/api/v2/list_services/get/{service_id}` |
+| `createService` | `createSubCategory` | `/api/v2/list_services/create` |
+| `updateService` | `updateSubCategory` | `/api/v2/list_services/update` |
+| `deleteService` | `deleteSubCategory` | `/api/v2/list_services/delete` |
+| `listUserServices` | `listMemberSubCategoryLinks` | `/api/v2/rel_services/get` |
+| `getUserService` | `getMemberSubCategoryLink` | `/api/v2/rel_services/get/{rel_id}` |
+| `createUserService` | `createMemberSubCategoryLink` | `/api/v2/rel_services/create` |
+| `updateUserService` | `updateMemberSubCategoryLink` | `/api/v2/rel_services/update` |
+| `deleteUserService` | `deleteMemberSubCategoryLink` | `/api/v2/rel_services/delete` |
+
+**Other changes:**
+- `createTopCategory` required fields changed from `name, filename, group_id` to just `name, filename` — matches actual `list_professions` schema. `group_id` was a leftover from the dead `category` model.
+- Full request/response schemas for Top Category ops now reflect real `list_professions` fields: `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`.
+- 3-tier hierarchy model documented in every affected tool description + `docs/api-categories.md`, `docs/api-services.md`, `docs/api-user-services.md` all rewritten + SKILL.md worked example and glossary updated.
+- Sub-sub-category nesting explicitly documented: it's a `createSubCategory` with `master_id=<parent service_id>` (no separate tool).
+
+**Migration guide for existing consumers:**
+1. Search your code/prompts for any of the 15 old operation IDs and rename to the new ones.
+2. Remove any `group_id` you were passing to `createCategory` — the new `createTopCategory` doesn't need it.
+3. Fields on Top Category records are now under `profession_id` (not `category_id`).
+
 ## [2.0.0] - 2026-04-18
 
 ### Removed (BREAKING) — Category Groups

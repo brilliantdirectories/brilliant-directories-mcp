@@ -226,9 +226,9 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Portfolio Groups | `/api/v2/users_portfolio_groups/` | list, get, create, update, delete, search, fields |
 | Portfolio Photos | `/api/v2/users_portfolio/` | list, get, create, update, delete |
 | Post Types | `/api/v2/data_categories/` | list, get, create, update, delete, custom_fields |
-| Categories | `/api/v2/category/` | list, get, create, update, delete |
-| Services | `/api/v2/list_services/` | list, get, create, update, delete |
-| User Services | `/api/v2/rel_services/` | list, get, create, update, delete |
+| Top Categories | `/api/v2/list_professions/` | listTopCategories, getTopCategory, createTopCategory, updateTopCategory, deleteTopCategory |
+| Sub Categories | `/api/v2/list_services/` | listSubCategories, getSubCategory, createSubCategory, updateSubCategory, deleteSubCategory |
+| Member ↔ Sub Category Links | `/api/v2/rel_services/` | listMemberSubCategoryLinks, getMemberSubCategoryLink, createMemberSubCategoryLink, updateMemberSubCategoryLink, deleteMemberSubCategoryLink |
 | User Photos | `/api/v2/users_photo/` | list, get, create, update, delete |
 | User Metadata | `/api/v2/users_meta/` | list, get, create, update, delete |
 | Tags | `/api/v2/tags/` | list, get, create, update, delete |

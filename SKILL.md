@@ -132,23 +132,31 @@ For any non-trivial task, follow this sequence:
 
 ### Worked example: "Set up a Restaurants category with Sushi sub-category and assign a member"
 
-BD's taxonomy is 2-tier (Category / profession → Service). Each tier is a different API resource. Standard flow:
+BD classifies members via a 3-tier hierarchy. Each tier is a different API resource with explicit TopCategory / SubCategory / MemberSubCategoryLink naming:
 
 ```
-1. createCategory (NOT createProfession — doesn't exist)
+1. createTopCategory (backed by /api/v2/list_professions/create)
    with name="Restaurants", filename="restaurants"
-   → returns category_id (this populates users' profession_id)
-2. createService
-   with name="Sushi", profession_id=<from step 1>, filename="sushi"
-   → returns service_id
+   → returns profession_id (e.g. 42). Populates users_data.profession_id.
+
+2. createSubCategory (backed by /api/v2/list_services/create)
+   with name="Sushi", profession_id=42, filename="sushi"
+   → returns service_id (e.g. 17)
+   — Optional: pass master_id=<parent service_id> to make this a sub-sub-category
+     nested under another SubCategory. master_id=0 (default) means directly under the TopCategory.
+
 3. Assign a member — two options depending on whether you need per-link metadata:
-   a) Simple: updateUser with profession_id=<Restaurants>, services="<Sushi service_id>"
-   b) With pricing/specialty tracking: createUserService with user_id, service_id, avg_price, specialty=1
+   a) Simple (just tag them):
+      updateUser with user_id=<Alice>, profession_id=42, services="17"
+   b) With per-link metadata (price, specialty, completion count):
+      createMemberSubCategoryLink with user_id=<Alice>, service_id=17, avg_price=29.99, specialty=1
 ```
 
-Key pitfalls to avoid:
-- There is NO `createProfession` tool — `createCategory` IS the profession creator
-- `listCategories` returns TOP-LEVEL only; `listServices` returns SUB-CATEGORIES (filter by `profession_id`)
+Key rules:
+- There is NO `createProfession` or `createService` tool — those are BD internal names. Use `createTopCategory` and `createSubCategory`.
+- `listTopCategories` returns TOP-level only; `listSubCategories` returns SUB-level (filter by `profession_id` to scope to one parent).
+- Sub-sub-categories are just SubCategories with `master_id` set to another SubCategory's `service_id`.
+- A member can have ONE TopCategory (`profession_id`) but MANY SubCategories (`services` CSV or multiple `rel_services` rows).
 
 ## Things to always do
 
@@ -178,9 +186,10 @@ Key pitfalls to avoid:
 
 - **Member / user** — an account on a BD site. Core resource.
 - **Subscription / plan / membership plan** — a tier a member belongs to. Referenced as `subscription_id`.
-- **Category / Profession** — the TOP-LEVEL taxonomy for member listings (e.g., "Restaurants", "Dentists"). Stored internally as "professions" in `list_professions`. Use `createCategory` to add (there is NO `createProfession` tool). Populates the `profession_id` field on user records.
-- **Service / Sub-category** — sub-classification under a Category (e.g., "Sushi" under "Restaurants"). Stored in `list_services`. Use `createService` with `profession_id` = parent Category's ID.
-- **UserService / rel_services** — join table linking a member to a Service with per-link metadata (price, specialty flag, completion count). Use `createUserService` when you need that metadata; otherwise set the user's `services` CSV field via `updateUser`.
+- **Top Category / Profession** — LEVEL 1 of the member taxonomy (e.g., "Restaurants"). Stored in `list_professions`. Use `createTopCategory`, `listTopCategories`, etc. Populates `users_data.profession_id`. A member has exactly one.
+- **Sub Category / Service** — LEVEL 2, nested under a Top Category (e.g., "Sushi" under "Restaurants"). Stored in `list_services`. Use `createSubCategory` with `profession_id` = parent Top's ID. Members can have many — set via `users_data.services` CSV or via `createMemberSubCategoryLink`.
+- **Sub-Sub Category** — LEVEL 3 (optional nesting). Just a SubCategory with `master_id` pointing at a parent SubCategory's `service_id`. Created via `createSubCategory` with non-zero `master_id`.
+- **Member ↔ Sub Category link / rel_services** — join-table row linking a member to a SubCategory with per-link metadata (`avg_price`, `specialty`, `num_completed`). Use `createMemberSubCategoryLink` when metadata matters; otherwise the simpler `users_data.services` CSV field works.
 - **Post / post type** — content items (events, classifieds, articles, deals) organized by type.
 - **Page / SEO page / `list_seo`** — any static-ish page on the site: homepage (`seo_type=home`), about, contact, custom landing pages, profile/search result templates.
 - **Widget** — reusable HTML component embeddable in pages/emails via `[widget=Name]` shortcode.
