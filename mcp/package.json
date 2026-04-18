@@ -6,18 +6,38 @@
   "bin": {
     "brilliant-directories-mcp": "./index.js"
   },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "brilliant-directories",
     "api",
     "ai-agent",
     "directory",
     "membership",
     "claude",
-    "cursor"
+    "cursor",
+    "openapi"
   ],
   "author": "Brilliant Directories <support@brilliantdirectories.com>",
   "license": "MIT",
+  "homepage": "https://github.com/brilliantdirectories/brilliant-directories-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brilliantdirectories/brilliant-directories-mcp.git",
+    "directory": "mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp/issues"
+  },
+  "scripts": {
+    "test": "node index.js --verify",
+    "start": "node index.js"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },

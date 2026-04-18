@@ -25,6 +25,15 @@ const https = require("https");
 const http = require("http");
 const { URL } = require("url");
 
+// Read package version once at startup (keeps User-Agent + server init in sync with package.json)
+const PACKAGE_VERSION = (() => {
+  try {
+    return require("./package.json").version;
+  } catch {
+    return "unknown";
+  }
+})();
+
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -34,6 +43,9 @@ function parseArgs() {
   const config = {
     apiKey: process.env.BD_API_KEY || "",
     apiUrl: process.env.BD_API_URL || "",
+    verify: false,
+    help: false,
+    debug: process.env.BD_DEBUG === "1" || process.env.BD_DEBUG === "true",
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -41,22 +53,57 @@ function parseArgs() {
       config.apiKey = args[++i];
     } else if ((args[i] === "--url" || args[i] === "--api-url") && args[i + 1]) {
       config.apiUrl = args[++i];
+    } else if (args[i] === "--verify") {
+      config.verify = true;
+    } else if (args[i] === "--debug") {
+      config.debug = true;
+    } else if (args[i] === "--help" || args[i] === "-h") {
+      config.help = true;
     }
   }
 
-  // Strip trailing slash
+  if (config.help) {
+    printHelp();
+    process.exit(0);
+  }
+
+  // Normalize URL: strip trailing slash, ensure protocol
   config.apiUrl = config.apiUrl.replace(/\/+$/, "");
+  if (config.apiUrl && !/^https?:\/\//i.test(config.apiUrl)) {
+    config.apiUrl = "https://" + config.apiUrl;
+  }
 
   if (!config.apiKey) {
     console.error("Error: API key required. Use --api-key YOUR_KEY or set BD_API_KEY env var.");
+    console.error("Run with --help for usage.");
     process.exit(1);
   }
   if (!config.apiUrl) {
     console.error("Error: Site URL required. Use --url https://your-site.com or set BD_API_URL env var.");
+    console.error("Run with --help for usage.");
     process.exit(1);
   }
 
   return config;
+}
+
+function printHelp() {
+  console.log(`brilliant-directories-mcp — MCP server for the Brilliant Directories API
+
+Usage:
+  brilliant-directories-mcp --api-key KEY --url URL
+  brilliant-directories-mcp --verify --api-key KEY --url URL
+  BD_API_KEY=KEY BD_API_URL=URL brilliant-directories-mcp
+
+Options:
+  --api-key KEY    Your BD API key (or set BD_API_KEY env var)
+  --url URL        Your BD site URL, e.g. https://mysite.com (or BD_API_URL env var)
+  --verify         Test credentials against /api/v2/token/verify and exit
+  --debug          Log every HTTP request + response to stderr (or set BD_DEBUG=1)
+  --help, -h       Show this help
+
+Get an API key: BD Admin > Settings > API Keys > Create New Key
+Docs: https://github.com/brilliantdirectories/brilliant-directories-mcp`);
 }
 
 // ---------------------------------------------------------------------------
@@ -82,10 +129,23 @@ function loadSpec() {
 function buildTools(spec) {
   const tools = [];
   const toolMap = {}; // operationId → { method, path, params, bodyProps }
+  const seenIds = new Map(); // operationId → "METHOD path" for duplicate detection
 
   for (const [urlPath, methods] of Object.entries(spec.paths)) {
     for (const [method, op] of Object.entries(methods)) {
       if (!op.operationId) continue;
+
+      // Self-defense: duplicate operationIds would silently overwrite each other in toolMap.
+      // Fail loudly on startup instead of mysterious "tool not found" errors later.
+      const location = `${method.toUpperCase()} ${urlPath}`;
+      if (seenIds.has(op.operationId)) {
+        console.error(`Error: duplicate operationId "${op.operationId}" in OpenAPI spec.`);
+        console.error(`  First seen at: ${seenIds.get(op.operationId)}`);
+        console.error(`  Also found at: ${location}`);
+        console.error(`Each endpoint must have a unique operationId. Fix openapi/bd-api.json.`);
+        process.exit(1);
+      }
+      seenIds.set(op.operationId, location);
 
       const properties = {};
       const required = [];
@@ -213,6 +273,7 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
       headers: {
         "X-Api-Key": config.apiKey,
         "Accept": "application/json",
+        "User-Agent": `brilliant-directories-mcp/${PACKAGE_VERSION} (node/${process.version})`,
       },
     };
 
@@ -221,10 +282,22 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
       options.headers["Content-Length"] = Buffer.byteLength(bodyStr);
     }
 
+    if (config.debug) {
+      // Redact API key from logged headers
+      const safeHeaders = { ...options.headers, "X-Api-Key": "***REDACTED***" };
+      console.error(`[debug] → ${method} ${fullUrl.href}`);
+      console.error(`[debug]   headers: ${JSON.stringify(safeHeaders)}`);
+      if (bodyStr) console.error(`[debug]   body: ${bodyStr}`);
+    }
+
     const req = transport.request(options, (res) => {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
+        if (config.debug) {
+          console.error(`[debug] ← ${res.statusCode} ${method} ${fullUrl.href}`);
+          console.error(`[debug]   body: ${data.length > 500 ? data.slice(0, 500) + "...[truncated]" : data}`);
+        }
         try {
           resolve({ status: res.statusCode, body: JSON.parse(data) });
         } catch {
@@ -233,7 +306,10 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
       });
     });
 
-    req.on("error", (err) => reject(err));
+    req.on("error", (err) => {
+      if (config.debug) console.error(`[debug] ✗ ${method} ${fullUrl.href} — ${err.message}`);
+      reject(err);
+    });
     req.setTimeout(30000, () => {
       req.destroy();
       reject(new Error("Request timed out after 30s"));
@@ -248,20 +324,59 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
 // Main
 // ---------------------------------------------------------------------------
 
+async function runVerify(config) {
+  try {
+    const result = await makeRequest(config, "GET", "/api/v2/token/verify", null, null);
+    if (result.status >= 200 && result.status < 300 && result.body?.status === "success") {
+      console.log(`OK — credentials verified against ${config.apiUrl}`);
+      if (result.body.data) {
+        console.log(JSON.stringify(result.body.data, null, 2));
+      }
+      process.exit(0);
+    } else {
+      console.error(`FAIL — HTTP ${result.status}`);
+      console.error(typeof result.body === "string" ? result.body : JSON.stringify(result.body, null, 2));
+      process.exit(2);
+    }
+  } catch (err) {
+    console.error(`FAIL — ${err.message}`);
+    process.exit(2);
+  }
+}
+
 async function main() {
   const config = parseArgs();
+
+  if (config.verify) {
+    await runVerify(config);
+    return;
+  }
+
   const spec = loadSpec();
   const { tools, toolMap } = buildTools(spec);
 
   const server = new Server(
     {
       name: "brilliant-directories-mcp",
-      version: "1.0.0",
+      version: PACKAGE_VERSION,
     },
     {
       capabilities: {
         tools: {},
       },
+      instructions: [
+        `Brilliant Directories API — ${spec.paths ? Object.keys(spec.paths).length : 0} endpoints for managing BD-powered membership/directory sites.`,
+        ``,
+        `Rate limit: 100 requests per 60 seconds per API key (default). Customers can request a higher limit from Brilliant Directories support (any value between 100 and 1,000/min) — this is not a self-service setting in the BD admin.`,
+        ``,
+        `For bulk operations (imports, mass updates, batch exports), pace requests below the configured limit. On HTTP 429, back off at least 60 seconds before retrying.`,
+        ``,
+        `Before large jobs, optionally call verifyApiKey to confirm credentials and check current rate-limit headroom.`,
+        ``,
+        `Pagination uses cursor tokens (page + limit params; default 25, max 100). Do not assume numeric page offsets.`,
+        ``,
+        `Destructive operations (delete/update) apply to live production data. Confirm with the user before running bulk deletes or mass updates.`,
+      ].join("\n"),
     }
   );
 
@@ -304,6 +419,32 @@ async function main() {
       }
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
+
+      // Surface rate-limit errors with actionable guidance for the agent
+      if (result.status === 429) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Rate limit exceeded (HTTP 429). The BD API default is 100 requests per 60 seconds per API key. For bulk operations: (1) pace requests at slower intervals, (2) wait at least 60 seconds before retrying, or (3) ask the customer to contact Brilliant Directories support to have their limit raised (available values: 100–1,000/min, not a self-service setting). Server response: ${JSON.stringify(result.body)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Surface auth errors with actionable guidance
+      if (result.status === 401 || result.status === 403) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Authentication failed (HTTP ${result.status}). The API key is invalid, revoked, or lacks permission for this endpoint. Verify with: npx brilliant-directories-mcp --verify --api-key KEY --url URL. Server response: ${JSON.stringify(result.body)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
 
       return {
         content: [
