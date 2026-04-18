@@ -6,7 +6,7 @@
 
 Give any AI agent full access to your BD site with one API key.
 
-**170 endpoints** across 32 resources: members, leads, posts, reviews, categories, email templates, **pages (homepage, landing pages)**, **301 redirects**, smart lists, widgets, menus, forms, membership plans, and more.
+Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
 ## 30-Second Quickstart
 
