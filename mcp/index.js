@@ -20,9 +20,11 @@ const {
   ListToolsRequestSchema,
 } = require("@modelcontextprotocol/sdk/types.js");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const https = require("https");
 const http = require("http");
+const readline = require("readline");
 const { URL } = require("url");
 
 // Read package version once at startup (keeps User-Agent + server init in sync with package.json)
@@ -44,6 +46,7 @@ function parseArgs() {
     apiKey: process.env.BD_API_KEY || "",
     apiUrl: process.env.BD_API_URL || "",
     verify: false,
+    setup: false,
     help: false,
     debug: process.env.BD_DEBUG === "1" || process.env.BD_DEBUG === "true",
   };
@@ -55,6 +58,8 @@ function parseArgs() {
       config.apiUrl = args[++i];
     } else if (args[i] === "--verify") {
       config.verify = true;
+    } else if (args[i] === "--setup") {
+      config.setup = true;
     } else if (args[i] === "--debug") {
       config.debug = true;
     } else if (args[i] === "--help" || args[i] === "-h") {
@@ -65,6 +70,11 @@ function parseArgs() {
   if (config.help) {
     printHelp();
     process.exit(0);
+  }
+
+  // Setup mode skips the API-key-required check — wizard will prompt for them
+  if (config.setup) {
+    return config;
   }
 
   // Normalize URL: strip trailing slash, ensure protocol
@@ -90,12 +100,17 @@ function parseArgs() {
 function printHelp() {
   console.log(`brilliant-directories-mcp — MCP server for the Brilliant Directories API
 
+FIRST TIME?  Just run this and answer 2 questions:
+  npx brilliant-directories-mcp --setup
+
 Usage:
-  brilliant-directories-mcp --api-key KEY --url URL
-  brilliant-directories-mcp --verify --api-key KEY --url URL
-  BD_API_KEY=KEY BD_API_URL=URL brilliant-directories-mcp
+  brilliant-directories-mcp --setup                        Interactive setup wizard (recommended)
+  brilliant-directories-mcp --api-key KEY --url URL        Run the MCP server
+  brilliant-directories-mcp --verify --api-key KEY --url URL   Test credentials and exit
+  BD_API_KEY=KEY BD_API_URL=URL brilliant-directories-mcp  Run via env vars
 
 Options:
+  --setup          Interactive wizard: prompts for URL + key, writes client config
   --api-key KEY    Your BD API key (or set BD_API_KEY env var)
   --url URL        Your BD site URL, e.g. https://mysite.com (or BD_API_URL env var)
   --verify         Test credentials against /api/v2/token/verify and exit
@@ -324,6 +339,216 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
 // Main
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Setup wizard
+// ---------------------------------------------------------------------------
+
+function prompt(question, { hidden = false } = {}) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    if (hidden && process.stdin.isTTY) {
+      // Mask input for API key
+      process.stdout.write(question);
+      const onData = (char) => {
+        const c = char.toString("utf8");
+        if (c === "\n" || c === "\r" || c === "\r\n" || c === "\u0004") {
+          process.stdin.removeListener("data", onData);
+          process.stdout.write("\n");
+        } else if (c === "\u0003") {
+          // Ctrl+C
+          process.exit(130);
+        } else {
+          process.stdout.write("*");
+        }
+      };
+      process.stdin.on("data", onData);
+      rl.question("", (answer) => {
+        rl.close();
+        resolve(answer.trim());
+      });
+    } else {
+      rl.question(question, (answer) => {
+        rl.close();
+        resolve(answer.trim());
+      });
+    }
+  });
+}
+
+function normalizeUrl(input) {
+  let u = (input || "").trim().replace(/\/+$/, "");
+  if (u && !/^https?:\/\//i.test(u)) u = "https://" + u;
+  return u;
+}
+
+function getClientConfigPath(client) {
+  const home = os.homedir();
+  switch (client) {
+    case "cursor":
+      return path.join(home, ".cursor", "mcp.json");
+    case "claude-desktop":
+      if (process.platform === "darwin") {
+        return path.join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json");
+      } else if (process.platform === "win32") {
+        return path.join(process.env.APPDATA || path.join(home, "AppData", "Roaming"), "Claude", "claude_desktop_config.json");
+      } else {
+        return path.join(home, ".config", "Claude", "claude_desktop_config.json");
+      }
+    case "windsurf":
+      return path.join(home, ".codeium", "windsurf", "mcp_config.json");
+    case "claude-code":
+      return null; // Claude Code uses `claude mcp add` CLI — we print instructions instead
+    default:
+      return null;
+  }
+}
+
+function buildMcpServerEntry(apiKey, apiUrl) {
+  return {
+    command: "npx",
+    args: ["-y", "brilliant-directories-mcp", "--api-key", apiKey, "--url", apiUrl],
+  };
+}
+
+function writeClientConfig(configPath, serverName, entry) {
+  const dir = path.dirname(configPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  let existing = { mcpServers: {} };
+  if (fs.existsSync(configPath)) {
+    try {
+      const raw = fs.readFileSync(configPath, "utf8").trim();
+      if (raw) existing = JSON.parse(raw);
+      if (!existing.mcpServers || typeof existing.mcpServers !== "object") {
+        existing.mcpServers = {};
+      }
+    } catch (err) {
+      console.error(`\nCould not parse existing config at ${configPath}`);
+      console.error(`Error: ${err.message}`);
+      console.error("Skipping write to avoid overwriting. Fix the file manually and rerun --setup.");
+      return false;
+    }
+  }
+
+  existing.mcpServers[serverName] = entry;
+  fs.writeFileSync(configPath, JSON.stringify(existing, null, 2) + "\n");
+  return true;
+}
+
+async function runSetup() {
+  console.log("");
+  console.log("Brilliant Directories MCP — Setup Wizard");
+  console.log("=========================================");
+  console.log("");
+
+  // URL
+  let apiUrl = process.env.BD_API_URL || "";
+  if (!apiUrl) {
+    while (!apiUrl) {
+      const raw = await prompt("Your BD site URL (e.g. https://mysite.com): ");
+      if (!raw) {
+        console.log("  Please enter your site URL.");
+        continue;
+      }
+      apiUrl = normalizeUrl(raw);
+    }
+  }
+
+  // API Key
+  let apiKey = process.env.BD_API_KEY || "";
+  if (!apiKey) {
+    console.log("");
+    console.log("Get an API key from: BD Admin > Settings > API Keys > Create New Key");
+    while (!apiKey) {
+      const raw = await prompt("Your BD API key: ", { hidden: true });
+      if (!raw) {
+        console.log("  Please paste your API key.");
+        continue;
+      }
+      apiKey = raw;
+    }
+  }
+
+  // Verify
+  console.log("");
+  process.stdout.write("Testing connection... ");
+  try {
+    const result = await makeRequest({ apiKey, apiUrl, debug: false }, "GET", "/api/v2/token/verify", null, null);
+    if (result.status >= 200 && result.status < 300 && result.body?.status === "success") {
+      console.log("OK");
+    } else {
+      console.log("FAILED");
+      console.log(`  HTTP ${result.status}: ${JSON.stringify(result.body)}`);
+      console.log("");
+      console.log("Setup will still write the config, but your AI agent won't be able to call the API until this is fixed.");
+      const proceed = await prompt("Continue anyway? (y/N): ");
+      if (!/^y/i.test(proceed)) {
+        console.log("Setup cancelled.");
+        process.exit(1);
+      }
+    }
+  } catch (err) {
+    console.log("FAILED");
+    console.log(`  ${err.message}`);
+    const proceed = await prompt("Continue anyway? (y/N): ");
+    if (!/^y/i.test(proceed)) {
+      console.log("Setup cancelled.");
+      process.exit(1);
+    }
+  }
+
+  // Client
+  console.log("");
+  console.log("Where are you using this?");
+  console.log("  1) Cursor");
+  console.log("  2) Claude Desktop");
+  console.log("  3) Windsurf");
+  console.log("  4) Claude Code (CLI)");
+  console.log("  5) Other / just show me the config");
+  const choice = await prompt("Choice [1-5]: ");
+
+  const entry = buildMcpServerEntry(apiKey, apiUrl);
+  const serverName = "brilliant-directories";
+
+  let clientKey, clientLabel;
+  switch ((choice || "").trim()) {
+    case "1": clientKey = "cursor"; clientLabel = "Cursor"; break;
+    case "2": clientKey = "claude-desktop"; clientLabel = "Claude Desktop"; break;
+    case "3": clientKey = "windsurf"; clientLabel = "Windsurf"; break;
+    case "4": clientKey = "claude-code"; clientLabel = "Claude Code"; break;
+    default: clientKey = "other"; clientLabel = "Other";
+  }
+
+  console.log("");
+
+  if (clientKey === "claude-code") {
+    console.log("For Claude Code, run this command in your terminal:");
+    console.log("");
+    console.log(`  claude mcp add ${serverName} -- npx -y brilliant-directories-mcp --api-key ${apiKey} --url ${apiUrl}`);
+    console.log("");
+    console.log("Then restart Claude Code and ask: \"List members on my BD site\"");
+  } else if (clientKey === "other") {
+    console.log("Add this to your MCP client's config file:");
+    console.log("");
+    console.log(JSON.stringify({ mcpServers: { [serverName]: entry } }, null, 2));
+    console.log("");
+    console.log("Then restart your client and ask: \"List members on my BD site\"");
+  } else {
+    const configPath = getClientConfigPath(clientKey);
+    const wrote = writeClientConfig(configPath, serverName, entry);
+    if (wrote) {
+      console.log(`Config written to:`);
+      console.log(`  ${configPath}`);
+      console.log("");
+      console.log(`Done! Restart ${clientLabel} and ask Claude:`);
+      console.log(`  "List members on my BD site"`);
+    }
+  }
+
+  console.log("");
+  process.exit(0);
+}
+
 async function runVerify(config) {
   try {
     const result = await makeRequest(config, "GET", "/api/v2/token/verify", null, null);
@@ -346,6 +571,11 @@ async function runVerify(config) {
 
 async function main() {
   const config = parseArgs();
+
+  if (config.setup) {
+    await runSetup();
+    return;
+  }
 
   if (config.verify) {
     await runVerify(config);

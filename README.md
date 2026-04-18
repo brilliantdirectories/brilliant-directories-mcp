@@ -10,17 +10,18 @@ Give any AI agent full access to your BD site with one API key.
 
 ## 30-Second Quickstart
 
+**One command. Answer two questions. Done.**
+
 ```bash
-# 1. Verify your credentials work (no install — uses npx)
-npx brilliant-directories-mcp --verify --api-key YOUR_KEY --url https://your-site.com
-
-# 2. Connect to Claude Code
-claude mcp add bd-api -- npx brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
-
-# 3. Ask Claude: "List all members on my BD site"
+npx brilliant-directories-mcp --setup
 ```
 
-That's it. Get your API key from **BD Admin > Settings > API Keys > Create New Key**.
+The wizard asks for your BD site URL and API key, tests the connection, asks which app you use (Cursor / Claude Desktop / Windsurf / Claude Code), and writes the config for you. No JSON editing.
+
+Restart your app, then ask your AI:
+> "List members on my BD site"
+
+Get your API key from **BD Admin > Settings > API Keys > Create New Key**.
 
 ---
 

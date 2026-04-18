@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-18
+
+### Added
+- **`--setup` interactive wizard** — new zero-friction onboarding. Run `npx brilliant-directories-mcp --setup` and answer 2 questions (site URL, API key). The wizard:
+  - Normalizes the URL (adds `https://` if missing, strips trailing slashes)
+  - Masks API key entry with asterisks
+  - Tests the connection against `/api/v2/token/verify` before writing config
+  - Asks which MCP client you use (Cursor / Claude Desktop / Windsurf / Claude Code / Other)
+  - Writes the correct config file at the correct OS-specific path automatically
+  - For Claude Code, prints the `claude mcp add` command to run
+  - For Other, prints the JSON config to paste manually
+- Existing configs are preserved — the wizard merges into existing `mcpServers` rather than overwriting.
+
+### Changed
+- `--help` output now leads with the `--setup` command as the recommended first-time path.
+
 ## [1.0.2] - 2026-04-18
 
 ### Changed
