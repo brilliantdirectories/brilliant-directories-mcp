@@ -119,24 +119,6 @@ For any non-trivial task, follow this sequence:
 5. **Act** — execute calls, pacing writes per the rate-limit rules
 6. **Report** — summarize what happened: X succeeded, Y failed with specific reasons, Z skipped
 
-### Pattern: preserve SEO when URLs change (redirects)
-
-When a profile is renamed, a post slug changes, a category is restructured, or a landing-page filename moves, the old URL becomes a dead link — bad for SEO and bad for users who bookmarked it. The fix is a 301 redirect rule.
-
-The `redirect_301` resource creates permanent redirects. BD auto-generates some redirects (e.g., when a member renames their profile), but for custom URL changes — especially when AI-driven bulk operations rename many records — the agent should offer to create matching redirects.
-
-**Rule of thumb:** after any operation that changes a URL-facing field (profile slugs, post slugs, page filenames, category URLs), ask the user: *"Want me to create a 301 redirect from the old URL to the new one so inbound links and SEO rankings are preserved?"*
-
-Typical flow when helping with a rename:
-1. Perform the rename (e.g., `updatePage` with new `filename`)
-2. Immediately call `createRedirect` with `type='custom'` (or appropriate type), `old_filename=<previous>`, `new_filename=<new>`
-3. Confirm in reply: "Page renamed and 301 redirect created — old URL will permanently redirect to the new one."
-
-**Tips:**
-- Paths are relative to the site root (`old-slug`, not `https://site.com/old-slug`).
-- Common `type` values: `profile` (member URL changes), `post` (post slug changes), `category`, `custom` (manual rules).
-- Use `listRedirects` first if the user asks "do I have any dead redirects" — look for old→new where new is itself now an outdated URL (redirect chains hurt SEO).
-
 ### Worked example: "Import 300 members from this CSV"
 
 ```
@@ -157,6 +139,7 @@ Typical flow when helping with a rename:
 5. **Use pagination tokens, not page numbers.**
 6. **Discover fields at runtime** when unsure — `/fields` endpoint or the spec's schema for the operation.
 7. **Acknowledge when an operation doesn't exist** rather than inventing one.
+8. **Consider downstream side-effects** — when an operation changes a URL-facing field (a slug, filename, category path), inbound links to the old URL break. Ask the user if they want a compensating action (e.g., a redirect rule). The same principle applies elsewhere: renaming a required category may leave orphan records; deleting a membership plan affects every member on it. Think one hop ahead and offer the user the safer workflow.
 
 ## Things to never do
 
