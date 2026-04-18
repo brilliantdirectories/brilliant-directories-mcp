@@ -64,6 +64,29 @@ After the API returns success, BD asynchronously downloads the image and replace
 
 ---
 
+## Operational rules (from support article 12000091105)
+
+### Email notifications
+- `send_email_notifications=1` on `createUser` triggers the welcome email (based on the membership plan's configured email). Default: off — API creates are silent.
+
+### Uniqueness constraints
+- `email` must be unique unless the site setting `allow_duplicate_member_emails` is enabled.
+- `email` + `password` combo must ALWAYS be unique (regardless of site settings).
+- `token` (when supplied) must be exactly 32 alphanumeric characters AND unique across all members.
+
+### Validation behaviors
+- URL fields (`website`, `booking_link`, `blog`, `facebook`, `twitter`, `linkedin`, `instagram`, etc.) are validated on write; invalid formats are silently skipped (not rejected — the rest of the payload still saves). Must start with `http://` or `https://`.
+- Category/service NAME references in any field should be wrapped in single quotes (e.g. `'25-30'`, `'Cosmetic Dentistry'`) to avoid parser confusion on dashes/spaces.
+
+### Prerequisites
+- `subscription_id` must reference an existing membership plan (from `listMembershipPlans` or `createMembershipPlan`).
+- `profession_id` must reference an existing top-level category (from `listTopCategories` or `createTopCategory`).
+
+### Inline category creation (updateUser only)
+- `create_new_categories=1` on `updateUser` allows inline-creating new sub and sub-sub categories under the member's current top-level category, instead of requiring them to exist first.
+
+---
+
 ## Endpoints
 
 ### 1. List Users

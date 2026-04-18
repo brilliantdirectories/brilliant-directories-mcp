@@ -4,6 +4,14 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 **Related support articles:**
 - https://support.brilliantdirectories.com/support/solutions/articles/12000091106 (How to Edit Lead Data with API Calls)
 
+## Operational rules (from support article 12000091106)
+
+### Lead email notifications
+- `send_lead_email_notification=1` on `createLead` activates email notifications to site admin and/or matched members. Default: off — leads created via API are silent.
+- For the full auto-matching flow (finds members by category/location/service-area and emails them), call `matchLead` separately after creating the lead.
+
+---
+
 ## Endpoints
 
 ### 1. List Leads

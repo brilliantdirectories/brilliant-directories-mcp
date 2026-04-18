@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-04-18
+
+### Added — BD operational rules pulled from support articles into tool descriptions
+
+Read the actual content of the secondary support URLs we linked in v5.0.0 and pulled the non-obvious business rules into tool descriptions where AI agents will see them at tool-discovery time. Previously the URLs were referenced but no content was surfaced.
+
+**`createUser` + `updateUser` now document (from support article 12000091105):**
+- `send_email_notifications=1` triggers the welcome email (off by default — API creates are silent)
+- Email uniqueness rules (`allow_duplicate_member_emails` site setting, email+password combo ALWAYS unique)
+- `token` format constraints (32 alphanumeric chars, unique)
+- URL field validation (silently skips invalid formats; must start with `http://` or `https://`)
+- Prerequisite: `subscription_id` and `profession_id` MUST exist before use
+- Category/service name references need single quotes for values with dashes/spaces
+- `create_new_categories=1` (updateUser only) allows inline sub/sub-sub category creation
+
+**`createLead` now documents (from support article 12000091106):**
+- `send_lead_email_notification=1` activates lead notification emails (off by default)
+- Relationship with `matchLead` for the full auto-matching flow
+
+**`docs/api-users.md` and `docs/api-leads.md`** got parallel "Operational rules" sections so anyone reading the docs directly gets the same info.
+
+### Removed — incorrectly cited support URL
+
+`docs/api-post-types.md` cited support article 12000103396 claiming it documented Data Types / `data_type` family values. Content inspection revealed that article is actually the **Widgets API** documentation — unrelated. Removed the wrong reference. No replacement article identified for the Data Types values (4/9/20/etc.) — those were derived from live-data inspection earlier tonight, which is documented in the tool descriptions themselves.
+
+### Fixed — v5.0.1 footer regression
+Re-appended the universal auth/rate/errors footer to 5 user ops (`listUsers`, `getUser`, `createUser`, `updateUser`, `searchUsers`) that lost it during the v1.6.3 Profile URL enrichment. Now all 165 ops end with the same disclosure block.
+
 ## [5.0.1] - 2026-04-18
 
 ### Fixed
