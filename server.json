@@ -6,13 +6,15 @@
     "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
     "source": "github"
   },
-  "version": "1.6.2",
+  "version": "6.0.2",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "brilliant-directories-mcp",
-      "version": "1.6.2",
-      "transport": { "type": "stdio" },
+      "version": "6.0.2",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "BD_API_KEY",

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.2] - 2026-04-18
+
+### Fixed — version drift across metadata files
+
+End-to-end repo audit found `server.json` and `plugin.json` still reported version `1.6.2` while `mcp/package.json` had advanced through 2.0.0 → 6.0.1 across tonight's releases. The GitHub Actions workflow syncs `server.json` from the git tag at publish time (so what ended up on the MCP Registry was correct), but the **committed source-of-truth value in the repo was stale** — anyone reading the repo or cloning cold would see outdated version claims.
+
+Realigned all three metadata files (`mcp/package.json`, `server.json`, `plugin.json`) to the same version going forward. Going forward, the release workflow + manual release playbook both update all three atomically.
+
+### Final repo integrity — all green
+- 49 tracked files total (no stray scripts, backups, or artifacts)
+- 7 JSON files all parse cleanly
+- All 4 spec copies byte-identical (GitHub + Bitbucket × root + mcp/)
+- 8 critical files byte-identical GitHub ↔ Bitbucket (package.json, SKILL, README, CHANGELOG, server.json, plugin.json, Dockerfile, .mcp.json)
+- `docs/` folder fully in parity across mirrors
+- 164 ops in spec, all structurally valid (no broken $refs, all have responses)
+
 ## [6.0.1] - 2026-04-18
 
 ### Fixed — per-parameter schema descriptions (4 fields)
