@@ -143,12 +143,21 @@ Docs: https://github.com/brilliantdirectories/brilliant-directories-mcp`);
 // ---------------------------------------------------------------------------
 
 function loadSpec() {
-  const specPath = path.join(__dirname, "..", "openapi", "bd-api.json");
-  if (!fs.existsSync(specPath)) {
-    console.error(`Error: OpenAPI spec not found at ${specPath}`);
-    process.exit(1);
+  // Try the in-package location first (what npm ships), then fall back to the
+  // monorepo location (repo-root openapi/ sibling of mcp/) for local development.
+  const candidates = [
+    path.join(__dirname, "openapi", "bd-api.json"),
+    path.join(__dirname, "..", "openapi", "bd-api.json"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, "utf8"));
+    }
   }
-  return JSON.parse(fs.readFileSync(specPath, "utf8"));
+  console.error(`Error: OpenAPI spec not found. Looked in:`);
+  for (const p of candidates) console.error(`  ${p}`);
+  console.error(`This is a packaging bug — please open an issue at https://github.com/brilliantdirectories/brilliant-directories-mcp/issues`);
+  process.exit(1);
 }
 
 /**
