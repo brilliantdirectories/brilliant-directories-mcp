@@ -1,6 +1,9 @@
 # BD API — Leads Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108049_
 
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000091106 (How to Edit Lead Data with API Calls)
+
 ## Endpoints
 
 ### 1. List Leads

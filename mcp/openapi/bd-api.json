@@ -3113,7 +3113,7 @@
     },
     "/api/v2/data_posts/get": {
       "get": {
-        "operationId": "listPosts",
+        "operationId": "listSingleImagePosts",
         "summary": "List posts",
         "tags": [
           "Posts"
@@ -3144,12 +3144,12 @@
             }
           }
         },
-        "description": "Paginated enumeration of post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPost` (single record by ID), `searchPosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/get/{post_id}": {
       "get": {
-        "operationId": "getPost",
+        "operationId": "getSingleImagePost",
         "summary": "Get a single post",
         "tags": [
           "Posts"
@@ -3176,12 +3176,12 @@
             }
           }
         },
-        "description": "Fetch a single post record. Read-only.\n\n**Required:** `post_id`.\n\n**See also:** `listPosts` (enumerate many), `searchPosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single post record. Read-only.\n\n**Required:** `post_id`.\n\n**See also:** `listSingleImagePosts` (enumerate many), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/fields": {
       "get": {
-        "operationId": "getPostFields",
+        "operationId": "getSingleImagePostFields",
         "summary": "Get post field definitions",
         "description": "Returns custom fields for a specific post type form.\n\n**Required:** `form_name`.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
@@ -3214,7 +3214,7 @@
     },
     "/api/v2/data_posts/create": {
       "post": {
-        "operationId": "createPost",
+        "operationId": "createSingleImagePost",
         "summary": "Create a post",
         "tags": [
           "Posts"
@@ -3262,6 +3262,14 @@
                   },
                   "post_price": {
                     "type": "number"
+                  },
+                  "auto_image_import": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this single-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Processing delay: a few minutes."
                   }
                 }
               }
@@ -3280,12 +3288,12 @@
             }
           }
         },
-        "description": "Create a new post record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `user_id` — owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n- `data_id` — post type category ID; get via `listPostTypes`\n- `data_type` — data type classification; usually matches the post type's data type\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n- Response includes both `post_id` and `post_token` — the token is used for sharable URLs\n\n**See also:** `updatePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new post record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `user_id` — owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n- `data_id` — post type category ID; get via `listPostTypes`\n- `data_type` — data type classification; usually matches the post type's data type\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n- Response includes both `post_id` and `post_token` — the token is used for sharable URLs\n\n**See also:** `updateSingleImagePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) → `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) → `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/update": {
       "put": {
-        "operationId": "updatePost",
+        "operationId": "updateSingleImagePost",
         "summary": "Update a post",
         "tags": [
           "Posts"
@@ -3334,12 +3342,12 @@
             }
           }
         },
-        "description": "Update an existing post record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `post_id`.\n\n**Enums:** `post_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createPost` (add new), `deletePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing post record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `post_id`.\n\n**Enums:** `post_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createSingleImagePost` (add new), `deleteSingleImagePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/delete": {
       "delete": {
-        "operationId": "deletePost",
+        "operationId": "deleteSingleImagePost",
         "summary": "Delete a post",
         "tags": [
           "Posts"
@@ -3374,12 +3382,12 @@
             }
           }
         },
-        "description": "Permanently delete a post record by ID. Destructive — cannot be undone via API.\n\n**Required:** `post_id`.\n\n**See also:** `updatePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a post record by ID. Destructive — cannot be undone via API.\n\n**Required:** `post_id`.\n\n**See also:** `updateSingleImagePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/search": {
       "post": {
-        "operationId": "searchPosts",
+        "operationId": "searchSingleImagePosts",
         "summary": "Search posts",
         "tags": [
           "Posts"
@@ -3426,12 +3434,12 @@
             }
           }
         },
-        "description": "Keyword search across post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Parameter interactions:**\n- `data_id` (post type) is strongly recommended — results vary significantly by post type configuration\n- `q` — keyword across post title, caption, content\n- Fields exposed in search depend on the post type; use `getPostFields` with `form_name` to discover them\n\n**See also:** `getPost` (single record by ID), `listPosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Keyword search across post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Parameter interactions:**\n- `data_id` (post type) is strongly recommended — results vary significantly by post type configuration\n- `q` — keyword across post title, caption, content\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/get": {
       "get": {
-        "operationId": "listPortfolioGroups",
+        "operationId": "listMultiImagePosts",
         "summary": "List album groups",
         "tags": [
           "Portfolio Groups"
@@ -3462,12 +3470,12 @@
             }
           }
         },
-        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPortfolioGroup` (single record by ID), `searchPortfolioGroups` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/get/{group_id}": {
       "get": {
-        "operationId": "getPortfolioGroup",
+        "operationId": "getMultiImagePost",
         "summary": "Get a single album group",
         "tags": [
           "Portfolio Groups"
@@ -3494,12 +3502,12 @@
             }
           }
         },
-        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Required:** `group_id`.\n\n**See also:** `listPortfolioGroups` (enumerate many), `searchPortfolioGroups` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Required:** `group_id`.\n\n**See also:** `listMultiImagePosts` (enumerate many), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/fields": {
       "get": {
-        "operationId": "getPortfolioGroupFields",
+        "operationId": "getMultiImagePostFields",
         "summary": "Get album group field definitions",
         "tags": [
           "Portfolio Groups"
@@ -3531,7 +3539,7 @@
     },
     "/api/v2/users_portfolio_groups/create": {
       "post": {
-        "operationId": "createPortfolioGroup",
+        "operationId": "createMultiImagePost",
         "summary": "Create an album group",
         "tags": [
           "Portfolio Groups"
@@ -3570,6 +3578,14 @@
                       0,
                       1
                     ]
+                  },
+                  "auto_image_import": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this multi-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Processing delay: a few minutes."
                   }
                 }
               }
@@ -3588,12 +3604,12 @@
             }
           }
         },
-        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `data_id` + `data_type` — specify the post type this album belongs to (from `listPostTypes` / `listDataTypes`)\n- `group_status`: `0`=Hidden, `1`=Published\n- Photos are added separately via `createPortfolioPhoto` using the returned `group_id`\n\n**See also:** `updatePortfolioGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `data_id` + `data_type` — specify the post type this album belongs to (from `listPostTypes` / `listDataTypes`)\n- `group_status`: `0`=Hidden, `1`=Published\n- Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`\n\n**See also:** `updateMultiImagePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) → `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) → `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/update": {
       "put": {
-        "operationId": "updatePortfolioGroup",
+        "operationId": "updateMultiImagePost",
         "summary": "Update an album group",
         "tags": [
           "Portfolio Groups"
@@ -3642,12 +3658,12 @@
             }
           }
         },
-        "description": "Update an existing portfoliogroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**Enums:** `group_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createPortfolioGroup` (add new), `deletePortfolioGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing portfoliogroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**Enums:** `group_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createMultiImagePost` (add new), `deleteMultiImagePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/delete": {
       "delete": {
-        "operationId": "deletePortfolioGroup",
+        "operationId": "deleteMultiImagePost",
         "summary": "Delete an album group",
         "tags": [
           "Portfolio Groups"
@@ -3682,12 +3698,12 @@
             }
           }
         },
-        "description": "Permanently delete a portfoliogroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updatePortfolioGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a portfoliogroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updateMultiImagePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/search": {
       "post": {
-        "operationId": "searchPortfolioGroups",
+        "operationId": "searchMultiImagePosts",
         "summary": "Search album groups",
         "tags": [
           "Portfolio Groups"
@@ -3721,12 +3737,12 @@
             }
           }
         },
-        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**See also:** `getPortfolioGroup` (single record by ID), `listPortfolioGroups` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/get": {
       "get": {
-        "operationId": "listPortfolioPhotos",
+        "operationId": "listMultiImagePostPhotos",
         "summary": "List album photos",
         "tags": [
           "Portfolio Photos"
@@ -3757,12 +3773,12 @@
             }
           }
         },
-        "description": "Paginated enumeration of portfoliophoto records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPortfolioPhoto` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of portfoliophoto records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getMultiImagePostPhoto` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/get/{photo_id}": {
       "get": {
-        "operationId": "getPortfolioPhoto",
+        "operationId": "getMultiImagePostPhoto",
         "summary": "Get a single album photo",
         "tags": [
           "Portfolio Photos"
@@ -3789,12 +3805,12 @@
             }
           }
         },
-        "description": "Fetch a single portfoliophoto record. Read-only.\n\n**Required:** `photo_id`.\n\n**See also:** `listPortfolioPhotos` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single portfoliophoto record. Read-only.\n\n**Required:** `photo_id`.\n\n**See also:** `listMultiImagePostPhotos` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/create": {
       "post": {
-        "operationId": "createPortfolioPhoto",
+        "operationId": "createMultiImagePostPhoto",
         "summary": "Create an album photo",
         "tags": [
           "Portfolio Photos"
@@ -3846,12 +3862,12 @@
             }
           }
         },
-        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Required:** `user_id`, `group_id`.\n\n**Parameter interactions:**\n- `group_id` — parent album group (from `createPortfolioGroup` or `listPortfolioGroups`)\n- `original_image_url` — full URL of the image; must already be publicly accessible\n- `status`: `0`=Hidden, `1`=Active\n\n**See also:** `updatePortfolioPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Required:** `user_id`, `group_id`.\n\n**Parameter interactions:**\n- `group_id` — parent album group (from `createMultiImagePost` or `listMultiImagePosts`)\n- `original_image_url` — full URL of the image; must already be publicly accessible\n- `status`: `0`=Hidden, `1`=Active\n\n**See also:** `updateMultiImagePostPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/update": {
       "put": {
-        "operationId": "updatePortfolioPhoto",
+        "operationId": "updateMultiImagePostPhoto",
         "summary": "Update an album photo",
         "tags": [
           "Portfolio Photos"
@@ -3892,12 +3908,12 @@
             }
           }
         },
-        "description": "Update an existing portfoliophoto record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `photo_id`.\n\n**See also:** `createPortfolioPhoto` (add new), `deletePortfolioPhoto` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing portfoliophoto record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `photo_id`.\n\n**See also:** `createMultiImagePostPhoto` (add new), `deleteMultiImagePostPhoto` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/delete": {
       "delete": {
-        "operationId": "deletePortfolioPhoto",
+        "operationId": "deleteMultiImagePostPhoto",
         "summary": "Delete an album photo",
         "tags": [
           "Portfolio Photos"
@@ -3932,7 +3948,7 @@
             }
           }
         },
-        "description": "Permanently delete a portfoliophoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updatePortfolioPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a portfoliophoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updateMultiImagePostPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get": {

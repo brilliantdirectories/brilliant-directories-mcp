@@ -1,31 +1,44 @@
-# BD API — Album Photos Endpoints
-_Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108052_
+# BD API — Multi-Image Post Photos Endpoints
+
+**Tools:** `listMultiImagePostPhotos`, `getMultiImagePostPhoto`, `createMultiImagePostPhoto`, `updateMultiImagePostPhoto`, `deleteMultiImagePostPhoto`
+**Underlying endpoint:** `/api/v2/users_portfolio/*`
+**BD table:** `users_portfolio`
+**Primary key:** `photo_id`
+
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000108052 (primary source)
+- https://support.brilliantdirectories.com/support/solutions/articles/12000093239 (Member Posts API — covers both post families and their image-handling)
+
+Individual photos within a Multi-Image Post. Each photo belongs to a parent Multi-Image Post (`group_id`) owned by a member (`user_id`). Added AFTER the parent Multi-Image Post has been created via `createMultiImagePost`.
 
 ## Endpoints
 
-### 1. List Album Photos
-`GET /api/v2/users_portfolio/get`
+### List Photos
+`GET /api/v2/users_portfolio/get` — filter by `group_id` to get all photos in one Multi-Image Post.
 
-Filter by `group_id` to get all photos in an album.
-
-### 2. Get Single Photo
+### Get Single Photo
 `GET /api/v2/users_portfolio/get/{photo_id}`
 
-### 3. Create Photo
+### Create Photo
 `POST /api/v2/users_portfolio/create`
+- **Required:** `user_id`, `group_id` (parent Multi-Image Post from `createMultiImagePost`)
+- **Optional:** `title`, `original_image_url` (full URL of the image — must be publicly accessible when BD fetches it), `status` (`0`=Hidden, `1`=Active)
 
-**Required:** `user_id`, `group_id`
-**Optional:** `title`, `original_image_url`, `status` (0=Hidden, 1=Active)
-
-### 4. Update Photo
+### Update Photo
 `PUT /api/v2/users_portfolio/update`
+- **Required:** `photo_id`
+- **Optional:** `title`, `order` (display position within the album)
 
-**Required:** `photo_id`
-**Optional:** `title`, `order` (display position in album)
-
-### 5. Delete Photo
+### Delete Photo
 `DELETE /api/v2/users_portfolio/delete`
+- **Required:** `photo_id`
 
-**Required:** `photo_id`
+**Note:** No dedicated search endpoint — use `listMultiImagePostPhotos` with the `group_id` filter instead.
 
-**Note:** No search endpoint for photos — use list with `group_id` filter instead.
+## Typical flow
+
+```
+1. createMultiImagePost → returns group_id
+2. For each image URL:
+   createMultiImagePostPhoto with user_id, group_id, original_image_url
+```

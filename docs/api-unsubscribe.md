@@ -1,6 +1,9 @@
 # BD API — Unsubscribe List Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108055_
 
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000102546 (Unsubscribe API)
+
 ## Endpoints
 
 ### 1. List Unsubscribe Records

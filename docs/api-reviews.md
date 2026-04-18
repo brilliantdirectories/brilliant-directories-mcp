@@ -1,6 +1,9 @@
 # BD API — User Reviews Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108053_
 
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000097913 (How to Edit Reviews Data with API Calls)
+
 ## Endpoints
 
 ### 1. List Reviews

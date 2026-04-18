@@ -1,6 +1,10 @@
 # BD API — Users Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108047_
 
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000091105 (How to Edit Member Data with API Calls)
+- https://support.brilliantdirectories.com/support/solutions/articles/12000103947 (Users API — How to Manage Users with API Calls)
+
 ## Authentication
 - Header: `X-Api-Key: {your-api-key}`
 - Verify: `GET /api/v2/token/verify`

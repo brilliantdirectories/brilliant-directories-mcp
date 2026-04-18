@@ -1,6 +1,9 @@
 # BD API — Post Types (Data Categories) Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108054_
 
+**Related support articles:**
+- https://support.brilliantdirectories.com/support/solutions/articles/12000103396 (Data Types reference — explains the `data_type` family values: 4=Multi-Image, 9/20=Single-Image, 10/13/21/29=internal)
+
 ## Endpoints
 
 ### 1. List Post Types

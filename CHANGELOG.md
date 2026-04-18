@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-04-18
+
+### BREAKING — Post + PortfolioGroup + PortfolioPhoto tools renamed to SingleImagePost / MultiImagePost / MultiImagePostPhoto family
+
+**Renamed tools (19):**
+
+Post → SingleImagePost:
+| Old | New |
+|---|---|
+| `listPosts` | `listSingleImagePosts` |
+| `getPost` | `getSingleImagePost` |
+| `createPost` | `createSingleImagePost` |
+| `updatePost` | `updateSingleImagePost` |
+| `deletePost` | `deleteSingleImagePost` |
+| `searchPosts` | `searchSingleImagePosts` |
+| `getPostFields` | `getSingleImagePostFields` |
+
+PortfolioGroup → MultiImagePost:
+| Old | New |
+|---|---|
+| `listPortfolioGroups` | `listMultiImagePosts` |
+| `getPortfolioGroup` | `getMultiImagePost` |
+| `createPortfolioGroup` | `createMultiImagePost` |
+| `updatePortfolioGroup` | `updateMultiImagePost` |
+| `deletePortfolioGroup` | `deleteMultiImagePost` |
+| `searchPortfolioGroups` | `searchMultiImagePosts` |
+| `getPortfolioGroupFields` | `getMultiImagePostFields` |
+
+PortfolioPhoto → MultiImagePostPhoto:
+| Old | New |
+|---|---|
+| `listPortfolioPhotos` | `listMultiImagePostPhotos` |
+| `getPortfolioPhoto` | `getMultiImagePostPhoto` |
+| `createPortfolioPhoto` | `createMultiImagePostPhoto` |
+| `updatePortfolioPhoto` | `updateMultiImagePostPhoto` |
+| `deletePortfolioPhoto` | `deleteMultiImagePostPhoto` |
+
+### Added — `data_type` family decision flow
+
+`createSingleImagePost` and `createMultiImagePost` descriptions now include an inline table explaining which endpoint to use based on the target post type's `data_type` value (looked up via `listPostTypes` / `getPostType`):
+
+- `data_type=4` → Multi-Image family → `createMultiImagePost` (albums, galleries, Classified, Property, Product)
+- `data_type=9` → Single-Image video → `createSingleImagePost`
+- `data_type=20` → Single-Image article/event/blog/job/coupon → `createSingleImagePost`
+- `data_type=10,13,21,29` → internal admin types — use resource-specific endpoints
+
+Also inlined a worked-example for "make a blog post" and "make a photo album" intents.
+
+### Added — `auto_image_import` default rule on both post families
+
+Both `createSingleImagePost` and `createMultiImagePost` now document `auto_image_import=1` as the recommended default when any external image URL is supplied. Matches the same rule we added for `createUser` in v1.6.4. Verified supported on both post families per support article 12000093239.
+
+### Added — secondary support article references in 6 doc files
+
+`docs/api-users.md`, `api-leads.md`, `api-reviews.md`, `api-posts.md`, `api-portfolio-groups.md`, `api-portfolio-photos.md`, `api-unsubscribe.md`, `api-post-types.md` — each now has a "Related support articles" section citing BD's detailed endpoint guides beyond the single primary source.
+
 ## [4.0.0] - 2026-04-18
 
 ### BREAKING — Page tools renamed to WebPage + field labels clarified from BD admin UI
