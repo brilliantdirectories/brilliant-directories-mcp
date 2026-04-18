@@ -8341,6 +8341,227 @@
           }
         }
       }
+    },
+    "/api/v2/redirect_301/get": {
+      "get": {
+        "operationId": "listRedirects",
+        "summary": "List redirects (301)",
+        "description": "Paginated list of all 301 redirect rules on the site.",
+        "tags": [
+          "Redirects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated redirect list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/redirect_301/get/{redirect_id}": {
+      "get": {
+        "operationId": "getRedirect",
+        "summary": "Get a single redirect",
+        "tags": [
+          "Redirects"
+        ],
+        "parameters": [
+          {
+            "name": "redirect_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Redirect primary key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Redirect record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/redirect_301/create": {
+      "post": {
+        "operationId": "createRedirect",
+        "summary": "Create a redirect",
+        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.",
+        "tags": [
+          "Redirects"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "old_filename",
+                  "new_filename"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Category of the redirect source (profile, post, category, custom, etc.)"
+                  },
+                  "old_filename": {
+                    "type": "string",
+                    "description": "The old URL path being redirected from, relative to the domain root (e.g. old-slug, not the full URL)"
+                  },
+                  "new_filename": {
+                    "type": "string",
+                    "description": "The new destination URL path"
+                  },
+                  "db_id": {
+                    "type": "integer",
+                    "description": "Database record ID of the source content object this redirect was generated from (0 if not tied to a record)"
+                  },
+                  "id": {
+                    "type": "integer",
+                    "description": "Legacy secondary identifier; typically 0 for system-generated redirects"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Redirect created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/redirect_301/update": {
+      "put": {
+        "operationId": "updateRedirect",
+        "summary": "Update a redirect",
+        "tags": [
+          "Redirects"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "redirect_id"
+                ],
+                "properties": {
+                  "redirect_id": {
+                    "type": "integer",
+                    "description": "Redirect primary key (required to identify record)"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Category of the redirect source (profile, post, category, custom, etc.)"
+                  },
+                  "old_filename": {
+                    "type": "string",
+                    "description": "The old URL path being redirected from, relative to the domain root (e.g. old-slug, not the full URL)"
+                  },
+                  "new_filename": {
+                    "type": "string",
+                    "description": "The new destination URL path"
+                  },
+                  "db_id": {
+                    "type": "integer",
+                    "description": "Database record ID of the source content object this redirect was generated from (0 if not tied to a record)"
+                  },
+                  "id": {
+                    "type": "integer",
+                    "description": "Legacy secondary identifier; typically 0 for system-generated redirects"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Redirect updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/redirect_301/delete": {
+      "delete": {
+        "operationId": "deleteRedirect",
+        "summary": "Delete a redirect",
+        "tags": [
+          "Redirects"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "redirect_id"
+                ],
+                "properties": {
+                  "redirect_id": {
+                    "type": "integer",
+                    "description": "Redirect primary key"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Redirect deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -8463,6 +8684,10 @@
     {
       "name": "Pages",
       "description": "Static and SEO-enabled pages (homepage, about, landing pages, profile templates, etc.) — the list_seo resource"
+    },
+    {
+      "name": "Redirects",
+      "description": "301 permanent redirect rules — preserve SEO when URLs change (profiles, posts, categories, custom rules)"
     }
   ]
 }

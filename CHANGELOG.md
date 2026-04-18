@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-18
+
+### Added
+- **Redirects resource (`redirect_301`)** — 5 new endpoints for managing 301 permanent redirect rules. AI agents can now create/update/delete URL redirects to preserve SEO and inbound links after profile renames, post slug changes, category restructuring, or custom rules.
+  - `GET /api/v2/redirect_301/get` → `listRedirects`
+  - `GET /api/v2/redirect_301/get/{redirect_id}` → `getRedirect`
+  - `POST /api/v2/redirect_301/create` → `createRedirect` (required: `type`, `old_filename`, `new_filename`)
+  - `PUT /api/v2/redirect_301/update` → `updateRedirect` (required: `redirect_id`)
+  - `DELETE /api/v2/redirect_301/delete` → `deleteRedirect` (required: `redirect_id`)
+- `docs/api-redirects.md` with full field reference. Source: BD support article 12000108112.
+
+### Changed
+- Total endpoint count: 159 → **164** across **30** resource groups (up from 29).
+- README resource table + headline updated to reflect Redirects support.
+
 ## [1.2.1] - 2026-04-18
 
 ### Fixed

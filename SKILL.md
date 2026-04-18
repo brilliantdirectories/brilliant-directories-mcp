@@ -161,6 +161,7 @@ For any non-trivial task, follow this sequence:
 - **Widget** — reusable HTML component embeddable in pages/emails via `[widget=Name]` shortcode.
 - **Lead** — an inbound contact/inquiry, can be routed/matched to relevant members.
 - **Form** — a configurable form that collects inputs (signup, contact, quote request, etc.).
+- **Redirect / `redirect_301`** — a 301 permanent redirect rule. Maps an old URL path to a new destination. Used after profile renames, post slug changes, category restructuring, or custom URL migrations to preserve SEO and inbound links.
 - **Template token** — placeholder like `%%%website_name%%%` expanded at render time.
 - **Active status** — most BD records have an `active` or `content_active` field where `1` = visible/live and `0` = hidden/draft. Members use a 3-state convention (`1` = not active, `2` = active, `3` = canceled, etc.) — always verify via `/fields` for the specific resource.
 
