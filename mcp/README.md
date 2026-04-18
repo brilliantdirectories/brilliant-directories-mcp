@@ -1,8 +1,8 @@
 # Brilliant Directories API — Universal AI Integration
 
-[![npm version](https://img.shields.io/npm/v/brilliant-directories-mcp.svg)](https://www.npmjs.com/package/brilliant-directories-mcp)
-[![license](https://img.shields.io/npm/l/brilliant-directories-mcp.svg)](LICENSE)
-[![MCP](https://img.shields.io/badge/MCP-compatible-blue.svg)](https://modelcontextprotocol.io)
+[![npm version](https://img.shields.io/npm/v/brilliant-directories-mcp?color=blue&label=npm)](https://www.npmjs.com/package/brilliant-directories-mcp)
+[![license](https://img.shields.io/github/license/brilliantdirectories/brilliant-directories-mcp?color=green)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io)
 
 Give any AI agent full access to your BD site with one API key.
 
