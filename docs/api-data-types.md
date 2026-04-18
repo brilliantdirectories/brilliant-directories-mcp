@@ -3,7 +3,7 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 
 The `data_types` resource defines the content-type templates available on a BD site — things like "Single Photo Post," "Multi-Photo Post," "Video Post," "Document Post." Each row is a type of entry that members can create, depending on their membership plan.
 
-**The `data_type` reference field** on posts and portfolio groups (e.g. `createPost`, `createPortfolioGroup`) takes a `data_id` from this table. There's no fixed enum — every BD site has its own set of data types configured. Always call `listDataTypes` first to discover valid IDs.
+**The `data_type` reference field** on posts (e.g. `createSingleImagePost`, `createMultiImagePost`) takes a `data_id` from this table. There's no fixed enum — every BD site has its own set of data types configured. Always call `listDataTypes` first to discover valid IDs.
 
 ## Endpoints
 

@@ -1,9 +1,15 @@
-# BD API — Pages (list_seo) Endpoints
+# BD API — Web Pages (list_seo) Endpoints
+
+**Tools:** `listWebPages`, `getWebPage`, `createWebPage`, `updateWebPage`, `deleteWebPage`
+**Underlying endpoint:** `/api/v2/list_seo/*`
+**BD table:** `list_seo`
+**Primary key:** `seo_id`
+
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108123_
 
 The `list_seo` resource manages static and SEO-enabled pages across a BD site: the homepage, about/contact pages, custom landing pages, category pages, profile templates, and search result pages. Each record represents one page of the site.
 
-Pages created via `createPage` become publicly accessible **immediately** once `content_active=1` (the default) is set and a valid `seo_type` is supplied. No admin action needed.
+Pages created via `createWebPage` become publicly accessible **immediately** once `content_active=1` (the default) is set and a valid `seo_type` is supplied. No admin action needed.
 
 ## Endpoints
 

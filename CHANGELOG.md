@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.2] - 2026-04-18
+
+### Fixed — final doc cleanup: stale tool names in markdown docs
+
+Deep audit caught 2 markdown files still referencing pre-rename tool names in their prose:
+- `docs/api-data-types.md` — "`createPost`, `createPortfolioGroup`" → updated to the v5.0.0 names "`createSingleImagePost`, `createMultiImagePost`"
+- `docs/api-pages.md` — "`createPage`" → updated to the v4.0.0 name "`createWebPage`", plus added the now-standard header block (tools, endpoint, table, primary key)
+
+All CHANGELOG migration tables (Old → New) correctly retain the legacy names — those are intentional for consumer discoverability. No other stale refs found across the 280KB OpenAPI spec, README, SKILL.md, or any `docs/api-*.md` file.
+
+### Integrity verified
+- All 4 spec copies byte-identical (byte-level hash match)
+- SKILL.md, README.md, CHANGELOG.md byte-identical between GitHub mirror and Bitbucket working copy
+- No duplicate section markers, no empty section markers, no orphaned bullets
+- 165/165 ops have universal footer, Returns, Use-when
+
 ## [5.3.1] - 2026-04-18
 
 ### Fixed — complete widgets documentation (all 6 ops rewritten)
