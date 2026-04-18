@@ -4,7 +4,7 @@
   "description": "MCP integration for Brilliant Directories API — manage members, content, leads, and more from any AI agent",
   "main": "index.js",
   "bin": {
-    "brilliant-directories-mcp": "./index.js"
+    "brilliant-directories-mcp": "index.js"
   },
   "files": [
     "index.js",
