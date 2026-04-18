@@ -203,4 +203,4 @@ curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/data_posts/fields?for
 ## Support
 
 - BD Support: https://support.brilliantdirectories.com
-- API Docs: https://support.brilliantdirectories.com/support/solutions/folders/12000025215
+- API Docs: https://support.brilliantdirectories.com/support/solutions/articles/12000108045
