@@ -4043,59 +4043,6 @@
         "description": "Fetch a single posttype record. Read-only.\n\n**Use when:** checking the configuration of one post type (which `data_type` family, whether active, custom field config). Commonly followed by `getPostTypeCustomFields` to enumerate per-type fields.\n\n**Required:** `data_id`.\n\n**See also:** `listPostTypes` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
-    "/api/v2/data_categories/create": {
-      "post": {
-        "operationId": "createPostType",
-        "summary": "Create a post type",
-        "tags": [
-          "Post Types"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "data_name"
-                ],
-                "properties": {
-                  "data_name": {
-                    "type": "string"
-                  },
-                  "data_active": {
-                    "type": "integer",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "category_tab": {
-                    "type": "string"
-                  },
-                  "profile_tab": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Post type created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Create a new posttype record. Writes live data.\n\n**Use when:** adding a new content type to the site (e.g., \"Podcasts\"). Rare — most sites use BD's built-in post types. Requires admin-level changes to custom fields afterward.\n\n**Required:** `data_name`.\n\n**Enums:** `data_active`: `0`=Inactive, `1`=Active.\n\n**See also:** `updatePostType` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
     "/api/v2/data_categories/custom_fields": {
       "post": {
         "operationId": "getPostTypeCustomFields",
@@ -4179,7 +4126,7 @@
             }
           }
         },
-        "description": "Update an existing posttype record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** toggling a post type active/inactive, renaming, or changing per-page display counts. For custom-field changes you typically work in the BD admin UI.\n\n**Required:** `data_id`.\n\n**See also:** `createPostType` (add new), `deletePostType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing posttype record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** toggling a post type active/inactive, renaming, or changing per-page display counts. For custom-field changes you typically work in the BD admin UI.\n\n**Required:** `data_id`.\n\n**See also:** `deletePostType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/delete": {
@@ -4330,7 +4277,7 @@
             }
           }
         },
-        "description": "Create a new unsubscribe record. Writes live data.\n\n**Use when:** programmatically opting a member out of emails (e.g., from an external unsubscribe form or CRM sync). BD adds entries itself when members click email unsubscribe links.\n\n**Required:** `email`.\n\n**Enums:** `definitive`: `0`, `1`.\n\n**See also:** `updateUnsubscribe` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new unsubscribe record. Writes live data.\n\n**Use when:** programmatically opting a member out of emails (e.g., from an external unsubscribe form or CRM sync). BD adds entries itself when members click email unsubscribe links.\n\n**Required:** `email`.\n\n**Enums:** `definitive`: `0`, `1`.\n\n**See also:** `updateUnsubscribe` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`email` is the only meaningful input.** Pass the email address to opt out. BD adds unsubscribe records to its global unsubscribe list — this applies across all email campaigns for the site. There is no \"unsubscribe from some lists but not others\" granularity via this endpoint; it's all-or-nothing.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/update": {
@@ -4835,7 +4782,7 @@
             }
           }
         },
-        "description": "Create a new emailtemplate record. Writes live data.\n\n**Use when:** adding a new transactional/marketing template. Rare — most BD email templates are built into the admin UI.\n\n**Required:** `email_name`.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**Parameter interactions:**\n- `email_subject` and `email_body` can use template tokens (e.g. `%%%website_name%%%`, recipient field tokens)\n- `email_body` supports HTML\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new emailtemplate record. Writes live data.\n\n**Use when:** adding a new transactional/marketing template. Rare — most BD email templates are built into the admin UI.\n\n**Required:** `email_name`.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**Parameter interactions:**\n- `email_subject` and `email_body` can use template tokens (e.g. `%%%website_name%%%`, recipient field tokens)\n- `email_body` supports HTML\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**On create: `email_name` is the only required field.** Subject and body are optional at create time — you can create a template stub and fill in `email_subject` / `email_body` via `updateEmailTemplate` later. This lets you programmatically scaffold templates before customizing them via the admin UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/update": {
@@ -5028,15 +4975,26 @@
                   },
                   "form_action": {
                     "type": "string",
-                    "default": "post"
+                    "default": "post",
+                    "enum": [
+                      "post",
+                      "get"
+                    ],
+                    "description": "**post** = form submits via POST body (default, most forms). **get** = form submits as URL query string (use for bookmarkable search/filter forms)."
                   },
                   "form_layout": {
                     "type": "string",
-                    "default": "bootstrap"
+                    "default": "bootstrapvertical",
+                    "enum": [
+                      "bootstrapvertical",
+                      "bootstrap"
+                    ],
+                    "description": "**bootstrapvertical** = Labels Above Inputs (default). **bootstrap** = Labels Left of Inputs."
                   },
                   "form_table": {
                     "type": "string",
-                    "description": "Target DB table"
+                    "description": "Database table the form submissions post into. Default: `website_contacts`. Override only when building a form that posts into a different BD table.",
+                    "default": "website_contacts"
                   },
                   "form_class": {
                     "type": "string"
@@ -5068,7 +5026,7 @@
             }
           }
         },
-        "description": "Create a new form record. Writes live data.\n\n**Use when:** adding a new form container. Add fields afterward with `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**Parameter interactions:**\n- After creating the form, add fields via `createFormField` using the returned form identifier\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new form record. Writes live data.\n\n**Use when:** adding a new form container. Add fields afterward with `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**Parameter interactions:**\n- After creating the form, add fields via `createFormField` using the returned form identifier\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Field defaults and valid values (from BD admin form-builder UI, confirmed 2026-04-18):**\n- `form_action` — `post` (default, form submits via POST) or `get` (form submits via URL query string). Most forms use `post`; use `get` only for search/filter forms where the submission should be bookmarkable.\n- `form_layout` — `bootstrapvertical` (default; Labels Above Inputs) or `bootstrap` (Labels Left of Inputs).\n- `form_table` — the database table submissions are posted into. Default: `website_contacts`. Override only when building a form that posts into a different BD table (rare; usually a custom workflow).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/update": {
@@ -5246,11 +5204,11 @@
                   },
                   "field_name": {
                     "type": "string",
-                    "description": "DB column name"
+                    "description": "Internal system key for this field. **Underscores only, no spaces** — e.g. `first_name`, `company_email`. Used as the HTML `name` attribute."
                   },
                   "field_text": {
                     "type": "string",
-                    "description": "Display label"
+                    "description": "Public-facing display label shown to the user. Free-form text — e.g. \"First Name\", \"Your Email Address\"."
                   },
                   "field_type": {
                     "type": "string",
@@ -5287,7 +5245,7 @@
                       "Category",
                       "Years"
                     ],
-                    "description": "Form field type. Authoritative list from BD admin form-field editor, grouped by category:\\n\\nSELECT FIELDS (user picks from options):\\n  Checkbox       = Checkboxes (multi-select)\\n  Select         = Dropdown list (single-select)\\n  Radio          = Multiple choice radios (single-select)\\n  YesNo          = Yes or No toggle\\n\\nTEXT INPUTS:\\n  Custom         = Custom HTML injection\\n  Email          = Email address input (validates format)\\n  HTML           = Section title / HTML heading (display-only)\\n  Button         = Submit form button\\n  Textbox        = Single-line text input\\n  textarea       = Multi-line textarea (note: lowercase)\\n  Url            = Website URL input\\n\\nFANCY FIELDS:\\n  Date                              = Calendar date picker\\n  DateTimeLocal                     = Calendar date+time picker\\n  File                              = File upload\\n  FroalaEditor                      = Froala rich text editor (basic)\\n  FroalaEditorUserUpload            = Froala + user image upload\\n  FroalaEditorUserUploadPreMadeElem = Froala + upload + pre-made elements\\n  FroalaEditorAdmin                 = Froala with admin media manager access\\n  Tip                               = Help alert box (display-only)\\n  Hidden                            = Hidden field (not rendered, stores value)\\n  Country                           = Country dropdown\\n  State                             = State dropdown\\n  Number                            = Integer-only number input\\n  Password                          = Password field (masked)\\n  Phone                             = Phone number input\\n  CountryCodePhone                  = Phone input with country code\\n  Pricebox                          = Price input\\n  ReCaptcha                         = Google reCAPTCHA security\\n  HoneyPot                          = Hidden honeypot (anti-spam)\\n  Category                          = Top-level category list\\n  Years                             = Year picker\\n\\nNote on casing: most values are TitleCase but \"textarea\" is lowercase — copy exact spelling from the enum. For most simple text collection use Textbox; for paragraphs use textarea; for emails use Email so BD validates the format.\\n\\nFor Checkbox / Select / Radio types, you must also supply the options list via the field_options parameter (if exposed)."
+                    "description": "Form field type. See full list grouped by category (Select / Text inputs / Fancy fields) in the tool description."
                   },
                   "field_order": {
                     "type": "integer"
@@ -5331,7 +5289,7 @@
             }
           }
         },
-        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_id` / `form_name` — the parent form (from `createForm` or `listForms`)\n- Field type and options depend on the form type; validate against the form's field schema\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_id` / `form_name` — the parent form (from `createForm` or `listForms`)\n- Field type and options depend on the form type; validate against the form's field schema\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`field_type` valid values (BD admin form-builder UI, full list):**\n\n*Select-type fields:* `Checkbox` (checkboxes), `Select` (dropdown list), `Radio` (radio buttons), `YesNo` (yes/no toggle)\n\n*Text inputs:* `Custom` (custom HTML), `Email`, `HTML` (section title / heading), `Button` (submit button), `Textbox` (single-line text), `textarea` (paragraph), `Url` (website URL)\n\n*Fancy fields:* `Date` (date picker), `DateTimeLocal` (date + time picker), `File` (file upload), `FroalaEditor` (rich text — basic), `FroalaEditorUserUpload` (+ image upload), `FroalaEditorUserUploadPreMadeElem` (+ pre-made elements), `FroalaEditorAdmin` (+ media manager), `Tip` (help alert box), `Hidden`, `Country` (country list), `State` (state list), `Number` (integer), `Password`, `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha` (Google reCAPTCHA), `HoneyPot` (spam protection), `Category` (top-level category list), `Years` (year picker)\n\n**Field naming rules:**\n- `field_name` — internal system key. **Underscores only, no spaces.** E.g. `first_name`, `company_email`. Used as HTML `name` attribute.\n- `field_text` — public-facing display label shown to form users. Free-form, e.g. \"First Name\", \"Your Email Address\".\n\n**Form composition rule:** a form should have **exactly ONE `Button` field** (the submit trigger). Adding multiple Button fields causes UI confusion.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/update": {
@@ -7702,7 +7660,7 @@
             }
           }
         },
-        "description": "Create a new tagrelationship record. Writes live data.\n\n**Use when:** attaching an existing tag to a record (member, post, etc.). The alternative for members is setting the `member_tags` field via `updateUser` with `member_tag_action=1`.\n\n**Required:** `tag_id`, `object_id`, `tag_type_id`, `added_by`.\n\n**Parameter interactions:**\n- Attaches an existing tag to an existing record. Both sides must exist — use `listTags` and the target resource's list to discover IDs\n\n**See also:** `updateTagRelationship` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new tagrelationship record. Writes live data.\n\n**Use when:** attaching an existing tag to a record (member, post, etc.). The alternative for members is setting the `member_tags` field via `updateUser` with `member_tag_action=1`.\n\n**Required:** `tag_id`, `object_id`, `tag_type_id`, `added_by`.\n\n**Parameter interactions:**\n- Attaches an existing tag to an existing record. Both sides must exist — use `listTags` and the target resource's list to discover IDs\n\n**See also:** `updateTagRelationship` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`tag_type_id` + `object_id` — how to target the right record (from BD `tag_types` table):**\n\nThe `tag_type_id` determines WHICH resource/table the `object_id` lives in. Discover mapping via `listTagTypes` — each tag type row has a `table_relation` field naming its target table. Example mapping:\n\n| tag_type_id | type_name | Target table (table_relation) | What object_id references |\n|---|---|---|---|\n| 1 | Users | `users_data` | `user_id` |\n| (other rows) | (other types) | e.g. `data_widgets`, `menus`, `forms` | That table's primary key |\n\n**Process:** call `listTagTypes` first to see the `tag_type_id` → `table_relation` mapping on your site, then pick the appropriate `tag_type_id` and supply the matching record's PK as `object_id`. Widgets, menus, and forms all support tags via this same mechanism.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/update": {
@@ -7912,7 +7870,7 @@
             }
           }
         },
-        "description": "Create a new smartlist record. Writes live data.\n\n**Use when:** programmatically saving a filter configuration for later reuse. `smart_list_type` determines the data source (`members`, `leads`, `reviews`, etc.).\n\n**Required:** `smart_list_name`, `smart_list_type`, `smart_list_created_by`.\n\n**Parameter interactions:**\n- `smart_list_type` — data source (see Enums)\n- `smart_list_created_by` — admin user ID creating the list\n- `smart_list_query_params` — JSON/string of filter criteria specific to the chosen type\n- `schedule` — recurrence if the list should auto-refresh\n\n**See also:** `updateSmartList` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new smartlist record. Writes live data.\n\n**Use when:** programmatically saving a filter configuration for later reuse. `smart_list_type` determines the data source (`members`, `leads`, `reviews`, etc.).\n\n**Required:** `smart_list_name`, `smart_list_type`, `smart_list_created_by`.\n\n**Parameter interactions:**\n- `smart_list_type` — data source (see Enums)\n- `smart_list_created_by` — admin user ID creating the list\n- `smart_list_query_params` — JSON/string of filter criteria specific to the chosen type\n- `schedule` — recurrence if the list should auto-refresh\n\n**See also:** `updateSmartList` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`smart_list_query_params` format depends on `smart_list_type`:**\n\n- For `smart_list_type=newsletter`: store a URL string (admin view uses it directly as an href link — no filter semantics).\n- For ALL other types (`members`, `leads`, `reviews`, `transaction`, `forms_inbox`): pass a **JSON string of filter key-value pairs**, e.g. `{\"subscription_id\":\"1\",\"active\":\"1\"}`. The backend encrypts it internally before storing.\n- If empty / no filters: pass `\"NA\"` (the controller defaults missing values to this).\n\nThe API accepts the value as a plain string; BD handles the internal encryption. Don't pre-encrypt client-side — you'll get double-encrypted garbage. Use the JSON-key-value format for filterable types.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/update": {
@@ -8703,7 +8661,7 @@
       "post": {
         "operationId": "createRedirect",
         "summary": "Create a redirect",
-        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Use when:** preserving SEO after any URL change — slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**Parameter interactions:**\n- `type` — source category: `profile`, `post`, `category`, `custom`, etc.\n- `old_filename` / `new_filename` — URL paths relative to the domain root (not full URLs)\n- `db_id` — database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Use when:** preserving SEO after any URL change — slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**Parameter interactions:**\n- `type` — source category: `profile`, `post`, `category`, `custom`, etc.\n- `old_filename` / `new_filename` — URL paths relative to the domain root (not full URLs)\n- `db_id` — database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`type` default: `custom`** — use `custom` unless you're explicitly mirroring BD's auto-generated redirect types (`profile`, `post`, `category`). Most API-created redirects should use `custom` since they're not tied to an auto-rename event from the BD admin UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Redirects"
         ],
@@ -8721,7 +8679,8 @@
                 "properties": {
                   "type": {
                     "type": "string",
-                    "description": "Category of the redirect source (profile, post, category, custom, etc.)"
+                    "description": "Redirect type category. Default: `custom` for API-created redirects. Other values (`profile`, `post`, `category`) are typically set by BD's auto-redirect logic on admin-triggered renames.",
+                    "default": "custom"
                   },
                   "old_filename": {
                     "type": "string",
