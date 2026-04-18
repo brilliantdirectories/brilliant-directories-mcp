@@ -20,7 +20,7 @@
       "variables": {
         "bd_site_url": {
           "default": "https://your-site.com",
-          "description": "The full URL of your BD-powered website (e.g. https://launch60031.directoryup.com)"
+          "description": "The full URL of your BD-powered website (e.g. https://yoursite.com)"
         }
       }
     }
