@@ -7968,9 +7968,9 @@
     },
     "/api/v2/list_seo/get": {
       "get": {
-        "operationId": "listPages",
+        "operationId": "listWebPages",
         "summary": "List pages (list_seo)",
-        "description": "Paginated list of all pages on the site: homepage, custom landing pages, profile/search templates, etc.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPage` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Paginated enumeration of web pages (`list_seo` records). Read-only.\n\nReturns every static/SEO page on the site — homepage, about, contact, custom landing pages, templates, etc. Filter by `seo_type` to get pages of a specific type (e.g., only `content` pages).\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`.\n\n**Filter/sort:** standard `property` / `property_value` / `property_operator`; `order_column` + `order_type`.\n\n**See also:** `getWebPage` (single by ID), `createWebPage` (new page), `updateWebPage`.\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`. Each record has `seo_id`, `seo_type`, `filename`, `title`, `meta_desc`, `content`, `content_active`, plus all other page fields.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -7998,7 +7998,7 @@
     },
     "/api/v2/list_seo/get/{seo_id}": {
       "get": {
-        "operationId": "getPage",
+        "operationId": "getWebPage",
         "summary": "Get a single page",
         "tags": [
           "Pages"
@@ -8026,14 +8026,14 @@
             }
           }
         },
-        "description": "Fetch a single page record. Read-only.\n\n**Required:** `seo_id`.\n\n**See also:** `listPages` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single web page by `seo_id`. Read-only.\n\n**Required:** `seo_id` (path).\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/create": {
       "post": {
-        "operationId": "createPage",
+        "operationId": "createWebPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.\n\n**Required:** `seo_type`, `filename`.\n\n**Enums:** `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`=No, `1`=Yes; `hide_from_menu`: `0`=No, `1`=Yes; `hide_header_links`: `0`, `1`; `hide_header`: `0`, `1`.\n\n**Parameter interactions:**\n- `seo_type` — required, must be one of the fixed admin-UI values (invalid types cause unrenderable records). `home` = homepage replacement\n- `filename` — URL slug (e.g. `about-us`), not the full URL\n- `content_active=1` (default) + valid `seo_type` = page is publicly accessible IMMEDIATELY — no admin action needed\n- `content` supports `[widget=Name]` shortcodes and template tokens (e.g. `%%%website_name%%%`, `%%Profession%%`)\n\n**See also:** `updatePage` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new web page on the site. Writes live data.\n\nA WebPage is any static-ish page: the homepage (`seo_type=home`), about, contact, custom landing pages, category templates, profile templates, and search result templates. Backed by BD's `list_seo` table.\n\nPages are publicly accessible **immediately** once `content_active=1` (the default) and a valid `seo_type` is supplied — no admin action needed.\n\n**Required:** `seo_type`, `filename`.\n\n**Parameter guidance:**\n- `seo_type` — page type identifier. Must be one of the fixed admin-UI values (invalid types produce unrenderable records). Common values: `home` (homepage replacement), `content` (generic static/landing page — BD admin default for \"new page\"), profile/search template types, etc. For a generic landing/static page, use `content`.\n- `filename` — URL slug (e.g. `about-us`), not the full URL. The public URL is `<site-domain>/<filename>`.\n- `content` — main HTML body. Supports `[widget=Name]` shortcodes AND template tokens.\n- `content_active=1` (default) — page is live; `0` = hidden.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify), `createRedirect` (if replacing an existing URL, create a 301 to preserve SEO).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `seo_id`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8070,27 +8070,27 @@
                   },
                   "title": {
                     "type": "string",
-                    "description": "HTML title tag — supports template tokens like %%%website_name%%%"
+                    "description": "**Page Meta Title** — Supports template tokens: `%%%website_name%%%`, `%industry%`, `%profession%`, etc. ~30-60 chars recommended. HTML title tag — supports template tokens like %%%website_name%%%"
                   },
                   "meta_keywords": {
                     "type": "string",
-                    "description": "Meta keywords — supports template tokens"
+                    "description": "**Meta Keywords** — Supports template tokens (comma-separated). Meta keywords — supports template tokens"
                   },
                   "meta_desc": {
                     "type": "string",
-                    "description": "Meta description — supports template tokens"
+                    "description": "**Meta Description** — Supports template tokens. ~150-160 chars recommended for search snippets. Meta description — supports template tokens"
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "Additional SEO body text rendered on page"
+                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior)."
                   },
                   "h1": {
                     "type": "string",
-                    "description": "H1 heading — supports template tokens"
+                    "description": "**H1 Heading** — Supports template tokens. Rendered as the page's main heading. H1 heading — supports template tokens"
                   },
                   "h2": {
                     "type": "string",
-                    "description": "H2 heading — supports template tokens"
+                    "description": "**H2 Heading** — Supports template tokens. H2 heading — supports template tokens"
                   },
                   "breadcrumb": {
                     "type": "string",
@@ -8130,7 +8130,7 @@
                       0,
                       1
                     ],
-                    "description": "Full-screen page width toggle (integer boolean).\\n  1 = Full Screen Page Width (page content spans the full viewport width, no side margins)\\n  0 = Standard width (default — page content is constrained to the site theme's content column)\\nIn BD admin this is a single checkbox. Pass 1 to enable, 0 to disable. If unsure, omit the field and the default will apply."
+                    "description": "**Full Screen Page Width** — 1 = expand content edge-to-edge; 0 = default (contained) width."
                   },
                   "content_sidebar": {
                     "type": "string",
@@ -8152,7 +8152,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = show contact form"
+                    "description": "**Apply NoIndex, NoFollow** — 1 = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. NOT a contact-form toggle (despite the field name — BD repurposed this column)."
                   },
                   "form_name": {
                     "type": "string",
@@ -8172,7 +8172,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide header navigation links"
+                    "description": "**Hide Main Menu** — 1 = hides the main navigation menu on this page."
                   },
                   "hide_header": {
                     "type": "integer",
@@ -8180,7 +8180,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide site header"
+                    "description": "**Hide Header** — 1 = hides the full site header on this page."
                   },
                   "hide_footer": {
                     "type": "integer",
@@ -8188,7 +8188,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide site footer"
+                    "description": "**Hide Footer** — 1 = hides the site footer on this page."
                   },
                   "hide_top_right": {
                     "type": "integer",
@@ -8196,19 +8196,19 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide top-right header area"
+                    "description": "**Hide Top Header Menu** — 1 = hides the top-right nav cluster (account/login links)."
                   },
                   "facebook_title": {
                     "type": "string",
-                    "description": "Open Graph title for social sharing"
+                    "description": "**Social Media Title (Open Graph)** — Title shown when the page is shared on Facebook/LinkedIn/etc. Open Graph title for social sharing"
                   },
                   "facebook_desc": {
                     "type": "string",
-                    "description": "Open Graph description"
+                    "description": "**Social Media Description (Open Graph)** — Description shown on social shares. Open Graph description"
                   },
                   "facebook_image": {
                     "type": "string",
-                    "description": "Open Graph image URL"
+                    "description": "**Social Media Shared Image** — URL/filename of the OG image. BD recommends at least 200×200px. Open Graph image URL"
                   },
                   "org_template": {
                     "type": "integer",
@@ -8292,7 +8292,7 @@
     },
     "/api/v2/list_seo/update": {
       "put": {
-        "operationId": "updatePage",
+        "operationId": "updateWebPage",
         "summary": "Update a page",
         "tags": [
           "Pages"
@@ -8333,27 +8333,27 @@
                   },
                   "title": {
                     "type": "string",
-                    "description": "HTML title tag — supports template tokens like %%%website_name%%%"
+                    "description": "**Page Meta Title** — Supports template tokens: `%%%website_name%%%`, `%industry%`, `%profession%`, etc. ~30-60 chars recommended. HTML title tag — supports template tokens like %%%website_name%%%"
                   },
                   "meta_keywords": {
                     "type": "string",
-                    "description": "Meta keywords — supports template tokens"
+                    "description": "**Meta Keywords** — Supports template tokens (comma-separated). Meta keywords — supports template tokens"
                   },
                   "meta_desc": {
                     "type": "string",
-                    "description": "Meta description — supports template tokens"
+                    "description": "**Meta Description** — Supports template tokens. ~150-160 chars recommended for search snippets. Meta description — supports template tokens"
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "Additional SEO body text rendered on page"
+                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior)."
                   },
                   "h1": {
                     "type": "string",
-                    "description": "H1 heading — supports template tokens"
+                    "description": "**H1 Heading** — Supports template tokens. Rendered as the page's main heading. H1 heading — supports template tokens"
                   },
                   "h2": {
                     "type": "string",
-                    "description": "H2 heading — supports template tokens"
+                    "description": "**H2 Heading** — Supports template tokens. H2 heading — supports template tokens"
                   },
                   "breadcrumb": {
                     "type": "string",
@@ -8393,7 +8393,7 @@
                       0,
                       1
                     ],
-                    "description": "Full-screen page width toggle (integer boolean).\\n  1 = Full Screen Page Width (page content spans the full viewport width, no side margins)\\n  0 = Standard width (default — page content is constrained to the site theme's content column)\\nIn BD admin this is a single checkbox. Pass 1 to enable, 0 to disable. If unsure, omit the field and the default will apply."
+                    "description": "**Full Screen Page Width** — 1 = expand content edge-to-edge; 0 = default (contained) width."
                   },
                   "content_sidebar": {
                     "type": "string",
@@ -8415,7 +8415,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = show contact form"
+                    "description": "**Apply NoIndex, NoFollow** — 1 = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. NOT a contact-form toggle (despite the field name — BD repurposed this column)."
                   },
                   "form_name": {
                     "type": "string",
@@ -8435,7 +8435,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide header navigation links"
+                    "description": "**Hide Main Menu** — 1 = hides the main navigation menu on this page."
                   },
                   "hide_header": {
                     "type": "integer",
@@ -8443,7 +8443,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide site header"
+                    "description": "**Hide Header** — 1 = hides the full site header on this page."
                   },
                   "hide_footer": {
                     "type": "integer",
@@ -8451,7 +8451,7 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide site footer"
+                    "description": "**Hide Footer** — 1 = hides the site footer on this page."
                   },
                   "hide_top_right": {
                     "type": "integer",
@@ -8459,19 +8459,19 @@
                       0,
                       1
                     ],
-                    "description": "1 = hide top-right header area"
+                    "description": "**Hide Top Header Menu** — 1 = hides the top-right nav cluster (account/login links)."
                   },
                   "facebook_title": {
                     "type": "string",
-                    "description": "Open Graph title for social sharing"
+                    "description": "**Social Media Title (Open Graph)** — Title shown when the page is shared on Facebook/LinkedIn/etc. Open Graph title for social sharing"
                   },
                   "facebook_desc": {
                     "type": "string",
-                    "description": "Open Graph description"
+                    "description": "**Social Media Description (Open Graph)** — Description shown on social shares. Open Graph description"
                   },
                   "facebook_image": {
                     "type": "string",
-                    "description": "Open Graph image URL"
+                    "description": "**Social Media Shared Image** — URL/filename of the OG image. BD recommends at least 200×200px. Open Graph image URL"
                   },
                   "org_template": {
                     "type": "integer",
@@ -8551,12 +8551,12 @@
             }
           }
         },
-        "description": "Update an existing page record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `seo_id`.\n\n**Enums:** `seo_type`: `content`, `data_category`, `profile_search_results`, `custom_widget_page`, `password_retrieval_page`, `unsubscribed`; `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`=No, `1`=Yes; `hide_from_menu`: `0`=No, `1`=Yes; `hide_header_links`: `0`, `1`; `hide_header`: `0`, `1`.\n\n**Parameter interactions:**\n- `content` supports `[widget=Name]` shortcodes and template tokens like `%%%website_name%%%`\n- `content_active=1` makes the page live; `content_active=0` hides it from public without deleting\n\n**See also:** `createPage` (add new), `deletePage` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing web page by `seo_id`. Fields omitted are untouched. Writes live data.\n\nChanges go live immediately. No cache refresh needed for most edits. If changing `filename` (URL slug), consider creating a 301 via `createRedirect` so inbound links to the old slug keep working.\n\n**Required:** `seo_id`.\n\n**Common edits:**\n- Copy/content: `content`, `h1`, `h2`, `seo_text`, `content_footer`\n- SEO: `title`, `meta_desc`, `meta_keywords`\n- Social: `facebook_title`, `facebook_desc`, `facebook_image`\n- Layout: `content_layout`, `hide_header`, `hide_footer`, etc. (see mapping below)\n- Visibility: `content_active` (1 = live, 0 = hidden)\n\n**See also:** `createWebPage` (add new), `deleteWebPage` (remove), `createRedirect` (after slug changes).\n\n**Writes live data:** immediately visible.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/delete": {
       "delete": {
-        "operationId": "deletePage",
+        "operationId": "deleteWebPage",
         "summary": "Delete a page",
         "tags": [
           "Pages"
@@ -8592,7 +8592,7 @@
             }
           }
         },
-        "description": "Permanently delete a page record by ID. Destructive — cannot be undone via API.\n\n**Required:** `seo_id`.\n\n**See also:** `updatePage` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a web page by `seo_id`. Destructive — cannot be undone via API.\n\n**Required:** `seo_id`.\n\n**Destructive:** confirm with the user. If inbound links or menus reference the deleted page's URL, consider creating a `createRedirect` BEFORE deleting so those links don't 404. Menus with items pointing at this page also need cleanup.\n\n**See also:** `updateWebPage` with `content_active=0` (hide without deleting — safer for reversible actions).\n\n**Returns:** `{ status: \"success\", message: \"list_seo record was deleted\" }`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/redirect_301/get": {
@@ -8823,7 +8823,7 @@
       "post": {
         "operationId": "refreshSiteCache",
         "summary": "Refresh the site cache",
-        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.\n\n**Parameter interactions:**\n- Clears BD's internal caches. Does NOT register newly-created page URLs with the public router (new pages created via `createPage` become live immediately via `content_active=1` + valid `seo_type`, not via this endpoint)\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createWebPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.\n\n**Parameter interactions:**\n- Clears BD's internal caches. Does NOT register newly-created page URLs with the public router (new pages created via `createWebPage` become live immediately via `content_active=1` + valid `seo_type`, not via this endpoint)\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Website Settings"
         ],

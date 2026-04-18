@@ -34,7 +34,7 @@ This skill works with any AI agent. Two integration paths — use whichever the 
 
 ### Path A — MCP (preferred for Claude Desktop / Cursor / Windsurf / Cline / Claude Code)
 
-The user installs the MCP server once; it exposes every BD operation as a tool. To check if it's active, look at your available tools for names like `verifyApiKey`, `listUsers`, `createUser`, `listPages`, etc.
+The user installs the MCP server once; it exposes every BD operation as a tool. To check if it's active, look at your available tools for names like `verifyApiKey`, `listUsers`, `createUser`, `listWebPages`, etc.
 
 **If MCP tools are NOT available**, tell the user to run:
 ```bash
@@ -191,7 +191,7 @@ Key rules:
 - **Sub-Sub Category** — LEVEL 3 (optional nesting). Just a SubCategory with `master_id` pointing at a parent SubCategory's `service_id`. Created via `createSubCategory` with non-zero `master_id`.
 - **Member ↔ Sub Category link / rel_services** — join-table row linking a member to a SubCategory with per-link metadata (`avg_price`, `specialty`, `num_completed`). Use `createMemberSubCategoryLink` when metadata matters; otherwise the simpler `users_data.services` CSV field works.
 - **Post / post type** — content items (events, classifieds, articles, deals) organized by type.
-- **Page / SEO page / `list_seo`** — any static-ish page on the site: homepage (`seo_type=home`), about, contact, custom landing pages, profile/search result templates.
+- **Web Page / SEO page / `list_seo`** — any static-ish page on the site: homepage (`seo_type=home`), about, contact, custom landing pages (`seo_type=content`), profile/search result templates. Managed via `listWebPages`, `getWebPage`, `createWebPage`, `updateWebPage`, `deleteWebPage`. Note: several page fields have admin-UI labels that differ from the API field name (e.g., `show_form` is actually the "Apply NoIndex, NoFollow" toggle, NOT a contact-form toggle) — see `createWebPage`/`updateWebPage` tool descriptions for the full field→UI-label mapping.
 - **Widget** — reusable HTML component embeddable in pages/emails via `[widget=Name]` shortcode.
 - **Lead** — an inbound contact/inquiry, can be routed/matched to relevant members.
 - **Form** — a configurable form that collects inputs (signup, contact, quote request, etc.).

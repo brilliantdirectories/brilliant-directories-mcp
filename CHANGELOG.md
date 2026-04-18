@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-04-18
+
+### BREAKING — Page tools renamed to WebPage + field labels clarified from BD admin UI
+
+**Renamed tools (5):**
+
+| Old | New |
+|---|---|
+| `listPages` | `listWebPages` |
+| `getPage` | `getWebPage` |
+| `createPage` | `createWebPage` |
+| `updatePage` | `updateWebPage` |
+| `deletePage` | `deleteWebPage` |
+
+Rationale: "Page" was ambiguous (could mean pagination, post pages, etc.) and not self-describing. "WebPage" explicitly names the resource.
+
+### Fixed — `show_form` field description was misleading
+
+The `show_form` field on `createWebPage` / `updateWebPage` was documented as "1 = show contact form." **That's wrong.** Confirmed against the actual BD admin UI: `show_form=1` toggles the "Apply NoIndex, NoFollow" SEO directive on the page — it's a search-engine visibility control, NOT a contact-form toggle. BD repurposed this database column years ago but kept the legacy field name. Agents following the old description would get unexpected behavior.
+
+### Added — BD Admin UI field-label mapping
+
+Documented the UI labels for every obscurely-named field on Web Pages, sourced directly from the BD admin page-settings HTML:
+
+| Field | Admin UI label |
+|---|---|
+| `content_layout` | Full Screen Page Width |
+| `section` | Hide Banner Ad Modules |
+| `hide_header` | Hide Header |
+| `hide_footer` | Hide Footer |
+| `hide_top_right` | Hide Top Header Menu |
+| `hide_header_links` | Hide Main Menu |
+| `content_images` | Click-Enlarge Images |
+| `show_form` | Apply NoIndex, NoFollow |
+| `disable_css_stylesheets` | Disable Default CSS Stylesheets |
+| `disable_preview_screenshot` | Disable Screenshot Preview |
+| `seo_text` | Wildcard URL Rewrite |
+| `title` | Page Meta Title |
+| `meta_desc` | Meta Description |
+| `meta_keywords` | Meta Keywords |
+| `h1` / `h2` | H1 / H2 Heading |
+| `facebook_title` | Social Media Title (Open Graph) |
+| `facebook_desc` | Social Media Description (Open Graph) |
+| `facebook_image` | Social Media Shared Image |
+
+Now surfaced both in the `createWebPage`/`updateWebPage` tool descriptions (full mapping table) AND in the schema-level per-parameter descriptions so MCP clients that only show per-param hints still see the UI label.
+
 ## [3.0.0] - 2026-04-18
 
 ### BREAKING — member-taxonomy tools renamed + rerouted to working BD endpoints
