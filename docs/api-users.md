@@ -79,11 +79,31 @@ After the API returns success, BD asynchronously downloads the image and replace
 - Category/service NAME references in any field should be wrapped in single quotes (e.g. `'25-30'`, `'Cosmetic Dentistry'`) to avoid parser confusion on dashes/spaces.
 
 ### Prerequisites
-- `subscription_id` must reference an existing membership plan (from `listMembershipPlans` or `createMembershipPlan`).
-- `profession_id` must reference an existing top-level category (from `listTopCategories` or `createTopCategory`).
+- `subscription_id` MUST reference an existing membership plan (from `listMembershipPlans` or `createMembershipPlan`).
+- Categories do NOT need to exist beforehand on `createUser` — see "Category handling" below.
 
-### Inline category creation (updateUser only)
-- `create_new_categories=1` on `updateUser` allows inline-creating new sub and sub-sub categories under the member's current top-level category, instead of requiring them to exist first.
+### Category handling — IDs and NAMES both work (verified live 2026-04-18)
+
+BD accepts BOTH numeric IDs and string names for category/service fields. The API checks `is_numeric()` on each value: numeric → lookup by ID, non-numeric → lookup by name in `list_professions` / `list_services`.
+
+**Top-level category (profession):**
+- `profession_id` — numeric, must reference an existing row in `list_professions`
+- `profession_name` — alternative: pass the name as a string. BD looks it up in `list_professions.name`.
+
+**Sub-categories (services):**
+- `services` — CSV accepting IDs and/or names mixed (e.g., `services="17,Sushi,42"`). Name lookups hit `list_services.name` scoped under the member's current top-level category.
+
+**Auto-create behavior — DIFFERS between create and update:**
+
+| Scenario | Auto-create unknown names? |
+|---|---|
+| `createUser` with unknown `profession_name` or `services` name | ✅ **ALWAYS YES.** Hardcoded in BD's `createActions()` — you cannot disable this on create. Unknown names become new categories/sub-categories automatically. |
+| `updateUser` with unknown name, WITHOUT `create_new_categories=1` | ❌ Silently skipped — the unknown name is dropped from the update, no error raised. |
+| `updateUser` with unknown name + `create_new_categories=1` | ✅ YES. Creates the missing category/service under the member's current top-level category. |
+
+**Limitations:**
+- Auto-created sub-categories go under the member's current top-level category with `master_id=0` (direct child of top). For deeper sub-sub-category nesting, use `createSubCategory` directly with `master_id=<parent service_id>`.
+- Quote names with special characters — e.g. `'25-30'`, `'Cosmetic Dentistry'` — to avoid parser issues on dashes/spaces.
 
 ---
 
