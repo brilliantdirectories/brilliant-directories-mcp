@@ -11,7 +11,9 @@
     },
     "license": {
       "name": "Proprietary"
-    }
+    },
+    "x-api-version-note": "The info.version field represents BD's REST API version (currently v2 — /api/v2/* endpoints), NOT this MCP wrapper's release version.",
+    "x-mcp-wrapper-version": "See https://www.npmjs.com/package/brilliant-directories-mcp for the current MCP wrapper version (npm package)."
   },
   "servers": [
     {

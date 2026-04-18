@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.3] - 2026-04-18
+
+### Hardened — security/privacy posture + OpenAPI info clarity
+
+**`.gitignore` hardened** — expanded beyond `node_modules/` + `.env` to also cover:
+- `.env.*` (any env variants)
+- `.claude/`, `.cursor/`, `.vscode/`, `.idea/` (editor/tool local state — these CAN contain cached tool-call permission entries that embed API keys)
+- `*.log`, `.DS_Store`, `Thumbs.db` (misc junk)
+
+Prevents the class of leak where a Claude Code / Cursor tool-permission cache file accidentally lands in a commit. The tool cache in TESTBASH is outside this public repo and wasn't leaked — this is preventive hardening.
+
+**OpenAPI `info.version` clarified** — the `2.0.0` in the spec refers to BD's REST API version (the `/api/v2/*` endpoints), NOT the MCP wrapper's release version. Added two extension fields to avoid confusion:
+- `info.x-api-version-note` — explicit statement that info.version = BD REST API version
+- `info.x-mcp-wrapper-version` — points to npmjs.com for the wrapper's current version
+
+### Verified — no secrets/PII in public repo
+- Zero API keys in any tracked file
+- Zero personal names ("Jason Haloossim")
+- Zero typo'd email (`brilliantdirectoies.com`)
+- Zero AWS/Stripe/Slack/GitHub tokens
+- All test data run tonight cleaned up on the BD test site
+
+### Final state (49 tracked files)
+- 7 JSON files all parse cleanly
+- 4 OpenAPI spec copies byte-identical (GitHub + Bitbucket × root + mcp/)
+- 8 critical files (package.json, SKILL, README, CHANGELOG, server.json, plugin.json, Dockerfile, .mcp.json) byte-identical across mirrors
+- 164 ops in spec, all with footer/Returns/Use-when, zero duplicates or stale refs
+- mcp/package.json, server.json, plugin.json all at 6.0.3
+
 ## [6.0.2] - 2026-04-18
 
 ### Fixed — version drift across metadata files

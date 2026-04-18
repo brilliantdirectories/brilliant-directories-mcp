@@ -1,2 +1,16 @@
 node_modules/
+
+# Credentials / local env
 .env
+.env.*
+
+# Editor / tool local state (may contain tool-call caches with secrets)
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
