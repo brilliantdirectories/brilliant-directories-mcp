@@ -49,6 +49,8 @@ function parseArgs() {
     setup: false,
     help: false,
     debug: process.env.BD_DEBUG === "1" || process.env.BD_DEBUG === "true",
+    client: "",   // "cursor" | "claude-desktop" | "windsurf" | "claude-code" | "print" | ""
+    yes: false,   // auto-confirm any "continue anyway?" prompts (for non-interactive use)
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -60,6 +62,10 @@ function parseArgs() {
       config.verify = true;
     } else if (args[i] === "--setup") {
       config.setup = true;
+    } else if (args[i] === "--client" && args[i + 1]) {
+      config.client = args[++i].toLowerCase();
+    } else if (args[i] === "--yes" || args[i] === "-y") {
+      config.yes = true;
     } else if (args[i] === "--debug") {
       config.debug = true;
     } else if (args[i] === "--help" || args[i] === "-h") {
@@ -104,15 +110,26 @@ FIRST TIME?  Just run this and answer 2 questions:
   npx brilliant-directories-mcp --setup
 
 Usage:
-  brilliant-directories-mcp --setup                        Interactive setup wizard (recommended)
-  brilliant-directories-mcp --api-key KEY --url URL        Run the MCP server
-  brilliant-directories-mcp --verify --api-key KEY --url URL   Test credentials and exit
-  BD_API_KEY=KEY BD_API_URL=URL brilliant-directories-mcp  Run via env vars
+  brilliant-directories-mcp --setup                                    Interactive wizard (recommended for humans)
+  brilliant-directories-mcp --setup --url URL --api-key KEY --client cursor [--yes]
+                                                                       Non-interactive setup (for AI agents / scripts)
+  brilliant-directories-mcp --api-key KEY --url URL                    Run the MCP server
+  brilliant-directories-mcp --verify --api-key KEY --url URL           Test credentials and exit
+  BD_API_KEY=KEY BD_API_URL=URL brilliant-directories-mcp              Run via env vars
 
 Options:
-  --setup          Interactive wizard: prompts for URL + key, writes client config
+  --setup          Run setup. If --url, --api-key, and --client are all provided, runs non-interactively.
+                   Otherwise prompts interactively for any missing value.
   --api-key KEY    Your BD API key (or set BD_API_KEY env var)
   --url URL        Your BD site URL, e.g. https://mysite.com (or BD_API_URL env var)
+  --client NAME    Which MCP client to configure. One of:
+                     cursor          writes to ~/.cursor/mcp.json
+                     claude-desktop  writes to the Claude Desktop config
+                     windsurf        writes to ~/.codeium/windsurf/mcp_config.json
+                     claude-code     prints the "claude mcp add" command to run
+                     print           prints the JSON config only, does not write any file
+                   If omitted in interactive setup, the wizard asks.
+  --yes, -y        Auto-confirm any "continue anyway?" prompts (non-interactive safety)
   --verify         Test credentials against /api/v2/token/verify and exit
   --debug          Log every HTTP request + response to stderr (or set BD_DEBUG=1)
   --help, -h       Show this help
@@ -435,15 +452,29 @@ function writeClientConfig(configPath, serverName, entry) {
   return true;
 }
 
-async function runSetup() {
+async function runSetup(cliConfig) {
+  cliConfig = cliConfig || {};
+  const flagUrl = cliConfig.apiUrl || "";
+  const flagKey = cliConfig.apiKey || "";
+  const flagClient = (cliConfig.client || "").toLowerCase();
+  const autoYes = !!cliConfig.yes;
+
+  // Non-interactive when all three required values are provided via flags or env
+  const nonInteractive = !!(flagUrl && flagKey && flagClient);
+
   console.log("");
   console.log("Brilliant Directories MCP — Setup Wizard");
   console.log("=========================================");
+  if (nonInteractive) {
+    console.log("(non-interactive mode — all values supplied via flags)");
+  }
   console.log("");
 
   // URL
-  let apiUrl = process.env.BD_API_URL || "";
-  if (!apiUrl) {
+  let apiUrl = flagUrl;
+  if (apiUrl) {
+    apiUrl = normalizeUrl(apiUrl);
+  } else {
     while (!apiUrl) {
       const raw = await prompt("Your BD site URL (e.g. https://mysite.com): ");
       if (!raw) {
@@ -455,7 +486,7 @@ async function runSetup() {
   }
 
   // API Key
-  let apiKey = process.env.BD_API_KEY || "";
+  let apiKey = flagKey;
   if (!apiKey) {
     console.log("");
     console.log("Get an API key from: BD Admin > Developer Hub > Generate API Key");
@@ -481,42 +512,68 @@ async function runSetup() {
       console.log(`  HTTP ${result.status}: ${JSON.stringify(result.body)}`);
       console.log("");
       console.log("Setup will still write the config, but your AI agent won't be able to call the API until this is fixed.");
+      if (autoYes || nonInteractive) {
+        console.log("Continuing because --yes or --url/--api-key/--client were all provided.");
+      } else {
+        const proceed = await prompt("Continue anyway? (y/N): ");
+        if (!/^y/i.test(proceed)) {
+          console.log("Setup cancelled.");
+          process.exit(1);
+        }
+      }
+    }
+  } catch (err) {
+    console.log("FAILED");
+    console.log(`  ${err.message}`);
+    if (autoYes || nonInteractive) {
+      console.log("Continuing because --yes or --url/--api-key/--client were all provided.");
+    } else {
       const proceed = await prompt("Continue anyway? (y/N): ");
       if (!/^y/i.test(proceed)) {
         console.log("Setup cancelled.");
         process.exit(1);
       }
     }
-  } catch (err) {
-    console.log("FAILED");
-    console.log(`  ${err.message}`);
-    const proceed = await prompt("Continue anyway? (y/N): ");
-    if (!/^y/i.test(proceed)) {
-      console.log("Setup cancelled.");
-      process.exit(1);
-    }
   }
 
-  // Client
-  console.log("");
-  console.log("Where are you using this?");
-  console.log("  1) Cursor");
-  console.log("  2) Claude Desktop");
-  console.log("  3) Windsurf");
-  console.log("  4) Claude Code (CLI)");
-  console.log("  5) Other / just show me the config");
-  const choice = await prompt("Choice [1-5]: ");
-
+  // Client selection
   const entry = buildMcpServerEntry(apiKey, apiUrl);
   const serverName = "brilliant-directories";
 
+  const CLIENT_MAP = {
+    cursor:          { key: "cursor",         label: "Cursor" },
+    "claude-desktop":{ key: "claude-desktop", label: "Claude Desktop" },
+    windsurf:        { key: "windsurf",       label: "Windsurf" },
+    "claude-code":   { key: "claude-code",    label: "Claude Code" },
+    print:           { key: "other",          label: "Print-only" },
+    other:           { key: "other",          label: "Other" },
+  };
+
   let clientKey, clientLabel;
-  switch ((choice || "").trim()) {
-    case "1": clientKey = "cursor"; clientLabel = "Cursor"; break;
-    case "2": clientKey = "claude-desktop"; clientLabel = "Claude Desktop"; break;
-    case "3": clientKey = "windsurf"; clientLabel = "Windsurf"; break;
-    case "4": clientKey = "claude-code"; clientLabel = "Claude Code"; break;
-    default: clientKey = "other"; clientLabel = "Other";
+  if (flagClient) {
+    const picked = CLIENT_MAP[flagClient];
+    if (!picked) {
+      console.error(`Error: unknown --client value "${flagClient}". Expected one of: cursor, claude-desktop, windsurf, claude-code, print.`);
+      process.exit(1);
+    }
+    clientKey = picked.key;
+    clientLabel = picked.label;
+  } else {
+    console.log("");
+    console.log("Where are you using this?");
+    console.log("  1) Cursor");
+    console.log("  2) Claude Desktop");
+    console.log("  3) Windsurf");
+    console.log("  4) Claude Code (CLI)");
+    console.log("  5) Other / just show me the config");
+    const choice = await prompt("Choice [1-5]: ");
+    switch ((choice || "").trim()) {
+      case "1": clientKey = "cursor"; clientLabel = "Cursor"; break;
+      case "2": clientKey = "claude-desktop"; clientLabel = "Claude Desktop"; break;
+      case "3": clientKey = "windsurf"; clientLabel = "Windsurf"; break;
+      case "4": clientKey = "claude-code"; clientLabel = "Claude Code"; break;
+      default: clientKey = "other"; clientLabel = "Other";
+    }
   }
 
   console.log("");
@@ -573,7 +630,7 @@ async function main() {
   const config = parseArgs();
 
   if (config.setup) {
-    await runSetup();
+    await runSetup(config);
     return;
   }
 

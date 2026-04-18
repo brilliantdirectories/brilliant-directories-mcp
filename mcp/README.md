@@ -23,6 +23,16 @@ Restart your app, then ask your AI:
 
 Get your API key from **BD Admin > Developer Hub > Generate API Key**.
 
+### For AI agents / scripts (non-interactive)
+
+If an AI agent is guiding you, it can have you paste a single command with everything prefilled:
+
+```bash
+npx brilliant-directories-mcp --setup --url https://your-site.com --api-key YOUR_KEY --client cursor
+```
+
+This runs the full setup end-to-end with no prompts. Replace `cursor` with `claude-desktop`, `windsurf`, `claude-code`, or `print` (prints the JSON config instead of writing a file).
+
 ---
 
 ## Setup by Platform
