@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-04-18
+
+### Added — end-to-end taxonomy workflow inlined on `createCategory`
+Moved the 4-step "create Category + Service + assign member" workflow INTO the `createCategory` tool description itself, not just SKILL.md. Agents that look at a single tool description without loading the skill now get the complete recipe where they're about to act. Addresses the edge case where an agent might skip SKILL.md entirely during tool discovery.
+
 ## [1.6.5] - 2026-04-18
 
 ### Added — BD taxonomy model documentation (Category Group → Category/Profession → Service)
