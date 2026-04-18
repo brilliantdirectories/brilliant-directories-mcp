@@ -130,6 +130,29 @@ For any non-trivial task, follow this sequence:
 6. Report: "Created 287/300. 13 failed: 9 because email already exists, 4 invalid subscription_id."
 ```
 
+### Worked example: "Set up a Restaurants category with Sushi sub-category and assign a member"
+
+BD's taxonomy is 3-tier (Category Group → Category / profession → Service). Each tier is a different API resource. Standard flow:
+
+```
+1. listCategoryGroups → confirm a group exists. Most sites have group_id=1 (default "Member").
+   If none, call createCategoryGroup first.
+2. createCategory (NOT createProfession — doesn't exist)
+   with name="Restaurants", filename="restaurants", group_id=1
+   → returns category_id (this populates users' profession_id)
+3. createService
+   with name="Sushi", profession_id=<from step 2>, filename="sushi"
+   → returns service_id
+4. Assign a member — two options depending on whether you need per-link metadata:
+   a) Simple: updateUser with profession_id=<Restaurants>, services="<Sushi service_id>"
+   b) With pricing/specialty tracking: createUserService with user_id, service_id, avg_price, specialty=1
+```
+
+Key pitfalls to avoid:
+- There is NO `createProfession` tool — `createCategory` IS the profession creator
+- `createCategory` REQUIRES `group_id` — always `listCategoryGroups` first
+- `listCategories` returns TOP-LEVEL only; `listServices` returns SUB-CATEGORIES (filter by `profession_id`)
+
 ## Things to always do
 
 1. **Treat the OpenAPI spec as the source of truth.** If this skill and the spec disagree, trust the spec.
@@ -158,8 +181,10 @@ For any non-trivial task, follow this sequence:
 
 - **Member / user** — an account on a BD site. Core resource.
 - **Subscription / plan / membership plan** — a tier a member belongs to. Referenced as `subscription_id`.
-- **Category / profession** — the top-level taxonomy for member listings (e.g., "Dentists").
-- **Service** — sub-category under a profession (e.g., "Cosmetic Dentistry").
+- **Category Group** — a grouping of categories. Most sites have one default group (`group_id=1`, usually "Member"). Managed via `listCategoryGroups` / `createCategoryGroup`.
+- **Category / Profession** — the TOP-LEVEL taxonomy for member listings (e.g., "Restaurants", "Dentists"). Stored internally as "professions" in `list_professions`. Use `createCategory` to add (there is NO `createProfession` tool). Populates the `profession_id` field on user records.
+- **Service / Sub-category** — sub-classification under a Category (e.g., "Sushi" under "Restaurants"). Stored in `list_services`. Use `createService` with `profession_id` = parent Category's ID.
+- **UserService / rel_services** — join table linking a member to a Service with per-link metadata (price, specialty flag, completion count). Use `createUserService` when you need that metadata; otherwise set the user's `services` CSV field via `updateUser`.
 - **Post / post type** — content items (events, classifieds, articles, deals) organized by type.
 - **Page / SEO page / `list_seo`** — any static-ish page on the site: homepage (`seo_type=home`), about, contact, custom landing pages, profile/search result templates.
 - **Widget** — reusable HTML component embeddable in pages/emails via `[widget=Name]` shortcode.

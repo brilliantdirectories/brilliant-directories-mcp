@@ -1,7 +1,16 @@
 # BD API — User Services (Rel Services) Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108071_
 
-Links between users/members and services. Tracks which services a member offers, with pricing and specialty flags.
+Links between users (members) and Services (sub-categories). Tracks which services a member offers, with per-service pricing and specialty flags. Stored in `rel_services`.
+
+## When to use this vs. the user's `services` field
+
+BD offers two ways to associate a member with services — use the right one for the use case:
+
+- **`user.services` field (CSV of service IDs) on `createUser`/`updateUser`** — simplest; use when you just need "this member offers these services" with no per-service metadata. Good for bulk imports, quick taxonomy assignment.
+- **`createUserService` (this resource)** — adds a full join-table row with per-service `avg_price`, `specialty` flag, `num_completed` counter, and `date`. Use when the site tracks price-per-service, completion counts, or specialty designations.
+
+Both can coexist. The canonical taxonomy model lives in `docs/api-categories.md` — read that first if you're building categories/services from scratch.
 
 ## Endpoints
 
