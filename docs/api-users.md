@@ -34,6 +34,30 @@ profile_url = site_domain + "/" + user.filename
 
 **DO NOT** guess prefixes like `/business/`, `/profile/`, `/member/`, `/listing/`. BD's server-side router uses `filename` verbatim — whatever path is stored there is what resolves. The path format varies per site based on admin settings (some sites use pretty URLs with country/state/city/category segments; others use flat slugs), but the API consumer never needs to care: **just concatenate domain + filename and the URL works.**
 
+## Image imports — when creating or updating users with external image URLs
+
+The user schema has three image-URL fields: `profile_photo`, `logo`, `cover_photo`. By default, BD **stores whatever URL you pass as-is** — if you pass `https://example.com/scraped-logo.png`, that exact URL is used when rendering the member profile. If that host ever goes down, the image breaks.
+
+To make BD **fetch the external image and save it locally** to your site's storage, set `auto_image_import=1` on create or update. This is the right default for:
+- Web-scrape → BD import flows (like adding external business listings)
+- CSV imports from external sources
+- Cross-site migrations
+
+**Example — creating a user with a scraped logo, locally hosted after create:**
+
+```
+POST /api/v2/user/create
+{
+  "email": "info@elevatedwellness.com",
+  "password": "...",
+  "subscription_id": 1,
+  "logo": "https://source-site.com/images/logo.png",
+  "auto_image_import": "1"
+}
+```
+
+After the API returns success, BD asynchronously downloads the image and replaces the `logo` field with the local filename. Processing delay: a few minutes. Skip `auto_image_import=1` only when the user explicitly asks to keep the external URL reference (e.g., using a CDN they control).
+
 ---
 
 ## Endpoints

@@ -18,6 +18,13 @@ Documented the rule for building a member's public profile URL in three places s
 
 The `filename` field is the complete relative URL path (e.g. `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`), not just a slug. BD's router resolves it verbatim. Confirmed against BD's public support article (`12000108047`) which describes `filename` as "URL-friendly profile slug."
 
+### Added — external-image-URL auto-import rule
+Tightened the documentation for `auto_image_import=1` on `createUser`/`updateUser` so AI agents default to fetching-and-storing external images locally instead of keeping fragile cross-host URL references. Affects real-world flows like web-scrape imports, CSV bulk-add of external listings, and cross-site migrations.
+
+- `openapi/bd-api.json` — `createUser`/`updateUser` descriptions now name the three affected fields (`profile_photo`, `logo`, `cover_photo`) and explicitly recommend `auto_image_import=1` as the default when populating them with external URLs.
+- `docs/api-users.md` — new "Image imports" section with full example payload.
+- `SKILL.md` — new "Things to always do" entry #10 making it an agent-default behavior.
+
 ## [1.6.2] - 2026-04-18
 
 ### Changed — expanded parameter interactions from BD docs (Glama 5/5 floor for all 170 ops)
