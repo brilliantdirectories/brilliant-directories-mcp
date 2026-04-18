@@ -7751,6 +7751,596 @@
           }
         }
       }
+    },
+    "/api/v2/list_seo/get": {
+      "get": {
+        "operationId": "listPages",
+        "summary": "List pages (list_seo)",
+        "description": "Paginated list of all pages on the site: homepage, custom landing pages, profile/search templates, etc.",
+        "tags": [
+          "Pages"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated page list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/list_seo/get/{seo_id}": {
+      "get": {
+        "operationId": "getPage",
+        "summary": "Get a single page",
+        "tags": [
+          "Pages"
+        ],
+        "parameters": [
+          {
+            "name": "seo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page primary key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/list_seo/create": {
+      "post": {
+        "operationId": "createPage",
+        "summary": "Create a page",
+        "description": "Create a new page record. seo_type and filename are required.",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "seo_type",
+                  "filename"
+                ],
+                "properties": {
+                  "seo_type": {
+                    "type": "string",
+                    "description": "Page type identifier (home, profile, search, custom, etc.)"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "URL slug (e.g. home, about-us)"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "Human-readable label shown in admin panel"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "HTML title tag — supports template tokens like %%%website_name%%%"
+                  },
+                  "meta_keywords": {
+                    "type": "string",
+                    "description": "Meta keywords — supports template tokens"
+                  },
+                  "meta_desc": {
+                    "type": "string",
+                    "description": "Meta description — supports template tokens"
+                  },
+                  "seo_text": {
+                    "type": "string",
+                    "description": "Additional SEO body text rendered on page"
+                  },
+                  "h1": {
+                    "type": "string",
+                    "description": "H1 heading — supports template tokens"
+                  },
+                  "h2": {
+                    "type": "string",
+                    "description": "H2 heading — supports template tokens"
+                  },
+                  "breadcrumb": {
+                    "type": "string",
+                    "description": "Breadcrumb label"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens"
+                  },
+                  "content_footer": {
+                    "type": "string",
+                    "description": "Additional HTML below main content"
+                  },
+                  "content_active": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = active, 0 = hidden"
+                  },
+                  "content_menu": {
+                    "type": "string",
+                    "description": "Menu section this page belongs to"
+                  },
+                  "content_order": {
+                    "type": "integer",
+                    "description": "Sort order within menu/section"
+                  },
+                  "content_group": {
+                    "type": "string",
+                    "description": "Admin-panel grouping label"
+                  },
+                  "content_layout": {
+                    "type": "string",
+                    "description": "Content area layout variant"
+                  },
+                  "content_sidebar": {
+                    "type": "string",
+                    "description": "Sidebar configuration or widget shortcode"
+                  },
+                  "menu_layout": {
+                    "type": "string",
+                    "description": "Navigation menu layout template"
+                  },
+                  "show_form": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = show contact form"
+                  },
+                  "form_name": {
+                    "type": "string",
+                    "description": "Form slug to render when show_form is enabled"
+                  },
+                  "hide_from_menu": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide from navigation menus"
+                  },
+                  "hide_header_links": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide header navigation links"
+                  },
+                  "hide_header": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide site header"
+                  },
+                  "hide_footer": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide site footer"
+                  },
+                  "hide_top_right": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide top-right header area"
+                  },
+                  "facebook_title": {
+                    "type": "string",
+                    "description": "Open Graph title for social sharing"
+                  },
+                  "facebook_desc": {
+                    "type": "string",
+                    "description": "Open Graph description"
+                  },
+                  "facebook_image": {
+                    "type": "string",
+                    "description": "Open Graph image URL"
+                  },
+                  "org_template": {
+                    "type": "integer",
+                    "description": "Template/layout ID"
+                  },
+                  "allowed_products": {
+                    "type": "string",
+                    "description": "Comma-separated plan/product IDs (empty = all plans)"
+                  },
+                  "enable_hero_section": {
+                    "type": "string",
+                    "description": "\"1\" = enable hero section"
+                  },
+                  "hero_image": {
+                    "type": "string",
+                    "description": "Hero background image URL"
+                  },
+                  "hero_section_content": {
+                    "type": "string",
+                    "description": "Hero HTML content"
+                  },
+                  "hero_alignment": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ],
+                    "description": "Hero alignment"
+                  },
+                  "hero_link_text": {
+                    "type": "string",
+                    "description": "Hero CTA link text"
+                  },
+                  "hero_link_url": {
+                    "type": "string",
+                    "description": "Hero CTA link URL"
+                  },
+                  "hero_link_target_blank": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "description": "open in new tab"
+                  },
+                  "linked_post_type": {
+                    "type": "string",
+                    "description": "Linked post type"
+                  },
+                  "linked_post_category": {
+                    "type": "string",
+                    "description": "Linked post category"
+                  },
+                  "private_page_select": {
+                    "type": "string",
+                    "description": "Access control setting"
+                  },
+                  "page_render_widget": {
+                    "type": "string",
+                    "description": "Widget ID to render as page content"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Page created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/list_seo/update": {
+      "put": {
+        "operationId": "updatePage",
+        "summary": "Update a page",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "seo_id"
+                ],
+                "properties": {
+                  "seo_id": {
+                    "type": "integer",
+                    "description": "Page primary key (required to identify record)"
+                  },
+                  "seo_type": {
+                    "type": "string",
+                    "description": "Page type identifier (home, profile, search, custom, etc.)"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "URL slug (e.g. home, about-us)"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "Human-readable label shown in admin panel"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "HTML title tag — supports template tokens like %%%website_name%%%"
+                  },
+                  "meta_keywords": {
+                    "type": "string",
+                    "description": "Meta keywords — supports template tokens"
+                  },
+                  "meta_desc": {
+                    "type": "string",
+                    "description": "Meta description — supports template tokens"
+                  },
+                  "seo_text": {
+                    "type": "string",
+                    "description": "Additional SEO body text rendered on page"
+                  },
+                  "h1": {
+                    "type": "string",
+                    "description": "H1 heading — supports template tokens"
+                  },
+                  "h2": {
+                    "type": "string",
+                    "description": "H2 heading — supports template tokens"
+                  },
+                  "breadcrumb": {
+                    "type": "string",
+                    "description": "Breadcrumb label"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens"
+                  },
+                  "content_footer": {
+                    "type": "string",
+                    "description": "Additional HTML below main content"
+                  },
+                  "content_active": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = active, 0 = hidden"
+                  },
+                  "content_menu": {
+                    "type": "string",
+                    "description": "Menu section this page belongs to"
+                  },
+                  "content_order": {
+                    "type": "integer",
+                    "description": "Sort order within menu/section"
+                  },
+                  "content_group": {
+                    "type": "string",
+                    "description": "Admin-panel grouping label"
+                  },
+                  "content_layout": {
+                    "type": "string",
+                    "description": "Content area layout variant"
+                  },
+                  "content_sidebar": {
+                    "type": "string",
+                    "description": "Sidebar configuration or widget shortcode"
+                  },
+                  "menu_layout": {
+                    "type": "string",
+                    "description": "Navigation menu layout template"
+                  },
+                  "show_form": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = show contact form"
+                  },
+                  "form_name": {
+                    "type": "string",
+                    "description": "Form slug to render when show_form is enabled"
+                  },
+                  "hide_from_menu": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide from navigation menus"
+                  },
+                  "hide_header_links": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide header navigation links"
+                  },
+                  "hide_header": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide site header"
+                  },
+                  "hide_footer": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide site footer"
+                  },
+                  "hide_top_right": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = hide top-right header area"
+                  },
+                  "facebook_title": {
+                    "type": "string",
+                    "description": "Open Graph title for social sharing"
+                  },
+                  "facebook_desc": {
+                    "type": "string",
+                    "description": "Open Graph description"
+                  },
+                  "facebook_image": {
+                    "type": "string",
+                    "description": "Open Graph image URL"
+                  },
+                  "org_template": {
+                    "type": "integer",
+                    "description": "Template/layout ID"
+                  },
+                  "allowed_products": {
+                    "type": "string",
+                    "description": "Comma-separated plan/product IDs (empty = all plans)"
+                  },
+                  "enable_hero_section": {
+                    "type": "string",
+                    "description": "\"1\" = enable hero section"
+                  },
+                  "hero_image": {
+                    "type": "string",
+                    "description": "Hero background image URL"
+                  },
+                  "hero_section_content": {
+                    "type": "string",
+                    "description": "Hero HTML content"
+                  },
+                  "hero_alignment": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ],
+                    "description": "Hero alignment"
+                  },
+                  "hero_link_text": {
+                    "type": "string",
+                    "description": "Hero CTA link text"
+                  },
+                  "hero_link_url": {
+                    "type": "string",
+                    "description": "Hero CTA link URL"
+                  },
+                  "hero_link_target_blank": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "description": "open in new tab"
+                  },
+                  "linked_post_type": {
+                    "type": "string",
+                    "description": "Linked post type"
+                  },
+                  "linked_post_category": {
+                    "type": "string",
+                    "description": "Linked post category"
+                  },
+                  "private_page_select": {
+                    "type": "string",
+                    "description": "Access control setting"
+                  },
+                  "page_render_widget": {
+                    "type": "string",
+                    "description": "Widget ID to render as page content"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Page updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/list_seo/delete": {
+      "delete": {
+        "operationId": "deletePage",
+        "summary": "Delete a page",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "seo_id"
+                ],
+                "properties": {
+                  "seo_id": {
+                    "type": "integer",
+                    "description": "Page primary key"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Page deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -7869,6 +8459,10 @@
     {
       "name": "Smart Lists",
       "description": "Dynamic filtered lists for members, leads, reviews, etc."
+    },
+    {
+      "name": "Pages",
+      "description": "Static and SEO-enabled pages (homepage, about, landing pages, profile templates, etc.) — the list_seo resource"
     }
   ]
 }

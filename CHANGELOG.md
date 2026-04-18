@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-18
+
+### Added
+- **Pages resource (`list_seo`)** — 5 new endpoints for managing static and SEO-enabled pages: the homepage, custom landing pages, about/contact pages, category pages, profile templates, and search result pages. AI agents can now update homepage copy, create new landing pages, change meta tags, configure hero sections, etc.
+  - `GET /api/v2/list_seo/get` → `listPages`
+  - `GET /api/v2/list_seo/get/{seo_id}` → `getPage`
+  - `POST /api/v2/list_seo/create` → `createPage` (required: `seo_type`, `filename`)
+  - `PUT /api/v2/list_seo/update` → `updatePage` (required: `seo_id`)
+  - `DELETE /api/v2/list_seo/delete` → `deletePage` (required: `seo_id`)
+- `docs/api-pages.md` with full field reference (70+ fields: SEO metadata, content body, hero section config, social sharing, access control, custom CSS, etc.)
+
+### Changed
+- Total endpoint count: 154 → **159** across **29** resource groups (up from 28).
+- README resource table + headline updated to reflect Pages support.
+
 ## [1.1.0] - 2026-04-18
 
 ### Added
