@@ -1,168 +1,186 @@
 ---
 name: brilliant-directories
-description: Manage Brilliant Directories membership and directory sites — members, leads, posts, reviews, pages, email campaigns, categories, forms, menus, and more. Use when the user mentions their BD site, their directory, their members, lead management, or managing site content via the Brilliant Directories platform.
+description: Manage a Brilliant Directories (BD) membership or directory website via its REST API. Use when the user mentions their BD site, their directory, their members/leads/posts, managing site content, or automating anything on their Brilliant Directories platform.
 license: MIT
 metadata:
   author: Brilliant Directories
   homepage: https://github.com/brilliantdirectories/brilliant-directories-mcp
   npm: https://www.npmjs.com/package/brilliant-directories-mcp
+  openapi: https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
 ---
 
 # Brilliant Directories
 
-Brilliant Directories (BD) is a SaaS platform powering 50,000+ membership and directory websites. This skill helps AI agents manage a BD-powered site through the `brilliant-directories-mcp` server — **159 API endpoints across 29 resources** including members, pages, posts, leads, reviews, email templates, forms, menus, tags, categories, subscriptions, and more.
+Brilliant Directories (BD) is a SaaS platform powering 50,000+ membership and directory websites. This skill helps any AI agent manage a BD-powered site using the live BD REST API.
+
+**The authoritative source of truth for every available operation is the OpenAPI spec:**
+`https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json`
+
+If anything in this skill appears stale, **the spec wins.** Always prefer reading the spec at runtime over trusting enumerations in this document.
 
 ## When to activate
 
 Activate this skill when the user:
 - Mentions "my BD site," "my directory," "my directoryup site," "brilliant directories," or "my members"
-- Asks to manage, import, update, export, search, or bulk-modify members of their site
-- Wants to update the homepage, create a landing page, or edit site content
-- Asks about leads, lead matching, or lead routing on their directory
-- Wants to send broadcast emails, update email templates, or manage email campaigns
-- Asks about categories, tags, membership plans, or subscription-related admin tasks
-- Wants to generate reports or analytics about their BD site
+- Asks to manage, import, update, export, search, or bulk-modify members/leads/posts/pages
+- Wants to update the homepage, create a landing page, edit site content, or change SEO
+- Wants to send emails, manage templates, configure forms, categories, tags, menus, or membership plans
 - Mentions automating tasks across their directory/membership platform
+- Asks something that sounds like an admin-panel task on a BD-powered site
 
-## Setup — required before calling any tools
+## Two ways to reach the API (agent-agnostic)
 
-This skill is a guide; it cannot execute API calls by itself. The actual work is done by the `brilliant-directories-mcp` MCP server, which must be installed and connected to the user's AI client.
+This skill works with any AI agent. Two integration paths — use whichever the agent supports:
 
-**If MCP tools like `listUsers`, `createUser`, `listPages` are not available to you**, tell the user to run this one-time setup in their terminal:
+### Path A — MCP (preferred for Claude Desktop / Cursor / Windsurf / Cline / Claude Code)
 
+The user installs the MCP server once; it exposes every BD operation as a tool. To check if it's active, look at your available tools for names like `verifyApiKey`, `listUsers`, `createUser`, `listPages`, etc.
+
+**If MCP tools are NOT available**, tell the user to run:
 ```bash
 npx brilliant-directories-mcp --setup
 ```
+The wizard asks for their BD site URL and API key, then configures their AI client automatically. After a client restart, the tools become available.
 
-The wizard will ask for:
-1. Their BD site URL (e.g., `https://mysite.com`)
-2. Their API key (generate at BD Admin > Developer Hub > Generate API Key — see https://support.brilliantdirectories.com/support/solutions/articles/12000088768)
+**Getting an API key:** BD Admin > Developer Hub > Generate API Key (full walkthrough: https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
 
-Then it writes the config for Cursor, Claude Desktop, Windsurf, or Claude Code automatically. After restarting the client, the tools become available.
+### Path B — Direct HTTPS using the OpenAPI spec (for ChatGPT Actions, n8n, Make, Zapier, LangChain, custom agents)
 
-## Core Concepts
+If MCP isn't available but the agent can make authenticated HTTP requests:
+- Base URL: the user's BD site (e.g., `https://mysite.com`) — never hardcode, always ask
+- Auth: HTTP header `X-Api-Key: {user's API key}`
+- All endpoints and schemas: the OpenAPI spec URL above. Read it to discover operations, required fields, response shapes.
+
+Both paths hit the same underlying REST API and behave identically.
+
+## Tool / operation discovery (future-proof rule)
+
+**Never assume a tool exists based on this document.** BD's API grows over time and this skill can't be updated for every new resource. The correct pattern:
+
+1. If using MCP: list your available tools. Use whatever the client exposes.
+2. If using HTTP directly: GET the OpenAPI spec (URL above). Enumerate `paths` to see every endpoint. Each operation's `operationId` is the stable name.
+3. To discover writable fields on any resource: many resources expose a `/fields` endpoint (e.g., `GET /api/v2/user/fields`, `GET /api/v2/data_posts/fields`) that returns field metadata including `required`, `type`, `choices`, and `helpText`.
+
+If a user asks for something and no matching operation appears in the spec, say so honestly: "The BD API doesn't currently expose that operation — you'll need to do it in the BD admin panel."
+
+## Core conventions (stable across all resources)
 
 ### Authentication
-Every API call uses an `X-Api-Key` header. The MCP server handles this automatically once the user completes `--setup`. Never ask the user to paste their API key into chat — it should only live in the MCP config file.
+Every API call uses `X-Api-Key` as an HTTP header. Via MCP, the server handles this automatically. Never ask the user to paste their API key into chat.
 
-### Pagination
-List endpoints return cursor-based pagination:
-- `limit` — records per page (default 25, max 100)
-- `page` — pagination cursor (use the `next_page` value from the previous response)
+### Base URL pattern
+All endpoints live under `{site_url}/api/v2/{resource}/{action}` — e.g., `https://mysite.com/api/v2/user/get`.
 
-Do NOT assume sequential integer page numbers. The `page` parameter is an opaque token.
+### Pagination (cursor-based)
+- Request: `limit` (default 25, max 100) + `page` (opaque cursor token from prior response's `next_page`)
+- Response includes: `total`, `current_page`, `total_pages`, `next_page`, `prev_page`
+- **Never assume sequential integer page numbers.** The `page` parameter is an opaque token.
 
-### Rate Limits
-**Default: 100 requests per 60 seconds per API key.** Customers can request a raise to 100–1,000/min from BD support (not a self-service setting).
-
-For any bulk operation touching more than ~50 records:
-1. Warn the user about the rate limit before starting
-2. Pace requests: add a small delay between calls (~600ms for safety at the 100/min default)
-3. Offer to split the job into batches
-4. Watch for HTTP 429 responses and back off at least 60 seconds
-
-### Error handling
-The API returns `{ "status": "success" | "error", "message": ... }`. The MCP server translates HTTP errors into actionable English:
-- **401/403** — credentials wrong, tell the user to re-run `--setup`
-- **429** — rate limit hit, back off
-- **400** — missing required field, check the operation's requirements
-
-## Common Workflows
-
-### Verify the connection is working
-Before any complex job, call `verifyApiKey`. Confirms credentials work and returns site info.
-
-### List members
-Tool: `listUsers`. Defaults to 25 records. For filtering, use the standard property-based filter:
+### Filtering
+All list endpoints support property-based filtering:
 ```
-property=city, property_value=Los Angeles, property_operator==
+?property=city&property_value=Los Angeles&property_operator==
+```
+Operators: `=`, `LIKE`, `>`, `<`, `>=`, `<=`. Multiple filters via `property[]=...&property_value[]=...`.
+
+### Sorting
+```
+?order_column=last_name&order_type=ASC
 ```
 
-### Create a member
-Tool: `createUser`. **Required fields:** `email`, `password`, `subscription_id`. If the user doesn't specify a subscription, ask them — don't guess.
+### Response shape
+Success: `{ "status": "success", "message": [...records...] or {record}, ...pagination fields... }`.
+Error: `{ "status": "error", "message": "human-readable reason" }` with standard HTTP status codes.
 
-Optional but commonly used: `first_name`, `last_name`, `company`, `phone`, `active` (1 = active, 2 = pending, 3 = canceled).
+### Rate limits
+**Default 100 requests per 60 seconds per API key.** Customers can request a raise to anywhere between 100 and 1,000/min by contacting Brilliant Directories support — this is NOT a self-service admin setting.
 
-### Update a member
-Tool: `updateUser`. **Required:** `user_id`. Then pass any fields to change. Look up the user_id first via `getUser` with email if the user only gave you an email address.
+For bulk operations:
+1. Warn the user about the limit before starting
+2. Add pacing between writes (~600–700ms per call at the default limit)
+3. Watch for HTTP 429 responses; if hit, back off at least 60 seconds before retrying
+4. For known-large jobs (>500 records), suggest the user contact BD support to raise the limit first
 
-### Bulk import members
-1. Always warn about rate limits first
-2. Ask if they want to raise the limit via BD support before starting
-3. For confirmed small batches (<100), run `createUser` calls with ~700ms pacing
-4. Return a summary: X succeeded, Y failed with reasons
+### Template tokens in text fields
+Many text fields (titles, meta tags, email subjects, page content) support BD template tokens:
+- `%%%website_name%%%` — the site's configured name
+- `%%Profession%%` — the user's profession/category
+- Widget embeds: `[widget=Widget Name]`
+Preserve these exactly as the user provides — do not "clean them up" or escape them.
 
-### Search members
-Tool: `searchUsers`. Supports `q` (keyword), `address`, `limit`. Use this for "find members matching X" queries.
+## Canonical multi-step pattern
 
-### Update the homepage
-1. Call `listPages` to find the page where `seo_type` is `home`
-2. Note the `seo_id` from that record
-3. Call `updatePage` with the `seo_id` and whichever fields to change (`title`, `meta_desc`, `h1`, `content`, etc.)
+For any non-trivial task, follow this sequence:
 
-### Create a landing page
-Tool: `createPage`. **Required:** `seo_type` (usually `custom` for standalone landing pages) and `filename` (URL slug like `holiday-offer-2026`).
+1. **Verify** — call `verifyApiKey` (or `GET /api/v2/token/verify`) to confirm credentials and site are reachable
+2. **Discover** — if unsure about field names/types, call the resource's `/fields` endpoint (e.g., `GET /api/v2/user/fields`)
+3. **Scope** — if the task involves many records, count them first with a narrow list query; confirm count with the user before writing
+4. **Confirm destructive operations** — summarize what you're about to change/delete and ask the user to confirm, especially for bulk writes
+5. **Act** — execute calls, pacing writes per the rate-limit rules
+6. **Report** — summarize what happened: X succeeded, Y failed with specific reasons, Z skipped
 
-Commonly supplied:
-- `nickname` — label for the admin panel
-- `title` — HTML `<title>` tag
-- `meta_desc` — meta description for SEO
-- `content` — HTML body (supports BD template tokens like `%%%website_name%%%` and `[widget=Name]` shortcodes)
-- `content_active` — 1 to publish, 0 to save as draft
-- `h1`, `h2` — page headings
-- Hero section fields — `enable_hero_section`, `hero_image`, `hero_section_content`, etc.
+### Worked example: "Import 300 members from this CSV"
 
-### Manage posts
-Tool family: `listPosts`, `createPost`, `updatePost`, `deletePost`, `getPost`. BD posts are the content/blog/classifieds entries tied to post types.
-
-### Manage leads
-Tool family: `listLeads`, `getLead`, `createLead`, `matchLead`, `updateLead`. Lead matching connects a lead to members in relevant categories/locations.
-
-### Send email campaigns or update templates
-Tool family for templates: `listEmailTemplates`, `getEmailTemplate`, `createEmailTemplate`, `updateEmailTemplate`. For actually sending, BD typically relies on template triggers — review the trigger field on the template before calling update.
-
-### Manage categories, tags, menus
-Each has standard CRUD: `listCategories`/`createCategory`/..., same for `listTags`, `listMenus`, `listMenuItems`, etc.
+```
+1. Call verifyApiKey → confirm credentials work
+2. Call GET /api/v2/user/fields → confirm required fields: email, password, subscription_id
+3. Parse the CSV, show the user "I found 300 records, first row looks like: {...}. Proceed?"
+4. If >100, warn: "BD's default rate limit is 100/min — this will take ~3 minutes. Want to have BD support raise it first?"
+5. For each row: call createUser with ~700ms delay. Track failures with reasons.
+6. Report: "Created 287/300. 13 failed: 9 because email already exists, 4 invalid subscription_id."
+```
 
 ## Things to always do
 
-1. **Verify before bulk ops** — call `verifyApiKey` before any job touching more than 50 records
-2. **Respect rate limits** — warn the user, pace writes, back off on 429
-3. **Confirm destructive operations** — before `deleteUser`, `deletePost`, `deletePage`, or bulk updates/deletes, summarize what you're about to do and get explicit user confirmation
-4. **Use pagination tokens, not page numbers** — always pass `next_page` from the prior response
+1. **Treat the OpenAPI spec as the source of truth.** If this skill and the spec disagree, trust the spec.
+2. **Verify before bulk ops** — call the token-verify endpoint before any job touching >50 records.
+3. **Respect rate limits** — warn the user, pace writes, back off on 429.
+4. **Confirm destructive operations** — deletes, bulk updates, overwrites — always summarize and require explicit confirmation.
+5. **Use pagination tokens, not page numbers.**
+6. **Discover fields at runtime** when unsure — `/fields` endpoint or the spec's schema for the operation.
+7. **Acknowledge when an operation doesn't exist** rather than inventing one.
 
 ## Things to never do
 
-1. **Never ask the user to paste their API key into chat.** The key should only live in the MCP config file from `--setup`.
-2. **Never assume sequential page numbers** — pagination is cursor-based
-3. **Never run mass deletes without confirmation** — even if the user sounded confident
-4. **Never invent field names** — stick to documented fields; call `list_member_fields` (or the resource's `fields` endpoint) to discover allowed field names if unsure
-5. **Never retry indefinitely on 429** — back off at least 60 seconds; warn the user and offer to raise the limit
+1. **Never ask the user to paste their API key into chat.** The key lives in their MCP config or their HTTP client's secret store. If they have to provide it, direct them to `--setup`.
+2. **Never assume sequential page numbers** — pagination is cursor-based.
+3. **Never run mass deletes without explicit user confirmation** — even if the user sounded confident. Summarize first.
+4. **Never invent field names.** If unsure, call `/fields` on the resource or read the OpenAPI schema.
+5. **Never retry indefinitely on 429** — back off at least 60s; offer to pace or raise the limit.
+6. **Never hardcode the site URL** — it's per-customer; always ask or read from config.
+7. **Never rely on memorized endpoint lists** — the API evolves; check the spec.
 
 ## BD terminology glossary
 
-- **Subscription / plan** — a membership tier the member belongs to (`subscription_id`)
-- **Category / profession** — the top-level taxonomy for member listings (e.g., "Dentists")
-- **Service** — sub-category under a profession (e.g., "Cosmetic Dentistry")
-- **Post type** — a content type like Events, Classifieds, Deals, Articles
-- **Widget** — reusable HTML component embeddable in pages via `[widget=Name]`
-- **SEO page / `list_seo`** — any static-ish page including the homepage, about, contact, custom landing pages, profile templates, search result pages
-- **Lead** — an inbound contact/inquiry that can be routed to matching members
+- **Member / user** — an account on a BD site. Core resource.
+- **Subscription / plan / membership plan** — a tier a member belongs to. Referenced as `subscription_id`.
+- **Category / profession** — the top-level taxonomy for member listings (e.g., "Dentists").
+- **Service** — sub-category under a profession (e.g., "Cosmetic Dentistry").
+- **Post / post type** — content items (events, classifieds, articles, deals) organized by type.
+- **Page / SEO page / `list_seo`** — any static-ish page on the site: homepage (`seo_type=home`), about, contact, custom landing pages, profile/search result templates.
+- **Widget** — reusable HTML component embeddable in pages/emails via `[widget=Name]` shortcode.
+- **Lead** — an inbound contact/inquiry, can be routed/matched to relevant members.
+- **Form** — a configurable form that collects inputs (signup, contact, quote request, etc.).
+- **Template token** — placeholder like `%%%website_name%%%` expanded at render time.
+- **Active status** — most BD records have an `active` or `content_active` field where `1` = visible/live and `0` = hidden/draft. Members use a 3-state convention (`1` = not active, `2` = active, `3` = canceled, etc.) — always verify via `/fields` for the specific resource.
 
-## API reference
+## Reference URLs
 
-- **Full endpoint docs:** https://github.com/brilliantdirectories/brilliant-directories-mcp/tree/main/docs
-- **OpenAPI spec (raw URL):** https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
-- **npm package:** https://www.npmjs.com/package/brilliant-directories-mcp
-- **Issues/support:** https://github.com/brilliantdirectories/brilliant-directories-mcp/issues
-- **BD's own API docs:** https://support.brilliantdirectories.com/support/solutions/articles/12000108045
+- **OpenAPI spec (live, authoritative):** https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+- **Full endpoint docs (human-readable):** https://github.com/brilliantdirectories/brilliant-directories-mcp/tree/main/docs
+- **npm package (MCP server):** https://www.npmjs.com/package/brilliant-directories-mcp
+- **Issues / bug reports:** https://github.com/brilliantdirectories/brilliant-directories-mcp/issues
+- **BD's own API documentation:** https://support.brilliantdirectories.com/support/solutions/articles/12000108045
+- **Generate an API key:** https://support.brilliantdirectories.com/support/solutions/articles/12000088768
 
 ## Installation recap for the user
 
-If the MCP server isn't connected yet:
+If the user needs to set up the MCP server:
 
 ```bash
 npx brilliant-directories-mcp --setup
 ```
 
-Answer 2 questions, pick your AI client, restart it, done.
+Answer 2 questions (site URL, API key), pick their AI client, restart, done.
+
+For non-MCP integrations (ChatGPT Actions, n8n, Make, Zapier, Postman, custom agents): import the OpenAPI spec URL directly and authenticate with the `X-Api-Key` header.
