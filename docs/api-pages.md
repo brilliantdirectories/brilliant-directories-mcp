@@ -31,7 +31,7 @@ Supports pagination.
 ### 3. Create Page
 `POST /api/v2/list_seo/create`
 
-**Required:** `seo_type` (page type identifier — e.g. `home`, `custom`, `profile`, `search`), `filename` (URL slug — e.g. `about-us`)
+**Required:** `seo_type` (see "Valid `seo_type` values" below), `filename` (URL slug — e.g. `about-us`)
 **Commonly supplied:** `nickname` (admin-panel label), `title` (HTML title), `meta_desc`, `meta_keywords`, `h1`, `h2`, `content` (HTML body — supports `[widget=Name]` shortcodes), `content_active` (1 = active)
 
 ### 4. Update Page
@@ -51,7 +51,7 @@ Supports pagination.
 |---|---|---|
 | `seo_id` | integer | Primary key (read-only) |
 | `master_id` | integer | Master record ID; 0 for site-level records |
-| `seo_type` | string | Page type (`home`, `profile`, `search`, `custom`, etc.) — required on create |
+| `seo_type` | string (enum) | Page type identifier — required on create. See "Valid `seo_type` values" below. |
 | `database` | string | Associated database table for this page type |
 | `section` | string | Section or sub-type |
 | `database_id` | integer | Associated database record ID; 0 = global page |
@@ -122,3 +122,20 @@ Supports pagination.
 | `linked_post_category` | string | Linked post category |
 | `private_page_select` | string | Access control setting |
 | `page_render_widget` | string | Widget ID to render as page content |
+
+## Valid `seo_type` values
+
+These are the customer-facing values from BD's admin UI page-type dropdown. For any custom landing page, about page, contact page, or similar simple static page, use **`content`** — that's what BD's admin calls "Single Web Page" and it's the right default for essentially every agent-driven page creation.
+
+| Value | BD admin label | When to use |
+|---|---|---|
+| `content` | Single Web Page | **Default for custom/landing/static pages.** About, contact, landing pages, privacy, terms — the 90% case. |
+| `data_category` | Post Search Results | Post search-results template |
+| `profile_search_results` | Member Search Results | Member search-results template |
+| `custom_widget_page` | Custom Widget as Web Page | A page rendered entirely by a single widget |
+| `password_retrieval_page` | Password Retrieval Page | Forgot-password flow |
+| `unsubscribed` | Unsubscribed Page | Unsubscribe landing |
+
+**Rule of thumb for AI agents:** if the user says "create a landing page", "make an about page", "new static page", or anything similar — use `seo_type=content`. Never invent values like `custom`, `page`, `landing`, or `static`. They are not valid and will silently create unrenderable records.
+
+Note: BD's system also has internal-only `seo_type` values (`home`, `profile`, `payment`, `data_post`, `photo_group_profile`, `search_results_all`, `coming_soon_page`) that are system-seeded and not intended for customer-created pages via API. Avoid these — the admin dropdown doesn't show them for a reason.

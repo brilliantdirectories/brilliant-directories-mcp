@@ -7818,7 +7818,7 @@
       "post": {
         "operationId": "createPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required. IMPORTANT: after creating a page via API, the new URL will 404 on the public site until the user goes to BD Admin > Manage Pages and clicks Save on the record once. This triggers BD's URL router / cache rebuild. Always tell the user this step is needed.",
+        "description": "Create a new page record. seo_type and filename are required. IMPORTANT: after creating a page via API, the new URL will 404 on the public site until the user goes to BD Admin > Manage Pages and clicks Save on the record once. This triggers BD's URL router / cache rebuild. Always tell the user this step is needed. Default seo_type: if the user says \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use \"content\". Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page — those are the only valid alternatives.",
         "tags": [
           "Pages"
         ],
@@ -7835,7 +7835,15 @@
                 "properties": {
                   "seo_type": {
                     "type": "string",
-                    "description": "Page type identifier (home, profile, search, custom, etc.)"
+                    "enum": [
+                      "content",
+                      "data_category",
+                      "profile_search_results",
+                      "custom_widget_page",
+                      "password_retrieval_page",
+                      "unsubscribed"
+                    ],
+                    "description": "Page type identifier. These are the values BD customers can choose from in admin:\\n  content                  = Single Web Page (USE THIS for custom/landing/static pages — it is the default)\\n  data_category            = Post Search Results\\n  profile_search_results   = Member Search Results\\n  custom_widget_page       = Custom Widget as Web Page\\n  password_retrieval_page  = Password Retrieval Page\\n  unsubscribed             = Unsubscribed Page\\nWhen a user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", or any generic custom page, always use \"content\".\\nNote: the underlying BD system has additional internal seo_type values (home, profile, payment, etc.) that are system-seeded and should NOT be created via API — customers never have a reason to call createPage with those."
                   },
                   "filename": {
                     "type": "string",
@@ -8080,7 +8088,15 @@
                   },
                   "seo_type": {
                     "type": "string",
-                    "description": "Page type identifier (home, profile, search, custom, etc.)"
+                    "enum": [
+                      "content",
+                      "data_category",
+                      "profile_search_results",
+                      "custom_widget_page",
+                      "password_retrieval_page",
+                      "unsubscribed"
+                    ],
+                    "description": "Page type identifier. These are the values BD customers can choose from in admin:\\n  content                  = Single Web Page (USE THIS for custom/landing/static pages — it is the default)\\n  data_category            = Post Search Results\\n  profile_search_results   = Member Search Results\\n  custom_widget_page       = Custom Widget as Web Page\\n  password_retrieval_page  = Password Retrieval Page\\n  unsubscribed             = Unsubscribed Page\\nWhen a user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", or any generic custom page, always use \"content\".\\nNote: the underlying BD system has additional internal seo_type values (home, profile, payment, etc.) that are system-seeded and should NOT be created via API — customers never have a reason to call createPage with those."
                   },
                   "filename": {
                     "type": "string",
@@ -8562,6 +8578,28 @@
           }
         }
       }
+    },
+    "/api/v2/website_settings/refreshCache": {
+      "post": {
+        "operationId": "refreshSiteCache",
+        "summary": "Refresh the site cache",
+        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.",
+        "tags": [
+          "Website Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Cache refresh triggered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -8688,6 +8726,10 @@
     {
       "name": "Redirects",
       "description": "301 permanent redirect rules — preserve SEO when URLs change (profiles, posts, categories, custom rules)"
+    },
+    {
+      "name": "Website Settings",
+      "description": "Site-level operations — cache management, configuration refresh. Undocumented by BD publicly but exposed in the admin API-permissions UI."
     }
   ]
 }
