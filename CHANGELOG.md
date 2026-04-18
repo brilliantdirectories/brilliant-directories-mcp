@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-04-18
+
+### Added — external-image-URL auto-import rule
+Tightened the documentation for `auto_image_import=1` on `createUser`/`updateUser` so AI agents default to fetching-and-storing external images locally instead of keeping fragile cross-host URL references. Addresses a real-world bug hit during a web-scrape → BD-create flow where scraped image URLs broke because the flag wasn't set.
+
+- `openapi/bd-api.json` — `createUser`/`updateUser` descriptions now name the three affected fields (`profile_photo`, `logo`, `cover_photo`) and explicitly recommend `auto_image_import=1` as the default when populating them with external URLs.
+- `docs/api-users.md` — new "Image imports" section with full example payload.
+- `SKILL.md` — new "Things to always do" entry #10 making it an agent-default behavior.
+
 ## [1.6.3] - 2026-04-18
 
 ### Added — profile URL construction rule
@@ -17,13 +26,6 @@ Documented the rule for building a member's public profile URL in three places s
 - `SKILL.md` — new "Things to never do" entry #8 specifically forbidding prefix invention
 
 The `filename` field is the complete relative URL path (e.g. `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`), not just a slug. BD's router resolves it verbatim. Confirmed against BD's public support article (`12000108047`) which describes `filename` as "URL-friendly profile slug."
-
-### Added — external-image-URL auto-import rule
-Tightened the documentation for `auto_image_import=1` on `createUser`/`updateUser` so AI agents default to fetching-and-storing external images locally instead of keeping fragile cross-host URL references. Affects real-world flows like web-scrape imports, CSV bulk-add of external listings, and cross-site migrations.
-
-- `openapi/bd-api.json` — `createUser`/`updateUser` descriptions now name the three affected fields (`profile_photo`, `logo`, `cover_photo`) and explicitly recommend `auto_image_import=1` as the default when populating them with external URLs.
-- `docs/api-users.md` — new "Image imports" section with full example payload.
-- `SKILL.md` — new "Things to always do" entry #10 making it an agent-default behavior.
 
 ## [1.6.2] - 2026-04-18
 
