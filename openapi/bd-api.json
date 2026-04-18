@@ -1,0 +1,3881 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Brilliant Directories API",
+    "version": "2.0.0",
+    "description": "Universal API for Brilliant Directories websites. Manage members, content, leads, email templates, categories, and more. Works with any BD-powered site — just provide your site URL and API key.",
+    "contact": {
+      "name": "Brilliant Directories",
+      "url": "https://www.brilliantdirectories.com",
+      "email": "support@brilliantdirectories.com"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "{bd_site_url}",
+      "description": "Your Brilliant Directories website",
+      "variables": {
+        "bd_site_url": {
+          "default": "https://your-site.com",
+          "description": "The full URL of your BD-powered website (e.g. https://launch60031.directoryup.com)"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "Your BD API key. Generate in BD Admin > Settings > API Keys."
+      }
+    },
+    "parameters": {
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Records per page (default 25, max 100)",
+        "schema": { "type": "integer", "default": 25, "maximum": 100 }
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "description": "Cursor token for pagination (use next_page value from previous response)",
+        "schema": { "type": "string" }
+      },
+      "property": {
+        "name": "property",
+        "in": "query",
+        "description": "Field name to filter by (use property[] for multiple)",
+        "schema": { "type": "string" }
+      },
+      "property_value": {
+        "name": "property_value",
+        "in": "query",
+        "description": "Value to filter by (use property_value[] for multiple)",
+        "schema": { "type": "string" }
+      },
+      "property_operator": {
+        "name": "property_operator",
+        "in": "query",
+        "description": "Filter operator: =, LIKE, >, <, >=, <= (use property_operator[] for multiple)",
+        "schema": { "type": "string", "enum": ["=", "LIKE", ">", "<", ">=", "<="], "default": "=" }
+      },
+      "order_column": {
+        "name": "order_column",
+        "in": "query",
+        "description": "Column to sort by",
+        "schema": { "type": "string" }
+      },
+      "order_type": {
+        "name": "order_type",
+        "in": "query",
+        "description": "Sort direction",
+        "schema": { "type": "string", "enum": ["ASC", "DESC"], "default": "ASC" }
+      }
+    },
+    "schemas": {
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "success" },
+          "total": { "type": "integer" },
+          "current_page": { "type": "integer" },
+          "total_pages": { "type": "integer" },
+          "next_page": { "type": "string" },
+          "prev_page": { "type": "string" },
+          "message": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "success" },
+          "message": { "type": "object" }
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "success" },
+          "message": { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "user_id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "company": { "type": "string" },
+          "phone_number": { "type": "string" },
+          "city": { "type": "string" },
+          "state_code": { "type": "string" },
+          "country_code": { "type": "string" },
+          "subscription_id": { "type": "integer" },
+          "password": { "type": "string", "writeOnly": true }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "review_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "review_name": { "type": "string" },
+          "review_email": { "type": "string" },
+          "review_title": { "type": "string" },
+          "review_description": { "type": "string" },
+          "rating_overall": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "recommend": { "type": "integer", "enum": [0, 1] },
+          "review_status": { "type": "integer", "enum": [0, 1, 2] }
+        }
+      },
+      "Click": {
+        "type": "object",
+        "properties": {
+          "click_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "click_type": { "type": "string", "enum": ["link", "phone", "email"] },
+          "click_name": { "type": "string" },
+          "click_from": { "type": "string", "enum": ["profile_page", "search_results"] },
+          "click_url": { "type": "string" }
+        }
+      },
+      "Lead": {
+        "type": "object",
+        "properties": {
+          "lead_id": { "type": "integer" },
+          "lead_name": { "type": "string" },
+          "lead_email": { "type": "string" },
+          "lead_phone": { "type": "string" },
+          "lead_message": { "type": "string" },
+          "lead_location": { "type": "string" },
+          "top_id": { "type": "integer" },
+          "token": { "type": "string" },
+          "date_added": { "type": "string" },
+          "lead_price": { "type": "number" },
+          "lead_status": { "type": "string" },
+          "flow_source": { "type": "string" },
+          "lead_notes": { "type": "string" }
+        }
+      },
+      "LeadMatch": {
+        "type": "object",
+        "properties": {
+          "match_id": { "type": "integer" },
+          "lead_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "lead_matched": { "type": "string" },
+          "lead_points": { "type": "integer" },
+          "lead_match_notes": { "type": "string" },
+          "lead_status": { "type": "string" },
+          "match_price": { "type": "number" },
+          "lead_token": { "type": "string" },
+          "lead_matched_by": { "type": "string" },
+          "lead_viewed": { "type": "integer" },
+          "lead_type": { "type": "string" },
+          "lead_distance": { "type": "number" },
+          "lead_rating": { "type": "number" },
+          "lead_chosen": { "type": "integer" },
+          "lead_response": { "type": "string" },
+          "lead_accepted": { "type": "integer" },
+          "lead_updated": { "type": "string" }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "post_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "data_id": { "type": "integer", "description": "Post type category ID" },
+          "data_type": { "type": "string" },
+          "post_title": { "type": "string" },
+          "post_caption": { "type": "string" },
+          "post_content": { "type": "string", "description": "HTML content" },
+          "post_status": { "type": "integer", "enum": [0, 1], "description": "0=Draft, 1=Published" },
+          "post_price": { "type": "number" },
+          "post_token": { "type": "string" }
+        }
+      },
+      "PortfolioGroup": {
+        "type": "object",
+        "properties": {
+          "group_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "data_id": { "type": "integer" },
+          "data_type": { "type": "string" },
+          "group_name": { "type": "string" },
+          "group_desc": { "type": "string" },
+          "group_status": { "type": "integer", "enum": [0, 1], "description": "0=Hidden, 1=Published" }
+        }
+      },
+      "PortfolioPhoto": {
+        "type": "object",
+        "properties": {
+          "photo_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "group_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "original_image_url": { "type": "string" },
+          "status": { "type": "integer", "enum": [0, 1] },
+          "order": { "type": "integer" }
+        }
+      },
+      "PostType": {
+        "type": "object",
+        "properties": {
+          "data_id": { "type": "integer" },
+          "data_name": { "type": "string" },
+          "data_active": { "type": "integer", "enum": [0, 1] },
+          "category_tab": { "type": "string" },
+          "profile_tab": { "type": "string" },
+          "per_page": { "type": "integer" }
+        }
+      },
+      "Unsubscribe": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "definitive": { "type": "integer", "enum": [0, 1], "description": "1=permanent unsubscribe" },
+          "date": { "type": "string" },
+          "code": { "type": "string" },
+          "website_id": { "type": "integer" }
+        }
+      },
+      "Widget": {
+        "type": "object",
+        "properties": {
+          "widget_id": { "type": "integer" },
+          "widget_name": { "type": "string" },
+          "widget_data": { "type": "string", "description": "HTML content" },
+          "widget_viewport": { "type": "string", "enum": ["front", "admin", "both"] },
+          "bootstrap_enabled": { "type": "integer", "enum": [0, 1] }
+        }
+      },
+      "EmailTemplate": {
+        "type": "object",
+        "properties": {
+          "email_id": { "type": "integer" },
+          "email_name": { "type": "string" },
+          "email_type": { "type": "string" },
+          "email_subject": { "type": "string", "description": "Supports merge tags like %%%website_name%%%" },
+          "email_body": { "type": "string", "description": "HTML + merge tags + widget embeds" },
+          "date_created": { "type": "string", "description": "Format: YYYYMMDDHHmmss" },
+          "triggers": { "type": "string", "description": "Comma-separated event triggers" },
+          "website": { "type": "integer", "description": "0 = platform-wide" },
+          "email_from": { "type": "string" },
+          "priority": { "type": "integer" },
+          "signature": { "type": "integer", "enum": [0, 1] },
+          "category_id": { "type": "integer" },
+          "notemplate": { "type": "integer", "enum": [0, 1] },
+          "content_type": { "type": "string" },
+          "revision_timestamp": { "type": "string" },
+          "unsubscribe_link": { "type": "integer", "enum": [0, 1] }
+        }
+      },
+      "Form": {
+        "type": "object",
+        "properties": {
+          "form_id": { "type": "integer" },
+          "form_name": { "type": "string" },
+          "form_title": { "type": "string" },
+          "form_table": { "type": "string" },
+          "form_layout": { "type": "string" },
+          "form_action": { "type": "string" },
+          "form_class": { "type": "string" },
+          "form_email_on": { "type": "integer", "enum": [0, 1] },
+          "form_email_recipient": { "type": "string" },
+          "revision_timestamp": { "type": "string" }
+        }
+      },
+      "FormField": {
+        "type": "object",
+        "properties": {
+          "field_id": { "type": "integer" },
+          "form_name": { "type": "string" },
+          "field_text": { "type": "string", "description": "Display label" },
+          "field_name": { "type": "string", "description": "DB column name" },
+          "field_type": { "type": "string", "enum": ["text", "textarea", "select", "checkbox"] },
+          "field_order": { "type": "integer" },
+          "field_required": { "type": "integer", "enum": [0, 1] },
+          "field_placeholder": { "type": "string" },
+          "field_display_view": { "type": "integer" },
+          "field_input_view": { "type": "integer" },
+          "field_email_view": { "type": "integer" }
+        }
+      },
+      "MembershipPlan": {
+        "type": "object",
+        "properties": {
+          "subscription_id": { "type": "integer" },
+          "subscription_name": { "type": "string" },
+          "subscription_type": { "type": "string" },
+          "monthly_amount": { "type": "number" },
+          "yearly_amount": { "type": "number" },
+          "profile_type": { "type": "string", "enum": ["paid", "free", "claim"] },
+          "sub_active": { "type": "integer", "enum": [0, 1] },
+          "searchable": { "type": "integer", "enum": [0, 1] },
+          "search_priority": { "type": "integer" },
+          "payment_default": { "type": "string", "enum": ["yearly", "monthly"] }
+        }
+      },
+      "Menu": {
+        "type": "object",
+        "properties": {
+          "menu_id": { "type": "integer" },
+          "menu_name": { "type": "string", "maxLength": 35 },
+          "menu_title": { "type": "string" },
+          "menu_location": { "type": "string" },
+          "menu_active": { "type": "integer", "enum": [0, 1] },
+          "menu_div_id": { "type": "string", "maxLength": 60 },
+          "menu_div_class": { "type": "string", "maxLength": 60 },
+          "menu_div_css": { "type": "string" },
+          "menu_div_code": { "type": "string" },
+          "menu_effects": { "type": "string", "maxLength": 60 }
+        }
+      },
+      "MenuItem": {
+        "type": "object",
+        "properties": {
+          "menu_item_id": { "type": "integer" },
+          "menu_id": { "type": "integer" },
+          "menu_name": { "type": "string" },
+          "menu_link": { "type": "string" },
+          "master_id": { "type": "integer", "description": "0 for top-level, parent item ID for sub-items" },
+          "menu_order": { "type": "integer" },
+          "menu_active": { "type": "integer", "enum": [0, 1] },
+          "menu_target": { "type": "string", "enum": ["_blank", "_self"] },
+          "menu_class": { "type": "string" },
+          "menu_icon": { "type": "string" }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "category_id": { "type": "integer" },
+          "name": { "type": "string" },
+          "group_id": { "type": "integer" },
+          "filename": { "type": "string" },
+          "icon": { "type": "string" },
+          "keywords": { "type": "string" },
+          "revision_timestamp": { "type": "string" },
+          "json_meta": { "type": "string" }
+        }
+      },
+      "CategoryGroup": {
+        "type": "object",
+        "properties": {
+          "group_id": { "type": "integer" },
+          "group_name": { "type": "string" },
+          "group_filename": { "type": "string" },
+          "group_desc": { "type": "string" },
+          "database": { "type": "string" }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "service_id": { "type": "integer" },
+          "name": { "type": "string" },
+          "desc": { "type": "string" },
+          "profession_id": { "type": "integer", "description": "Parent category ID" },
+          "master_id": { "type": "integer" },
+          "filename": { "type": "string" },
+          "keywords": { "type": "string" },
+          "revision_timestamp": { "type": "string" },
+          "sort_order": { "type": "integer" },
+          "lead_price": { "type": "number" },
+          "image": { "type": "string" }
+        }
+      },
+      "UserService": {
+        "type": "object",
+        "properties": {
+          "rel_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "service_id": { "type": "integer" },
+          "date": { "type": "string", "description": "Format: YYYYMMDDHHmmss" },
+          "avg_price": { "type": "number" },
+          "num_completed": { "type": "integer" },
+          "specialty": { "type": "integer", "enum": [0, 1] }
+        }
+      },
+      "UserPhoto": {
+        "type": "object",
+        "properties": {
+          "photo_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "file": { "type": "string" },
+          "type": { "type": "string", "enum": ["logo", "photo", "cover_photo"] },
+          "date_added": { "type": "string", "description": "Format: YYYYMMDDHHmmss" }
+        }
+      },
+      "UserMeta": {
+        "type": "object",
+        "properties": {
+          "meta_id": { "type": "integer" },
+          "database": { "type": "string", "description": "Target table name" },
+          "database_id": { "type": "integer", "description": "Record ID in target table" },
+          "key": { "type": "string" },
+          "value": { "type": "string" },
+          "date_added": { "type": "string" },
+          "revision_timestamp": { "type": "string" }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "tag_name": { "type": "string" },
+          "group_tag_id": { "type": "integer" },
+          "added_by": { "type": "integer" }
+        }
+      },
+      "TagGroup": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "group_tag_name": { "type": "string" },
+          "added_by": { "type": "integer" },
+          "updated_by": { "type": "integer" }
+        }
+      },
+      "TagType": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "type_name": { "type": "string" },
+          "table_relation": { "type": "string" }
+        }
+      },
+      "TagRelationship": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "tag_id": { "type": "string" },
+          "object_id": { "type": "integer" },
+          "tag_type_id": { "type": "integer" },
+          "added_by": { "type": "integer" },
+          "created_at": { "type": "string" }
+        }
+      },
+      "SmartList": {
+        "type": "object",
+        "properties": {
+          "smart_list_id": { "type": "integer" },
+          "smart_list_name": { "type": "string" },
+          "smart_list_type": { "type": "string", "enum": ["members", "forms_inbox", "leads", "reviews", "transaction", "newsletter"] },
+          "smart_list_created_by": { "type": "integer" },
+          "smart_list_query_params": { "type": "string" },
+          "schedule": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v2/token/verify": {
+      "get": {
+        "operationId": "verifyToken",
+        "summary": "Verify API key",
+        "description": "Verify that your API key is valid and check rate limit status.",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": { "description": "API key is valid", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/fields": {
+      "get": {
+        "operationId": "getUserFields",
+        "summary": "Get user field definitions",
+        "description": "Returns available fields for user records with labels and required flags. Use this to discover custom fields.",
+        "tags": ["Users"],
+        "responses": {
+          "200": { "description": "Field definitions", "content": { "application/json": { "schema": { "type": "object" } } } }
+        }
+      }
+    },
+    "/api/v2/user/get": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List members/users",
+        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.",
+        "tags": ["Users"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/property_operator" },
+          { "$ref": "#/components/parameters/order_column" },
+          { "$ref": "#/components/parameters/order_type" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated user list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/get/{user_id}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get a single member/user",
+        "tags": ["Users"],
+        "parameters": [
+          { "name": "user_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/create": {
+      "post": {
+        "operationId": "createUser",
+        "summary": "Create a new member/user",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "subscription_id"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "subscription_id": { "type": "integer", "description": "Membership plan ID" },
+                  "first_name": { "type": "string" },
+                  "last_name": { "type": "string" },
+                  "company": { "type": "string" },
+                  "phone_number": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state_code": { "type": "string" },
+                  "country_code": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/update": {
+      "put": {
+        "operationId": "updateUser",
+        "summary": "Update an existing member/user",
+        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "email": { "type": "string" },
+                  "first_name": { "type": "string" },
+                  "last_name": { "type": "string" },
+                  "company": { "type": "string" },
+                  "phone_number": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state_code": { "type": "string" },
+                  "country_code": { "type": "string" },
+                  "subscription_id": { "type": "integer" },
+                  "member_tag_action": { "type": "integer", "enum": [1], "description": "Set to 1 to modify tags" },
+                  "member_tags": { "type": "string", "description": "Comma-separated tag IDs" },
+                  "credit_action": { "type": "string", "enum": ["add", "deduct", "override"] },
+                  "credit_amount": { "type": "number" },
+                  "images_action": { "type": "string", "enum": ["remove_all", "remove_cover_image", "remove_logo_image", "remove_profile_image"] },
+                  "services": { "type": "string", "description": "Format: category=>service1,service2" },
+                  "auto_geocode": { "type": "integer", "enum": [1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/delete": {
+      "delete": {
+        "operationId": "deleteUser",
+        "summary": "Delete a member/user",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "delete_images": { "type": "integer", "enum": [1], "description": "Set to 1 to also delete user images" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/search": {
+      "post": {
+        "operationId": "searchUsers",
+        "summary": "Search members/users",
+        "description": "Full-text search across members with category, location, and sorting options.",
+        "tags": ["Users"],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": { "type": "string", "description": "Search keyword" },
+                  "pid": { "type": "integer", "description": "Category ID" },
+                  "tid": { "type": "integer", "description": "Sub-category ID" },
+                  "ttid": { "type": "integer", "description": "Sub-sub-category ID" },
+                  "address": { "type": "string" },
+                  "sort": { "type": "string", "enum": ["reviews", "name ASC", "name DESC", "last_name_asc", "last_name_desc"] },
+                  "page": { "type": "integer" },
+                  "limit": { "type": "integer" },
+                  "dynamic": { "type": "integer", "enum": [1] },
+                  "output_type": { "type": "string", "enum": ["array", "html"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Search results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/login": {
+      "post": {
+        "operationId": "loginUser",
+        "summary": "Validate user credentials",
+        "description": "Checks if email/password are valid. Does NOT return profile data \u2014 use getUser after.",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Credentials valid", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/transactions": {
+      "post": {
+        "operationId": "getUserTransactions",
+        "summary": "Get user transactions",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Transaction list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/user/subscriptions": {
+      "post": {
+        "operationId": "getUserSubscriptions",
+        "summary": "Get user subscriptions",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Subscription list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/get": {
+      "get": {
+        "operationId": "listReviews",
+        "summary": "List reviews",
+        "tags": ["Reviews"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/property_operator" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated review list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/get/{review_id}": {
+      "get": {
+        "operationId": "getReview",
+        "summary": "Get a single review",
+        "tags": ["Reviews"],
+        "parameters": [
+          { "name": "review_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Review record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/create": {
+      "post": {
+        "operationId": "createReview",
+        "summary": "Create a review",
+        "tags": ["Reviews"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "review_name": { "type": "string" },
+                  "review_email": { "type": "string" },
+                  "review_title": { "type": "string" },
+                  "review_description": { "type": "string" },
+                  "rating_overall": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "recommend": { "type": "integer", "enum": [0, 1] },
+                  "review_status": { "type": "integer", "enum": [0, 1, 2] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Review created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/update": {
+      "put": {
+        "operationId": "updateReview",
+        "summary": "Update a review",
+        "tags": ["Reviews"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["review_id"],
+                "properties": {
+                  "review_id": { "type": "integer" },
+                  "review_name": { "type": "string" },
+                  "review_title": { "type": "string" },
+                  "review_description": { "type": "string" },
+                  "rating_overall": { "type": "integer" },
+                  "recommend": { "type": "integer" },
+                  "review_status": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Review updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/delete": {
+      "delete": {
+        "operationId": "deleteReview",
+        "summary": "Delete a review",
+        "tags": ["Reviews"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["review_id"],
+                "properties": {
+                  "review_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Review deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_reviews/search": {
+      "post": {
+        "operationId": "searchReviews",
+        "summary": "Search reviews",
+        "tags": ["Reviews"],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "review_status": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Search results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_clicks/get": {
+      "get": {
+        "operationId": "listClicks",
+        "summary": "List click records",
+        "tags": ["Clicks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated click list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_clicks/get/{click_id}": {
+      "get": {
+        "operationId": "getClick",
+        "summary": "Get a single click record",
+        "tags": ["Clicks"],
+        "parameters": [
+          { "name": "click_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Click record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_clicks/create": {
+      "post": {
+        "operationId": "createClick",
+        "summary": "Create a click record",
+        "tags": ["Clicks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "click_type", "click_name", "click_from", "click_url"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "click_type": { "type": "string", "enum": ["link", "phone", "email"] },
+                  "click_name": { "type": "string" },
+                  "click_from": { "type": "string", "enum": ["profile_page", "search_results"] },
+                  "click_url": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Click recorded", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_clicks/update": {
+      "put": {
+        "operationId": "updateClick",
+        "summary": "Update a click record",
+        "tags": ["Clicks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["click_id"],
+                "properties": {
+                  "click_id": { "type": "integer" },
+                  "click_type": { "type": "string" },
+                  "click_name": { "type": "string" },
+                  "click_url": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Click updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_clicks/delete": {
+      "delete": {
+        "operationId": "deleteClick",
+        "summary": "Delete a click record",
+        "tags": ["Clicks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["click_id"],
+                "properties": {
+                  "click_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Click deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/get": {
+      "get": {
+        "operationId": "listLeads",
+        "summary": "List leads",
+        "tags": ["Leads"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated lead list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/get/{lead_id}": {
+      "get": {
+        "operationId": "getLead",
+        "summary": "Get a single lead",
+        "tags": ["Leads"],
+        "parameters": [
+          { "name": "lead_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Lead record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/create": {
+      "post": {
+        "operationId": "createLead",
+        "summary": "Create a lead",
+        "tags": ["Leads"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["lead_name", "lead_email", "lead_phone", "lead_message", "lead_location", "top_id"],
+                "properties": {
+                  "lead_name": { "type": "string" },
+                  "lead_email": { "type": "string" },
+                  "lead_phone": { "type": "string" },
+                  "lead_message": { "type": "string" },
+                  "lead_location": { "type": "string" },
+                  "top_id": { "type": "integer", "description": "Category ID" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/match": {
+      "post": {
+        "operationId": "matchLead",
+        "summary": "Auto-match lead to members",
+        "description": "Triggers automatic matching \u2014 system finds members matching category, location, and service area, then sends notification emails.",
+        "tags": ["Leads"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["lead_id"],
+                "properties": {
+                  "lead_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead matched", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/update": {
+      "put": {
+        "operationId": "updateLead",
+        "summary": "Update a lead",
+        "tags": ["Leads"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["lead_id"],
+                "properties": {
+                  "lead_id": { "type": "integer" },
+                  "lead_name": { "type": "string" },
+                  "lead_notes": { "type": "string" },
+                  "lead_status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/leads/delete": {
+      "delete": {
+        "operationId": "deleteLead",
+        "summary": "Delete a lead",
+        "tags": ["Leads"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["lead_id"],
+                "properties": {
+                  "lead_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/lead_matches/get": {
+      "get": {
+        "operationId": "listLeadMatches",
+        "summary": "List lead matches",
+        "tags": ["Lead Matches"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated lead match list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/lead_matches/get/{match_id}": {
+      "get": {
+        "operationId": "getLeadMatch",
+        "summary": "Get a single lead match",
+        "tags": ["Lead Matches"],
+        "parameters": [
+          { "name": "match_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Lead match record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/lead_matches/create": {
+      "post": {
+        "operationId": "createLeadMatch",
+        "summary": "Create a lead match",
+        "tags": ["Lead Matches"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["lead_id", "user_id", "lead_matched", "lead_status", "match_price", "lead_token", "lead_matched_by", "lead_updated"],
+                "properties": {
+                  "lead_id": { "type": "integer" },
+                  "user_id": { "type": "integer" },
+                  "lead_matched": { "type": "string" },
+                  "lead_status": { "type": "string" },
+                  "match_price": { "type": "number" },
+                  "lead_token": { "type": "string" },
+                  "lead_matched_by": { "type": "string" },
+                  "lead_updated": { "type": "string" },
+                  "lead_points": { "type": "integer" },
+                  "lead_match_notes": { "type": "string" },
+                  "lead_viewed": { "type": "integer" },
+                  "lead_type": { "type": "string" },
+                  "lead_distance": { "type": "number" },
+                  "lead_rating": { "type": "number" },
+                  "lead_chosen": { "type": "integer" },
+                  "lead_response": { "type": "string" },
+                  "lead_accepted": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead match created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/lead_matches/update": {
+      "put": {
+        "operationId": "updateLeadMatch",
+        "summary": "Update a lead match",
+        "tags": ["Lead Matches"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["match_id"],
+                "properties": {
+                  "match_id": { "type": "integer" },
+                  "lead_status": { "type": "string" },
+                  "lead_response": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead match updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/lead_matches/delete": {
+      "delete": {
+        "operationId": "deleteLeadMatch",
+        "summary": "Delete a lead match",
+        "tags": ["Lead Matches"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["match_id"],
+                "properties": {
+                  "match_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead match deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/get": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List posts",
+        "tags": ["Posts"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated post list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/get/{post_id}": {
+      "get": {
+        "operationId": "getPost",
+        "summary": "Get a single post",
+        "tags": ["Posts"],
+        "parameters": [
+          { "name": "post_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Post record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/fields": {
+      "get": {
+        "operationId": "getPostFields",
+        "summary": "Get post field definitions",
+        "description": "Returns custom fields for a specific post type form.",
+        "tags": ["Posts"],
+        "parameters": [
+          { "name": "form_name", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Form slug for the post type" }
+        ],
+        "responses": {
+          "200": { "description": "Field definitions", "content": { "application/json": { "schema": { "type": "object" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/create": {
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create a post",
+        "tags": ["Posts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "data_id", "data_type"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "data_id": { "type": "integer", "description": "Post type category ID" },
+                  "data_type": { "type": "string" },
+                  "post_title": { "type": "string" },
+                  "post_caption": { "type": "string" },
+                  "post_content": { "type": "string", "description": "HTML allowed" },
+                  "post_status": { "type": "integer", "enum": [0, 1], "description": "0=Draft, 1=Published" },
+                  "post_price": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/update": {
+      "put": {
+        "operationId": "updatePost",
+        "summary": "Update a post",
+        "tags": ["Posts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["post_id"],
+                "properties": {
+                  "post_id": { "type": "integer" },
+                  "post_title": { "type": "string" },
+                  "post_content": { "type": "string" },
+                  "post_status": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/delete": {
+      "delete": {
+        "operationId": "deletePost",
+        "summary": "Delete a post",
+        "tags": ["Posts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["post_id"],
+                "properties": {
+                  "post_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_posts/search": {
+      "post": {
+        "operationId": "searchPosts",
+        "summary": "Search posts",
+        "tags": ["Posts"],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": { "type": "string" },
+                  "category": { "type": "string" },
+                  "data_id": { "type": "integer", "description": "Post type ID (strongly recommended)" },
+                  "user_id": { "type": "integer" },
+                  "page": { "type": "integer" },
+                  "limit": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Search results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/get": {
+      "get": {
+        "operationId": "listPortfolioGroups",
+        "summary": "List album groups",
+        "tags": ["Portfolio Groups"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated album group list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/get/{group_id}": {
+      "get": {
+        "operationId": "getPortfolioGroup",
+        "summary": "Get a single album group",
+        "tags": ["Portfolio Groups"],
+        "parameters": [
+          { "name": "group_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Album group record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/fields": {
+      "get": {
+        "operationId": "getPortfolioGroupFields",
+        "summary": "Get album group field definitions",
+        "tags": ["Portfolio Groups"],
+        "parameters": [
+          { "name": "form_name", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Field definitions", "content": { "application/json": { "schema": { "type": "object" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/create": {
+      "post": {
+        "operationId": "createPortfolioGroup",
+        "summary": "Create an album group",
+        "tags": ["Portfolio Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "data_id", "data_type"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "data_id": { "type": "integer" },
+                  "data_type": { "type": "string" },
+                  "group_name": { "type": "string" },
+                  "group_desc": { "type": "string" },
+                  "group_status": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Album group created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/update": {
+      "put": {
+        "operationId": "updatePortfolioGroup",
+        "summary": "Update an album group",
+        "tags": ["Portfolio Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_id"],
+                "properties": {
+                  "group_id": { "type": "integer" },
+                  "group_name": { "type": "string" },
+                  "group_desc": { "type": "string" },
+                  "group_status": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Album group updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/delete": {
+      "delete": {
+        "operationId": "deletePortfolioGroup",
+        "summary": "Delete an album group",
+        "tags": ["Portfolio Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_id"],
+                "properties": {
+                  "group_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Album group deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio_groups/search": {
+      "post": {
+        "operationId": "searchPortfolioGroups",
+        "summary": "Search album groups",
+        "tags": ["Portfolio Groups"],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": { "type": "string" },
+                  "data_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Search results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio/get": {
+      "get": {
+        "operationId": "listPortfolioPhotos",
+        "summary": "List album photos",
+        "tags": ["Portfolio Photos"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated photo list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio/get/{photo_id}": {
+      "get": {
+        "operationId": "getPortfolioPhoto",
+        "summary": "Get a single album photo",
+        "tags": ["Portfolio Photos"],
+        "parameters": [
+          { "name": "photo_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Photo record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio/create": {
+      "post": {
+        "operationId": "createPortfolioPhoto",
+        "summary": "Create an album photo",
+        "tags": ["Portfolio Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "group_id"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "group_id": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "original_image_url": { "type": "string" },
+                  "status": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio/update": {
+      "put": {
+        "operationId": "updatePortfolioPhoto",
+        "summary": "Update an album photo",
+        "tags": ["Portfolio Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["photo_id"],
+                "properties": {
+                  "photo_id": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "order": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_portfolio/delete": {
+      "delete": {
+        "operationId": "deletePortfolioPhoto",
+        "summary": "Delete an album photo",
+        "tags": ["Portfolio Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["photo_id"],
+                "properties": {
+                  "photo_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/get": {
+      "get": {
+        "operationId": "listPostTypes",
+        "summary": "List post types",
+        "tags": ["Post Types"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated post type list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/get/{data_id}": {
+      "get": {
+        "operationId": "getPostType",
+        "summary": "Get a single post type",
+        "tags": ["Post Types"],
+        "parameters": [
+          { "name": "data_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Post type record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/create": {
+      "post": {
+        "operationId": "createPostType",
+        "summary": "Create a post type",
+        "tags": ["Post Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["data_name"],
+                "properties": {
+                  "data_name": { "type": "string" },
+                  "data_active": { "type": "integer", "enum": [0, 1] },
+                  "category_tab": { "type": "string" },
+                  "profile_tab": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post type created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/custom_fields": {
+      "post": {
+        "operationId": "getPostTypeCustomFields",
+        "summary": "Get custom fields for a post type",
+        "tags": ["Post Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["data_id"],
+                "properties": {
+                  "data_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Custom field definitions", "content": { "application/json": { "schema": { "type": "object" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/update": {
+      "put": {
+        "operationId": "updatePostType",
+        "summary": "Update a post type",
+        "tags": ["Post Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["data_id"],
+                "properties": {
+                  "data_id": { "type": "integer" },
+                  "category_tab": { "type": "string" },
+                  "per_page": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post type updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_categories/delete": {
+      "delete": {
+        "operationId": "deletePostType",
+        "summary": "Delete a post type",
+        "tags": ["Post Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["data_id"],
+                "properties": {
+                  "data_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Post type deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/unsubscribe_list/get": {
+      "get": {
+        "operationId": "listUnsubscribes",
+        "summary": "List unsubscribe records",
+        "tags": ["Unsubscribe"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated unsubscribe list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/unsubscribe_list/get/{id}": {
+      "get": {
+        "operationId": "getUnsubscribe",
+        "summary": "Get a single unsubscribe record",
+        "tags": ["Unsubscribe"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Unsubscribe record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/unsubscribe_list/create": {
+      "post": {
+        "operationId": "createUnsubscribe",
+        "summary": "Add email to unsubscribe list",
+        "tags": ["Unsubscribe"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "definitive": { "type": "integer", "enum": [0, 1], "description": "1=permanent unsubscribe" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Email unsubscribed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/unsubscribe_list/update": {
+      "put": {
+        "operationId": "updateUnsubscribe",
+        "summary": "Update an unsubscribe record",
+        "tags": ["Unsubscribe"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "definitive": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Record updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/unsubscribe_list/delete": {
+      "delete": {
+        "operationId": "deleteUnsubscribe",
+        "summary": "Remove email from unsubscribe list",
+        "description": "Re-enables emails to this address.",
+        "tags": ["Unsubscribe"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Record deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/get": {
+      "get": {
+        "operationId": "listWidgets",
+        "summary": "List widgets",
+        "tags": ["Widgets"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated widget list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/get/{widget_id}": {
+      "get": {
+        "operationId": "getWidget",
+        "summary": "Get a single widget",
+        "tags": ["Widgets"],
+        "parameters": [
+          { "name": "widget_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Widget record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/create": {
+      "post": {
+        "operationId": "createWidget",
+        "summary": "Create a widget",
+        "tags": ["Widgets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["widget_name"],
+                "properties": {
+                  "widget_name": { "type": "string" },
+                  "widget_data": { "type": "string", "description": "HTML content" },
+                  "widget_viewport": { "type": "string", "enum": ["front", "admin", "both"] },
+                  "bootstrap_enabled": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Widget created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/update": {
+      "put": {
+        "operationId": "updateWidget",
+        "summary": "Update a widget",
+        "tags": ["Widgets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["widget_id"],
+                "properties": {
+                  "widget_id": { "type": "integer" },
+                  "widget_name": { "type": "string" },
+                  "widget_data": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Widget updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/delete": {
+      "delete": {
+        "operationId": "deleteWidget",
+        "summary": "Delete a widget",
+        "tags": ["Widgets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["widget_id"],
+                "properties": {
+                  "widget_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Widget deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/data_widgets/render": {
+      "post": {
+        "operationId": "renderWidget",
+        "summary": "Render a widget to HTML",
+        "description": "Returns rendered HTML output with all template variables processed.",
+        "tags": ["Widgets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["widget_id"],
+                "properties": {
+                  "widget_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rendered widget HTML",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "message": { "type": "string" },
+                    "name": { "type": "string" },
+                    "output": { "type": "string", "description": "Rendered HTML" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/email_templates/get": {
+      "get": {
+        "operationId": "listEmailTemplates",
+        "summary": "List email templates",
+        "tags": ["Email Templates"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated email template list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/email_templates/get/{email_id}": {
+      "get": {
+        "operationId": "getEmailTemplate",
+        "summary": "Get a single email template",
+        "tags": ["Email Templates"],
+        "parameters": [
+          { "name": "email_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Email template record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/email_templates/create": {
+      "post": {
+        "operationId": "createEmailTemplate",
+        "summary": "Create an email template",
+        "tags": ["Email Templates"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email_name"],
+                "properties": {
+                  "email_name": { "type": "string", "description": "Internal slug" },
+                  "email_subject": { "type": "string", "description": "Supports merge tags" },
+                  "email_body": { "type": "string", "description": "HTML + merge tags" },
+                  "email_type": { "type": "string" },
+                  "triggers": { "type": "string", "description": "Comma-separated events" },
+                  "website": { "type": "integer", "description": "0=platform-wide" },
+                  "email_from": { "type": "string" },
+                  "priority": { "type": "integer" },
+                  "signature": { "type": "integer", "enum": [0, 1] },
+                  "category_id": { "type": "integer" },
+                  "notemplate": { "type": "integer", "enum": [0, 1] },
+                  "content_type": { "type": "string" },
+                  "unsubscribe_link": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Template created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/email_templates/update": {
+      "put": {
+        "operationId": "updateEmailTemplate",
+        "summary": "Update an email template",
+        "tags": ["Email Templates"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email_id"],
+                "properties": {
+                  "email_id": { "type": "integer" },
+                  "email_subject": { "type": "string" },
+                  "email_body": { "type": "string" },
+                  "email_type": { "type": "string" },
+                  "triggers": { "type": "string" },
+                  "signature": { "type": "integer" },
+                  "unsubscribe_link": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Template updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/email_templates/delete": {
+      "delete": {
+        "operationId": "deleteEmailTemplate",
+        "summary": "Delete an email template",
+        "tags": ["Email Templates"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email_id"],
+                "properties": {
+                  "email_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Template deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form/get": {
+      "get": {
+        "operationId": "listForms",
+        "summary": "List forms",
+        "tags": ["Forms"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated form list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form/get/{form_id}": {
+      "get": {
+        "operationId": "getForm",
+        "summary": "Get a single form",
+        "tags": ["Forms"],
+        "parameters": [
+          { "name": "form_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Form record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form/create": {
+      "post": {
+        "operationId": "createForm",
+        "summary": "Create a form",
+        "tags": ["Forms"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["form_name", "form_title", "form_action", "form_layout", "form_table"],
+                "properties": {
+                  "form_name": { "type": "string", "description": "Internal slug" },
+                  "form_title": { "type": "string" },
+                  "form_action": { "type": "string", "default": "post" },
+                  "form_layout": { "type": "string", "default": "bootstrap" },
+                  "form_table": { "type": "string", "description": "Target DB table" },
+                  "form_class": { "type": "string" },
+                  "form_email_on": { "type": "integer", "enum": [0, 1] },
+                  "form_email_recipient": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Form created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form/update": {
+      "put": {
+        "operationId": "updateForm",
+        "summary": "Update a form",
+        "tags": ["Forms"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["form_id"],
+                "properties": {
+                  "form_id": { "type": "integer" },
+                  "form_title": { "type": "string" },
+                  "form_email_on": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Form updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form/delete": {
+      "delete": {
+        "operationId": "deleteForm",
+        "summary": "Delete a form",
+        "tags": ["Forms"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["form_id"],
+                "properties": {
+                  "form_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Form deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form_fields/get": {
+      "get": {
+        "operationId": "listFormFields",
+        "summary": "List form fields",
+        "tags": ["Form Fields"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated form field list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form_fields/get/{field_id}": {
+      "get": {
+        "operationId": "getFormField",
+        "summary": "Get a single form field",
+        "tags": ["Form Fields"],
+        "parameters": [
+          { "name": "field_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Form field record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form_fields/create": {
+      "post": {
+        "operationId": "createFormField",
+        "summary": "Create a form field",
+        "tags": ["Form Fields"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["form_name", "field_name", "field_text", "field_type", "field_order"],
+                "properties": {
+                  "form_name": { "type": "string", "description": "Parent form slug" },
+                  "field_name": { "type": "string", "description": "DB column name" },
+                  "field_text": { "type": "string", "description": "Display label" },
+                  "field_type": { "type": "string", "enum": ["text", "textarea", "select", "checkbox"] },
+                  "field_order": { "type": "integer" },
+                  "field_required": { "type": "integer", "enum": [0, 1] },
+                  "field_placeholder": { "type": "string" },
+                  "field_input_view": { "type": "integer", "description": "Show in edit form" },
+                  "field_display_view": { "type": "integer", "description": "Show in public view" },
+                  "field_email_view": { "type": "integer", "description": "Include in notifications" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Field created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form_fields/update": {
+      "put": {
+        "operationId": "updateFormField",
+        "summary": "Update a form field",
+        "tags": ["Form Fields"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["field_id"],
+                "properties": {
+                  "field_id": { "type": "integer" },
+                  "field_text": { "type": "string" },
+                  "field_type": { "type": "string" },
+                  "field_order": { "type": "integer" },
+                  "field_required": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Field updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/form_fields/delete": {
+      "delete": {
+        "operationId": "deleteFormField",
+        "summary": "Delete a form field",
+        "tags": ["Form Fields"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["field_id"],
+                "properties": {
+                  "field_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Field deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/subscription_types/get": {
+      "get": {
+        "operationId": "listMembershipPlans",
+        "summary": "List membership plans",
+        "tags": ["Membership Plans"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated plan list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/subscription_types/get/{subscription_id}": {
+      "get": {
+        "operationId": "getMembershipPlan",
+        "summary": "Get a single membership plan",
+        "tags": ["Membership Plans"],
+        "parameters": [
+          { "name": "subscription_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Plan record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/subscription_types/create": {
+      "post": {
+        "operationId": "createMembershipPlan",
+        "summary": "Create a membership plan",
+        "tags": ["Membership Plans"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["subscription_name", "subscription_type", "profile_type"],
+                "properties": {
+                  "subscription_name": { "type": "string" },
+                  "subscription_type": { "type": "string", "default": "member" },
+                  "profile_type": { "type": "string", "enum": ["paid", "free", "claim"] },
+                  "monthly_amount": { "type": "number" },
+                  "yearly_amount": { "type": "number" },
+                  "sub_active": { "type": "integer", "enum": [0, 1] },
+                  "searchable": { "type": "integer", "enum": [0, 1] },
+                  "search_priority": { "type": "integer" },
+                  "payment_default": { "type": "string", "enum": ["yearly", "monthly"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Plan created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/subscription_types/update": {
+      "put": {
+        "operationId": "updateMembershipPlan",
+        "summary": "Update a membership plan",
+        "tags": ["Membership Plans"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["subscription_id"],
+                "properties": {
+                  "subscription_id": { "type": "integer" },
+                  "subscription_name": { "type": "string" },
+                  "monthly_amount": { "type": "number" },
+                  "yearly_amount": { "type": "number" },
+                  "sub_active": { "type": "integer" },
+                  "searchable": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Plan updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/subscription_types/delete": {
+      "delete": {
+        "operationId": "deleteMembershipPlan",
+        "summary": "Delete a membership plan",
+        "tags": ["Membership Plans"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["subscription_id"],
+                "properties": {
+                  "subscription_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Plan deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menus/get": {
+      "get": {
+        "operationId": "listMenus",
+        "summary": "List menus",
+        "tags": ["Menus"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated menu list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menus/get/{menu_id}": {
+      "get": {
+        "operationId": "getMenu",
+        "summary": "Get a single menu",
+        "tags": ["Menus"],
+        "parameters": [
+          { "name": "menu_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Menu record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menus/create": {
+      "post": {
+        "operationId": "createMenu",
+        "summary": "Create a menu",
+        "tags": ["Menus"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_name", "menu_title"],
+                "properties": {
+                  "menu_name": { "type": "string", "maxLength": 35 },
+                  "menu_title": { "type": "string" },
+                  "menu_location": { "type": "string" },
+                  "menu_div_id": { "type": "string", "maxLength": 60 },
+                  "menu_div_class": { "type": "string", "maxLength": 60 },
+                  "menu_div_css": { "type": "string" },
+                  "menu_div_code": { "type": "string" },
+                  "menu_effects": { "type": "string", "maxLength": 60 },
+                  "menu_active": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menus/update": {
+      "put": {
+        "operationId": "updateMenu",
+        "summary": "Update a menu",
+        "tags": ["Menus"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_id"],
+                "properties": {
+                  "menu_id": { "type": "integer" },
+                  "menu_name": { "type": "string" },
+                  "menu_title": { "type": "string" },
+                  "menu_active": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menus/delete": {
+      "delete": {
+        "operationId": "deleteMenu",
+        "summary": "Delete a menu",
+        "tags": ["Menus"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_id"],
+                "properties": {
+                  "menu_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menu_items/get": {
+      "get": {
+        "operationId": "listMenuItems",
+        "summary": "List menu items",
+        "tags": ["Menu Items"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated menu item list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menu_items/get/{menu_item_id}": {
+      "get": {
+        "operationId": "getMenuItem",
+        "summary": "Get a single menu item",
+        "tags": ["Menu Items"],
+        "parameters": [
+          { "name": "menu_item_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Menu item record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menu_items/create": {
+      "post": {
+        "operationId": "createMenuItem",
+        "summary": "Create a menu item",
+        "tags": ["Menu Items"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_id", "menu_name", "menu_link", "master_id", "menu_order"],
+                "properties": {
+                  "menu_id": { "type": "integer", "description": "Parent menu ID" },
+                  "menu_name": { "type": "string", "description": "Display text" },
+                  "menu_link": { "type": "string", "description": "URL or path" },
+                  "master_id": { "type": "integer", "description": "0 for top-level, parent item ID for sub-items" },
+                  "menu_order": { "type": "integer" },
+                  "menu_active": { "type": "integer", "enum": [0, 1] },
+                  "menu_target": { "type": "string", "enum": ["_blank", "_self"] },
+                  "menu_class": { "type": "string" },
+                  "menu_icon": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu item created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menu_items/update": {
+      "put": {
+        "operationId": "updateMenuItem",
+        "summary": "Update a menu item",
+        "tags": ["Menu Items"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_item_id"],
+                "properties": {
+                  "menu_item_id": { "type": "integer" },
+                  "menu_name": { "type": "string" },
+                  "menu_link": { "type": "string" },
+                  "menu_order": { "type": "integer" },
+                  "menu_active": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu item updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/menu_items/delete": {
+      "delete": {
+        "operationId": "deleteMenuItem",
+        "summary": "Delete a menu item",
+        "tags": ["Menu Items"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["menu_item_id"],
+                "properties": {
+                  "menu_item_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Menu item deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category/get": {
+      "get": {
+        "operationId": "listCategories",
+        "summary": "List categories (professions)",
+        "tags": ["Categories"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated category list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category/get/{category_id}": {
+      "get": {
+        "operationId": "getCategory",
+        "summary": "Get a single category",
+        "tags": ["Categories"],
+        "parameters": [
+          { "name": "category_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Category record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category/create": {
+      "post": {
+        "operationId": "createCategory",
+        "summary": "Create a category",
+        "tags": ["Categories"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "filename", "group_id"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "filename": { "type": "string", "description": "URL-friendly slug" },
+                  "group_id": { "type": "integer" },
+                  "keywords": { "type": "string" },
+                  "icon": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category/update": {
+      "put": {
+        "operationId": "updateCategory",
+        "summary": "Update a category",
+        "tags": ["Categories"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["category_id"],
+                "properties": {
+                  "category_id": { "type": "integer" },
+                  "name": { "type": "string" },
+                  "filename": { "type": "string" },
+                  "group_id": { "type": "integer" },
+                  "keywords": { "type": "string" },
+                  "icon": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category/delete": {
+      "delete": {
+        "operationId": "deleteCategory",
+        "summary": "Delete a category",
+        "tags": ["Categories"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["category_id"],
+                "properties": {
+                  "category_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category_group/get": {
+      "get": {
+        "operationId": "listCategoryGroups",
+        "summary": "List category groups",
+        "tags": ["Category Groups"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated category group list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category_group/get/{group_id}": {
+      "get": {
+        "operationId": "getCategoryGroup",
+        "summary": "Get a single category group",
+        "tags": ["Category Groups"],
+        "parameters": [
+          { "name": "group_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Category group record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category_group/create": {
+      "post": {
+        "operationId": "createCategoryGroup",
+        "summary": "Create a category group",
+        "tags": ["Category Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_name", "group_filename", "database"],
+                "properties": {
+                  "group_name": { "type": "string" },
+                  "group_filename": { "type": "string" },
+                  "database": { "type": "string" },
+                  "group_desc": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category group created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category_group/update": {
+      "put": {
+        "operationId": "updateCategoryGroup",
+        "summary": "Update a category group",
+        "tags": ["Category Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_id"],
+                "properties": {
+                  "group_id": { "type": "integer" },
+                  "group_name": { "type": "string" },
+                  "group_desc": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category group updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/category_group/delete": {
+      "delete": {
+        "operationId": "deleteCategoryGroup",
+        "summary": "Delete a category group",
+        "tags": ["Category Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_id"],
+                "properties": {
+                  "group_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Category group deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/list_services/get": {
+      "get": {
+        "operationId": "listServices",
+        "summary": "List services (sub-categories)",
+        "tags": ["Services"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated service list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/list_services/get/{service_id}": {
+      "get": {
+        "operationId": "getService",
+        "summary": "Get a single service",
+        "tags": ["Services"],
+        "parameters": [
+          { "name": "service_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Service record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/list_services/create": {
+      "post": {
+        "operationId": "createService",
+        "summary": "Create a service",
+        "tags": ["Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "profession_id"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "profession_id": { "type": "integer", "description": "Parent category ID" },
+                  "desc": { "type": "string" },
+                  "filename": { "type": "string" },
+                  "keywords": { "type": "string" },
+                  "sort_order": { "type": "integer" },
+                  "lead_price": { "type": "number" },
+                  "master_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/list_services/update": {
+      "put": {
+        "operationId": "updateService",
+        "summary": "Update a service",
+        "tags": ["Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["service_id"],
+                "properties": {
+                  "service_id": { "type": "integer" },
+                  "name": { "type": "string" },
+                  "desc": { "type": "string" },
+                  "profession_id": { "type": "integer" },
+                  "filename": { "type": "string" },
+                  "keywords": { "type": "string" },
+                  "sort_order": { "type": "integer" },
+                  "lead_price": { "type": "number" },
+                  "master_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/list_services/delete": {
+      "delete": {
+        "operationId": "deleteService",
+        "summary": "Delete a service",
+        "tags": ["Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["service_id"],
+                "properties": {
+                  "service_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_services/get": {
+      "get": {
+        "operationId": "listUserServices",
+        "summary": "List user-service relationships",
+        "tags": ["User Services"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated user service list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_services/get/{rel_id}": {
+      "get": {
+        "operationId": "getUserService",
+        "summary": "Get a single user-service relationship",
+        "tags": ["User Services"],
+        "parameters": [
+          { "name": "rel_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User service record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_services/create": {
+      "post": {
+        "operationId": "createUserService",
+        "summary": "Link a service to a user",
+        "tags": ["User Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "service_id"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "service_id": { "type": "integer" },
+                  "date": { "type": "string", "description": "Format: YYYYMMDDHHmmss" },
+                  "avg_price": { "type": "number" },
+                  "specialty": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User service created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_services/update": {
+      "put": {
+        "operationId": "updateUserService",
+        "summary": "Update a user-service relationship",
+        "tags": ["User Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["rel_id"],
+                "properties": {
+                  "rel_id": { "type": "integer" },
+                  "avg_price": { "type": "number" },
+                  "specialty": { "type": "integer" },
+                  "num_completed": { "type": "integer" },
+                  "date": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User service updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_services/delete": {
+      "delete": {
+        "operationId": "deleteUserService",
+        "summary": "Remove a service from a user",
+        "tags": ["User Services"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["rel_id"],
+                "properties": {
+                  "rel_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User service deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_photo/get": {
+      "get": {
+        "operationId": "listUserPhotos",
+        "summary": "List user photos",
+        "tags": ["User Photos"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated user photo list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_photo/get/{photo_id}": {
+      "get": {
+        "operationId": "getUserPhoto",
+        "summary": "Get a single user photo",
+        "tags": ["User Photos"],
+        "parameters": [
+          { "name": "photo_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User photo record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_photo/create": {
+      "post": {
+        "operationId": "createUserPhoto",
+        "summary": "Create a user photo",
+        "tags": ["User Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id", "file", "type"],
+                "properties": {
+                  "user_id": { "type": "integer" },
+                  "file": { "type": "string", "description": "Image filename" },
+                  "type": { "type": "string", "enum": ["logo", "photo", "cover_photo"] },
+                  "date_added": { "type": "string", "description": "Format: YYYYMMDDHHmmss" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_photo/update": {
+      "put": {
+        "operationId": "updateUserPhoto",
+        "summary": "Update a user photo",
+        "tags": ["User Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["photo_id"],
+                "properties": {
+                  "photo_id": { "type": "integer" },
+                  "type": { "type": "string", "enum": ["logo", "photo", "cover_photo"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_photo/delete": {
+      "delete": {
+        "operationId": "deleteUserPhoto",
+        "summary": "Delete a user photo",
+        "tags": ["User Photos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["photo_id"],
+                "properties": {
+                  "photo_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Photo deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_meta/get": {
+      "get": {
+        "operationId": "listUserMeta",
+        "summary": "List user metadata records",
+        "tags": ["User Metadata"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated metadata list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_meta/get/{meta_id}": {
+      "get": {
+        "operationId": "getUserMeta",
+        "summary": "Get a single metadata record",
+        "tags": ["User Metadata"],
+        "parameters": [
+          { "name": "meta_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Metadata record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_meta/create": {
+      "post": {
+        "operationId": "createUserMeta",
+        "summary": "Create a metadata record",
+        "tags": ["User Metadata"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["database", "database_id", "key", "value"],
+                "properties": {
+                  "database": { "type": "string", "description": "Target table name" },
+                  "database_id": { "type": "integer", "description": "Record ID in target table" },
+                  "key": { "type": "string" },
+                  "value": { "type": "string" },
+                  "date_added": { "type": "string", "description": "Format: YYYYMMDDHHmmss" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Metadata created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_meta/update": {
+      "put": {
+        "operationId": "updateUserMeta",
+        "summary": "Update a metadata record",
+        "tags": ["User Metadata"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["meta_id", "value"],
+                "properties": {
+                  "meta_id": { "type": "integer" },
+                  "value": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Metadata updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/users_meta/delete": {
+      "delete": {
+        "operationId": "deleteUserMeta",
+        "summary": "Delete a metadata record",
+        "tags": ["User Metadata"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["meta_id"],
+                "properties": {
+                  "meta_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Metadata deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tags/get": {
+      "get": {
+        "operationId": "listTags",
+        "summary": "List tags",
+        "tags": ["Tags"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated tag list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tags/get/{id}": {
+      "get": {
+        "operationId": "getTag",
+        "summary": "Get a single tag",
+        "tags": ["Tags"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Tag record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tags/create": {
+      "post": {
+        "operationId": "createTag",
+        "summary": "Create a tag",
+        "tags": ["Tags"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["tag_name", "group_tag_id", "added_by"],
+                "properties": {
+                  "tag_name": { "type": "string" },
+                  "group_tag_id": { "type": "integer" },
+                  "added_by": { "type": "integer", "description": "User ID" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tags/update": {
+      "put": {
+        "operationId": "updateTag",
+        "summary": "Update a tag",
+        "tags": ["Tags"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "tag_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tags/delete": {
+      "delete": {
+        "operationId": "deleteTag",
+        "summary": "Delete a tag",
+        "tags": ["Tags"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_groups/get": {
+      "get": {
+        "operationId": "listTagGroups",
+        "summary": "List tag groups",
+        "tags": ["Tag Groups"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated tag group list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_groups/get/{id}": {
+      "get": {
+        "operationId": "getTagGroup",
+        "summary": "Get a single tag group",
+        "tags": ["Tag Groups"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Tag group record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_groups/create": {
+      "post": {
+        "operationId": "createTagGroup",
+        "summary": "Create a tag group",
+        "tags": ["Tag Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["group_tag_name", "added_by", "updated_by"],
+                "properties": {
+                  "group_tag_name": { "type": "string" },
+                  "added_by": { "type": "integer" },
+                  "updated_by": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag group created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_groups/update": {
+      "put": {
+        "operationId": "updateTagGroup",
+        "summary": "Update a tag group",
+        "tags": ["Tag Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "group_tag_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag group updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_groups/delete": {
+      "delete": {
+        "operationId": "deleteTagGroup",
+        "summary": "Delete a tag group",
+        "tags": ["Tag Groups"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag group deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_types/get": {
+      "get": {
+        "operationId": "listTagTypes",
+        "summary": "List tag types",
+        "tags": ["Tag Types"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated tag type list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_types/get/{id}": {
+      "get": {
+        "operationId": "getTagType",
+        "summary": "Get a single tag type",
+        "tags": ["Tag Types"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Tag type record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_types/create": {
+      "post": {
+        "operationId": "createTagType",
+        "summary": "Create a tag type",
+        "tags": ["Tag Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["type_name", "table_relation"],
+                "properties": {
+                  "type_name": { "type": "string" },
+                  "table_relation": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag type created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_types/update": {
+      "put": {
+        "operationId": "updateTagType",
+        "summary": "Update a tag type",
+        "tags": ["Tag Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "type_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag type updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/tag_types/delete": {
+      "delete": {
+        "operationId": "deleteTagType",
+        "summary": "Delete a tag type",
+        "tags": ["Tag Types"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag type deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_tags/get": {
+      "get": {
+        "operationId": "listTagRelationships",
+        "summary": "List tag relationships",
+        "tags": ["Tag Relationships"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated tag relationship list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_tags/get/{id}": {
+      "get": {
+        "operationId": "getTagRelationship",
+        "summary": "Get a single tag relationship",
+        "tags": ["Tag Relationships"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Tag relationship record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_tags/create": {
+      "post": {
+        "operationId": "createTagRelationship",
+        "summary": "Create a tag relationship",
+        "tags": ["Tag Relationships"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["tag_id", "object_id", "tag_type_id", "added_by"],
+                "properties": {
+                  "tag_id": { "type": "string" },
+                  "object_id": { "type": "integer" },
+                  "tag_type_id": { "type": "integer" },
+                  "added_by": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag relationship created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_tags/update": {
+      "put": {
+        "operationId": "updateTagRelationship",
+        "summary": "Update a tag relationship",
+        "tags": ["Tag Relationships"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "object_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag relationship updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/rel_tags/delete": {
+      "delete": {
+        "operationId": "deleteTagRelationship",
+        "summary": "Delete a tag relationship",
+        "tags": ["Tag Relationships"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag relationship deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/smart_lists/get": {
+      "get": {
+        "operationId": "listSmartLists",
+        "summary": "List smart lists",
+        "tags": ["Smart Lists"],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated smart list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/smart_lists/get/{smart_list_id}": {
+      "get": {
+        "operationId": "getSmartList",
+        "summary": "Get a single smart list",
+        "tags": ["Smart Lists"],
+        "parameters": [
+          { "name": "smart_list_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Smart list record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/smart_lists/create": {
+      "post": {
+        "operationId": "createSmartList",
+        "summary": "Create a smart list",
+        "tags": ["Smart Lists"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["smart_list_name", "smart_list_type", "smart_list_created_by"],
+                "properties": {
+                  "smart_list_name": { "type": "string" },
+                  "smart_list_type": { "type": "string", "enum": ["members", "forms_inbox", "leads", "reviews", "transaction", "newsletter"] },
+                  "smart_list_created_by": { "type": "integer", "description": "Admin user ID" },
+                  "smart_list_query_params": { "type": "string", "description": "Filter criteria" },
+                  "schedule": { "type": "string", "description": "Recurrence frequency" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Smart list created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/smart_lists/update": {
+      "put": {
+        "operationId": "updateSmartList",
+        "summary": "Update a smart list",
+        "tags": ["Smart Lists"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["smart_list_id"],
+                "properties": {
+                  "smart_list_id": { "type": "integer" },
+                  "smart_list_name": { "type": "string" },
+                  "smart_list_modified_by": { "type": "integer" },
+                  "smart_list_query_params": { "type": "string" },
+                  "schedule": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Smart list updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } }
+        }
+      }
+    },
+    "/api/v2/smart_lists/delete": {
+      "delete": {
+        "operationId": "deleteSmartList",
+        "summary": "Delete a smart list",
+        "tags": ["Smart Lists"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["smart_list_id"],
+                "properties": {
+                  "smart_list_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Smart list deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Authentication", "description": "API key verification" },
+    { "name": "Users", "description": "Members/users \u2014 create, update, search, login, transactions, subscriptions" },
+    { "name": "Reviews", "description": "User reviews and ratings" },
+    { "name": "Clicks", "description": "Link click tracking and analytics" },
+    { "name": "Leads", "description": "Lead capture, matching, and management" },
+    { "name": "Lead Matches", "description": "Lead-to-member matching records" },
+    { "name": "Posts", "description": "Single-image posts/content" },
+    { "name": "Portfolio Groups", "description": "Multi-image album groups" },
+    { "name": "Portfolio Photos", "description": "Individual photos within albums" },
+    { "name": "Post Types", "description": "Post type categories and their custom fields" },
+    { "name": "Unsubscribe", "description": "Email unsubscribe list management" },
+    { "name": "Widgets", "description": "Widget CRUD and rendering" },
+    { "name": "Email Templates", "description": "Email templates with merge tags and triggers" },
+    { "name": "Forms", "description": "Form definitions" },
+    { "name": "Form Fields", "description": "Individual form field configuration" },
+    { "name": "Membership Plans", "description": "Subscription plans and pricing" },
+    { "name": "Menus", "description": "Navigation menu containers" },
+    { "name": "Menu Items", "description": "Individual menu items within menus" },
+    { "name": "Categories", "description": "Categories (professions) \u2014 primary taxonomy" },
+    { "name": "Category Groups", "description": "Top-level groupings for categories" },
+    { "name": "Services", "description": "Sub-categories under categories" },
+    { "name": "User Services", "description": "Links between users and services they offer" },
+    { "name": "User Photos", "description": "Member profile photos (logo, photo, cover)" },
+    { "name": "User Metadata", "description": "Key-value metadata for any record" },
+    { "name": "Tags", "description": "Content tags" },
+    { "name": "Tag Groups", "description": "Tag group collections" },
+    { "name": "Tag Types", "description": "Tag type definitions and table relationships" },
+    { "name": "Tag Relationships", "description": "Polymorphic tag-to-object links" },
+    { "name": "Smart Lists", "description": "Dynamic filtered lists for members, leads, reviews, etc." }
+  ]
+}
