@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-04-18
+
+### Added — tool description quality (Glama D→A)
+Enriched ALL 170 operation descriptions in `openapi/bd-api.json` with structured metadata so AI agents pick the right tool on first attempt. Addresses Glama's Tool Definition Quality rubric (previously scored D, 1.8/5):
+- **Category-specific openers** — read-only / writes / destructive signal in the opening line so agents know operational intent before reading params
+- **See also cross-links** — every op now references its CRUD siblings (list↔get↔search↔create↔update↔delete) so agents pick the right tool instead of guessing. Linking is whitelisted to the same resource family to avoid misleading suggestions
+- **Enum values surfaced** — enum choices from the schema are now quoted in the description itself (e.g., `createUser` lists `active: 1-5`, `listing_type: Individual|Company`), not hidden only in the schema
+- **Required-parameter callouts** — required fields are listed prominently in every write operation
+- **Pagination/filter/sort guidance** on every `list*` operation
+- **Destructive-operation warnings** on every `delete*` operation
+- **Compact footer** — universal auth/rate-limit/error-format disclosure on every op in a single italicized line
+- **Hand-written descriptions preserved** — ops like `matchLead`, `refreshSiteCache`, `loginUser`, `verifyToken` keep their specific prose; only the footer is appended
+
+Average description length: 144 chars (only 18 ops) → 600+ chars (all 170 ops). Template is documented in VISION.md under "Tool description template" for all future endpoint additions.
+
 ## [1.5.4] - 2026-04-18
 
 ### Changed

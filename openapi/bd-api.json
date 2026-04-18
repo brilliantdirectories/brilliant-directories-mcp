@@ -1155,7 +1155,7 @@
       "get": {
         "operationId": "verifyToken",
         "summary": "Verify API key",
-        "description": "Verify that your API key is valid and check rate limit status.",
+        "description": "Verify that your API key is valid and check rate limit status.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Authentication"
         ],
@@ -1177,7 +1177,7 @@
       "get": {
         "operationId": "getUserFields",
         "summary": "Get user field definitions",
-        "description": "Returns available fields for user records with labels and required flags. Use this to discover custom fields.",
+        "description": "Returns available fields for user records with labels and required flags. Use this to discover custom fields.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1199,7 +1199,7 @@
       "get": {
         "operationId": "listUsers",
         "summary": "List members/users",
-        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.",
+        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`; `order_type`: `ASC`, `DESC`.\n\n**See also:** `getUser` (single record by ID), `searchUsers` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1268,7 +1268,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single user record. Read-only.\n\n**Required:** `user_id`.\n\n**See also:** `listUsers` (enumerate many), `searchUsers` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/create": {
@@ -1525,14 +1526,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new user record. Writes live data.\n\n**Required:** `email`, `password`, `subscription_id`.\n\n**Enums:** `active`: `1`, `2`, `3`, `4`, `5`; `listing_type`: `Individual`, `Company`; `verified`: `1`, `0`; `auto_geocode`: `1`, `0`; `nationwide`: `1`, `0`.\n\n**See also:** `updateUser` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/update": {
       "put": {
         "operationId": "updateUser",
         "summary": "Update an existing member/user",
-        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.",
+        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.\n\n**Required:** `user_id`.\n\n**Enums:** `member_tag_action`: `1`; `credit_action`: `add`, `deduct`, `override`; `images_action`: `remove_all`, `remove_cover_image`, `remove_logo_image`, `remove_profile_image`; `auto_geocode`: `0`, `1`; `active`: `1`, `2`, `3`, `4`, `5`.\n\n**See also:** `createUser` (add new), `deleteUser` (remove permanently).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1852,14 +1854,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a user record by ID. Destructive — cannot be undone via API.\n\n**Required:** `user_id`.\n\n**Enums:** `delete_images`: `1`.\n\n**See also:** `updateUser` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/search": {
       "post": {
         "operationId": "searchUsers",
         "summary": "Search members/users",
-        "description": "Full-text search across members with category, location, and sorting options.",
+        "description": "Full-text search across members with category, location, and sorting options.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`; `dynamic`: `1`; `output_type`: `array`, `html`.\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1940,7 +1943,7 @@
       "post": {
         "operationId": "loginUser",
         "summary": "Validate user credentials",
-        "description": "Checks if email/password are valid. Does NOT return profile data — use getUser after.",
+        "description": "Checks if email/password are valid. Does NOT return profile data — use getUser after.\n\n**Required:** `email`, `password`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -2017,7 +2020,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single usertransactions record. Read-only.\n\n**Required:** `user_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/subscriptions": {
@@ -2056,7 +2060,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single usersubscriptions record. Read-only.\n\n**Required:** `user_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/get": {
@@ -2094,7 +2099,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of review records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`.\n\n**See also:** `getReview` (single record by ID), `searchReviews` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/get/{review_id}": {
@@ -2125,7 +2131,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single review record. Read-only.\n\n**Required:** `review_id`.\n\n**See also:** `listReviews` (enumerate many), `searchReviews` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/create": {
@@ -2196,7 +2203,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new review record. Writes live data.\n\n**Required:** `user_id`.\n\n**Enums:** `recommend`: `0`, `1`; `review_status`: `0`, `1`, `2`.\n\n**See also:** `updateReview` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/update": {
@@ -2260,7 +2268,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing review record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `review_id`.\n\n**Enums:** `review_status`: `0`, `2`, `3`, `4`.\n\n**See also:** `createReview` (add new), `deleteReview` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/delete": {
@@ -2299,7 +2308,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a review record by ID. Destructive — cannot be undone via API.\n\n**Required:** `review_id`.\n\n**See also:** `updateReview` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/search": {
@@ -2344,7 +2354,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Keyword search across review records. Read-only.\n\n**Enums:** `review_status`: `0`, `2`, `3`, `4`.\n\n**See also:** `getReview` (single record by ID), `listReviews` (full enumeration).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/get": {
@@ -2379,7 +2390,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of click records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getClick` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/get/{click_id}": {
@@ -2410,7 +2422,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single click record. Read-only.\n\n**Required:** `click_id`.\n\n**See also:** `listClicks` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/create": {
@@ -2474,7 +2487,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new click record. Writes live data.\n\n**Required:** `user_id`, `click_type`, `click_name`, `click_from`, `click_url`.\n\n**Enums:** `click_type`: `link`, `phone`, `email`; `click_from`: `profile_page`, `search_results`.\n\n**See also:** `updateClick` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/update": {
@@ -2522,7 +2536,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing click record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `click_id`.\n\n**See also:** `createClick` (add new), `deleteClick` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/delete": {
@@ -2561,7 +2576,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a click record by ID. Destructive — cannot be undone via API.\n\n**Required:** `click_id`.\n\n**See also:** `updateClick` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/get": {
@@ -2596,7 +2612,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of lead records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getLead` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/get/{lead_id}": {
@@ -2627,7 +2644,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single lead record. Read-only.\n\n**Required:** `lead_id`.\n\n**See also:** `listLeads` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/create": {
@@ -2687,14 +2705,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new lead record. Writes live data.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/match": {
       "post": {
         "operationId": "matchLead",
         "summary": "Auto-match lead to members",
-        "description": "Triggers automatic matching — system finds members matching category, location, and service area, then sends notification emails.",
+        "description": "Triggers automatic matching — system finds members matching category, location, and service area, then sends notification emails.\n\n**Required:** `lead_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Leads"
         ],
@@ -2785,7 +2804,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `lead_id`.\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/delete": {
@@ -2824,7 +2844,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a lead record by ID. Destructive — cannot be undone via API.\n\n**Required:** `lead_id`.\n\n**See also:** `updateLead` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/get": {
@@ -2853,7 +2874,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of leadmatche records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/get/{match_id}": {
@@ -2884,7 +2906,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single leadmatch record. Read-only.\n\n**Required:** `match_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/create": {
@@ -2988,7 +3011,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new leadmatch record. Writes live data.\n\n**Required:** `lead_id`, `user_id`, `lead_matched`, `lead_status`, `match_price`, `lead_token`, `lead_matched_by`, `lead_updated`.\n\n**See also:** `updateLeadMatch` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/update": {
@@ -3043,7 +3067,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing leadmatch record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `match_id`.\n\n**See also:** `createLeadMatch` (add new), `deleteLeadMatch` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/delete": {
@@ -3082,7 +3107,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a leadmatch record by ID. Destructive — cannot be undone via API.\n\n**Required:** `match_id`.\n\n**See also:** `updateLeadMatch` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/get": {
@@ -3117,7 +3143,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPost` (single record by ID), `searchPosts` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/get/{post_id}": {
@@ -3148,14 +3175,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single post record. Read-only.\n\n**Required:** `post_id`.\n\n**See also:** `listPosts` (enumerate many), `searchPosts` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/fields": {
       "get": {
         "operationId": "getPostFields",
         "summary": "Get post field definitions",
-        "description": "Returns custom fields for a specific post type form.",
+        "description": "Returns custom fields for a specific post type form.\n\n**Required:** `form_name`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Posts"
         ],
@@ -3251,7 +3279,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new post record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Enums:** `post_status`: `0`, `1`.\n\n**See also:** `updatePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/update": {
@@ -3304,7 +3333,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing post record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `post_id`.\n\n**Enums:** `post_status`: `0`, `1`.\n\n**See also:** `createPost` (add new), `deletePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/delete": {
@@ -3343,7 +3373,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a post record by ID. Destructive — cannot be undone via API.\n\n**Required:** `post_id`.\n\n**See also:** `updatePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/search": {
@@ -3394,7 +3425,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Keyword search across post records. Read-only.\n\n**See also:** `getPost` (single record by ID), `listPosts` (full enumeration).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/get": {
@@ -3429,7 +3461,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPortfolioGroup` (single record by ID), `searchPortfolioGroups` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/get/{group_id}": {
@@ -3460,7 +3493,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Required:** `group_id`.\n\n**See also:** `listPortfolioGroups` (enumerate many), `searchPortfolioGroups` (keyword search).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/fields": {
@@ -3491,7 +3525,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single portfoliogroupfields record. Read-only.\n\n**Required:** `form_name`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/create": {
@@ -3552,7 +3587,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Enums:** `group_status`: `0`, `1`.\n\n**See also:** `updatePortfolioGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/update": {
@@ -3605,7 +3641,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing portfoliogroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**Enums:** `group_status`: `0`, `1`.\n\n**See also:** `createPortfolioGroup` (add new), `deletePortfolioGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/delete": {
@@ -3644,7 +3681,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a portfoliogroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updatePortfolioGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/search": {
@@ -3682,7 +3720,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**See also:** `getPortfolioGroup` (single record by ID), `listPortfolioGroups` (full enumeration).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/get": {
@@ -3717,7 +3756,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of portfoliophoto records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPortfolioPhoto` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/get/{photo_id}": {
@@ -3748,7 +3788,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single portfoliophoto record. Read-only.\n\n**Required:** `photo_id`.\n\n**See also:** `listPortfolioPhotos` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/create": {
@@ -3804,7 +3845,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Required:** `user_id`, `group_id`.\n\n**Enums:** `status`: `0`, `1`.\n\n**See also:** `updatePortfolioPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/update": {
@@ -3849,7 +3891,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing portfoliophoto record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `photo_id`.\n\n**See also:** `createPortfolioPhoto` (add new), `deletePortfolioPhoto` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/delete": {
@@ -3888,7 +3931,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a portfoliophoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updatePortfolioPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get": {
@@ -3923,7 +3967,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of posttype records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPostType` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get/{data_id}": {
@@ -3954,7 +3999,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single posttype record. Read-only.\n\n**Required:** `data_id`.\n\n**See also:** `listPostTypes` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/create": {
@@ -4006,7 +4052,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new posttype record. Writes live data.\n\n**Required:** `data_name`.\n\n**Enums:** `data_active`: `0`, `1`.\n\n**See also:** `updatePostType` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/custom_fields": {
@@ -4045,7 +4092,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Required:** `data_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/update": {
@@ -4090,7 +4138,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing posttype record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `data_id`.\n\n**See also:** `createPostType` (add new), `deletePostType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/delete": {
@@ -4129,7 +4178,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a posttype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `data_id`.\n\n**See also:** `updatePostType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/get": {
@@ -4158,7 +4208,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of unsubscribe records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUnsubscribe` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/get/{id}": {
@@ -4189,7 +4240,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single unsubscribe record. Read-only.\n\n**Required:** `id`.\n\n**See also:** `listUnsubscribes` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/create": {
@@ -4237,7 +4289,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new unsubscribe record. Writes live data.\n\n**Required:** `email`.\n\n**Enums:** `definitive`: `0`, `1`.\n\n**See also:** `updateUnsubscribe` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/update": {
@@ -4283,14 +4336,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing unsubscribe record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `id`.\n\n**Enums:** `definitive`: `0`, `1`.\n\n**See also:** `createUnsubscribe` (add new), `deleteUnsubscribe` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/delete": {
       "delete": {
         "operationId": "deleteUnsubscribe",
         "summary": "Remove email from unsubscribe list",
-        "description": "Re-enables emails to this address.",
+        "description": "Permanently delete a unsubscribe record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateUnsubscribe` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Unsubscribe"
         ],
@@ -4352,7 +4406,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of widget records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getWidget` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/get/{widget_id}": {
@@ -4383,7 +4438,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single widget record. Read-only.\n\n**Required:** `widget_id`.\n\n**See also:** `listWidgets` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/create": {
@@ -4441,7 +4497,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new widget record. Writes live data.\n\n**Required:** `widget_name`.\n\n**Enums:** `widget_viewport`: `front`, `admin`, `both`; `bootstrap_enabled`: `0`, `1`.\n\n**See also:** `updateWidget` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/update": {
@@ -4486,7 +4543,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing widget record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `widget_id`.\n\n**See also:** `createWidget` (add new), `deleteWidget` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/delete": {
@@ -4525,14 +4583,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a widget record by ID. Destructive — cannot be undone via API.\n\n**Required:** `widget_id`.\n\n**See also:** `updateWidget` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/render": {
       "post": {
         "operationId": "renderWidget",
         "summary": "Render a widget to HTML",
-        "description": "Returns rendered HTML output with all template variables processed.",
+        "description": "Returns rendered HTML output with all template variables processed.\n\n**Required:** `widget_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Widgets"
         ],
@@ -4609,7 +4668,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of emailtemplate records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getEmailTemplate` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/get/{email_id}": {
@@ -4640,7 +4700,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single emailtemplate record. Read-only.\n\n**Required:** `email_id`.\n\n**See also:** `listEmailTemplates` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/create": {
@@ -4732,7 +4793,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new emailtemplate record. Writes live data.\n\n**Required:** `email_name`.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/update": {
@@ -4789,7 +4851,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing emailtemplate record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `email_id`.\n\n**See also:** `createEmailTemplate` (add new), `deleteEmailTemplate` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/delete": {
@@ -4828,7 +4891,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a emailtemplate record by ID. Destructive — cannot be undone via API.\n\n**Required:** `email_id`.\n\n**See also:** `updateEmailTemplate` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/get": {
@@ -4857,7 +4921,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of form records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getForm` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/get/{form_id}": {
@@ -4888,7 +4953,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single form record. Read-only.\n\n**Required:** `form_id`.\n\n**See also:** `listForms` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/create": {
@@ -4960,7 +5026,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new form record. Writes live data.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/update": {
@@ -5005,7 +5072,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing form record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `form_id`.\n\n**See also:** `createForm` (add new), `deleteForm` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/delete": {
@@ -5044,7 +5112,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a form record by ID. Destructive — cannot be undone via API.\n\n**Required:** `form_id`.\n\n**See also:** `updateForm` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/get": {
@@ -5073,7 +5142,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of formfield records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getFormField` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/get/{field_id}": {
@@ -5104,7 +5174,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single formfield record. Read-only.\n\n**Required:** `field_id`.\n\n**See also:** `listFormFields` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/create": {
@@ -5218,7 +5289,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new formfield record. Writes live data.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/update": {
@@ -5303,7 +5375,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing formfield record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `field_id`.\n\n**See also:** `createFormField` (add new), `deleteFormField` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/delete": {
@@ -5342,7 +5415,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a formfield record by ID. Destructive — cannot be undone via API.\n\n**Required:** `field_id`.\n\n**See also:** `updateFormField` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/get": {
@@ -5371,7 +5445,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of membershipplan records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getMembershipPlan` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/get/{subscription_id}": {
@@ -5402,7 +5477,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single membershipplan record. Read-only.\n\n**Required:** `subscription_id`.\n\n**See also:** `listMembershipPlans` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/create": {
@@ -5488,7 +5564,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new membershipplan record. Writes live data.\n\n**Required:** `subscription_name`, `subscription_type`, `profile_type`.\n\n**Enums:** `profile_type`: `paid`, `free`, `claim`; `sub_active`: `0`, `1`; `searchable`: `0`, `1`; `payment_default`: `yearly`, `monthly`.\n\n**See also:** `updateMembershipPlan` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/update": {
@@ -5542,7 +5619,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing membershipplan record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `subscription_id`.\n\n**See also:** `createMembershipPlan` (add new), `deleteMembershipPlan` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/delete": {
@@ -5581,7 +5659,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a membershipplan record by ID. Destructive — cannot be undone via API.\n\n**Required:** `subscription_id`.\n\n**See also:** `updateMembershipPlan` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/get": {
@@ -5610,7 +5689,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of menu records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getMenu` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/get/{menu_id}": {
@@ -5641,7 +5721,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single menu record. Read-only.\n\n**Required:** `menu_id`.\n\n**See also:** `listMenus` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/create": {
@@ -5713,7 +5794,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new menu record. Writes live data.\n\n**Required:** `menu_name`, `menu_title`.\n\n**Enums:** `menu_active`: `0`, `1`.\n\n**See also:** `updateMenu` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/update": {
@@ -5761,7 +5843,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing menu record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `menu_id`.\n\n**See also:** `createMenu` (add new), `deleteMenu` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/delete": {
@@ -5800,7 +5883,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a menu record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_id`.\n\n**See also:** `updateMenu` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/get": {
@@ -5829,7 +5913,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of menuitem records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getMenuItem` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/get/{menu_item_id}": {
@@ -5860,7 +5945,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single menuitem record. Read-only.\n\n**Required:** `menu_item_id`.\n\n**See also:** `listMenuItems` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/create": {
@@ -5939,7 +6025,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new menuitem record. Writes live data.\n\n**Required:** `menu_id`, `menu_name`, `menu_link`, `master_id`, `menu_order`.\n\n**Enums:** `menu_active`: `0`, `1`; `menu_target`: `_blank`, `_self`.\n\n**See also:** `updateMenuItem` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/update": {
@@ -5990,7 +6077,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing menuitem record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `menu_item_id`.\n\n**See also:** `createMenuItem` (add new), `deleteMenuItem` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/delete": {
@@ -6029,7 +6117,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a menuitem record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_item_id`.\n\n**See also:** `updateMenuItem` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/get": {
@@ -6058,7 +6147,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of category records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getCategory` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/get/{category_id}": {
@@ -6089,7 +6179,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single category record. Read-only.\n\n**Required:** `category_id`.\n\n**See also:** `listCategories` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/create": {
@@ -6143,7 +6234,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**See also:** `updateCategory` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/update": {
@@ -6197,7 +6289,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing category record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `category_id`.\n\n**See also:** `createCategory` (add new), `deleteCategory` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/delete": {
@@ -6236,7 +6329,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a category record by ID. Destructive — cannot be undone via API.\n\n**Required:** `category_id`.\n\n**See also:** `updateCategory` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/get": {
@@ -6265,7 +6359,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of categorygroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getCategoryGroup` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/get/{group_id}": {
@@ -6296,7 +6391,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single categorygroup record. Read-only.\n\n**Required:** `group_id`.\n\n**See also:** `listCategoryGroups` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/create": {
@@ -6346,7 +6442,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new categorygroup record. Writes live data.\n\n**Required:** `group_name`, `group_filename`, `database`.\n\n**See also:** `updateCategoryGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/update": {
@@ -6391,7 +6488,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing categorygroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**See also:** `createCategoryGroup` (add new), `deleteCategoryGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/delete": {
@@ -6430,7 +6528,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a categorygroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updateCategoryGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/get": {
@@ -6459,7 +6558,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of service records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getService` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/get/{service_id}": {
@@ -6490,7 +6590,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single service record. Read-only.\n\n**Required:** `service_id`.\n\n**See also:** `listServices` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/create": {
@@ -6552,7 +6653,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new service record. Writes live data.\n\n**Required:** `name`, `profession_id`.\n\n**See also:** `updateService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/update": {
@@ -6615,7 +6717,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing service record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `service_id`.\n\n**See also:** `createService` (add new), `deleteService` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/delete": {
@@ -6654,7 +6757,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a service record by ID. Destructive — cannot be undone via API.\n\n**Required:** `service_id`.\n\n**See also:** `updateService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/get": {
@@ -6683,7 +6787,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of userservice records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUserService` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/get/{rel_id}": {
@@ -6714,7 +6819,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single userservice record. Read-only.\n\n**Required:** `rel_id`.\n\n**See also:** `listUserServices` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/create": {
@@ -6771,7 +6877,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new userservice record. Writes live data.\n\n**Required:** `user_id`, `service_id`.\n\n**Enums:** `specialty`: `0`, `1`.\n\n**See also:** `updateUserService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/update": {
@@ -6822,7 +6929,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing userservice record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `rel_id`.\n\n**See also:** `createUserService` (add new), `deleteUserService` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/delete": {
@@ -6861,7 +6969,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a userservice record by ID. Destructive — cannot be undone via API.\n\n**Required:** `rel_id`.\n\n**See also:** `updateUserService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/get": {
@@ -6890,7 +6999,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of userphoto records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUserPhoto` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/get/{photo_id}": {
@@ -6921,7 +7031,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single userphoto record. Read-only.\n\n**Required:** `photo_id`.\n\n**See also:** `listUserPhotos` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/create": {
@@ -6978,7 +7089,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new userphoto record. Writes live data.\n\n**Required:** `user_id`, `file`, `type`.\n\n**Enums:** `type`: `logo`, `photo`, `cover_photo`.\n\n**See also:** `updateUserPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/update": {
@@ -7025,7 +7137,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing userphoto record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `photo_id`.\n\n**Enums:** `type`: `logo`, `photo`, `cover_photo`.\n\n**See also:** `createUserPhoto` (add new), `deleteUserPhoto` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/delete": {
@@ -7064,7 +7177,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a userphoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updateUserPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/get": {
@@ -7093,7 +7207,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of usermeta records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUserMeta` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/get/{meta_id}": {
@@ -7124,7 +7239,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single usermeta record. Read-only.\n\n**Required:** `meta_id`.\n\n**See also:** `listUserMeta` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/create": {
@@ -7181,7 +7297,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new usermeta record. Writes live data.\n\n**Required:** `database`, `database_id`, `key`, `value`.\n\n**See also:** `updateUserMeta` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/update": {
@@ -7224,7 +7341,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing usermeta record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `meta_id`, `value`.\n\n**See also:** `createUserMeta` (add new), `deleteUserMeta` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/delete": {
@@ -7263,7 +7381,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a usermeta record by ID. Destructive — cannot be undone via API.\n\n**Required:** `meta_id`.\n\n**See also:** `updateUserMeta` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/get": {
@@ -7292,7 +7411,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of tag records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTag` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/get/{id}": {
@@ -7323,7 +7443,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single tag record. Read-only.\n\n**Required:** `id`.\n\n**See also:** `listTags` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/create": {
@@ -7371,7 +7492,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new tag record. Writes live data.\n\n**Required:** `tag_name`, `group_tag_id`, `added_by`.\n\n**See also:** `updateTag` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/update": {
@@ -7413,7 +7535,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing tag record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `id`.\n\n**See also:** `createTag` (add new), `deleteTag` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/delete": {
@@ -7452,7 +7575,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a tag record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTag` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/get": {
@@ -7481,7 +7605,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of taggroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTagGroup` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/get/{id}": {
@@ -7512,7 +7637,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single taggroup record. Read-only.\n\n**Required:** `id`.\n\n**See also:** `listTagGroups` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/create": {
@@ -7559,7 +7685,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new taggroup record. Writes live data.\n\n**Required:** `group_tag_name`, `added_by`, `updated_by`.\n\n**See also:** `updateTagGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/update": {
@@ -7601,7 +7728,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing taggroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `id`.\n\n**See also:** `createTagGroup` (add new), `deleteTagGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/delete": {
@@ -7640,7 +7768,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a taggroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/get": {
@@ -7669,7 +7798,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of tagtype records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTagType` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/get/{id}": {
@@ -7700,7 +7830,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single tagtype record. Read-only.\n\n**Required:** `id`.\n\n**See also:** `listTagTypes` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/create": {
@@ -7743,7 +7874,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new tagtype record. Writes live data.\n\n**Required:** `type_name`, `table_relation`.\n\n**See also:** `updateTagType` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/update": {
@@ -7785,7 +7917,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing tagtype record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `id`.\n\n**See also:** `createTagType` (add new), `deleteTagType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/delete": {
@@ -7824,7 +7957,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a tagtype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/get": {
@@ -7853,7 +7987,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of tagrelationship records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTagRelationship` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/get/{id}": {
@@ -7884,7 +8019,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single tagrelationship record. Read-only.\n\n**Required:** `id`.\n\n**See also:** `listTagRelationships` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/create": {
@@ -7935,7 +8071,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new tagrelationship record. Writes live data.\n\n**Required:** `tag_id`, `object_id`, `tag_type_id`, `added_by`.\n\n**See also:** `updateTagRelationship` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/update": {
@@ -7977,7 +8114,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing tagrelationship record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `id`.\n\n**See also:** `createTagRelationship` (add new), `deleteTagRelationship` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/delete": {
@@ -8016,7 +8154,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a tagrelationship record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagRelationship` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/get": {
@@ -8045,7 +8184,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Paginated enumeration of smartlist records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getSmartList` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/get/{smart_list_id}": {
@@ -8076,7 +8216,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single smartlist record. Read-only.\n\n**Required:** `smart_list_id`.\n\n**See also:** `listSmartLists` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/create": {
@@ -8140,7 +8281,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Create a new smartlist record. Writes live data.\n\n**Required:** `smart_list_name`, `smart_list_type`, `smart_list_created_by`.\n\n**Enums:** `smart_list_type`: `members`, `forms_inbox`, `leads`, `reviews`, `transaction`, `newsletter`.\n\n**See also:** `updateSmartList` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/update": {
@@ -8191,7 +8333,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing smartlist record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `smart_list_id`.\n\n**See also:** `createSmartList` (add new), `deleteSmartList` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/delete": {
@@ -8230,14 +8373,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a smartlist record by ID. Destructive — cannot be undone via API.\n\n**Required:** `smart_list_id`.\n\n**See also:** `updateSmartList` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/get": {
       "get": {
         "operationId": "listPages",
         "summary": "List pages (list_seo)",
-        "description": "Paginated list of all pages on the site: homepage, custom landing pages, profile/search templates, etc.",
+        "description": "Paginated list of all pages on the site: homepage, custom landing pages, profile/search templates, etc.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPage` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8292,14 +8436,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single page record. Read-only.\n\n**Required:** `seo_id`.\n\n**See also:** `listPages` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/create": {
       "post": {
         "operationId": "createPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.",
+        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.\n\n**Required:** `seo_type`, `filename`.\n\n**Enums:** `seo_type`: `content`, `data_category`, `profile_search_results`, `custom_widget_page`, `password_retrieval_page`, `unsubscribed`; `content_active`: `0`, `1`; `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`, `1`.\n\n**See also:** `updatePage` (modify existing).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8816,7 +8961,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing page record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `seo_id`.\n\n**Enums:** `seo_type`: `content`, `data_category`, `profile_search_results`, `custom_widget_page`, `password_retrieval_page`, `unsubscribed`; `content_active`: `0`, `1`; `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`, `1`.\n\n**See also:** `createPage` (add new), `deletePage` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/delete": {
@@ -8856,14 +9002,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a page record by ID. Destructive — cannot be undone via API.\n\n**Required:** `seo_id`.\n\n**See also:** `updatePage` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/redirect_301/get": {
       "get": {
         "operationId": "listRedirects",
         "summary": "List redirects (301)",
-        "description": "Paginated list of all 301 redirect rules on the site.",
+        "description": "Paginated list of all 301 redirect rules on the site.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getRedirect` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Redirects"
         ],
@@ -8918,14 +9065,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single redirect record. Read-only.\n\n**Required:** `redirect_id`.\n\n**See also:** `listRedirects` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/redirect_301/create": {
       "post": {
         "operationId": "createRedirect",
         "summary": "Create a redirect",
-        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.",
+        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**See also:** `updateRedirect` (modify existing).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Redirects"
         ],
@@ -9037,7 +9185,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing redirect record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `redirect_id`.\n\n**See also:** `createRedirect` (add new), `deleteRedirect` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/redirect_301/delete": {
@@ -9077,14 +9226,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Permanently delete a redirect record by ID. Destructive — cannot be undone via API.\n\n**Required:** `redirect_id`.\n\n**See also:** `updateRedirect` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/website_settings/refreshCache": {
       "post": {
         "operationId": "refreshSiteCache",
         "summary": "Refresh the site cache",
-        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.",
+        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Website Settings"
         ],
@@ -9106,7 +9256,7 @@
       "get": {
         "operationId": "listDataTypes",
         "summary": "List data types",
-        "description": "List all data types configured on this BD site. Use the data_id values as data_type parameters when creating posts or portfolio groups.",
+        "description": "List all data types configured on this BD site. Use the data_id values as data_type parameters when creating posts or portfolio groups.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getDataType` (single record by ID).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Data Types"
         ],
@@ -9161,14 +9311,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Fetch a single datatype record. Read-only.\n\n**Required:** `data_id`.\n\n**See also:** `listDataTypes` (enumerate many).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_types/create": {
       "post": {
         "operationId": "createDataType",
         "summary": "Create a data type",
-        "description": "Define a new content-type template. Only do this when the user explicitly wants a new post type — most sites come pre-configured with the types they need.",
+        "description": "Define a new content-type template. Only do this when the user explicitly wants a new post type — most sites come pre-configured with the types they need.\n\n**Required:** `category_name`, `category_active`.\n\n**Enums:** `category_active`: `0`, `1`; `limit_available`: `0`, `1`.\n\n**See also:** `updateDataType` (modify existing).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Data Types"
         ],
@@ -9279,14 +9430,15 @@
               }
             }
           }
-        }
+        },
+        "description": "Update an existing datatype record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `data_id`.\n\n**Enums:** `category_active`: `0`, `1`; `limit_available`: `0`, `1`.\n\n**See also:** `createDataType` (add new), `deleteDataType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_types/delete": {
       "delete": {
         "operationId": "deleteDataType",
         "summary": "Delete a data type",
-        "description": "Deletes a data type definition. Records (posts, portfolio groups) referencing a deleted data type may become orphaned — confirm with the user before deleting.",
+        "description": "Deletes a data type definition. Records (posts, portfolio groups) referencing a deleted data type may become orphaned — confirm with the user before deleting.\n\n**Required:** `data_id`.\n\n**See also:** `updateDataType` (modify without removing).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Data Types"
         ],
