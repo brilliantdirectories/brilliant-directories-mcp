@@ -84,26 +84,96 @@ After the API returns success, BD asynchronously downloads the image and replace
 
 ### Category handling — IDs and NAMES both work (verified live 2026-04-18)
 
-BD accepts BOTH numeric IDs and string names for category/service fields. The API checks `is_numeric()` on each value: numeric → lookup by ID, non-numeric → lookup by name in `list_professions` / `list_services`.
+BD accepts BOTH numeric IDs and string names for category/service fields. Source: `user.php:1840-1940` + live test against `studev29106.directoryup.com`.
 
-**Top-level category (profession):**
-- `profession_id` — numeric, must reference an existing row in `list_professions`
-- `profession_name` — alternative: pass the name as a string. BD looks it up in `list_professions.name`.
+#### Top-level category (profession) — pick ONE
 
-**Sub-categories (services):**
-- `services` — CSV accepting IDs and/or names mixed (e.g., `services="17,Sushi,42"`). Name lookups hit `list_services.name` scoped under the member's current top-level category.
+- `profession_id` — numeric; must reference an existing row in `list_professions`.
+- `profession_name` — OR pass the name as a string; BD looks it up in `list_professions.name`. If the name doesn't exist, it's auto-created on `createUser` (always) or on `updateUser` only when `create_new_categories=1` is also passed.
 
-**Auto-create behavior — DIFFERS between create and update:**
+**`profession_id` (or `profession_name`) is REQUIRED when you pass `services`.** The service lookup is scoped under the parent profession; without it, service relationships fail silently (per `user.php:1876`).
+
+#### Sub-categories — `services` parameter formats
+
+The `services` parameter is a comma-separated string with 4 supported formats. **Do NOT mix IDs and names in the same call** — pick one or the other:
+
+| Format | Example | What it creates |
+|---|---|---|
+| Single sub by ID | `services="1823"` | One sub-category relation |
+| Single sub by name | `services="PVC repair"` | One sub-category relation |
+| Multiple subs | `services="PVC repair,Water heater"` | Two sub-category relations |
+| Multiple subs (IDs) | `services="1823,1824,1825"` | Same, but by ID (faster — skips name lookups) |
+| Sub + sub-sub via `=>` | `services="Honda=>2022"` | Creates the sub "Honda" AND the sub-sub "2022" under it |
+| Multiple sub-subs | `services="Honda=>2022,Honda=>2023"` | Two sub-subs under "Honda" |
+| Mixed subs and sub-subs | `services="Honda=>2022,Toyota,Ford=>2024"` | "Honda" with sub-sub "2022", plain "Toyota", "Ford" with sub-sub "2024" |
+
+**`=>` (sub-sub) syntax rules:**
+- Left side: sub-category — looked up by name OR ID in `list_services`
+- Right side: sub-sub-category — **looked up by NAME ONLY** (no ID support on the right side), under the left-side's `master_id`
+- Sub-sub auto-create requires the same rules as regular auto-create (see table below)
+
+**Whitespace:** spaces around commas are trimmed automatically (`user.php:1854`). `services="Honda, Toyota"` works the same as `services="Honda,Toyota"`.
+
+#### Auto-create behavior — DIFFERS between create and update
 
 | Scenario | Auto-create unknown names? |
 |---|---|
-| `createUser` with unknown `profession_name` or `services` name | ✅ **ALWAYS YES.** Hardcoded in BD's `createActions()` — you cannot disable this on create. Unknown names become new categories/sub-categories automatically. |
-| `updateUser` with unknown name, WITHOUT `create_new_categories=1` | ❌ Silently skipped — the unknown name is dropped from the update, no error raised. |
-| `updateUser` with unknown name + `create_new_categories=1` | ✅ YES. Creates the missing category/service under the member's current top-level category. |
+| `createUser` with any unknown name (profession, sub, or sub-sub) | ✅ **ALWAYS YES.** Hardcoded `create_new_categories = true` inside `createActions()` — cannot be disabled on create. |
+| `updateUser` with unknown name, WITHOUT `create_new_categories=1` | ❌ **Silently ignored.** The unknown name is dropped, no error raised. |
+| `updateUser` with unknown name + `create_new_categories=1` | ✅ YES. Missing sub / sub-sub categories are created under the member's profession. |
 
-**Limitations:**
-- Auto-created sub-categories go under the member's current top-level category with `master_id=0` (direct child of top). For deeper sub-sub-category nesting, use `createSubCategory` directly with `master_id=<parent service_id>`.
-- Quote names with special characters — e.g. `'25-30'`, `'Cosmetic Dentistry'` — to avoid parser issues on dashes/spaces.
+#### Destructive side effect — changing `profession_id`
+
+**Changing `profession_id` on `updateUser` wipes all existing service (sub-category) relations for that member** (per `user.php:1832`). If you're moving a member to a new top-level category and want to preserve their sub-categories, re-send the full `services` list on the same `updateUser` call.
+
+#### Worked examples
+
+```
+# Simplest: create a member under a new profession with 2 subs (all auto-created)
+POST /api/v2/user/create
+  email=...
+  password=...
+  subscription_id=1
+  profession_name="Plumber"
+  services="PVC repair,Water heater"
+
+# Using existing IDs (faster, no name lookups)
+POST /api/v2/user/create
+  ...
+  profession_id=5
+  services="1823,1824,1825"
+
+# Full 3-tier (profession + sub + sub-sub) in one call
+POST /api/v2/user/create
+  ...
+  profession_name="Auto Dealer"
+  services="Honda=>2022,Honda=>2023,Toyota=>2022"
+
+# Update to add a new sub (pre-existing profession — names auto-create only with flag)
+PUT /api/v2/user/update
+  user_id=42
+  profession_id=5
+  services="PVC repair,Water heater,Drain cleaning"   # "Drain cleaning" is new
+  create_new_categories=1
+
+# Moving member to a different profession — re-send services to avoid wiping
+PUT /api/v2/user/update
+  user_id=42
+  profession_id=7                                     # changing from 5 to 7 wipes old services
+  services="Honda=>2022,Toyota"                       # re-declare under new profession
+```
+
+#### Quick reference
+
+| Need | Minimum fields |
+|---|---|
+| Add one sub-category by ID | `profession_id` + `services="<id>"` |
+| Add one sub-category by name | `profession_id` (or `profession_name`) + `services="<name>"` |
+| Add multiple subs | `services="a,b,c"` (all IDs OR all names) |
+| Add sub-sub under existing sub | `services="parent=>child"` |
+| Add sub-subs under multiple subs | `services="p1=>c1,p2=>c2,p3"` (mix is fine) |
+| Auto-create unknown names on update | add `create_new_categories=1` |
+| Preserve services when changing top category | re-send `services` in the same update call |
 
 ---
 
