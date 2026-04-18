@@ -3334,7 +3334,7 @@
             }
           }
         },
-        "description": "Update an existing post record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `post_id`.\n\n**Enums:** `post_status`: `0`=Draft      (saved but not publicly visible), `1`=Published  (publicly visible on the site).\n\n**See also:** `createPost` (add new), `deletePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing post record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `post_id`.\n\n**Enums:** `post_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createPost` (add new), `deletePost` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/delete": {
@@ -3642,7 +3642,7 @@
             }
           }
         },
-        "description": "Update an existing portfoliogroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**Enums:** `group_status`: `0`=Draft      (saved but not publicly visible), `1`=Published  (publicly visible on the site).\n\n**See also:** `createPortfolioGroup` (add new), `deletePortfolioGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing portfoliogroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**Enums:** `group_status`: `0`=Draft (saved but not publicly visible), `1`=Published (publicly visible on the site).\n\n**See also:** `createPortfolioGroup` (add new), `deletePortfolioGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/delete": {
@@ -6235,7 +6235,7 @@
             }
           }
         },
-        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**Parameter interactions:**\n- `group_id` — the category group this belongs to (discover via `listCategoryGroups`)\n- `filename` — URL-slug form of the category name (e.g. `dentists`)\n\n**See also:** `updateCategory` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**BD taxonomy model:** This creates a TOP-LEVEL category (internally called a \"profession\"). It populates the `profession_id` field on user records. To create sub-classifications under this category, use `createService` after (passing this category's ID as `profession_id`). The 3-tier model: Category Group → Category (this) → Service. There is NO `createProfession` tool — `createCategory` IS the profession-creator. `group_id` is required; run `listCategoryGroups` first if unsure (most sites have one default group).\n\n**Common workflow — fresh taxonomy setup (\"create Restaurants with Sushi sub-category, assign Alice\"):**\n\n1. `listCategoryGroups` → usually `group_id=1` (\"Member\") already exists. Skip createCategoryGroup unless none exist.\n2. `createCategory` with `name=\"Restaurants\"`, `filename=\"restaurants\"`, `group_id=1` → returns `category_id` (e.g. 42). This is what populates a user's `profession_id`.\n3. `createService` with `name=\"Sushi\"`, `profession_id=42`, `filename=\"sushi\"` → returns `service_id` (e.g. 17).\n4. Assign Alice: `updateUser` with `user_id=<Alice>`, `profession_id=42`, `services=\"17\"`. (For per-service pricing/specialty, use `createUserService` instead.)\n\nDo NOT look for a `createProfession` tool — it doesn't exist. `createCategory` IS the profession-creator.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**Parameter interactions:**\n- `name` — human-readable category name (e.g. \"Restaurants\")\n- `filename` — URL-slug form of the name (e.g. \"restaurants\")\n- `group_id` — integer; most BD sites use `group_id=1` by default\n\n**See also:** `updateCategory` (modify existing), `deleteCategory` (remove).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID. Use the returned `category_id` to populate user records' `profession_id` field.\n\n**BD taxonomy model:** This creates a TOP-LEVEL category (internally called a \"profession\"). It populates the `profession_id` field on user records. To create sub-classifications under this category, use `createService` after (passing this category's ID as `profession_id`). The 2-tier model: Category (this) → Service. There is NO `createProfession` tool — `createCategory` IS the profession-creator.\n\n**Common workflow — fresh taxonomy setup (\"create Restaurants with Sushi sub-category, assign Alice\"):**\n\n1. `createCategory` with `name=\"Restaurants\"`, `filename=\"restaurants\"`, `group_id=1` → returns `category_id` (e.g. 42). This is what populates a user's `profession_id`.\n2. `createService` with `name=\"Sushi\"`, `profession_id=42`, `filename=\"sushi\"` → returns `service_id` (e.g. 17).\n3. Assign Alice: `updateUser` with `user_id=<Alice>`, `profession_id=42`, `services=\"17\"`. (For per-service pricing/specialty, use `createUserService` instead.)\n\nDo NOT look for a `createProfession` tool — it doesn't exist. `createCategory` IS the profession-creator.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/update": {
@@ -6331,205 +6331,6 @@
           }
         },
         "description": "Permanently delete a category record by ID. Destructive — cannot be undone via API.\n\n**Required:** `category_id`.\n\n**See also:** `updateCategory` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category_group/get": {
-      "get": {
-        "operationId": "listCategoryGroups",
-        "summary": "List category groups",
-        "tags": [
-          "Category Groups"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Paginated category group list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Paginated enumeration of categorygroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getCategoryGroup` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category_group/get/{group_id}": {
-      "get": {
-        "operationId": "getCategoryGroup",
-        "summary": "Get a single category group",
-        "tags": [
-          "Category Groups"
-        ],
-        "parameters": [
-          {
-            "name": "group_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Category group record",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Fetch a single categorygroup record. Read-only.\n\n**Required:** `group_id`.\n\n**See also:** `listCategoryGroups` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category_group/create": {
-      "post": {
-        "operationId": "createCategoryGroup",
-        "summary": "Create a category group",
-        "tags": [
-          "Category Groups"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "group_name",
-                  "group_filename",
-                  "database"
-                ],
-                "properties": {
-                  "group_name": {
-                    "type": "string"
-                  },
-                  "group_filename": {
-                    "type": "string"
-                  },
-                  "database": {
-                    "type": "string"
-                  },
-                  "group_desc": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category group created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Create a new categorygroup record. Writes live data.\n\n**Required:** `group_name`, `group_filename`, `database`.\n\n**See also:** `updateCategoryGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**BD taxonomy model:** Creates a grouping of categories. Most BD sites have a single default group (commonly `group_id=1`, called \"Member\"). Only create a new group if you're organizing a site with multiple distinct category families. Categories (top-level) must belong to a group — `createCategory` requires a `group_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category_group/update": {
-      "put": {
-        "operationId": "updateCategoryGroup",
-        "summary": "Update a category group",
-        "tags": [
-          "Category Groups"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "group_id"
-                ],
-                "properties": {
-                  "group_id": {
-                    "type": "integer"
-                  },
-                  "group_name": {
-                    "type": "string"
-                  },
-                  "group_desc": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category group updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Update an existing categorygroup record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `group_id`.\n\n**See also:** `createCategoryGroup` (add new), `deleteCategoryGroup` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
-      }
-    },
-    "/api/v2/category_group/delete": {
-      "delete": {
-        "operationId": "deleteCategoryGroup",
-        "summary": "Delete a category group",
-        "tags": [
-          "Category Groups"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "group_id"
-                ],
-                "properties": {
-                  "group_id": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Category group deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Permanently delete a categorygroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updateCategoryGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/get": {
