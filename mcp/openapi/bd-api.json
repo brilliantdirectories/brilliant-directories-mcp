@@ -1155,7 +1155,7 @@
       "get": {
         "operationId": "verifyToken",
         "summary": "Verify API key",
-        "description": "Verify that your API key is valid and check rate limit status.\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Verify that your API key is valid and check rate limit status.\n\n**Parameter interactions:**\n- Call at the start of a session to confirm the API key is valid BEFORE issuing real calls — saves rate-limit budget on key-config errors\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Authentication"
         ],
@@ -1527,14 +1527,14 @@
             }
           }
         },
-        "description": "Create a new user record. Writes live data.\n\n**Required:** `email`, `password`, `subscription_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No; `auto_image_import`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `email`, `password`, `subscription_id` are all required together — subscription_id must be an existing membership plan (discover via `listMembershipPlans`)\n- `profession_id` + `services` — if setting category, both can be set together for sub-categories\n- `auto_geocode=1` — requires \"Pretty URLs with Google Maps\" site setting enabled\n\n**See also:** `updateUser` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new user record. Writes live data.\n\n**Required:** `email`, `password`, `subscription_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `email`, `password`, `subscription_id` are all required together — `subscription_id` must be an existing membership plan (discover via `listMembershipPlans`)\n- `profession_id` + `services` — top-level category and comma-separated sub-category IDs\n- `auto_geocode=1` requires the \"Pretty URLs with Google Maps\" site feature enabled\n- `auto_image_import=1` triggers server-side download of any image URLs supplied (processing delay)\n\n**See also:** `updateUser` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/update": {
       "put": {
         "operationId": "updateUser",
         "summary": "Update an existing member/user",
-        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.\n\n**Required:** `user_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization.\n\n**Parameter interactions:**\n- `member_tag_action=1` + `member_tags` — add/modify member tags (comma-separated IDs)\n- `credit_action` (`add`/`deduct`/`override`) + `credit_amount` — adjust member credit balance\n- `images_action` — manage profile images (see enum)\n- `services` — format: `category=>service1,service2`\n- `auto_geocode=1` — requires \"Pretty URLs with Google Maps\" site setting enabled\n\n**See also:** `createUser` (add new), `deleteUser` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.\n\n**Required:** `user_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `member_tag_action=1` + `member_tags` — apply tag changes (comma-separated tag IDs from `listTags`)\n- `credit_action` (`add`/`deduct`/`override`) + `credit_amount` — adjust member credit balance\n- `images_action` — remove stored images: `remove_all`, `remove_cover_image`, `remove_logo_image`, `remove_profile_image`\n- `services` format: `category=>service1,service2` (category ID, then comma-separated service IDs)\n- `auto_geocode=1` requires the \"Pretty URLs with Google Maps\" site feature enabled\n\n**See also:** `createUser` (add new), `deleteUser` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1855,14 +1855,14 @@
             }
           }
         },
-        "description": "Permanently delete a user record by ID. Destructive — cannot be undone via API.\n\n**Required:** `user_id`.\n\n**Parameter interactions:**\n- `delete_images=1` (optional) — also deletes associated profile/cover/logo images from storage\n\n**See also:** `updateUser` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a user record by ID. Destructive — cannot be undone via API.\n\n**Required:** `user_id`.\n\n**Parameter interactions:**\n- `delete_images=1` (optional) — also deletes the member's stored profile/cover/logo images from site storage\n\n**See also:** `updateUser` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/search": {
       "post": {
         "operationId": "searchUsers",
         "summary": "Search members/users",
-        "description": "Full-text search across members with category, location, and sorting options.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` (integer page number for search) to paginate large result sets.\n\n**Search params:** each resource's search endpoint exposes resource-specific query fields (e.g., `q` keyword, category IDs, location, status). See the schema properties for this operation.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`; `dynamic`: `1`; `output_type`: `array`, `html`.\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Full-text search across members with category, location, and sorting options.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`.\n\n**Parameter interactions:**\n- `q` — keyword (matches first name, last name, company, about, search_description)\n- `pid` (category ID), `tid` (sub-category/service ID), `ttid` (sub-sub-category) — taxonomy filters, use IDs from `listCategories` / `listServices`\n- `address` + `dynamic=1` — proximity/geographic filtering\n- `output_type=html` returns server-rendered HTML; `array` (default) returns structured JSON\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1943,7 +1943,7 @@
       "post": {
         "operationId": "loginUser",
         "summary": "Validate user credentials",
-        "description": "Checks if email/password are valid. Does NOT return profile data — use getUser after.\n\n**Required:** `email`, `password`.\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Checks if email/password are valid. Does NOT return profile data — use getUser after.\n\n**Required:** `email`, `password`.\n\n**Parameter interactions:**\n- Does NOT return profile data on success — follow with `getUser` using the verified email to retrieve the member record\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -2204,7 +2204,7 @@
             }
           }
         },
-        "description": "Create a new review record. Writes live data.\n\n**Required:** `user_id`.\n\n**Parameter interactions:**\n- `rating_overall` accepts 1-5. `recommend` is 0/1. `review_status` determines visibility.\n\n**See also:** `updateReview` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new review record. Writes live data.\n\n**Required:** `user_id`.\n\n**Parameter interactions:**\n- `user_id` — the member being reviewed\n- `rating_overall`: integer 1-5 (higher = better)\n- `recommend`: `0`=No, `1`=Yes (shown as a thumbs-up recommendation flag)\n- `review_status` controls initial visibility — default flow is `0` Pending → admin review\n\n**See also:** `updateReview` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/update": {
@@ -2269,7 +2269,7 @@
             }
           }
         },
-        "description": "Update an existing review record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `review_id`.\n\n**Enums:** `review_status`: `0`, `2`, `3`, `4`.\n\n**See also:** `createReview` (add new), `deleteReview` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing review record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `review_id`.\n\n**Enums:** `review_status`: `0`=Pending, `2`=Accepted, `3`=Declined, `4`=Waiting for Admin.\n\n**See also:** `createReview` (add new), `deleteReview` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/delete": {
@@ -2309,7 +2309,7 @@
             }
           }
         },
-        "description": "Permanently delete a review record by ID. Destructive — cannot be undone via API.\n\n**Required:** `review_id`.\n\n**See also:** `updateReview` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a review record by ID. Destructive — cannot be undone via API.\n\n**Required:** `review_id`.\n\n**See also:** `updateReview` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_reviews/search": {
@@ -2355,7 +2355,7 @@
             }
           }
         },
-        "description": "Keyword search across review records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` (integer page number for search) to paginate large result sets.\n\n**Search params:** each resource's search endpoint exposes resource-specific query fields (e.g., `q` keyword, category IDs, location, status). See the schema properties for this operation.\n\n**Enums:** `review_status`: `0`, `2`, `3`, `4`.\n\n**See also:** `getReview` (single record by ID), `listReviews` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Keyword search across review records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Enums:** `review_status`: `0`=Pending, `2`=Accepted, `3`=Declined, `4`=Waiting for Admin.\n\n**See also:** `getReview` (single record by ID), `listReviews` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/get": {
@@ -2488,7 +2488,7 @@
             }
           }
         },
-        "description": "Create a new click record. Writes live data.\n\n**Required:** `user_id`, `click_type`, `click_name`, `click_from`, `click_url`.\n\n**Enums:** `click_type`: `link`, `phone`, `email`; `click_from`: `profile_page`, `search_results`.\n\n**See also:** `updateClick` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new click record. Writes live data.\n\n**Required:** `user_id`, `click_type`, `click_name`, `click_from`, `click_url`.\n\n**Parameter interactions:**\n- `user_id` — the member profile being tracked\n- `click_type` — `link` (external), `phone` (reveal), or `email` (reveal)\n- `click_from` — source surface: `profile_page` or `search_results`\n- `click_url` — the URL that was clicked\n\n**See also:** `updateClick` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_clicks/update": {
@@ -2577,7 +2577,7 @@
             }
           }
         },
-        "description": "Permanently delete a click record by ID. Destructive — cannot be undone via API.\n\n**Required:** `click_id`.\n\n**See also:** `updateClick` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a click record by ID. Destructive — cannot be undone via API.\n\n**Required:** `click_id`.\n\n**See also:** `updateClick` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/get": {
@@ -2706,14 +2706,14 @@
             }
           }
         },
-        "description": "Create a new lead record. Writes live data.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` must be an existing category ID (discover via `listCategories`)\n- After creating, call `matchLead` to trigger automatic matching → notification emails to eligible members\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new lead record. Writes live data.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` — category ID; discover via `listCategories`\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n- Response includes `lead_id` AND `token` — token may be needed for customer-facing URLs\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/match": {
       "post": {
         "operationId": "matchLead",
         "summary": "Auto-match lead to members",
-        "description": "Triggers automatic matching — system finds members matching category, location, and service area, then sends notification emails.\n\n**Required:** `lead_id`.\n\n**Parameter interactions:**\n- Side effect: sends notification emails to ALL members matching category + location + service area. Not a dry-run — use carefully.\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Triggers automatic matching — system finds members matching category, location, and service area, then sends notification emails.\n\n**Required:** `lead_id`.\n\n**Parameter interactions:**\n- Side effect: sends notification emails to ALL members whose category, location, and service area match the lead\n- Not a dry-run — emails go out immediately. Not rate-limited per lead\n- `lead_id` must reference an existing lead created via `createLead`\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Leads"
         ],
@@ -2805,7 +2805,7 @@
             }
           }
         },
-        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `lead_id`.\n\n**Enums:** `lead_status`: `1`, `2`, `4`, `5`, `6`, `7`.\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `lead_id`.\n\n**Enums:** `lead_status`: `1`=Pending, `2`=Matched, `4`=Closed, `5`=Accepted, `6`=Declined, `7`=Expired, `8`=Archived.\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/delete": {
@@ -2845,7 +2845,7 @@
             }
           }
         },
-        "description": "Permanently delete a lead record by ID. Destructive — cannot be undone via API.\n\n**Required:** `lead_id`.\n\n**See also:** `updateLead` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a lead record by ID. Destructive — cannot be undone via API.\n\n**Required:** `lead_id`.\n\n**See also:** `updateLead` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/get": {
@@ -3012,7 +3012,7 @@
             }
           }
         },
-        "description": "Create a new leadmatch record. Writes live data.\n\n**Required:** `lead_id`, `user_id`, `lead_matched`, `lead_status`, `match_price`, `lead_token`, `lead_matched_by`, `lead_updated`.\n\n**Enums:** `lead_status`: `1`, `2`, `4`, `5`, `6`, `7`.\n\n**See also:** `updateLeadMatch` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new leadmatch record. Writes live data.\n\n**Required:** `lead_id`, `user_id`, `lead_matched`, `lead_status`, `match_price`, `lead_token`, `lead_matched_by`, `lead_updated`.\n\n**Parameter interactions:**\n- Usually created automatically by `matchLead`; manual creation bypasses BD's matching logic\n- `lead_id` and `user_id` must both exist (use `getLead` / `getUser` to verify)\n- `lead_status` — match lifecycle state (see Enums)\n- `match_price`, `lead_points`, `lead_rating`, `lead_distance` — scoring fields used in ranking and billing\n\n**See also:** `updateLeadMatch` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/update": {
@@ -3068,7 +3068,7 @@
             }
           }
         },
-        "description": "Update an existing leadmatch record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `match_id`.\n\n**Enums:** `lead_status`: `1`, `2`, `4`, `5`, `6`, `7`.\n\n**See also:** `createLeadMatch` (add new), `deleteLeadMatch` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing leadmatch record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `match_id`.\n\n**Enums:** `lead_status`: `1`=Pending, `2`=Matched, `4`=Closed, `5`=Accepted, `6`=Declined, `7`=Expired, `8`=Archived.\n\n**See also:** `createLeadMatch` (add new), `deleteLeadMatch` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/lead_matches/delete": {
@@ -3108,7 +3108,7 @@
             }
           }
         },
-        "description": "Permanently delete a leadmatch record by ID. Destructive — cannot be undone via API.\n\n**Required:** `match_id`.\n\n**See also:** `updateLeadMatch` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a leadmatch record by ID. Destructive — cannot be undone via API.\n\n**Required:** `match_id`.\n\n**See also:** `updateLeadMatch` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/get": {
@@ -3280,7 +3280,7 @@
             }
           }
         },
-        "description": "Create a new post record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Enums:** `post_status`: `0`, `1`.\n\n**Parameter interactions:**\n- `data_type` must be an existing post type ID (discover via `listDataTypes` / `listPostTypes`)\n- `user_id` owner must exist (discover via `listUsers` or `searchUsers`)\n\n**See also:** `updatePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new post record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `user_id` — owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n- `data_id` — post type category ID; get via `listPostTypes`\n- `data_type` — data type classification; usually matches the post type's data type\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n- Response includes both `post_id` and `post_token` — the token is used for sharable URLs\n\n**See also:** `updatePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/update": {
@@ -3374,7 +3374,7 @@
             }
           }
         },
-        "description": "Permanently delete a post record by ID. Destructive — cannot be undone via API.\n\n**Required:** `post_id`.\n\n**See also:** `updatePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a post record by ID. Destructive — cannot be undone via API.\n\n**Required:** `post_id`.\n\n**See also:** `updatePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/search": {
@@ -3426,7 +3426,7 @@
             }
           }
         },
-        "description": "Keyword search across post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` (integer page number for search) to paginate large result sets.\n\n**Search params:** each resource's search endpoint exposes resource-specific query fields (e.g., `q` keyword, category IDs, location, status). See the schema properties for this operation.\n\n**See also:** `getPost` (single record by ID), `listPosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Keyword search across post records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**Parameter interactions:**\n- `data_id` (post type) is strongly recommended — results vary significantly by post type configuration\n- `q` — keyword across post title, caption, content\n- Fields exposed in search depend on the post type; use `getPostFields` with `form_name` to discover them\n\n**See also:** `getPost` (single record by ID), `listPosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/get": {
@@ -3588,7 +3588,7 @@
             }
           }
         },
-        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Enums:** `group_status`: `0`, `1`.\n\n**Parameter interactions:**\n- `data_type` must be an existing portfolio group type ID (discover via `listDataTypes`)\n\n**See also:** `updatePortfolioGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `data_id` + `data_type` — specify the post type this album belongs to (from `listPostTypes` / `listDataTypes`)\n- `group_status`: `0`=Hidden, `1`=Published\n- Photos are added separately via `createPortfolioPhoto` using the returned `group_id`\n\n**See also:** `updatePortfolioGroup` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/update": {
@@ -3682,7 +3682,7 @@
             }
           }
         },
-        "description": "Permanently delete a portfoliogroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updatePortfolioGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a portfoliogroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updatePortfolioGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/search": {
@@ -3721,7 +3721,7 @@
             }
           }
         },
-        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` (integer page number for search) to paginate large result sets.\n\n**Search params:** each resource's search endpoint exposes resource-specific query fields (e.g., `q` keyword, category IDs, location, status). See the schema properties for this operation.\n\n**See also:** `getPortfolioGroup` (single record by ID), `listPortfolioGroups` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` to paginate large result sets.\n\n**See also:** `getPortfolioGroup` (single record by ID), `listPortfolioGroups` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/get": {
@@ -3846,7 +3846,7 @@
             }
           }
         },
-        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Required:** `user_id`, `group_id`.\n\n**Enums:** `status`: `0`, `1`.\n\n**See also:** `updatePortfolioPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Required:** `user_id`, `group_id`.\n\n**Parameter interactions:**\n- `group_id` — parent album group (from `createPortfolioGroup` or `listPortfolioGroups`)\n- `original_image_url` — full URL of the image; must already be publicly accessible\n- `status`: `0`=Hidden, `1`=Active\n\n**See also:** `updatePortfolioPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio/update": {
@@ -3932,7 +3932,7 @@
             }
           }
         },
-        "description": "Permanently delete a portfoliophoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updatePortfolioPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a portfoliophoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updatePortfolioPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get": {
@@ -4053,7 +4053,7 @@
             }
           }
         },
-        "description": "Create a new posttype record. Writes live data.\n\n**Required:** `data_name`.\n\n**Enums:** `data_active`: `0`, `1`.\n\n**See also:** `updatePostType` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new posttype record. Writes live data.\n\n**Required:** `data_name`.\n\n**Enums:** `data_active`: `0`=Inactive, `1`=Active.\n\n**See also:** `updatePostType` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/custom_fields": {
@@ -4093,7 +4093,7 @@
             }
           }
         },
-        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Required:** `data_id`.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Required:** `data_id`.\n\n**Parameter interactions:**\n- `data_id` — the post type to introspect; get via `listPostTypes`\n- Returns custom field definitions specific to this post type — use to build create/update payloads for matching posts\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/update": {
@@ -4179,7 +4179,7 @@
             }
           }
         },
-        "description": "Permanently delete a posttype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `data_id`.\n\n**See also:** `updatePostType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a posttype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `data_id`.\n\n**See also:** `updatePostType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/unsubscribe_list/get": {
@@ -4344,7 +4344,7 @@
       "delete": {
         "operationId": "deleteUnsubscribe",
         "summary": "Remove email from unsubscribe list",
-        "description": "Permanently delete a unsubscribe record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateUnsubscribe` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Permanently delete a unsubscribe record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateUnsubscribe` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Unsubscribe"
         ],
@@ -4584,14 +4584,14 @@
             }
           }
         },
-        "description": "Permanently delete a widget record by ID. Destructive — cannot be undone via API.\n\n**Required:** `widget_id`.\n\n**See also:** `updateWidget` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a widget record by ID. Destructive — cannot be undone via API.\n\n**Required:** `widget_id`.\n\n**See also:** `updateWidget` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_widgets/render": {
       "post": {
         "operationId": "renderWidget",
         "summary": "Render a widget to HTML",
-        "description": "Returns rendered HTML output with all template variables processed.\n\n**Required:** `widget_id`.\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Returns rendered HTML output with all template variables processed.\n\n**Required:** `widget_id`.\n\n**Parameter interactions:**\n- Returns rendered HTML for the named widget — side effect: may execute widget-specific PHP (database queries, cache lookups). Use carefully in loops\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Widgets"
         ],
@@ -4794,7 +4794,7 @@
             }
           }
         },
-        "description": "Create a new emailtemplate record. Writes live data.\n\n**Required:** `email_name`.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new emailtemplate record. Writes live data.\n\n**Required:** `email_name`.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**Parameter interactions:**\n- `email_subject` and `email_body` can use template tokens (e.g. `%%%website_name%%%`, recipient field tokens)\n- `email_body` supports HTML\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/email_templates/update": {
@@ -4892,7 +4892,7 @@
             }
           }
         },
-        "description": "Permanently delete a emailtemplate record by ID. Destructive — cannot be undone via API.\n\n**Required:** `email_id`.\n\n**See also:** `updateEmailTemplate` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a emailtemplate record by ID. Destructive — cannot be undone via API.\n\n**Required:** `email_id`.\n\n**See also:** `updateEmailTemplate` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/get": {
@@ -5027,7 +5027,7 @@
             }
           }
         },
-        "description": "Create a new form record. Writes live data.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new form record. Writes live data.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**Parameter interactions:**\n- After creating the form, add fields via `createFormField` using the returned form identifier\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/update": {
@@ -5113,7 +5113,7 @@
             }
           }
         },
-        "description": "Permanently delete a form record by ID. Destructive — cannot be undone via API.\n\n**Required:** `form_id`.\n\n**See also:** `updateForm` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a form record by ID. Destructive — cannot be undone via API.\n\n**Required:** `form_id`.\n\n**See also:** `updateForm` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/get": {
@@ -5290,7 +5290,7 @@
             }
           }
         },
-        "description": "Create a new formfield record. Writes live data.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new formfield record. Writes live data.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_id` / `form_name` — the parent form (from `createForm` or `listForms`)\n- Field type and options depend on the form type; validate against the form's field schema\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/update": {
@@ -5416,7 +5416,7 @@
             }
           }
         },
-        "description": "Permanently delete a formfield record by ID. Destructive — cannot be undone via API.\n\n**Required:** `field_id`.\n\n**See also:** `updateFormField` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a formfield record by ID. Destructive — cannot be undone via API.\n\n**Required:** `field_id`.\n\n**See also:** `updateFormField` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/get": {
@@ -5565,7 +5565,7 @@
             }
           }
         },
-        "description": "Create a new membershipplan record. Writes live data.\n\n**Required:** `subscription_name`, `subscription_type`, `profile_type`.\n\n**Enums:** `profile_type`: `paid`, `free`, `claim`; `sub_active`: `0`, `1`; `searchable`: `0`, `1`; `payment_default`: `yearly`, `monthly`.\n\n**See also:** `updateMembershipPlan` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new membershipplan record. Writes live data.\n\n**Required:** `subscription_name`, `subscription_type`, `profile_type`.\n\n**Enums:** `payment_default`: `yearly`, `monthly`.\n\n**Parameter interactions:**\n- `subscription_type` — typically `member` for standard member plans\n- `profile_type`: `paid`, `free`, or `claim` — controls how profile visibility and billing work\n- `monthly_amount` / `yearly_amount` — price in the site's currency\n- `sub_active=1` makes the plan available for new signups; `sub_active=0` grandfathers existing members only\n- `searchable=1` makes members on this plan findable in public search\n\n**See also:** `updateMembershipPlan` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/subscription_types/update": {
@@ -5660,7 +5660,7 @@
             }
           }
         },
-        "description": "Permanently delete a membershipplan record by ID. Destructive — cannot be undone via API.\n\n**Required:** `subscription_id`.\n\n**See also:** `updateMembershipPlan` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a membershipplan record by ID. Destructive — cannot be undone via API.\n\n**Required:** `subscription_id`.\n\n**See also:** `updateMembershipPlan` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/get": {
@@ -5795,7 +5795,7 @@
             }
           }
         },
-        "description": "Create a new menu record. Writes live data.\n\n**Required:** `menu_name`, `menu_title`.\n\n**Enums:** `menu_active`: `0`, `1`.\n\n**See also:** `updateMenu` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new menu record. Writes live data.\n\n**Required:** `menu_name`, `menu_title`.\n\n**Parameter interactions:**\n- `menu_name` (max 35 chars) — the internal identifier\n- `menu_title` — the visible heading\n- `menu_active`: `0`=Inactive, `1`=Active\n- After creating the container, add entries via `createMenuItem` using the returned `menu_id`\n\n**See also:** `updateMenu` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menus/update": {
@@ -5884,7 +5884,7 @@
             }
           }
         },
-        "description": "Permanently delete a menu record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_id`.\n\n**See also:** `updateMenu` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a menu record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_id`.\n\n**See also:** `updateMenu` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/get": {
@@ -6026,7 +6026,7 @@
             }
           }
         },
-        "description": "Create a new menuitem record. Writes live data.\n\n**Required:** `menu_id`, `menu_name`, `menu_link`, `master_id`, `menu_order`.\n\n**Enums:** `menu_active`: `0`, `1`; `menu_target`: `_blank`, `_self`.\n\n**See also:** `updateMenuItem` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new menuitem record. Writes live data.\n\n**Required:** `menu_id`, `menu_name`, `menu_link`, `master_id`, `menu_order`.\n\n**Enums:** `menu_active`: `0`=Inactive, `1`=Active.\n\n**Parameter interactions:**\n- `menu_id` — parent menu container (from `createMenu` or `listMenus`)\n- `master_id` — `0` for top-level items; for nested items, the ID of the parent menu item\n- `menu_order` — display position within the parent menu (integer, lower = earlier)\n- `menu_target`: `_blank` (new tab) or `_self` (same window)\n\n**See also:** `updateMenuItem` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/menu_items/update": {
@@ -6118,7 +6118,7 @@
             }
           }
         },
-        "description": "Permanently delete a menuitem record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_item_id`.\n\n**See also:** `updateMenuItem` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a menuitem record by ID. Destructive — cannot be undone via API.\n\n**Required:** `menu_item_id`.\n\n**See also:** `updateMenuItem` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/get": {
@@ -6235,7 +6235,7 @@
             }
           }
         },
-        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**See also:** `updateCategory` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new category record. Writes live data.\n\n**Required:** `name`, `filename`, `group_id`.\n\n**Parameter interactions:**\n- `group_id` — the category group this belongs to (discover via `listCategoryGroups`)\n- `filename` — URL-slug form of the category name (e.g. `dentists`)\n\n**See also:** `updateCategory` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category/update": {
@@ -6330,7 +6330,7 @@
             }
           }
         },
-        "description": "Permanently delete a category record by ID. Destructive — cannot be undone via API.\n\n**Required:** `category_id`.\n\n**See also:** `updateCategory` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a category record by ID. Destructive — cannot be undone via API.\n\n**Required:** `category_id`.\n\n**See also:** `updateCategory` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/category_group/get": {
@@ -6529,7 +6529,7 @@
             }
           }
         },
-        "description": "Permanently delete a categorygroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updateCategoryGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a categorygroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `group_id`.\n\n**See also:** `updateCategoryGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/get": {
@@ -6654,7 +6654,7 @@
             }
           }
         },
-        "description": "Create a new service record. Writes live data.\n\n**Required:** `name`, `profession_id`.\n\n**See also:** `updateService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new service record. Writes live data.\n\n**Required:** `name`, `profession_id`.\n\n**Parameter interactions:**\n- `profession_id` — the parent category (from `listCategories`)\n- `master_id` — for sub-sub-categories, the parent service ID; 0 for top-level services\n- `lead_price` — per-lead price charged for leads matching this service\n\n**See also:** `updateService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_services/update": {
@@ -6758,7 +6758,7 @@
             }
           }
         },
-        "description": "Permanently delete a service record by ID. Destructive — cannot be undone via API.\n\n**Required:** `service_id`.\n\n**See also:** `updateService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a service record by ID. Destructive — cannot be undone via API.\n\n**Required:** `service_id`.\n\n**See also:** `updateService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/get": {
@@ -6878,7 +6878,7 @@
             }
           }
         },
-        "description": "Create a new userservice record. Writes live data.\n\n**Required:** `user_id`, `service_id`.\n\n**Enums:** `specialty`: `0`, `1`.\n\n**See also:** `updateUserService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new userservice record. Writes live data.\n\n**Required:** `user_id`, `service_id`.\n\n**Parameter interactions:**\n- `user_id` + `service_id` — link a member to a service (service from `listServices`)\n- `specialty`: `0`=No, `1`=Yes (flags this as a specialty offering on the profile)\n- `avg_price` — decimal price the member charges for this service\n\n**See also:** `updateUserService` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_services/update": {
@@ -6970,7 +6970,7 @@
             }
           }
         },
-        "description": "Permanently delete a userservice record by ID. Destructive — cannot be undone via API.\n\n**Required:** `rel_id`.\n\n**See also:** `updateUserService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a userservice record by ID. Destructive — cannot be undone via API.\n\n**Required:** `rel_id`.\n\n**See also:** `updateUserService` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/get": {
@@ -7090,7 +7090,7 @@
             }
           }
         },
-        "description": "Create a new userphoto record. Writes live data.\n\n**Required:** `user_id`, `file`, `type`.\n\n**Enums:** `type`: `logo`, `photo`, `cover_photo`.\n\n**See also:** `updateUserPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new userphoto record. Writes live data.\n\n**Required:** `user_id`, `file`, `type`.\n\n**Parameter interactions:**\n- `user_id` — the member\n- `type` — slot: `logo`, `photo`, or `cover_photo`\n- `file` — image filename (must already exist in site storage)\n\n**See also:** `updateUserPhoto` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_photo/update": {
@@ -7178,7 +7178,7 @@
             }
           }
         },
-        "description": "Permanently delete a userphoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updateUserPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a userphoto record by ID. Destructive — cannot be undone via API.\n\n**Required:** `photo_id`.\n\n**See also:** `updateUserPhoto` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/get": {
@@ -7298,7 +7298,7 @@
             }
           }
         },
-        "description": "Create a new usermeta record. Writes live data.\n\n**Required:** `database`, `database_id`, `key`, `value`.\n\n**See also:** `updateUserMeta` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new usermeta record. Writes live data.\n\n**Required:** `database`, `database_id`, `key`, `value`.\n\n**Parameter interactions:**\n- `database` — the target table name (e.g. `users_data`, `data_posts`)\n- `database_id` — the record ID in that table to attach metadata to\n- `key` + `value` — the metadata entry itself (arbitrary key/value pair)\n\n**See also:** `updateUserMeta` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/update": {
@@ -7382,7 +7382,7 @@
             }
           }
         },
-        "description": "Permanently delete a usermeta record by ID. Destructive — cannot be undone via API.\n\n**Required:** `meta_id`.\n\n**See also:** `updateUserMeta` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a usermeta record by ID. Destructive — cannot be undone via API.\n\n**Required:** `meta_id`.\n\n**See also:** `updateUserMeta` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/get": {
@@ -7493,7 +7493,7 @@
             }
           }
         },
-        "description": "Create a new tag record. Writes live data.\n\n**Required:** `tag_name`, `group_tag_id`, `added_by`.\n\n**See also:** `updateTag` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new tag record. Writes live data.\n\n**Required:** `tag_name`, `group_tag_id`, `added_by`.\n\n**Parameter interactions:**\n- `tag_name` — the visible label\n- `group_tag_id` — tag group from `listTagGroups`\n- `added_by` — user ID of the admin creating the tag\n\n**See also:** `updateTag` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/update": {
@@ -7576,7 +7576,7 @@
             }
           }
         },
-        "description": "Permanently delete a tag record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTag` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a tag record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTag` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_groups/get": {
@@ -7769,7 +7769,7 @@
             }
           }
         },
-        "description": "Permanently delete a taggroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a taggroup record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagGroup` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tag_types/get": {
@@ -7958,7 +7958,7 @@
             }
           }
         },
-        "description": "Permanently delete a tagtype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a tagtype record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagType` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/get": {
@@ -8072,7 +8072,7 @@
             }
           }
         },
-        "description": "Create a new tagrelationship record. Writes live data.\n\n**Required:** `tag_id`, `object_id`, `tag_type_id`, `added_by`.\n\n**See also:** `updateTagRelationship` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new tagrelationship record. Writes live data.\n\n**Required:** `tag_id`, `object_id`, `tag_type_id`, `added_by`.\n\n**Parameter interactions:**\n- Attaches an existing tag to an existing record. Both sides must exist — use `listTags` and the target resource's list to discover IDs\n\n**See also:** `updateTagRelationship` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/rel_tags/update": {
@@ -8155,7 +8155,7 @@
             }
           }
         },
-        "description": "Permanently delete a tagrelationship record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagRelationship` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a tagrelationship record by ID. Destructive — cannot be undone via API.\n\n**Required:** `id`.\n\n**See also:** `updateTagRelationship` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/get": {
@@ -8282,7 +8282,7 @@
             }
           }
         },
-        "description": "Create a new smartlist record. Writes live data.\n\n**Required:** `smart_list_name`, `smart_list_type`, `smart_list_created_by`.\n\n**Enums:** `smart_list_type`: `members`, `forms_inbox`, `leads`, `reviews`, `transaction`, `newsletter`.\n\n**See also:** `updateSmartList` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new smartlist record. Writes live data.\n\n**Required:** `smart_list_name`, `smart_list_type`, `smart_list_created_by`.\n\n**Parameter interactions:**\n- `smart_list_type` — data source (see Enums)\n- `smart_list_created_by` — admin user ID creating the list\n- `smart_list_query_params` — JSON/string of filter criteria specific to the chosen type\n- `schedule` — recurrence if the list should auto-refresh\n\n**See also:** `updateSmartList` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/smart_lists/update": {
@@ -8374,7 +8374,7 @@
             }
           }
         },
-        "description": "Permanently delete a smartlist record by ID. Destructive — cannot be undone via API.\n\n**Required:** `smart_list_id`.\n\n**See also:** `updateSmartList` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a smartlist record by ID. Destructive — cannot be undone via API.\n\n**Required:** `smart_list_id`.\n\n**See also:** `updateSmartList` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/get": {
@@ -8444,7 +8444,7 @@
       "post": {
         "operationId": "createPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.\n\n**Required:** `seo_type`, `filename`.\n\n**Enums:** `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`, `1`; `hide_from_menu`: `0`, `1`.\n\n**Parameter interactions:**\n- `seo_type` constrained to admin-UI values — invalid values cause unrenderable pages. Required: `home` for homepage replacement, see enum for others.\n- `content_active=1` + valid `seo_type` = page is public-facing immediately after create.\n\n**See also:** `updatePage` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.\n\n**Required:** `seo_type`, `filename`.\n\n**Enums:** `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`=No, `1`=Yes; `hide_from_menu`: `0`=No, `1`=Yes; `hide_header_links`: `0`, `1`; `hide_header`: `0`, `1`.\n\n**Parameter interactions:**\n- `seo_type` — required, must be one of the fixed admin-UI values (invalid types cause unrenderable records). `home` = homepage replacement\n- `filename` — URL slug (e.g. `about-us`), not the full URL\n- `content_active=1` (default) + valid `seo_type` = page is publicly accessible IMMEDIATELY — no admin action needed\n- `content` supports `[widget=Name]` shortcodes and template tokens (e.g. `%%%website_name%%%`, `%%Profession%%`)\n\n**See also:** `updatePage` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8962,7 +8962,7 @@
             }
           }
         },
-        "description": "Update an existing page record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `seo_id`.\n\n**Enums:** `seo_type`: `content`, `data_category`, `profile_search_results`, `custom_widget_page`, `password_retrieval_page`, `unsubscribed`; `content_active`: `0`, `1`; `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`, `1`; `hide_from_menu`: `0`, `1`.\n\n**See also:** `createPage` (add new), `deletePage` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing page record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `seo_id`.\n\n**Enums:** `seo_type`: `content`, `data_category`, `profile_search_results`, `custom_widget_page`, `password_retrieval_page`, `unsubscribed`; `content_layout`: `0`, `1`; `menu_layout`: `1`, `2`, `3`, `4`; `show_form`: `0`=No, `1`=Yes; `hide_from_menu`: `0`=No, `1`=Yes; `hide_header_links`: `0`, `1`; `hide_header`: `0`, `1`.\n\n**Parameter interactions:**\n- `content` supports `[widget=Name]` shortcodes and template tokens like `%%%website_name%%%`\n- `content_active=1` makes the page live; `content_active=0` hides it from public without deleting\n\n**See also:** `createPage` (add new), `deletePage` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/delete": {
@@ -9003,7 +9003,7 @@
             }
           }
         },
-        "description": "Permanently delete a page record by ID. Destructive — cannot be undone via API.\n\n**Required:** `seo_id`.\n\n**See also:** `updatePage` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a page record by ID. Destructive — cannot be undone via API.\n\n**Required:** `seo_id`.\n\n**See also:** `updatePage` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/redirect_301/get": {
@@ -9073,7 +9073,7 @@
       "post": {
         "operationId": "createRedirect",
         "summary": "Create a redirect",
-        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**Parameter interactions:**\n- `type` — source category: `profile`, `post`, `category`, `custom`, etc.\n- `old_filename` / `new_filename` — URL paths relative to the domain root (not full URLs)\n- `db_id` — database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Redirects"
         ],
@@ -9227,14 +9227,14 @@
             }
           }
         },
-        "description": "Permanently delete a redirect record by ID. Destructive — cannot be undone via API.\n\n**Required:** `redirect_id`.\n\n**See also:** `updateRedirect` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a redirect record by ID. Destructive — cannot be undone via API.\n\n**Required:** `redirect_id`.\n\n**See also:** `updateRedirect` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/website_settings/refreshCache": {
       "post": {
         "operationId": "refreshSiteCache",
         "summary": "Refresh the site cache",
-        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Clears BD's internal caches for the site. IMPORTANT: this does NOT register newly-created page URLs with the router — a freshly created page via createPage will still 404 on the public site even after refreshCache. The only known way to fully activate a new page is manually clicking Save on the record in BD Admin > Manage Pages. This endpoint is useful for generic cache invalidation (e.g., after changes to templates, design settings, etc.), not for page propagation. Undocumented by BD publicly; exposed via admin API-permissions UI.\n\n**Parameter interactions:**\n- Clears BD's internal caches. Does NOT register newly-created page URLs with the public router (new pages created via `createPage` become live immediately via `content_active=1` + valid `seo_type`, not via this endpoint)\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` — BD's standard response envelope.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Website Settings"
         ],
@@ -9438,7 +9438,7 @@
       "delete": {
         "operationId": "deleteDataType",
         "summary": "Delete a data type",
-        "description": "Deletes a data type definition. Records (posts, portfolio groups) referencing a deleted data type may become orphaned — confirm with the user before deleting.\n\n**Required:** `data_id`.\n\n**See also:** `updateDataType` (modify without removing).\n\n**Returns:** `{ status: \"success\", message: \"<resource> record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Deletes a data type definition. Records (posts, portfolio groups) referencing a deleted data type may become orphaned — confirm with the user before deleting.\n\n**Required:** `data_id`.\n\n**See also:** `updateDataType` (modify without removing).\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Data Types"
         ],
