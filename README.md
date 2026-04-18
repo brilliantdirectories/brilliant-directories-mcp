@@ -6,7 +6,7 @@
 
 Give any AI agent full access to your BD site with one API key.
 
-**165 endpoints** across 31 resources: members, leads, posts, reviews, categories, email templates, **pages (homepage, landing pages)**, **301 redirects**, smart lists, widgets, menus, forms, membership plans, and more.
+**170 endpoints** across 32 resources: members, leads, posts, reviews, categories, email templates, **pages (homepage, landing pages)**, **301 redirects**, smart lists, widgets, menus, forms, membership plans, and more.
 
 ## 30-Second Quickstart
 
@@ -247,6 +247,8 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Smart Lists | `/api/v2/smart_lists/` | list, get, create, update, delete |
 | Pages (SEO/static) | `/api/v2/list_seo/` | list, get, create, update, delete |
 | Redirects (301) | `/api/v2/redirect_301/` | list, get, create, update, delete |
+| Data Types | `/api/v2/data_types/` | list, get, create, update, delete |
+| Website Settings | `/api/v2/website_settings/` | refreshCache |
 
 ## Field Discovery
 

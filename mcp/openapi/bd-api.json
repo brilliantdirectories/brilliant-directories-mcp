@@ -1875,7 +1875,14 @@
                     "type": "integer"
                   },
                   "review_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Review status (integer). Authoritative values from BD admin:\\n  0 = Pending            (newly submitted, awaiting moderation)\\n  2 = Accepted           (approved and visible on the member profile)\\n  3 = Declined           (rejected by admin — not publicly visible)\\n  4 = Waiting for Admin  (member has accepted, now needs admin sign-off)\\nNote: value 1 is NOT valid — do not use. Normal moderation flow: 0 -> 2 (accepted) or 0 -> 3 (declined). When a member pre-accepts but admin review is still required, state 4 is used."
                   }
                 }
               }
@@ -1952,7 +1959,14 @@
                     "type": "integer"
                   },
                   "review_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Review status (integer). Authoritative values from BD admin:\\n  0 = Pending            (newly submitted, awaiting moderation)\\n  2 = Accepted           (approved and visible on the member profile)\\n  3 = Declined           (rejected by admin — not publicly visible)\\n  4 = Waiting for Admin  (member has accepted, now needs admin sign-off)\\nNote: value 1 is NOT valid — do not use. Normal moderation flow: 0 -> 2 (accepted) or 0 -> 3 (declined). When a member pre-accepts but admin review is still required, state 4 is used."
                   }
                 }
               }
@@ -2383,7 +2397,17 @@
                     "type": "string"
                   },
                   "lead_status": {
-                    "type": "string"
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      4,
+                      5,
+                      6,
+                      7,
+                      8
+                    ],
+                    "description": "Lead status (integer). Authoritative values from BD admin:\\n  1 = Pending      (lead received, awaiting action)\\n  2 = Matched      (lead assigned to one or more members)\\n  4 = Follow-Up    (in progress, awaiting next touchpoint)\\n  5 = Sold Out     (no more capacity to fulfill this lead)\\n  6 = Closed       (lead resolved — converted, or will not convert)\\n  7 = Bad Leads    (spam / invalid / disqualified)\\n  8 = Delete       (soft-delete — hides from normal views)\\nNote: values 1, 2, 4, 5, 6, 7, 8 are not sequential — do not assume 3 exists. When an agent marks a lead \"sold\" or \"won\", use 6 (Closed). When spam, use 7 (Bad Leads)."
                   }
                 }
               }
@@ -2537,7 +2561,17 @@
                     "type": "string"
                   },
                   "lead_status": {
-                    "type": "string"
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      4,
+                      5,
+                      6,
+                      7,
+                      8
+                    ],
+                    "description": "Lead status (integer). Authoritative values from BD admin:\\n  1 = Pending      (lead received, awaiting action)\\n  2 = Matched      (lead assigned to one or more members)\\n  4 = Follow-Up    (in progress, awaiting next touchpoint)\\n  5 = Sold Out     (no more capacity to fulfill this lead)\\n  6 = Closed       (lead resolved — converted, or will not convert)\\n  7 = Bad Leads    (spam / invalid / disqualified)\\n  8 = Delete       (soft-delete — hides from normal views)\\nNote: values 1, 2, 4, 5, 6, 7, 8 are not sequential — do not assume 3 exists. When an agent marks a lead \"sold\" or \"won\", use 6 (Closed). When spam, use 7 (Bad Leads)."
                   },
                   "match_price": {
                     "type": "number"
@@ -2618,7 +2652,17 @@
                     "type": "integer"
                   },
                   "lead_status": {
-                    "type": "string"
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      4,
+                      5,
+                      6,
+                      7,
+                      8
+                    ],
+                    "description": "Lead status (integer). Authoritative values from BD admin:\\n  1 = Pending      (lead received, awaiting action)\\n  2 = Matched      (lead assigned to one or more members)\\n  4 = Follow-Up    (in progress, awaiting next touchpoint)\\n  5 = Sold Out     (no more capacity to fulfill this lead)\\n  6 = Closed       (lead resolved — converted, or will not convert)\\n  7 = Bad Leads    (spam / invalid / disqualified)\\n  8 = Delete       (soft-delete — hides from normal views)\\nNote: values 1, 2, 4, 5, 6, 7, 8 are not sequential — do not assume 3 exists. When an agent marks a lead \"sold\" or \"won\", use 6 (Closed). When spam, use 7 (Bad Leads)."
                   },
                   "lead_response": {
                     "type": "string"
@@ -2807,7 +2851,8 @@
                     "description": "Post type category ID"
                   },
                   "data_type": {
-                    "type": "string"
+                    "type": "integer",
+                    "description": "Data type ID (integer). Foreign-key reference to the data_types resource — the numeric data_id of a row returned by GET /api/v2/data_types/get.\\nThere is NO fixed enum for this field. Every BD site has its own configured data types (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\", \"Document Post\"). Valid IDs are per-site.\\nAgent workflow: call listDataTypes first to discover the site's configured types, match the user's phrasing to a category_name, then pass that row's data_id as the data_type parameter. Never guess a numeric ID."
                   },
                   "post_title": {
                     "type": "string"
@@ -2876,7 +2921,12 @@
                     "type": "string"
                   },
                   "post_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Post publication status (integer).\\n  0 = Draft      (saved but not publicly visible)\\n  1 = Published  (publicly visible on the site)\\nDefault: depends on BD site settings; typically 0 (draft) for safety."
                   }
                 }
               }
@@ -3110,7 +3160,8 @@
                     "type": "integer"
                   },
                   "data_type": {
-                    "type": "string"
+                    "type": "integer",
+                    "description": "Data type ID (integer). Foreign-key reference to the data_types resource — the numeric data_id of a row returned by GET /api/v2/data_types/get.\\nThere is NO fixed enum for this field. Every BD site has its own configured data types (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\", \"Document Post\"). Valid IDs are per-site.\\nAgent workflow: call listDataTypes first to discover the site's configured types, match the user's phrasing to a category_name, then pass that row's data_id as the data_type parameter. Never guess a numeric ID."
                   },
                   "group_name": {
                     "type": "string"
@@ -3171,7 +3222,12 @@
                     "type": "string"
                   },
                   "group_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Portfolio group publication status (integer).\\n  0 = Draft      (saved but not publicly visible)\\n  1 = Published  (publicly visible on the site)\\nDefault: depends on BD site settings; typically 0 (draft) for safety."
                   }
                 }
               }
@@ -4727,11 +4783,39 @@
                   "field_type": {
                     "type": "string",
                     "enum": [
-                      "text",
+                      "Checkbox",
+                      "Select",
+                      "Radio",
+                      "YesNo",
+                      "Custom",
+                      "Email",
+                      "HTML",
+                      "Button",
+                      "Textbox",
                       "textarea",
-                      "select",
-                      "checkbox"
-                    ]
+                      "Url",
+                      "Date",
+                      "DateTimeLocal",
+                      "File",
+                      "FroalaEditor",
+                      "FroalaEditorUserUpload",
+                      "FroalaEditorUserUploadPreMadeElem",
+                      "FroalaEditorAdmin",
+                      "Tip",
+                      "Hidden",
+                      "Country",
+                      "State",
+                      "Number",
+                      "Password",
+                      "Phone",
+                      "CountryCodePhone",
+                      "Pricebox",
+                      "ReCaptcha",
+                      "HoneyPot",
+                      "Category",
+                      "Years"
+                    ],
+                    "description": "Form field type. Authoritative list from BD admin form-field editor, grouped by category:\\n\\nSELECT FIELDS (user picks from options):\\n  Checkbox       = Checkboxes (multi-select)\\n  Select         = Dropdown list (single-select)\\n  Radio          = Multiple choice radios (single-select)\\n  YesNo          = Yes or No toggle\\n\\nTEXT INPUTS:\\n  Custom         = Custom HTML injection\\n  Email          = Email address input (validates format)\\n  HTML           = Section title / HTML heading (display-only)\\n  Button         = Submit form button\\n  Textbox        = Single-line text input\\n  textarea       = Multi-line textarea (note: lowercase)\\n  Url            = Website URL input\\n\\nFANCY FIELDS:\\n  Date                              = Calendar date picker\\n  DateTimeLocal                     = Calendar date+time picker\\n  File                              = File upload\\n  FroalaEditor                      = Froala rich text editor (basic)\\n  FroalaEditorUserUpload            = Froala + user image upload\\n  FroalaEditorUserUploadPreMadeElem = Froala + upload + pre-made elements\\n  FroalaEditorAdmin                 = Froala with admin media manager access\\n  Tip                               = Help alert box (display-only)\\n  Hidden                            = Hidden field (not rendered, stores value)\\n  Country                           = Country dropdown\\n  State                             = State dropdown\\n  Number                            = Integer-only number input\\n  Password                          = Password field (masked)\\n  Phone                             = Phone number input\\n  CountryCodePhone                  = Phone input with country code\\n  Pricebox                          = Price input\\n  ReCaptcha                         = Google reCAPTCHA security\\n  HoneyPot                          = Hidden honeypot (anti-spam)\\n  Category                          = Top-level category list\\n  Years                             = Year picker\\n\\nNote on casing: most values are TitleCase but \"textarea\" is lowercase — copy exact spelling from the enum. For most simple text collection use Textbox; for paragraphs use textarea; for emails use Email so BD validates the format.\\n\\nFor Checkbox / Select / Radio types, you must also supply the options list via the field_options parameter (if exposed)."
                   },
                   "field_order": {
                     "type": "integer"
@@ -4801,7 +4885,41 @@
                     "type": "string"
                   },
                   "field_type": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "Checkbox",
+                      "Select",
+                      "Radio",
+                      "YesNo",
+                      "Custom",
+                      "Email",
+                      "HTML",
+                      "Button",
+                      "Textbox",
+                      "textarea",
+                      "Url",
+                      "Date",
+                      "DateTimeLocal",
+                      "File",
+                      "FroalaEditor",
+                      "FroalaEditorUserUpload",
+                      "FroalaEditorUserUploadPreMadeElem",
+                      "FroalaEditorAdmin",
+                      "Tip",
+                      "Hidden",
+                      "Country",
+                      "State",
+                      "Number",
+                      "Password",
+                      "Phone",
+                      "CountryCodePhone",
+                      "Pricebox",
+                      "ReCaptcha",
+                      "HoneyPot",
+                      "Category",
+                      "Years"
+                    ],
+                    "description": "Form field type. Authoritative list from BD admin form-field editor, grouped by category:\\n\\nSELECT FIELDS (user picks from options):\\n  Checkbox       = Checkboxes (multi-select)\\n  Select         = Dropdown list (single-select)\\n  Radio          = Multiple choice radios (single-select)\\n  YesNo          = Yes or No toggle\\n\\nTEXT INPUTS:\\n  Custom         = Custom HTML injection\\n  Email          = Email address input (validates format)\\n  HTML           = Section title / HTML heading (display-only)\\n  Button         = Submit form button\\n  Textbox        = Single-line text input\\n  textarea       = Multi-line textarea (note: lowercase)\\n  Url            = Website URL input\\n\\nFANCY FIELDS:\\n  Date                              = Calendar date picker\\n  DateTimeLocal                     = Calendar date+time picker\\n  File                              = File upload\\n  FroalaEditor                      = Froala rich text editor (basic)\\n  FroalaEditorUserUpload            = Froala + user image upload\\n  FroalaEditorUserUploadPreMadeElem = Froala + upload + pre-made elements\\n  FroalaEditorAdmin                 = Froala with admin media manager access\\n  Tip                               = Help alert box (display-only)\\n  Hidden                            = Hidden field (not rendered, stores value)\\n  Country                           = Country dropdown\\n  State                             = State dropdown\\n  Number                            = Integer-only number input\\n  Password                          = Password field (masked)\\n  Phone                             = Phone number input\\n  CountryCodePhone                  = Phone input with country code\\n  Pricebox                          = Price input\\n  ReCaptcha                         = Google reCAPTCHA security\\n  HoneyPot                          = Hidden honeypot (anti-spam)\\n  Category                          = Top-level category list\\n  Years                             = Year picker\\n\\nNote on casing: most values are TitleCase but \"textarea\" is lowercase — copy exact spelling from the enum. For most simple text collection use Textbox; for paragraphs use textarea; for emails use Email so BD validates the format.\\n\\nFor Checkbox / Select / Radio types, you must also supply the options list via the field_options parameter (if exposed)."
                   },
                   "field_order": {
                     "type": "integer"
@@ -4951,7 +5069,8 @@
                   },
                   "subscription_type": {
                     "type": "string",
-                    "default": "member"
+                    "default": "member",
+                    "description": "Subscription type. AMBIGUOUS — likely duplicates profile_type (paid/free/claim) OR is a separate role identifier that defaults to \"member\".\\nIf you are choosing a monetization model for the plan, use profile_type instead (it has an authoritative paid/free/claim enum).\\nOnly set subscription_type explicitly if BD docs or a BD staff member has told you its valid values. Otherwise omit it and let the default \"member\" apply."
                   },
                   "profile_type": {
                     "type": "string",
@@ -4982,7 +5101,9 @@
                     ]
                   },
                   "search_priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Search-result display priority (integer, lower number = higher in results).\\n  0 = highest priority (shows at the top of public search results)\\n  1, 2, 3, ... = progressively lower priority (shown after lower-numbered priorities, then ordered by whatever the default sort is)\\nUse 0 for featured / premium membership tiers that should always appear first. Use higher numbers for standard or budget tiers. There is no upper bound.\\nThis is NOT a 0/1 boolean — it is a full integer where the NUMERIC VALUE determines ordering."
                   },
                   "payment_default": {
                     "type": "string",
@@ -7910,16 +8031,26 @@
                     "description": "Admin-panel grouping label"
                   },
                   "content_layout": {
-                    "type": "string",
-                    "description": "Content area layout variant"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Full-screen page width toggle (integer boolean).\\n  1 = Full Screen Page Width (page content spans the full viewport width, no side margins)\\n  0 = Standard width (default — page content is constrained to the site theme's content column)\\nIn BD admin this is a single checkbox. Pass 1 to enable, 0 to disable. If unsure, omit the field and the default will apply."
                   },
                   "content_sidebar": {
                     "type": "string",
                     "description": "Sidebar configuration or widget shortcode"
                   },
                   "menu_layout": {
-                    "type": "string",
-                    "description": "Navigation menu layout template"
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Sidebar position and width (integer). Only has an effect when the page has a sidebar configured — on pages without a sidebar this field is ignored.\\n  1 = Left Wide    (sidebar on the left, wide column)\\n  2 = Right Wide   (sidebar on the right, wide column)\\n  3 = Left Slim    (sidebar on the left, narrow column)\\n  4 = Right Slim   (sidebar on the right, narrow column)\\nDefault: 1 (Left Wide). Note the ordering is NOT sequential by side — left positions are 1 and 3, right positions are 2 and 4.\\nDespite the field name, this is the SIDEBAR position setting, not a navigation menu layout — the name is a historical BD artifact."
                   },
                   "show_form": {
                     "type": "integer",
@@ -8163,16 +8294,26 @@
                     "description": "Admin-panel grouping label"
                   },
                   "content_layout": {
-                    "type": "string",
-                    "description": "Content area layout variant"
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Full-screen page width toggle (integer boolean).\\n  1 = Full Screen Page Width (page content spans the full viewport width, no side margins)\\n  0 = Standard width (default — page content is constrained to the site theme's content column)\\nIn BD admin this is a single checkbox. Pass 1 to enable, 0 to disable. If unsure, omit the field and the default will apply."
                   },
                   "content_sidebar": {
                     "type": "string",
                     "description": "Sidebar configuration or widget shortcode"
                   },
                   "menu_layout": {
-                    "type": "string",
-                    "description": "Navigation menu layout template"
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Sidebar position and width (integer). Only has an effect when the page has a sidebar configured — on pages without a sidebar this field is ignored.\\n  1 = Left Wide    (sidebar on the left, wide column)\\n  2 = Right Wide   (sidebar on the right, wide column)\\n  3 = Left Slim    (sidebar on the left, narrow column)\\n  4 = Right Slim   (sidebar on the right, narrow column)\\nDefault: 1 (Left Wide). Note the ordering is NOT sequential by side — left positions are 1 and 3, right positions are 2 and 4.\\nDespite the field name, this is the SIDEBAR position setting, not a navigation menu layout — the name is a historical BD artifact."
                   },
                   "show_form": {
                     "type": "integer",
@@ -8600,6 +8741,227 @@
           }
         }
       }
+    },
+    "/api/v2/data_types/get": {
+      "get": {
+        "operationId": "listDataTypes",
+        "summary": "List data types",
+        "description": "List all data types configured on this BD site. Use the data_id values as data_type parameters when creating posts or portfolio groups.",
+        "tags": [
+          "Data Types"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated data type list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/data_types/get/{data_id}": {
+      "get": {
+        "operationId": "getDataType",
+        "summary": "Get a single data type",
+        "tags": [
+          "Data Types"
+        ],
+        "parameters": [
+          {
+            "name": "data_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Data type primary key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data type record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/data_types/create": {
+      "post": {
+        "operationId": "createDataType",
+        "summary": "Create a data type",
+        "description": "Define a new content-type template. Only do this when the user explicitly wants a new post type — most sites come pre-configured with the types they need.",
+        "tags": [
+          "Data Types"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "category_name",
+                  "category_active"
+                ],
+                "properties": {
+                  "category_name": {
+                    "type": "string",
+                    "description": "Display name for this content type (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\")"
+                  },
+                  "category_active": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = active and available for members to use; 0 = inactive"
+                  },
+                  "limit_available": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = membership-plan posting limits apply to this data type; 0 = no per-plan limits"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data type created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/data_types/update": {
+      "put": {
+        "operationId": "updateDataType",
+        "summary": "Update a data type",
+        "tags": [
+          "Data Types"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data_id"
+                ],
+                "properties": {
+                  "data_id": {
+                    "type": "integer",
+                    "description": "Data type primary key (required to identify the record)"
+                  },
+                  "category_name": {
+                    "type": "string",
+                    "description": "Display name for this content type (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\")"
+                  },
+                  "category_active": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = active and available for members to use; 0 = inactive"
+                  },
+                  "limit_available": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "1 = membership-plan posting limits apply to this data type; 0 = no per-plan limits"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data type updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/data_types/delete": {
+      "delete": {
+        "operationId": "deleteDataType",
+        "summary": "Delete a data type",
+        "description": "Deletes a data type definition. Records (posts, portfolio groups) referencing a deleted data type may become orphaned — confirm with the user before deleting.",
+        "tags": [
+          "Data Types"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data_id"
+                ],
+                "properties": {
+                  "data_id": {
+                    "type": "integer",
+                    "description": "Data type primary key"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data type deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -8730,6 +9092,10 @@
     {
       "name": "Website Settings",
       "description": "Site-level operations — cache management, configuration refresh. Undocumented by BD publicly but exposed in the admin API-permissions UI."
+    },
+    {
+      "name": "Data Types",
+      "description": "Content-type templates available to members (e.g. single-photo, multi-photo, video, document). Each site configures its own set. Referenced by data_type field on posts and portfolio groups."
     }
   ]
 }
