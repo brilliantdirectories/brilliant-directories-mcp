@@ -232,12 +232,32 @@ Supports pagination, filtering, sorting.
 **Response:** `{ "status": "success", "message": "credentials are valid" }`
 Note: Does NOT return profile data — use GET /api/v2/user/get after.
 
-### 8. User Transactions
+### 8. User Transactions (billing invoice history)
 `POST /api/v2/user/transactions`
+**MCP tool:** `getUserTransactions`
 
-**Required:** `user_id`
+**Required:** `user_id` (POST body)
 
-### 9. User Subscriptions
+Returns the member's billing transaction history (invoices). Read-only. Backed by BD's WHMCS billing integration.
+
+**Response shape:** `{ status: "success", message: { total, invoices: [...] } }`
+
+Each invoice object includes: `id`, `invoicenum`, `date`, `duedate`, `datepaid`, `subtotal`, `credit`, `tax`, `total`, `status` (e.g. `Paid`, `Unpaid`), `paymentmethod`, and an `items` array with per-line-item detail (`description`, `amount`, `type`, `relid`).
+
+**Note:** response is an object with `invoices` as an array — NOT a flat list. Iterate `message.invoices`, not `message`.
+
+### 9. User Subscriptions (membership-plan history)
 `POST /api/v2/user/subscriptions`
+**MCP tool:** `getUserSubscriptions`
+
+**Required:** `user_id` (POST body)
+
+Returns the member's subscription / membership-plan history. Read-only. Backed by BD's WHMCS billing integration.
+
+**Response shape:** `{ status: "success", message: { total, subscriptions: [...] } }`
+
+Each subscription object includes: `id`, `userid`, `packageid` (the membership plan — `subscription_id` on the user record), `regdate`, `nextduedate`, `billingcycle` (`Monthly`, `Yearly`, etc.), `paymentmethod`, `amount`, `domainstatus` (`Active`, `Cancelled`, `Pending`, etc.), `firstpaymentamount`, `notes`.
+
+**Note:** response is an object with `subscriptions` as an array — NOT a flat list. Iterate `message.subscriptions`.
 
 **Required:** `user_id`
