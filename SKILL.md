@@ -11,12 +11,27 @@ metadata:
 
 # Brilliant Directories
 
-Brilliant Directories (BD) is a SaaS platform powering 50,000+ membership and directory websites. This skill helps any AI agent manage a BD-powered site using the live BD REST API.
+Brilliant Directories (BD) is the SaaS platform behind 50,000+ membership and directory websites. This skill gives you programmatic control over a BD-powered site via its REST API.
 
-**The authoritative source of truth for every available operation is the OpenAPI spec:**
+## What having this skill active means for your user
+
+You can do, without them opening the BD admin UI:
+
+- **Member ops** — create, bulk import, update, search, delete members; auto-fetch profile photos/logos/cover images from external URLs (web-scrapes, CSVs, cross-site migrations); manage categories, credits, and tags
+- **Content ops** — write blog articles, events, job listings, coupons, video posts, photo albums, property/product listings; edit the homepage, landing pages, about/contact, SEO meta tags, social Open Graph tags
+- **Taxonomy ops** — build out the site's 3-tier category hierarchy (Top Category → Sub Category → Sub-Sub Category) from scratch or inline while creating members
+- **Inbox & engagement** — read lead inbox, moderate reviews, trigger lead matching to send notification emails to eligible members
+- **Site config** — edit navigation menus, form fields, email templates, widgets, smart lists, 301 redirects, membership plans
+- **Billing introspection** — pull a member's invoice history and subscription status (read-only)
+
+Typical outcome unlocks: "scrape 50 local businesses → create members with logos locally stored → write a blog post showcasing them → add redirects preserving SEO" — one agent run, zero admin clicks.
+
+## Ground truth
+
+**The authoritative source for every available operation is the OpenAPI spec:**
 `https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json`
 
-If anything in this skill appears stale, **the spec wins.** Always prefer reading the spec at runtime over trusting enumerations in this document.
+If this skill and the spec disagree, **the spec wins.** Scan the relevant tool description end-to-end before claiming a limit — BD exposes BD-specific capabilities (auto-image-import, auto-category-create, `parent=>child` sub-sub syntax, filename-is-full-path) that don't match typical REST API assumptions.
 
 ## When to activate
 
