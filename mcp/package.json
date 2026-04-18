@@ -2,7 +2,7 @@
   "name": "brilliant-directories-mcp",
   "mcpName": "io.github.brilliantdirectories/brilliant-directories-mcp",
   "version": "1.5.3",
-  "description": "MCP integration for Brilliant Directories API — manage members, content, leads, and more from any AI agent",
+  "description": "Official MCP server for Brilliant Directories — manage members, posts, leads, reviews, and more.",
   "main": "index.js",
   "bin": {
     "brilliant-directories-mcp": "index.js"
