@@ -8299,7 +8299,7 @@
       "post": {
         "operationId": "createPage",
         "summary": "Create a page",
-        "description": "Create a new page record. seo_type and filename are required. IMPORTANT: after creating a page via API, the new URL will 404 on the public site until the user goes to BD Admin > Manage Pages and clicks Save on the record once. This triggers BD's URL router / cache rebuild. Always tell the user this step is needed. Default seo_type: if the user says \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use \"content\". Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page — those are the only valid alternatives.",
+        "description": "Create a new page record. seo_type and filename are required. Pages are publicly accessible immediately when created with a valid seo_type and content_active=1 (default). If the user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", \"custom page\", or similar, use seo_type=\"content\" — that is the BD admin default for generic pages. Only choose a different seo_type if the user explicitly asks for a search-results template, password-retrieval page, unsubscribe page, or custom-widget page.",
         "tags": [
           "Pages"
         ],

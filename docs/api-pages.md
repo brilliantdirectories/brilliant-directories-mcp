@@ -3,18 +3,7 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 
 The `list_seo` resource manages static and SEO-enabled pages across a BD site: the homepage, about/contact pages, custom landing pages, category pages, profile templates, and search result pages. Each record represents one page of the site.
 
-> ⚠️ **Known BD limitation — pages created via API need one manual step to become publicly accessible.**
->
-> When `createPage` (or sometimes `updatePage`) writes a new page record via API, the BD site's URL router doesn't pick it up immediately — the new URL will return 404 on the public site until BD's admin save-handler runs.
->
-> **Workaround:** after calling `createPage` via API, tell the user to:
-> 1. Go to **BD Admin → Manage Pages**
-> 2. Find the newly-created page (by nickname or filename)
-> 3. Click **Save** (no changes needed — just click Save)
->
-> That triggers BD's internal URL registration / cache rebuild and the page becomes live.
->
-> This is a BD API gap (no programmatic cache-flush endpoint exists yet), not an MCP bug. Until BD adds an API to trigger the rebuild, AI agents should always warn users about this step after creating pages.
+Pages created via `createPage` become publicly accessible **immediately** once `content_active=1` (the default) is set and a valid `seo_type` is supplied. No admin action needed.
 
 ## Endpoints
 
