@@ -688,7 +688,7 @@ async function main() {
         ``,
         `No bulk write endpoints — every create/update/delete is one record at a time. Processing 500 members means 500 calls. Paced sequentially under rate limits (below).`,
         ``,
-        `Rate limit: 100 req/60s (raisable to 1000/min via BD support). On 429, wait 60s+ before retrying — BD's window resets every 60s, so shorter backoffs just burn failing calls. Call \`verifyToken\` before large jobs to confirm the key works and check headroom, avoiding half-run imports.`,
+        `Rate limit: 100 req/60s (raisable to 1000/min via BD support). Each call takes ~1-3 seconds round-trip, so bulk jobs add up to real minutes — tell the user an honest estimate upfront (e.g. 500 records ≈ 10-15 minutes). On 429, wait 60s+ before retrying — BD's window resets every 60s, so shorter backoffs just burn failing calls. Call \`verifyToken\` before large jobs to confirm the key works and check headroom, avoiding half-run imports.`,
         ``,
         `Pagination (all \`list*\` and \`search*\` endpoints only): \`limit\` (default 25, max 100) + \`page\` as an opaque cursor token taken from the previous response's \`next_page\` field. Never numeric offsets like \`page=2\`. Single-record \`get*\`, create/update/delete don't paginate.`,
         ``,

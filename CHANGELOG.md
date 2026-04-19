@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.5] - 2026-04-19
+
+### Added — real-time cost awareness for bulk operations
+
+Inserted one sentence in the Rate limit block: "Each call takes ~1-3 seconds round-trip, so bulk jobs add up to real minutes — tell the user an honest estimate upfront (e.g. 500 records ≈ 10-15 minutes)."
+
+LLMs have no innate sense of wall clock — from the agent's perspective, 500 tool calls happen in one continuous reasoning flow. Without this hint, agents tell users "I'll do this in a moment" and then the user waits 15 minutes frustrated. With it, the agent gives honest ETAs upfront and can proactively ask "proceed or stage this?" for large jobs.
+
+Note: this does NOT change pacing behavior — synchronous MCP tool calls are already physically paced by BD's response time. The purpose is user communication (honest ETAs), not agent self-throttling.
+
 ## [6.1.4] - 2026-04-19
 
 ### Added — "no bulk endpoints" explicit, rate/pagination/write blocks explained
