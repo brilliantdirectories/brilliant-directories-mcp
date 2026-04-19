@@ -8,9 +8,16 @@ Give any AI agent full access to your Brilliant Directories site with one API ke
 
 Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
+## Before you start — 2 things you need
+
+1. **Node.js installed.** If you've never run a terminal command before, install it from [nodejs.org](https://nodejs.org) (pick the "LTS" version, click through the installer). This is a one-time setup.
+2. **Your BD API key.** In your BD admin: sidebar → **Developer Hub** → **Generate API Key** → copy it.
+
+You'll also need your BD site URL — use the FULL url with `https://` and NO trailing slash. Example: `https://mysite.com` (correct). Not `mysite.com`, not `https://mysite.com/`.
+
 ## 30-Second Quickstart
 
-**One command. Answer two questions. Done.**
+Open a terminal (Mac: Terminal.app · Windows: PowerShell · Linux: your shell). Paste:
 
 ```bash
 npx brilliant-directories-mcp --setup
@@ -18,10 +25,20 @@ npx brilliant-directories-mcp --setup
 
 The wizard asks for your BD site URL and API key, tests the connection, asks which app you use (Cursor / Claude Desktop / Windsurf / Claude Code), and writes the config for you. No JSON editing.
 
-Restart your app, then ask your AI:
+**Fully quit and reopen your AI app** (not just close the window — fully quit: Mac `Cmd+Q`, Windows right-click taskbar → Quit). Then ask your AI:
+
 > "List members on my BD site"
 
-Get your API key from **BD Admin > Developer Hub > Generate API Key**.
+**Success looks like:** the AI returns a table or list of member names/emails.
+**Failure looks like:** the AI says "I don't have access to that" or "no tools available." If that happens, jump to [Troubleshooting](#troubleshooting) below.
+
+### Updates are automatic
+
+Once set up, you get new MCP versions automatically the next time you fully-quit-and-reopen your AI app. No reinstall needed.
+
+### What you can ask the AI to do
+
+Once connected, your AI can read AND write to your BD site. Examples: *"list all members who signed up this month"*, *"create a new member named Jane Doe with email jane@...,"* *"add a blog post by member 42 titled Welcome,"* *"show me unpaid invoices,"* *"add Jane to the VIP tag."* If the AI can do something on the site, it can probably do it via your agent now — 164 operations across members, posts, leads, reviews, pages, menus, widgets, and more.
 
 ### For AI agents / scripts (non-interactive)
 
@@ -153,10 +170,13 @@ Logs every API request and response to stderr (your API key is automatically red
 > Drop `--verify` to start the full MCP stdio server with debug logging — it will appear to hang in a regular terminal because MCP servers run forever over stdio, waiting for an AI client to connect. Use `--debug --verify` for one-shot debugging from a shell.
 
 **Common issues:**
-- `401 Unauthorized` — API key is wrong, revoked, or lacks permission for the endpoint
-- `404 Not Found` — site URL is wrong (check for typos; `https://` is auto-added if missing)
-- `429 Too Many Requests` — rate limit hit (100 req/60s default); back off or increase limit in BD admin
-- `Unknown tool` (from Claude) — the MCP server didn't load the OpenAPI spec; reinstall with `npm install -g brilliant-directories-mcp`
+- **AI says "no tools" or "I don't have access"** — you didn't fully quit and reopen your AI app after setup. Fully quit (Mac `Cmd+Q`; Windows right-click taskbar → Quit), then reopen.
+- **`401 Unauthorized`** — API key is wrong, revoked, or lacks permission for the endpoint. Regenerate in BD Admin → Developer Hub.
+- **`403 API Key does not have permission to access this endpoint`** — this specific endpoint isn't granted on your key. Edit the key in BD Admin → Developer Hub and enable the missing endpoint (the error names it).
+- **`404 Not Found`** — your site URL is wrong. Must include `https://` and NO trailing slash. Correct: `https://mysite.com`. Wrong: `mysite.com` or `https://mysite.com/`.
+- **`429 Too Many Requests`** — rate limit hit (100 req/60s default). Wait 60 seconds, or email BD support to raise your site's limit up to 1,000/min.
+- **`Unknown tool` (from Claude)** — the MCP server didn't load the OpenAPI spec; reinstall with `npm install -g brilliant-directories-mcp`.
+- **`npx: command not found`** — Node.js isn't installed. Install from [nodejs.org](https://nodejs.org) (pick LTS).
 
 ---
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.1] - 2026-04-19
+
+### Changed — README idiot-proofing
+
+- Added "Before you start" prerequisites section (Node.js install link, API key location, site URL format rule: `https://` prefix required, NO trailing slash).
+- Added "fully quit and reopen" instruction for restart (Mac `Cmd+Q`, Windows right-click taskbar → Quit) — people were just closing the window.
+- Added "Success looks like" vs "Failure looks like" so users know when it worked.
+- Added "Updates are automatic" paragraph — `npx` pulls the latest version on each app restart.
+- Added "What you can ask the AI to do" — concrete example prompts so non-technical users can see the value.
+- Expanded troubleshooting to cover "AI says no tools" (needs full quit), `403 permission` (per-endpoint key config), `npx: command not found` (Node.js missing), and site-URL format errors.
+
 ## [6.3.0] - 2026-04-19
 
 ### Added
