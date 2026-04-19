@@ -686,11 +686,13 @@ async function main() {
         `• \`data_type=9\` or \`20\` → \`createSingleImagePost\` (blog, event, job, coupon, video)`,
         `• Others (10/13/21/29) are admin-internal, not post-creatable`,
         ``,
-        `Rate limit: 100 req/60s (raisable to 1000/min via BD support). On 429, back off 60s+. Call \`verifyToken\` before large jobs.`,
+        `No bulk write endpoints — every create/update/delete is one record at a time. Processing 500 members means 500 calls. Paced sequentially under rate limits (below).`,
         ``,
-        `Pagination: \`limit\` (default 25, max 100) + \`page\` as an opaque cursor from the previous response's \`next_page\`. Never numeric offsets.`,
+        `Rate limit: 100 req/60s (raisable to 1000/min via BD support). On 429, wait 60s+ before retrying — BD's window resets every 60s, so shorter backoffs just burn failing calls. Call \`verifyToken\` before large jobs to confirm the key works and check headroom, avoiding half-run imports.`,
         ``,
-        `Writes are live. Confirm before bulk delete/update. For reversible removal, prefer \`updateUser\` with \`active=3\` (Canceled) over \`deleteUser\`.`,
+        `Pagination (all \`list*\` and \`search*\` endpoints only): \`limit\` (default 25, max 100) + \`page\` as an opaque cursor token taken from the previous response's \`next_page\` field. Never numeric offsets like \`page=2\`. Single-record \`get*\`, create/update/delete don't paginate.`,
+        ``,
+        `Writes are live and immediately visible on the public site. Confirm before any destructive or mass-modification operation. For reversible removal, prefer \`updateUser\` with \`active=3\` (Canceled) over \`deleteUser\` — the record stays queryable and can be reactivated.`,
       ].join("\n"),
     }
   );

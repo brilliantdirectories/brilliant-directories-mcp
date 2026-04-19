@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.4] - 2026-04-19
+
+### Added — "no bulk endpoints" explicit, rate/pagination/write blocks explained
+
+User-reviewed the MCP instructions and flagged that rate-limit and pagination rules lacked "why" and scope. Also correctly noted there are no bulk write endpoints — every create/update/delete is single-record. Agents might assume bulk patterns exist based on typical REST APIs and write broken batch code silently. Now addressed:
+
+- **"No bulk write endpoints" added as its own line:** "every create/update/delete is one record at a time. Processing 500 members means 500 calls. Paced sequentially under rate limits." Agents now know bulk = a loop, not a special endpoint.
+- **Rate-limit "why" added:** "BD's window resets every 60s, so shorter backoffs just burn failing calls." Explains WHY 60s specifically, not just the rule.
+- **verifyToken "why" added:** "avoiding half-run imports." Explains the real consequence of skipping it.
+- **Pagination scope added:** "all `list*` and `search*` endpoints only" with explicit exclusion ("Single-record `get*`, create/update/delete don't paginate"). Agents now know exactly when pagination applies.
+- **Write-safety expanded:** "immediately visible on the public site" reinforces write is live; `active=3` rationale ("record stays queryable and can be reactivated") makes the reversibility benefit concrete.
+
+Instructions word count: 445 → 531. All additions are load-bearing — agents now understand WHY each rule exists, not just the rule itself.
+
 ## [6.1.3] - 2026-04-19
 
 ### Changed — member-taxonomy section clarified in MCP instructions
