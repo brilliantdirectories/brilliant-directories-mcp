@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.0] - 2026-04-19
+
+### Added
+
+- Post schema fields for Event/Coupon/Job/Video post types: `post_location`, `lat`, `lon`, `state_sn`, `country_sn`, `post_live_date`, `post_start_date`, `post_expire_date`, `post_video`, `post_job` on `createSingleImagePost` and `updateSingleImagePost`.
+- `post_category`, `post_image`, `post_tags`, `auto_geocode`, `post_meta_title`, `post_meta_description`, `post_meta_keywords` on `createSingleImagePost` / `updateSingleImagePost` schemas.
+- Full hero-section field set on `createWebPage` / `updateWebPage` (23 fields including `enable_hero_section` 3-value enum, overlay color/opacity, padding, H1/H2 typography, CTA).
+- `users_to_match`, `auto_match`, `send_lead_email_notification` schema properties on `createLead` (override auto-match with specific member IDs or emails).
+- `filename` as an optional settable field on `createUser`/`updateUser`.
+- `active=6` (Incomplete) added to the enum with description.
+- `home` added to `updateWebPage.seo_type` enum for homepage round-trip.
+- MCP instructions section for API-key per-endpoint permissions, pagination gotchas, response typing quirks, sensitive fields in responses, write-time echo residue, post_category admin-managed discovery, hero-doesn't-apply-to-homepage rule.
+
+### Changed — doc accuracy corrections based on live behavior verification
+
+- `email` uniqueness: now correctly documents dependence on the `allow_duplicate_member_emails` site setting (OFF = BD rejects duplicates, ON = duplicates accepted). Previously claimed email+password combo was always unique, which was false.
+- `listing_type`: now states BD stores values verbatim without validation (normalize client-side). Previously claimed "rejected or silently coerced."
+- `review_status`: canonical enum `[0, 2, 3, 4]` = Pending/Accepted/Declined/Waiting for Admin. Value 1 is not valid. Previously had mismatched enums between createReview `[0,1,2]` and updateReview `[0,2,3,4]`.
+- `createRedirect.type`: no longer required (defaults to `custom`).
+- `card_info`: response is the literal boolean `false` when no card on file, object when populated. Same `false`-for-empty pattern documented for `tags`, `photos_schema`, `services_schema`, `profession_schema`, `transactions`, `subscription_details`, `user_clicks_schema.clicks`.
+- Filter operator caveat: only `=` is reliable right now; `LIKE` and expanded operators (`!=`, `in`, `not_in`, `not_like`, `is_null`, `is_not_null`, `between`) are in QA and shipping shortly via PR 5135.
+- `"user not found"` error envelope is returned for bad filters, bad cursors, AND legitimately-empty results — documented as indistinguishable.
+- `data_type` parameter on post endpoints: now says "classification family (4/9/20), read from the post type's data_type column" — replaces prior contradictory instruction to call `listDataTypes`.
+
+### Fixed — load path
+
+- Spec is now synced across all locations including `mcp/openapi/bd-api.json` (the path the MCP server loads first at runtime). Earlier fixes landed in the repo-root spec but this runtime-loaded copy had diverged.
+
 ## [6.2.1] - 2026-04-19
 
 ### Fixed — "pass raw HTML, no CDATA/escaping" warning on all HTML-accepting fields (from real cold-agent feedback)

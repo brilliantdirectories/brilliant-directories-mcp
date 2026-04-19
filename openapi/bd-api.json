@@ -247,9 +247,11 @@
             "type": "integer",
             "enum": [
               0,
-              1,
-              2
-            ]
+              2,
+              3,
+              4
+            ],
+            "description": "Review status — authoritative values from BD admin:\n  0 = Pending            (newly submitted, awaiting moderation)\n  2 = Accepted           (approved and visible on the member profile)\n  3 = Declined           (rejected by admin — not publicly visible)\n  4 = Waiting for Admin  (member has pre-accepted, admin sign-off still required)\nValue 1 is NOT valid. Normal moderation flow: 0 → 2 (accepted) or 0 → 3 (declined). Use 4 when a member has accepted but admin review is still pending."
           }
         }
       },
@@ -1201,7 +1203,7 @@
       "get": {
         "operationId": "listUsers",
         "summary": "List members/users",
-        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.\n\n**Use when:** enumerating members for reports, CSV exports, bulk status updates, analytics, or pagination through the full member base. Also used for lookups by field — pass `property=email` + `property_value=<email>` to find a single user by email. For keyword/text search use `searchUsers`; for a single user by known `user_id` use `getUser`.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`; `order_type`: `ASC`, `DESC`.\n\n**See also:** `getUser` (single record by ID), `searchUsers` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.\n\n**Use when:** enumerating members for reports, CSV exports, bulk status updates, analytics, or pagination through the full member base. Also used for lookups by field — pass `property=email` + `property_value=<email>` to find a single user by email. For keyword/text search use `searchUsers`; for a single user by known `user_id` use `getUser`.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort. Array syntax `property[]=...&property_value[]=...&property_operator[]=...&property_logic[]=AND|OR` is supported for multi-condition filters.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`; `order_type`: `ASC`, `DESC`.\n\n**Filter-property rule — use ACTUAL field names:** `property` must reference a real column on `users_data` or a valid custom user field. If you don't know what's filterable, call `getUserFields` first — it returns the authoritative list for this site (includes custom fields). BD returns misleading errors like `\"user not found\"` when `property` names a nonexistent field — that is a BAD FILTER, not a 404 on the endpoint. Do not invent properties like `user_group` (not a real column).\n\n**Filtering by TOP CATEGORY (profession):** the filter column is `profession_id` (integer), not a category name string. If the caller gives you a category name, chain: (1) `listTopCategories` → find the row whose `name` matches; (2) grab its `profession_id`; (3) call `listUsers` with `property=profession_id&property_value=<id>`. Same principle for any taxonomy filter — resolve names to IDs first via `listSubCategories`, `listMembershipPlans`, etc. For sub-category filtering on users, the authoritative approach is `listMemberSubCategoryLinks` filtered by `service_id` → collect `user_id`s → fetch those users. (There is also a `service` CSV column on user records but exact-match filtering on it requires the complete CSV value and LIKE syntax support is not guaranteed — prefer the link-table route.)\n\n**Filtering by `users_meta` (custom/meta fields):** multi-value meta filtering IS supported via the array syntax — e.g. `property[]=<meta_key>&property_value[]=foo&property[]=<meta_key>&property_value[]=bar&property_operator[]=OR&property_logic[]==`. Use this for OR-across-meta-values lookups (e.g. members whose custom field equals any of N options).\n\n**Payment-method field in response:** every user record includes `card_info`. When no card is on file it is the literal boolean `false` (BD's convention — same as `tags: false`, `transactions: false`, etc.). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Check `card_info && card_info.last4` (truthy-guard) — NOT `card_info.last4` directly, since `false.last4` throws. This is the authoritative signal for \"does this member have a valid payment method on file\" — do not infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**See also:** `getUser` (single record by ID), `searchUsers` (keyword search), `getUserFields` (list filterable fields).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1271,7 +1273,7 @@
             }
           }
         },
-        "description": "Fetch a single user record. Read-only.\n\n**Use when:** you already have the `user_id` (from `listUsers`, `searchUsers`, a prior create, or a webhook payload) and need the full member record. Cheaper than `listUsers` + filter. For lookups by email or other field, use `listUsers` with `property`/`property_value`.\n\n**Required:** `user_id`.\n\n**See also:** `listUsers` (enumerate many), `searchUsers` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single user record. Read-only.\n\n**Use when:** you already have the `user_id` (from `listUsers`, `searchUsers`, a prior create, or a webhook payload) and need the full member record. Cheaper than `listUsers` + filter. For lookups by email or other field, use `listUsers` with `property`/`property_value`.\n\n**Required:** `user_id`.\n\n**See also:** `listUsers` (enumerate many), `searchUsers` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n**Payment method on file:** the response includes a `card_info` field. When no card is stored it is the literal boolean `false` (BD convention). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Use `card_info && card_info.last4` to safely check — `card_info.last4` would throw on the `false` case. This is the authoritative signal for \"does this member have a payment method\" — don't infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim. **Note:** `filename` is regenerated by BD when member inputs that influence the slug change (category, city, etc.). The value you see NOW is current-as-of-this-read. If you call `updateUser` afterward, re-fetch before using the filename in URL-referencing content (blog posts, emails, redirects).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/create": {
@@ -1332,9 +1334,10 @@
                       "2",
                       "3",
                       "4",
-                      "5"
+                      "5",
+                      "6"
                     ],
-                    "description": "The status of the user after the account is created.\\n\\nValid values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status"
+                    "description": "The status of the user. BD does NOT validate this field — integers outside the documented set are stored as-is (observed: `99`). Stick to documented values.\\n\\nDocumented values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status\\n  6 = Incomplete - Paid signup hit an issue BD didn't account for; member was created but stays Incomplete instead of Active (without having paid). Rare edge state.\\n\\nReading: the top-level `status` response field (\"Active\", \"Not Active\", \"Incomplete\", etc.) is a computed label. When `active` is an unknown value, `status` is OMITTED from the response — do not treat `status` as always-present."
                   },
                   "listing_type": {
                     "type": "string",
@@ -1342,7 +1345,8 @@
                       "Individual",
                       "Company"
                     ],
-                    "description": "Select if the newly created user should be marked as an individual person or a company.\\n\\nValid values:\\n  Individual = Individual Person\\n  Company = Company / Organization"
+                    "default": "Company",
+                    "description": "Listing type classification. **BD does NOT validate this field — any string is stored verbatim.** Canonical values (exact case): `Individual` or `Company`. On `createUser`, ALWAYS include this field explicitly — never omit it and never send off-canonical values (`individual`, `INDIVIDUAL`, `Business`, etc. will store as-is and break downstream logic that checks `listing_type === \"Individual\"`). Default to `Company`, with 3 override paths (in priority order): (1) the user explicitly says `Individual`, (2) a structured input like a CSV row / API payload specifies `listing_type` per-record — use that value but normalize case client-side, (3) the source description clearly describes a person rather than a business/organization. BD's server-side default is `Individual` if omitted — do NOT rely on that."
                   },
                   "verified": {
                     "type": "string",
@@ -1354,7 +1358,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "OPTIONAL: Defines the join date of this user in your database. Leave blank to use the date the user is created. First use Zapier Formatter to customize date \"TO FORMAT\" to be YYYYMMDDHHmmss."
+                    "description": "Date the user signed up. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators — e.g. `20260419143022` for 2026-04-19 14:30:22). Auto-filled by BD on create — omit unless backfilling a legacy signup date during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1414,7 +1418,8 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text.",
+                    "maxLength": 170
                   },
                   "about_me": {
                     "type": "string",
@@ -1523,6 +1528,14 @@
                       1
                     ],
                     "description": "Set to `1` to trigger the welcome email on member creation (based on the membership plan's configured email). Default: off — API creates are silent because they typically aren't self-signups. Only set this when you WANT the member notified."
+                  },
+                  "last_login": {
+                    "type": "string",
+                    "description": "Date/time of the user's last login. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators). Auto-maintained by BD on each login — omit unless backfilling historical login data during import/migration."
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Override BD's auto-generated URL slug (e.g. `united-states/los-angeles/doctor/jane-smith`). If omitted, BD derives it from city/category/name. Usually OMIT — manual values get regenerated by BD on future updates that change URL-influencing fields, which can silently overwrite your override."
                   }
                 }
               }
@@ -1541,14 +1554,14 @@
             }
           }
         },
-        "description": "Create a new user record. Writes live data.\n\n**Use when:** adding a member from outside the BD signup form — CSV imports, web-scraped business listings, Zapier/automation integrations, admin-created test accounts. By default no welcome email fires (set `send_email_notifications=1` to trigger one). Categories and sub-categories are auto-created by name — no need to `createTopCategory` first.\n\n**Required:** `email`, `password`, `subscription_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `email`, `password`, `subscription_id` are all required together — `subscription_id` must be an existing membership plan (discover via `listMembershipPlans`)\n- `profession_id` + `services` — top-level category and comma-separated sub-category IDs\n- `auto_geocode=1` requires the \"Pretty URLs with Google Maps\" site feature enabled\n- `auto_image_import=1` — **fetches external image URLs and saves them to BD site storage.** Applies to the `profile_photo`, `logo`, and `cover_photo` fields when populated with external URLs (e.g. URLs from a web-scrape). Without this flag, BD stores the external URL as-is; images may break if the source host goes down. **Recommended default when supplying image URLs from any external source** — only omit if the user explicitly asks to keep the external reference without local copy. Processing delay: several minutes after create.\n\n**See also:** `updateUser` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n**Operational rules (from BD support article 12000091105):**\n- `send_email_notifications=1` — set this to trigger the welcome email (based on the membership plan's email settings). Without this flag, no email is sent — API creates are silent by default (since they typically aren't self-signups from the public site).\n- **Email uniqueness:** `email` must be unique UNLESS the site setting `allow_duplicate_member_emails` is enabled. The combination of `email` + `password` must ALWAYS be unique across members regardless of site settings.\n- **`token`** (if supplied): must be exactly 32 alphanumeric characters AND unique across all members.\n- **URL fields** (`website`, `booking_link`, `blog`, `facebook`, `twitter`, `linkedin`, `instagram`, etc.) are validated on write; invalid formats are silently skipped (not rejected). Must start with `http://` or `https://`.\n- **Prerequisites:** `subscription_id` MUST reference an existing membership plan (from `listMembershipPlans` / `createMembershipPlan`). Categories (`profession_id` / `profession_name` / `services`) are AUTO-CREATED on `createUser` if the names don't exist (see Category handling below) — they do NOT need to exist beforehand.\n\n\n\n**Category handling — IDs OR names, with sub-sub support (source: user.php:1840-1940, verified live 2026-04-18):**\n\n*Top-level category (profession) — pick ONE:*\n- `profession_id` (numeric) — must reference an existing row in `list_professions`\n- `profession_name` (string) — alternative by name\n\n*`services` parameter (sub-categories) supports 4 formats:*\n| Format | Example | Effect |\n|---|---|---|\n| Single by ID or name | `services=\"1823\"` or `services=\"PVC repair\"` | One sub-category |\n| Multiple | `services=\"PVC repair,Water heater\"` or `services=\"1823,1824\"` | Multiple subs |\n| Sub + sub-sub via `=>` | `services=\"Honda=>2022\"` | Creates sub \"Honda\" and sub-sub \"2022\" under Honda |\n| Mixed subs + sub-subs | `services=\"Honda=>2022,Honda=>2023,Toyota\"` | Combine in one call |\n\n*Critical rules:*\n- **`profession_id` (or `profession_name`) is REQUIRED when passing `services`** — without it, service relationships fail silently (`user.php:1876`)\n- **Do NOT mix IDs and names** within a single `services` call — pick one format\n- **Right side of `=>` is NAME-ONLY** — no ID lookup; sub-sub must be passed by name\n- **Whitespace around commas is trimmed** — `\"a, b, c\"` works the same as `\"a,b,c\"`\n\n*Auto-create on create: ALWAYS ON.* `createUser` has `create_new_categories=true` hardcoded in `createActions()`. Unknown category/service/sub-sub names are auto-created automatically — no flag needed.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new user record. Writes live data.\n\n**Use when:** adding a member from outside the BD signup form — CSV imports, web-scraped business listings, Zapier/automation integrations, admin-created test accounts. By default no welcome email fires (set `send_email_notifications=1` to trigger one). Categories and sub-categories are auto-created by name — no need to `createTopCategory` first.\n\n**Required:** `email`, `password`, `subscription_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due, `6`=Incomplete; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `email`, `password`, `subscription_id` are all required together — `subscription_id` must be an existing membership plan (discover via `listMembershipPlans`)\n- `profession_id` + `services` — top-level category and comma-separated sub-category IDs\n- `auto_geocode=1` requires the \"Pretty URLs with Google Maps\" site feature enabled\n- `auto_image_import=1` — **fetches external image URLs and saves them to BD site storage.** Applies to the `profile_photo`, `logo`, and `cover_photo` fields when populated with external URLs (e.g. URLs from a web-scrape). Without this flag, BD stores the external URL as-is; images may break if the source host goes down. **Recommended default when supplying image URLs from any external source** — only omit if the user explicitly asks to keep the external reference without local copy. Supports standard raster formats (JPG/PNG/GIF/WebP) AND vector SVG — URL-based source matters more than extension. Processing delay: several minutes after create.\n\n**See also:** `updateUser` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n**Operational rules (from BD support article 12000091105):**\n- `send_email_notifications=1` — set this to trigger the welcome email (based on the membership plan's email settings). Without this flag, no email is sent — API creates are silent by default (since they typically aren't self-signups from the public site).\n- **Email uniqueness — depends on the site setting `allow_duplicate_member_emails`:**\n  - Setting OFF (default for most sites): BD REJECTS duplicate `email` on create — you'll get a validation error.\n  - Setting ON: duplicate `email` values are ACCEPTED and stored. Identical `email` + `password` pairs are also accepted (no extra uniqueness check on the pair).\n  - **The setting is not exposed via API**, so agents cannot pre-determine which behavior this site uses. Two safe patterns: (a) attempt the create and handle a rejection as 'duplicate, fall back to update by user_id' — or (b) call `listUsers` with `property=email&property_value=<email>` first and check for existing records before create. Pattern (b) is safer for idempotent import pipelines.\n- **`token`** (if supplied): must be exactly 32 alphanumeric characters AND unique across all members.\n- **URL fields** (`website`, `booking_link`, `blog`, `facebook`, `twitter`, `linkedin`, `instagram`, etc.) are validated on write; invalid formats are silently skipped (not rejected). Must start with `http://` or `https://`.\n- **Prerequisites:** `subscription_id` MUST reference an existing membership plan (from `listMembershipPlans` / `createMembershipPlan`). Categories (`profession_id` / `profession_name` / `services`) are AUTO-CREATED on `createUser` if the names don't exist (see Category handling below) — they do NOT need to exist beforehand.\n\n\n\n**Category handling — IDs OR names, with sub-sub support (source: user.php:1840-1940, verified live 2026-04-18):**\n\n*Top-level category (profession) — pick ONE:*\n- `profession_id` (numeric) — must reference an existing row in `list_professions`\n- `profession_name` (string) — alternative by name\n\n*`services` parameter (sub-categories) supports 4 formats:*\n| Format | Example | Effect |\n|---|---|---|\n| Single by ID or name | `services=\"1823\"` or `services=\"PVC repair\"` | One sub-category |\n| Multiple | `services=\"PVC repair,Water heater\"` or `services=\"1823,1824\"` | Multiple subs |\n| Sub + sub-sub via `=>` | `services=\"Honda=>2022\"` | Creates sub \"Honda\" and sub-sub \"2022\" under Honda |\n| Mixed subs + sub-subs | `services=\"Honda=>2022,Honda=>2023,Toyota\"` | Combine in one call |\n\n*Critical rules:*\n- **`profession_id` (or `profession_name`) is REQUIRED when passing `services`** — without it, service relationships fail silently (`user.php:1876`)\n- **Do NOT mix IDs and names** within a single `services` call — pick one format\n- **Right side of `=>` is NAME-ONLY** — no ID lookup; sub-sub must be passed by name\n- **Whitespace around commas is trimmed** — `\"a, b, c\"` works the same as `\"a,b,c\"`\n\n*Auto-create on create: ALWAYS ON.* `createUser` has `create_new_categories=true` hardcoded in `createActions()`. Unknown category/service/sub-sub names are auto-created automatically — no flag needed.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/update": {
       "put": {
         "operationId": "updateUser",
         "summary": "Update an existing member/user",
-        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.\n\n**Use when:** changing any field on an existing member — status changes (e.g., `active=3` to cancel instead of delete), tag edits, credit adjustments, category reassignment, profile image swaps. Prefer this over `deleteUser` for \"remove from public view\" since it's reversible. Note: changing `profession_id` wipes existing sub-category relations — re-send `services` in the same call to preserve them.\n\n**Required:** `user_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `member_tag_action=1` + `member_tags` — apply tag changes (comma-separated tag IDs from `listTags`)\n- `credit_action` (`add`/`deduct`/`override`) + `credit_amount` — adjust member credit balance\n- `images_action` — remove stored images: `remove_all`, `remove_cover_image`, `remove_logo_image`, `remove_profile_image`\n- `services` format: `category=>service1,service2` (category ID, then comma-separated service IDs)\n- `auto_geocode=1` requires the \"Pretty URLs with Google - `auto_image_import=1` — **fetches external image URLs and saves them to BD site storage.** Applies to the `profile_photo`, `logo`, and `cover_photo` fields when populated with external URLs (e.g. URLs from a web-scrape). Without this flag, BD stores the external URL as-is; images may break if the source host goes down. **Recommended default when supplying image URLs from any external source** — only omit if the user explicitly asks to keep the external reference without local copy. Processing delay: several minutes after create.\nMaps\" site feature enabled\n\n**See also:** `createUser` (add new), `deleteUser` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n**Operational rules (from BD support article 12000091105):**\n- `send_email_notifications=1` — set this to trigger the welcome email (based on the membership plan's email settings). Without this flag, no email is sent — API creates are silent by default (since they typically aren't self-signups from the public site).\n- **Email uniqueness:** `email` must be unique UNLESS the site setting `allow_duplicate_member_emails` is enabled. The combination of `email` + `password` must ALWAYS be unique across members regardless of site settings.\n- **`token`** (if supplied): must be exactly 32 alphanumeric characters AND unique across all members.\n- **URL fields** (`website`, `booking_link`, `blog`, `facebook`, `twitter`, `linkedin`, `instagram`, etc.) are validated on write; invalid formats are silently skipped (not rejected). Must start with `http://` or `https://`.\n- **Prerequisites:** `subscription_id` MUST reference an existing membership plan. For categories, existing IDs/names work by default; to auto-create unknown names during update, pass `create_new_categories=1` (see Category handling below).\n\n\n\n**Category handling — IDs OR names, with sub-sub support (source: user.php:1840-1940, verified live 2026-04-18):**\n\n*Top-level category (profession) — pick ONE:*\n- `profession_id` (numeric) — must reference an existing row in `list_professions`\n- `profession_name` (string) — alternative by name\n\n*`services` parameter (sub-categories) supports 4 formats:*\n| Format | Example | Effect |\n|---|---|---|\n| Single by ID or name | `services=\"1823\"` or `services=\"PVC repair\"` | One sub-category |\n| Multiple | `services=\"PVC repair,Water heater\"` or `services=\"1823,1824\"` | Multiple subs |\n| Sub + sub-sub via `=>` | `services=\"Honda=>2022\"` | Creates sub \"Honda\" and sub-sub \"2022\" under Honda |\n| Mixed subs + sub-subs | `services=\"Honda=>2022,Honda=>2023,Toyota\"` | Combine in one call |\n\n*Critical rules:*\n- **`profession_id` (or `profession_name`) is REQUIRED when passing `services`** — without it, service relationships fail silently (`user.php:1876`)\n- **Do NOT mix IDs and names** within a single `services` call — pick one format\n- **Right side of `=>` is NAME-ONLY** — no ID lookup; sub-sub must be passed by name\n- **Whitespace around commas is trimmed** — `\"a, b, c\"` works the same as `\"a,b,c\"`\n\n*Auto-create on update: OFF by default.* Unknown category/service names are silently skipped unless you explicitly pass `create_new_categories=1`.\n\n*Destructive side effect — `user.php:1832`:* **Changing `profession_id` on `updateUser` wipes all existing service (sub-category) relations for that member.** To move a member to a new top-level category without losing their sub-categories, re-send the complete `services` list in the same `updateUser` call.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Update any user field. Supports special actions: member_tag_action + member_tags, credit_action + credit_amount, images_action, services, auto_geocode.\n\n**Use when:** changing any field on an existing member — status changes (e.g., `active=3` to cancel instead of delete), tag edits, credit adjustments, category reassignment, profile image swaps. Prefer this over `deleteUser` for \"remove from public view\" since it's reversible. Note: changing `profession_id` wipes existing sub-category relations — re-send `services` in the same call to preserve them.\n\n**Required:** `user_id`.\n\n**Enums:** `active`: `1`=Not Active, `2`=Active, `3`=Canceled, `4`=On Hold, `5`=Past Due, `6`=Incomplete; `listing_type`: `Individual`=Individual Person, `Company`=Company / Organization; `verified`: `1`=Yes, `0`=No; `nationwide`: `1`=Yes, `0`=No.\n\n**Parameter interactions:**\n- `member_tag_action=1` + `member_tags` — apply tag changes (comma-separated tag IDs from `listTags`)\n- `credit_action` (`add`/`deduct`/`override`) + `credit_amount` — adjust member credit balance\n- `images_action` — remove stored images: `remove_all`, `remove_cover_image`, `remove_logo_image`, `remove_profile_image`\n- `services` format: `category=>service1,service2` (category ID, then comma-separated service IDs)\n- `auto_geocode=1` requires the \"Pretty URLs with Google - `auto_image_import=1` — **fetches external image URLs and saves them to BD site storage.** Applies to the `profile_photo`, `logo`, and `cover_photo` fields when populated with external URLs (e.g. URLs from a web-scrape). Without this flag, BD stores the external URL as-is; images may break if the source host goes down. **Recommended default when supplying image URLs from any external source** — only omit if the user explicitly asks to keep the external reference without local copy. Supports standard raster formats (JPG/PNG/GIF/WebP) AND vector SVG — URL-based source matters more than extension. Processing delay: several minutes after create.\nMaps\" site feature enabled\n\n**See also:** `createUser` (add new), `deleteUser` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) — DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n**Filename regenerates on update:** BD may rewrite the `filename` slug when this update changes category, city, or other URL-forming inputs (e.g., `/us/city/slug` → `/us/city/category/slug` after a category change). This is expected BD behavior, not a bug. Do NOT cache a filename from before this update — if you're embedding the profile URL in other content (blog posts, emails, redirects, another member's bio), re-fetch via `getUser` AFTER the update completes. Better yet, publish URL-referencing content only after all updates to that member are done.\n\n**Operational rules (from BD support article 12000091105):**\n- `send_email_notifications=1` — set this to trigger the welcome email (based on the membership plan's email settings). Without this flag, no email is sent — API creates are silent by default (since they typically aren't self-signups from the public site).\n- **Email uniqueness — depends on the site setting `allow_duplicate_member_emails`:**\n  - Setting OFF (default for most sites): BD REJECTS duplicate `email` on create — you'll get a validation error.\n  - Setting ON: duplicate `email` values are ACCEPTED and stored. Identical `email` + `password` pairs are also accepted (no extra uniqueness check on the pair).\n  - **The setting is not exposed via API**, so agents cannot pre-determine which behavior this site uses. Two safe patterns: (a) attempt the create and handle a rejection as 'duplicate, fall back to update by user_id' — or (b) call `listUsers` with `property=email&property_value=<email>` first and check for existing records before create. Pattern (b) is safer for idempotent import pipelines.\n- **`token`** (if supplied): must be exactly 32 alphanumeric characters AND unique across all members.\n- **URL fields** (`website`, `booking_link`, `blog`, `facebook`, `twitter`, `linkedin`, `instagram`, etc.) are validated on write; invalid formats are silently skipped (not rejected). Must start with `http://` or `https://`.\n- **Prerequisites:** `subscription_id` MUST reference an existing membership plan. For categories, existing IDs/names work by default; to auto-create unknown names during update, pass `create_new_categories=1` (see Category handling below).\n\n\n\n**Category handling — IDs OR names, with sub-sub support (source: user.php:1840-1940, verified live 2026-04-18):**\n\n*Top-level category (profession) — pick ONE:*\n- `profession_id` (numeric) — must reference an existing row in `list_professions`\n- `profession_name` (string) — alternative by name\n\n*`services` parameter (sub-categories) supports 4 formats:*\n| Format | Example | Effect |\n|---|---|---|\n| Single by ID or name | `services=\"1823\"` or `services=\"PVC repair\"` | One sub-category |\n| Multiple | `services=\"PVC repair,Water heater\"` or `services=\"1823,1824\"` | Multiple subs |\n| Sub + sub-sub via `=>` | `services=\"Honda=>2022\"` | Creates sub \"Honda\" and sub-sub \"2022\" under Honda |\n| Mixed subs + sub-subs | `services=\"Honda=>2022,Honda=>2023,Toyota\"` | Combine in one call |\n\n*Critical rules:*\n- **`profession_id` (or `profession_name`) is REQUIRED when passing `services`** — without it, service relationships fail silently (`user.php:1876`)\n- **Do NOT mix IDs and names** within a single `services` call — pick one format\n- **Right side of `=>` is NAME-ONLY** — no ID lookup; sub-sub must be passed by name\n- **Whitespace around commas is trimmed** — `\"a, b, c\"` works the same as `\"a,b,c\"`\n\n*Auto-create on update: OFF by default.* Unknown category/service names are silently skipped unless you explicitly pass `create_new_categories=1`.\n\n*Destructive side effect — `user.php:1832`:* **Changing `profession_id` on `updateUser` wipes all existing service (sub-category) relations for that member.** To move a member to a new top-level category without losing their sub-categories, re-send the complete `services` list in the same `updateUser` call.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Users"
         ],
@@ -1597,11 +1610,11 @@
                     "enum": [
                       1
                     ],
-                    "description": "Set to 1 to modify tags"
+                    "description": "REQUIRED when modifying tags. Set to `1` alongside `member_tags` to actually apply the tag change — without this flag the `member_tags` value is ignored. Tag IDs not included in `member_tags` are removed; i.e. the submitted list REPLACES the current set (not additive). To fully clear tags, pass `member_tags` as an empty string with `member_tag_action=1`."
                   },
                   "member_tags": {
                     "type": "string",
-                    "description": "Comma-separated tag IDs"
+                    "description": "Comma-separated tag IDs to assign to the member (e.g. `1,2,3`). Discover valid IDs via `listTags`. Requires `member_tag_action=1` to take effect. Replaces the existing tag set on save — include every tag you want the member to have, not just new additions. **Unknown tag IDs are silently dropped** — the response will echo your submitted `member_tags` value, but `tags` in the response will only reflect successfully-attached tags. Re-read the user after update and check the `tags` array to verify."
                   },
                   "credit_action": {
                     "type": "string",
@@ -1609,10 +1622,12 @@
                       "add",
                       "deduct",
                       "override"
-                    ]
+                    ],
+                    "description": "How to apply `credit_amount` to the member's credit balance. `add` increments, `deduct` decrements, `override` REPLACES the balance with `credit_amount` (irreversible via API — no undo). Requires `credit_amount` to be set. Omit both fields to leave credits unchanged. BD does NOT reject deducts/overrides that produce a negative balance — if you need a non-negative guarantee, validate client-side against the current `credit_balance` (dollar-formatted string, may be negative) before calling."
                   },
                   "credit_amount": {
-                    "type": "number"
+                    "type": "number",
+                    "description": "Credit amount (number, may include decimals) paired with `credit_action`. Meaning depends on the action: for `add` and `deduct` it's the delta; for `override` it's the new absolute balance. Ignored if `credit_action` is not set."
                   },
                   "images_action": {
                     "type": "string",
@@ -1621,11 +1636,12 @@
                       "remove_cover_image",
                       "remove_logo_image",
                       "remove_profile_image"
-                    ]
+                    ],
+                    "description": "Removes stored member images. `remove_all` clears all three (profile, logo, cover); the other values clear only the named image. PERMANENT via API — no undo. To REPLACE an image instead of removing, pass the new `profile_photo` / `logo` / `cover_photo` URL (optionally with `auto_image_import=1`) — do not set `images_action` for replacement."
                   },
                   "services": {
                     "type": "string",
-                    "description": "Format: category=>service1,service2"
+                    "description": "Sub-categories for this member. Format: `category=>service1,service2` OR `service1,service2` (top category defaults to the member's current `profession_id`). Supports sub-sub-categories via `Parent=>Child` (e.g. `Honda=>2022,Honda=>2023,Toyota`). Unknown names are silently ignored unless `create_new_categories=1` is also set. WARNING: changing `profession_id` in the same call WIPES all existing sub-category links — re-send the full `services` list to preserve them."
                   },
                   "auto_geocode": {
                     "type": "string",
@@ -1642,9 +1658,10 @@
                       "2",
                       "3",
                       "4",
-                      "5"
+                      "5",
+                      "6"
                     ],
-                    "description": "The status of the user after the account is created.\\n\\nValid values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status"
+                    "description": "The status of the user. BD does NOT validate this field — integers outside the documented set are stored as-is (observed: `99`). Stick to documented values.\\n\\nDocumented values:\\n  1 = Not Active - Account Still Requires Activation\\n  2 = Active - Account is Live\\n  3 = Canceled - Sets User as Canceled Status\\n  4 = On Hold - Account Requires Moderation\\n  5 = Past Due - Sets User as Past Due Status\\n  6 = Incomplete - Paid signup hit an issue BD didn't account for; member was created but stays Incomplete instead of Active (without having paid). Rare edge state.\\n\\nReading: the top-level `status` response field (\"Active\", \"Not Active\", \"Incomplete\", etc.) is a computed label. When `active` is an unknown value, `status` is OMITTED from the response — do not treat `status` as always-present."
                   },
                   "listing_type": {
                     "type": "string",
@@ -1652,7 +1669,8 @@
                       "Individual",
                       "Company"
                     ],
-                    "description": "Select if the newly created user should be marked as an individual person or a company.\\n\\nValid values:\\n  Individual = Individual Person\\n  Company = Company / Organization"
+                    "default": "Company",
+                    "description": "Listing type classification. **BD does NOT validate this field — any string is stored verbatim.** Canonical values (exact case): `Individual` or `Company`. On `updateUser`, include only when reclassifying an existing member (e.g. fixing a record originally created as `Individual` that should be `Company`). If including, normalize case client-side — `individual` or other off-canonical casings will store as-is and break downstream logic. Otherwise omit to preserve the current value."
                   },
                   "verified": {
                     "type": "string",
@@ -1664,7 +1682,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "OPTIONAL: Defines the join date of this user in your database. Leave blank to use the date the user is created. First use Zapier Formatter to customize date \"TO FORMAT\" to be YYYYMMDDHHmmss."
+                    "description": "Date the user signed up. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators — e.g. `20260419143022` for 2026-04-19 14:30:22). Auto-filled by BD on create — omit unless backfilling a legacy signup date during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1708,7 +1726,8 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text.",
+                    "maxLength": 170
                   },
                   "about_me": {
                     "type": "string",
@@ -1817,6 +1836,14 @@
                       1
                     ],
                     "description": "Set to `1` to enable auto-creation of unknown category/service names during this `updateUser` call. Without this flag, unknown names in `services` or `profession_name` are silently skipped. Has no effect on `createUser` (which always auto-creates). Auto-created sub-categories go under the member's current top-level category with `master_id=0`; deeper nesting requires a separate `createSubCategory` call."
+                  },
+                  "last_login": {
+                    "type": "string",
+                    "description": "Date/time of the user's last login. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators). Auto-maintained by BD on each login — omit unless backfilling historical login data during import/migration."
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Override BD's auto-generated URL slug. BD may REGENERATE the slug on a future update (when city/category/name change), silently overwriting your override. Usually OMIT — let BD derive. Only set if you must control the public URL and are willing to re-set it after every future update."
                   }
                 }
               }
@@ -2047,7 +2074,7 @@
             }
           }
         },
-        "description": "Fetch the billing transaction history (invoices) for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** `user_id` (POST body).\n\n**Use when:** you need to see a member's paid/unpaid invoices, payment methods, billing history, or reconcile billing status. Common reasons: answering a member's \"what did I pay for?\" question, exporting billing history, auditing revenue per member.\n\n**See also:** `getUserSubscriptions` (active/past membership plan signups — different resource from invoices), `getUser` (member profile).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, invoices: [{...invoice records}] } }`. Each invoice includes `id`, `invoicenum`, `date`, `duedate`, `datepaid`, `subtotal`, `credit`, `tax`, `total`, `status` (`Paid`, `Unpaid`, etc.), `paymentmethod`, and an `items` array with per-line `description`, `amount`, `type`, etc. NOT a simple list of rows — the `message` is an object containing `invoices` as the array.\n\n**Reference support articles:**\n- https://support.brilliantdirectories.com/support/solutions/articles/12000108047 (API Reference — Users)\n- https://support.brilliantdirectories.com/support/solutions/articles/12000103947 (Users API — How to Manage Users with API Calls)\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch the billing transaction history (invoices) for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** `user_id` (POST body).\n\n**Use when:** you need to see a member's paid/unpaid invoices, payment methods, billing history, or reconcile billing status. Common reasons: answering a member's \"what did I pay for?\" question, exporting billing history, auditing revenue per member.\n\n**See also:** `getUserSubscriptions` (active/past membership plan signups — different resource from invoices), `getUser` (member profile).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, invoices: [{...invoice records}] } }`. Each invoice includes `id`, `invoicenum` (may be empty string), `date`, `duedate`, `datepaid`, `subtotal`, `credit`, `tax`, `total`, `status` (`Paid`, `Unpaid`, etc.), `paymentmethod`, `notes` (admin-facing; may contain internal comments — redact before surfacing to end users), and an `items` array with per-line `description`, `amount`, `type`. NOT a simple list of rows — the `message` is an object containing `invoices` as the array. **Unpaid invoices** have `datepaid: \"0000-00-00 00:00:00\"` (MariaDB zero-date sentinel) — do NOT parse as ISO-8601; check `status === 'Unpaid'` or `datepaid.startsWith('0000')` first. `subscription_details` may be `false` (literal boolean) when absent.\n\n**Reference support articles:**\n- https://support.brilliantdirectories.com/support/solutions/articles/12000108047 (API Reference — Users)\n- https://support.brilliantdirectories.com/support/solutions/articles/12000103947 (Users API — How to Manage Users with API Calls)\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/user/subscriptions": {
@@ -2209,9 +2236,11 @@
                     "type": "integer",
                     "enum": [
                       0,
-                      1,
-                      2
-                    ]
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Review status (integer). Authoritative values from BD admin:\\n  0 = Pending            (newly submitted, awaiting moderation — default for new reviews)\\n  2 = Accepted           (approved and visible on the member profile)\\n  3 = Declined           (rejected by admin — not publicly visible)\\n  4 = Waiting for Admin  (member pre-accepted, admin sign-off required)\\nValue 1 is NOT valid — do not pass it. On create, default flow starts at 0."
                   }
                 }
               }
@@ -2714,6 +2743,20 @@
                   "top_id": {
                     "type": "integer",
                     "description": "Category ID"
+                  },
+                  "send_lead_email_notification": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Set to 1 to fire lead notification emails on create. Default is 0 — API-created leads are silent. With `auto_match=1` or `users_to_match` populated, the matched-member notification email fires. Without a match step, only the admin notification fires (if configured). For matched-member notifications you MUST combine this flag with a matching trigger (`auto_match=1` and/or `users_to_match`)."
+                  },
+                  "auto_match": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Set to 1 to run the auto-match flow inline during create (equivalent to calling `matchLead` immediately after). Default is 0. When combined with `users_to_match`, the auto-match is bypassed and the lead is routed only to the specified members."
+                  },
+                  "users_to_match": {
+                    "type": "string",
+                    "description": "ADVANCED — OVERRIDES auto-match. Comma-separated list of member `user_id` values OR member email addresses to route this lead to directly. When provided, BD skips the normal category/location/service-area auto-matching and matches the lead to ONLY these members. Examples: `239` (single ID), `6099,6100` (multiple IDs), `user1@example.com,user2@example.com` (emails), mix allowed. Typically paired with `auto_match=1` to trigger the match step inline, and with `send_lead_email_notification=1` to fire the matched-member notification email — without that flag, matches are recorded but no email fires."
                   }
                 }
               }
@@ -2732,7 +2775,7 @@
             }
           }
         },
-        "description": "Create a new lead record. Writes live data.\n\n**Use when:** importing leads from an external form, CSV, or web-scrape. Default is SILENT — no notification emails fire unless you pass `send_lead_email_notification=1`, and no member routing happens until you call `matchLead`. `top_id` (category) is required — look it up via `listTopCategories`.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` — category ID; discover via `listTopCategories`\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n- Response includes `lead_id` AND `token` — token may be needed for customer-facing URLs\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Operational rules (from BD support article 12000091106):**\n- `send_lead_email_notification=1` — activates lead email notifications to the site admin and/or matched members. Default is off: leads created via API are silent unless this flag is set. For the full auto-matching flow (finds members by category/location and emails them), call `matchLead` separately after creating the lead.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new lead record. Writes live data.\n\n**Use when:** importing leads from an external form, CSV, or web-scrape. Default is SILENT — no notification emails fire unless you pass `send_lead_email_notification=1`, and no member routing happens unless you pass `auto_match=1` (inline) or call `matchLead` afterward. `top_id` (category) is required — look it up via `listTopCategories`.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n- `top_id` — category ID; discover via `listTopCategories`\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n- Response includes `lead_id` AND `token` — token may be needed for customer-facing URLs\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Operational rules (from BD support article 12000091106):**\n- `send_lead_email_notification=1` — activates lead email notifications to the site admin and/or matched members. Default is off: leads created via API are silent unless this flag is set. For the full auto-matching flow (finds members by category/location and emails them), call `matchLead` separately after creating the lead (or pass `auto_match=1` on this call to run inline).\n\n**Targeting specific members (override auto-match):** set `users_to_match` to a comma-separated list of member IDs or emails (e.g. `6099,6100` or `user1@example.com,user2@example.com`, mixed OK). This BYPASSES the normal category/location/service-area matching and routes the lead to ONLY those members. Typically paired with `auto_match=1` (to run the match step inline) and `send_lead_email_notification=1` (to fire the matched-member email). Common pattern when an external system already knows who should receive the lead.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/leads/match": {
@@ -3209,7 +3252,7 @@
       "get": {
         "operationId": "getSingleImagePostFields",
         "summary": "Get post field definitions",
-        "description": "Returns custom fields for a specific post type form.\n\n**Use when:** discovering the per-post-type custom fields before building a create/update payload. Pass `form_name` of the target post type.\n\n**Required:** `form_name`.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Returns custom fields for a specific post type form.\n\n**Use when:** discovering the per-post-type custom fields before building a create/update payload. Pass `form_name` of the target post type (e.g. `blog_article_fields`, `events_fields`, etc.).\n\n**Required:** `form_name`.\n\n**Returns:** a BARE ARRAY of field-definition objects (NOT wrapped in `{status, message}`). Each entry has `key`, `label`, `required`, `type`, and optionally `choices` (for dropdown/radio), `default`, `helpText`.\n\n**Silent-fallback warning:** if `form_name` does NOT match a real post-type form, BD returns HTTP 200 with a generic SUPER-UNION field list (containing every possible post field including `post_location`, `lat`, `lon`, `post_live_date`, `post_video`, `post_job`, internals like `post_type`/`logged_user`/`form_security_token`) — and `post_category.choices` will be ABSENT. Always verify `form_name` exists first via `listPostTypes` (look for the matching row's `form_name` column). If your response has `post_category` WITHOUT a `choices` array, you hit the fallback.\n\n**Discovering `post_category` dropdown values:** `post_category` is a per-post-type dropdown whose options come from the post type's `feature_categories` CSV (admin-managed). Read `post_category.choices[].key` for the exact values to send. BD does NOT trim whitespace when splitting the CSV — options after the first may have a leading space (e.g. `\" Category 2\"`). Pass VERBATIM.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Posts"
         ],
@@ -3266,7 +3309,7 @@
                   },
                   "data_type": {
                     "type": "integer",
-                    "description": "Data type ID (integer). Foreign-key reference to the data_types resource — the numeric data_id of a row returned by GET /api/v2/data_types/get.\\nThere is NO fixed enum for this field. Every BD site has its own configured data types (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\", \"Document Post\"). Valid IDs are per-site.\\nAgent workflow: call listDataTypes first to discover the site's configured types, match the user's phrasing to a category_name, then pass that row's data_id as the data_type parameter. Never guess a numeric ID."
+                    "description": "Classification family, read directly from the target post type's `data_type` column (via `listPostTypes` / `getPostType`). Values: `4` (multi-image — use `createMultiImagePost` instead), `9` (single-image video), `20` (single-image article/event/job/coupon). Internal-only classifications (`10`, `13`, `21`, `28`, `29`) are not post-creatable via this endpoint — use the resource-specific creator (e.g. `createReview` for `13`). Do NOT call `listDataTypes` — `data_type` is a classification, not a per-site FK."
                   },
                   "post_title": {
                     "type": "string"
@@ -3290,13 +3333,86 @@
                   "post_price": {
                     "type": "number"
                   },
+                  "post_image": {
+                    "type": "string",
+                    "description": "Feature image URL for the post. External URLs are supported natively; pair with `auto_image_import=1` to fetch and store locally."
+                  },
+                  "post_category": {
+                    "type": "string",
+                    "description": "Per-post-type dropdown value, configured in BD admin on the post type's `feature_categories` field. Discover allowed values via `getSingleImagePostFields(form_name=<post type's form_name>)` → `post_category.choices[].key`. Pass VERBATIM — BD does not trim whitespace (leading spaces after commas in `feature_categories` persist in the option values)."
+                  },
+                  "post_tags": {
+                    "type": "string",
+                    "description": "Comma-separated keywords for the post. Free-form strings — not related to the `Tags` resource."
+                  },
+                  "post_location": {
+                    "type": "string",
+                    "description": "Full or partial street address for the post (Event, Coupon, Job, or any geo-enabled post type). Pair with `auto_geocode=1` to resolve to lat/lon automatically, or set `lat`/`lon`/`state_sn`/`country_sn` explicitly."
+                  },
+                  "lat": {
+                    "type": "string",
+                    "description": "Latitude for the post's location (geo-enabled post types). Decimal degrees as string."
+                  },
+                  "lon": {
+                    "type": "string",
+                    "description": "Longitude for the post's location (geo-enabled post types). Decimal degrees as string."
+                  },
+                  "state_sn": {
+                    "type": "string",
+                    "description": "2-letter state/region code for the post's location (e.g. `CA`)."
+                  },
+                  "country_sn": {
+                    "type": "string",
+                    "description": "2-letter country code for the post's location (e.g. `US`)."
+                  },
+                  "post_live_date": {
+                    "type": "string",
+                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` (14-digit). Usually auto-set; override only for import/migration."
+                  },
+                  "post_start_date": {
+                    "type": "string",
+                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss`."
+                  },
+                  "post_expire_date": {
+                    "type": "string",
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`."
+                  },
+                  "post_video": {
+                    "type": "string",
+                    "description": "Full URL of a YouTube or Vimeo video. Only used by Video post types (`data_type=9`)."
+                  },
+                  "post_job": {
+                    "type": "string",
+                    "enum": ["Full-Time", "Part-Time", "Freelance", "Internship", "Consultant", "Contract"],
+                    "description": "Employment type — used by Job post types only. Other post types ignore this field."
+                  },
+                  "auto_geocode": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Set to `1` to geocode the post's location via Google Maps (uses `post_location`/lat/lon/state_sn/country_sn if supplied). Requires the \"Pretty URLs with Google Maps\" site feature."
+                  },
+                  "post_meta_title": {
+                    "type": "string",
+                    "description": "SEO `<title>` override for the post's public page."
+                  },
+                  "post_meta_description": {
+                    "type": "string",
+                    "description": "SEO meta description override for the post's public page."
+                  },
+                  "post_meta_keywords": {
+                    "type": "string",
+                    "description": "SEO meta keywords (comma-separated) for the post's public page."
+                  },
                   "auto_image_import": {
                     "type": "integer",
                     "enum": [
                       0,
                       1
                     ],
-                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this single-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Processing delay: a few minutes."
+                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this single-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Supports JPG/PNG/GIF/WebP AND SVG sources. Processing delay: a few minutes."
                   }
                 }
               }
@@ -3315,7 +3431,7 @@
             }
           }
         },
-        "description": "Create a new post record. Writes live data.\n\n**Use when:** creating a blog article, event, job listing, coupon, or any other single-image post type. Look up `data_id` + `data_type` via `listPostTypes` first — the post type's `data_type` field determines which create endpoint is correct. If `data_type=4` on the post type, use `createMultiImagePost` instead. For posts with scraped external image URLs, include `auto_image_import=1` to fetch and store them locally.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `user_id` — owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n- `data_id` — post type category ID; get via `listPostTypes`\n- `data_type` — data type classification; usually matches the post type's data type\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n- Response includes both `post_id` and `post_token` — the token is used for sharable URLs\n\n**See also:** `updateSingleImagePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) → `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) → `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new post record. Writes live data.\n\n**Use when:** creating a blog article, event, job listing, coupon, or any other single-image post type. Look up `data_id` + `data_type` via `listPostTypes` first — the post type's `data_type` field determines which create endpoint is correct. If `data_type=4` on the post type, use `createMultiImagePost` instead. For posts with scraped external image URLs, include `auto_image_import=1` to fetch and store them locally.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `user_id` — owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n- `data_id` — post type category ID; get via `listPostTypes`\n- `data_type` — data type classification; usually matches the post type's data type\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n- Response includes both `post_id` and `post_token` — the token is used for sharable URLs\n\n**See also:** `updateSingleImagePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) → `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) → `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n**Picking `post_category` (and other per-type dropdowns):** `post_category` values are configured PER POST TYPE by the site admin in the post type's `feature_categories` CSV. Before create, call `getSingleImagePostFields(form_name=<post type's form_name>)` and read `post_category.choices[].key`. Pass ONLY values from that list, VERBATIM — BD does not trim whitespace when splitting `feature_categories`, so options after the first may have a leading space (e.g. `\" Category 2\"`). If the user names a category that isn't in the list: ask whether to pick the closest existing option or have them add the new option in BD admin first — do NOT invent a new value. WARNING: if `form_name` does not match a real post type form, `getSingleImagePostFields` silently returns a generic SUPER-UNION field list (HTTP 200, no error) — verify `form_name` exists in `listPostTypes` first.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_posts/update": {
@@ -3352,6 +3468,80 @@
                       1
                     ],
                     "description": "Post publication status (integer).\\n  0 = Draft      (saved but not publicly visible)\\n  1 = Published  (publicly visible on the site)\\nDefault: depends on BD site settings; typically 0 (draft) for safety."
+                  },
+                  "post_caption": {
+                    "type": "string"
+                  },
+                  "post_price": {
+                    "type": "number"
+                  },
+                  "post_image": {
+                    "type": "string",
+                    "description": "Feature image URL. Pair with `auto_image_import=1` to fetch external URLs into site storage."
+                  },
+                  "post_category": {
+                    "type": "string",
+                    "description": "Per-post-type dropdown value. Discover allowed values via `getSingleImagePostFields`. Pass VERBATIM (BD does not trim whitespace)."
+                  },
+                  "post_tags": {
+                    "type": "string",
+                    "description": "Comma-separated keywords for the post."
+                  },
+                  "auto_geocode": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Set to `1` to geocode the post's location. Requires the \"Pretty URLs with Google Maps\" site feature."
+                  },
+                  "post_meta_title": {
+                    "type": "string"
+                  },
+                  "post_meta_description": {
+                    "type": "string"
+                  },
+                  "post_meta_keywords": {
+                    "type": "string"
+                  },
+                  "post_location": {
+                    "type": "string",
+                    "description": "Full or partial street address (Event/Coupon/Job/geo-enabled post types)."
+                  },
+                  "lat": {
+                    "type": "string"
+                  },
+                  "lon": {
+                    "type": "string"
+                  },
+                  "state_sn": {
+                    "type": "string"
+                  },
+                  "country_sn": {
+                    "type": "string"
+                  },
+                  "post_live_date": {
+                    "type": "string",
+                    "description": "Format: `YYYYMMDDHHmmss`."
+                  },
+                  "post_start_date": {
+                    "type": "string",
+                    "description": "Format: `YYYYMMDDHHmmss`. Event post types: start time."
+                  },
+                  "post_expire_date": {
+                    "type": "string",
+                    "description": "Format: `YYYYMMDDHHmmss`. Coupon: expiration. Event: end time."
+                  },
+                  "post_video": {
+                    "type": "string",
+                    "description": "YouTube/Vimeo URL — Video post types only."
+                  },
+                  "post_job": {
+                    "type": "string",
+                    "enum": ["Full-Time", "Part-Time", "Freelance", "Internship", "Consultant", "Contract"],
+                    "description": "Employment type — Job post types only."
+                  },
+                  "auto_image_import": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Set to `1` to fetch external image URLs in `post_image` into site storage. Supports JPG/PNG/GIF/WebP and SVG."
                   }
                 }
               }
@@ -3562,7 +3752,7 @@
             }
           }
         },
-        "description": "Fetch a single portfoliogroupfields record. Read-only.\n\n**Use when:** discovering per-post-type custom fields for multi-image posts — same pattern as `getSingleImagePostFields` but for the `users_portfolio_groups` resource.\n\n**Required:** `form_name`.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch field definitions for a multi-image post type form. Read-only.\n\n**Use when:** discovering per-post-type custom fields for multi-image posts — same pattern as `getSingleImagePostFields` but for the `users_portfolio_groups` resource.\n\n**Required:** `form_name`.\n\n**Returns:** a BARE ARRAY of field-definition objects (NOT wrapped in `{status, message}`). Each entry has `key`, `label`, `required`, `type`, and optionally `choices`, `default`, `helpText`. Multi-image post fields seen: `user_id`, `group_status`, `group_name`, `group_desc`, `post_image` (CSV of image URLs), `auto_image_import`, `post_tags`, `auto_geocode`. Categorization for multi-image posts is exposed under an internal widget-controller field name, not a clean `post_category` — not straightforward to write via API.\n\n**Silent-fallback warning:** if `form_name` does NOT match a real post-type form, BD may return a generic field list without error. Verify `form_name` exists in `listPostTypes` before trusting the response.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/create": {
@@ -3592,7 +3782,20 @@
                   },
                   "data_type": {
                     "type": "integer",
-                    "description": "Data type ID (integer). Foreign-key reference to the data_types resource — the numeric data_id of a row returned by GET /api/v2/data_types/get.\\nThere is NO fixed enum for this field. Every BD site has its own configured data types (e.g. \"Single Photo Post\", \"Multi-Photo Post\", \"Video Post\", \"Document Post\"). Valid IDs are per-site.\\nAgent workflow: call listDataTypes first to discover the site's configured types, match the user's phrasing to a category_name, then pass that row's data_id as the data_type parameter. Never guess a numeric ID."
+                    "description": "Classification family — for this endpoint, must be `4` (multi-image). Read from the target post type's `data_type` column via `listPostTypes` / `getPostType`. If the post type's `data_type` is `9` or `20`, use `createSingleImagePost` instead. Do NOT call `listDataTypes` — `data_type` is a classification, not a per-site FK."
+                  },
+                  "post_image": {
+                    "type": "string",
+                    "description": "Comma-separated list of image URLs to import as the album's photos (created at upload time as child `MultiImagePostPhoto` records). Pair with `auto_image_import=1` to fetch externals into site storage. For finer control (per-photo title, status), omit this and add photos one-by-one via `createMultiImagePostPhoto` after the album is created."
+                  },
+                  "post_tags": {
+                    "type": "string",
+                    "description": "Comma-separated keywords for the album. Free-form strings — not related to the `Tags` resource."
+                  },
+                  "auto_geocode": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Set to `1` to geocode the album's location. Requires the \"Pretty URLs with Google Maps\" site feature."
                   },
                   "group_name": {
                     "type": "string"
@@ -3614,7 +3817,7 @@
                       0,
                       1
                     ],
-                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this multi-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Processing delay: a few minutes."
+                    "description": "**Auto-import images to site storage.** When any external image URL field is supplied on this multi-image post (e.g. a feature image URL from a web-scrape), set `auto_image_import=1` to have BD fetch the image and save it locally. Without this flag, BD stores the URL as-is — images break if the source host goes down. **Recommended default when supplying external image URLs;** omit (or set `0`) only when the user explicitly wants to keep the external URL reference. Supports JPG/PNG/GIF/WebP AND SVG sources. Processing delay: a few minutes."
                   }
                 }
               }
@@ -3633,7 +3836,7 @@
             }
           }
         },
-        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Use when:** creating a photo album, gallery, product listing with multiple photos, or any post type with `data_type=4`. Confirm the target post type's `data_type` via `listPostTypes` first — `data_type=4` belongs here; 9/20 belongs in `createSingleImagePost`. After create, add photos one-by-one with `createMultiImagePostPhoto` using the returned `group_id`. For scraped image URLs, include `auto_image_import=1`.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `data_id` + `data_type` — specify the post type this album belongs to (from `listPostTypes` / `listDataTypes`)\n- `group_status`: `0`=Hidden, `1`=Published\n- Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`\n\n**See also:** `updateMultiImagePost` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) → `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) → `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Use when:** creating a photo album, gallery, product listing with multiple photos, or any post type with `data_type=4`. Confirm the target post type's `data_type` via `listPostTypes` first — `data_type=4` belongs here; 9/20 belongs in `createSingleImagePost`. Bulk-add photos at create time via `post_image` (CSV of URLs) + `auto_image_import=1`, or add them one-by-one after create via `createMultiImagePostPhoto` using the returned `group_id`.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Parameter interactions:**\n- `data_id` + `data_type` — specify the post type this album belongs to (from `listPostTypes`; `data_type` must be `4`)\n- `group_status`: `0`=Hidden, `1`=Published\n- `post_image` — comma-separated image URLs imported as child photos at create time\n- `auto_image_import=1` — fetches the `post_image` URLs into site storage (required for external sources to survive)\n\n**See also:** `updateMultiImagePost` (modify existing), `createMultiImagePostPhoto` (add photos individually).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned `group_id`. Use it for follow-up photo adds.\n\n---\n\n**Which endpoint to use — `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings — e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) — NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**Category for multi-image posts:** multi-image posts do NOT expose `post_category` like single-image posts do. Album-level categorization is configured differently in BD admin and is not cleanly writable via the create payload. If categorization is needed, add it via a follow-up `updateMultiImagePost` or BD admin.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_portfolio_groups/update": {
@@ -3670,6 +3873,18 @@
                       1
                     ],
                     "description": "Portfolio group publication status (integer).\\n  0 = Draft      (saved but not publicly visible)\\n  1 = Published  (publicly visible on the site)\\nDefault: depends on BD site settings; typically 0 (draft) for safety."
+                  },
+                  "post_tags": {
+                    "type": "string",
+                    "description": "Comma-separated keywords for the album."
+                  },
+                  "auto_geocode": {
+                    "type": "integer",
+                    "enum": [0, 1]
+                  },
+                  "auto_image_import": {
+                    "type": "integer",
+                    "enum": [0, 1]
                   }
                 }
               }
@@ -4014,7 +4229,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of posttype records. Read-only.\n\n**Use when:** discovering which post types exist on this site AND their `data_type` families. The `data_type` value on each row tells you whether a post type belongs to `createSingleImagePost` (9/20) or `createMultiImagePost` (4). Use this BEFORE calling either create endpoint to pick the correct tool.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getPostType` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of posttype records. Read-only.\n\n**Use when:** discovering which post types exist on this site AND their `data_type` families. The `data_type` value on each row tells you whether a post type belongs to `createSingleImagePost` (9/20) or `createMultiImagePost` (4). Use this BEFORE calling either create endpoint to pick the correct tool.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Payload size — filter, don't enumerate blindly:** each row has ~90 fields, and on sites with customized post types, layout fields (`search_results_layout`, `profile_results_layout`, `search_code_hidden`, `detail_page_code_hidden`) can embed entire PHP templates — responses have been seen at 80k+ chars. BD does not offer a `fields=` response-shaping parameter. The practical fix is to filter and cap:\n- If you know the target post type name, filter: `property=data_name&property_value=Blog&property_operator=LIKE&limit=5`\n- If you know the `data_id` already, skip this entirely — use `getPostType` (single record)\n- For \"discover blog-family post types\": filter by `data_type` (`=4` multi-image, `=20` single-image article/blog/event) with a small `limit` to see only the relevant family\n- For full enumeration for site-mapping, set `limit=100` and paginate; expect to burn tokens on a site with many customized types\n\n**See also:** `getPostType` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get/{data_id}": {
@@ -4086,7 +4301,7 @@
             }
           }
         },
-        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Use when:** building a create/update payload for a post type that has custom fields (most do). Returns the exact per-type schema to send. Pass `data_id` of the target post type.\n\n**Required:** `data_id`.\n\n**Parameter interactions:**\n- `data_id` — the post type to introspect; get via `listPostTypes`\n- Returns custom field definitions specific to this post type — use to build create/update payloads for matching posts\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Use when:** building a create/update payload for a post type that has custom fields (most do). Returns the exact per-type schema to send. Pass `data_id` of the target post type.\n\n**Required:** `data_id`.\n\n**Parameter interactions:**\n- `data_id` — the post type to introspect; get via `listPostTypes`\n- Returns custom field definitions specific to this post type — use to build create/update payloads for matching posts\n\n**Discovering enumerated field values (e.g. `post_category`):** per-post-type dropdowns like `post_category` are configured by the site admin and live in this schema. There is NO `createPostCategory` API tool — if the user needs a new dropdown option, that is admin-side work. Call this before a create/update to see the exact allowed values for select/radio/checkbox fields, and pass only those values verbatim.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/update": {
@@ -5298,7 +5513,7 @@
             }
           }
         },
-        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_id` / `form_name` — the parent form (from `createForm` or `listForms`)\n- Field type and options depend on the form type; validate against the form's field schema\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`field_type` valid values (BD admin form-builder UI, full list):**\n\n*Select-type fields:* `Checkbox` (checkboxes), `Select` (dropdown list), `Radio` (radio buttons), `YesNo` (yes/no toggle)\n\n*Text inputs:* `Custom` (custom HTML), `Email`, `HTML` (section title / heading), `Button` (submit button), `Textbox` (single-line text), `textarea` (paragraph), `Url` (website URL)\n\n*Fancy fields:* `Date` (date picker), `DateTimeLocal` (date + time picker), `File` (file upload), `FroalaEditor` (rich text — basic), `FroalaEditorUserUpload` (+ image upload), `FroalaEditorUserUploadPreMadeElem` (+ pre-made elements), `FroalaEditorAdmin` (+ media manager), `Tip` (help alert box), `Hidden`, `Country` (country list), `State` (state list), `Number` (integer), `Password`, `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha` (Google reCAPTCHA), `HoneyPot` (spam protection), `Category` (top-level category list), `Years` (year picker)\n\n**Field naming rules:**\n- `field_name` — internal system key. **Underscores only, no spaces.** E.g. `first_name`, `company_email`. Used as HTML `name` attribute.\n- `field_text` — public-facing display label shown to form users. Free-form, e.g. \"First Name\", \"Your Email Address\".\n\n**Form composition rule:** a form should have **exactly ONE `Button` field** (the submit trigger). Adding multiple Button fields causes UI confusion.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_name` — the parent form slug (from `listForms` / `createForm`). Note: only `form_name` is accepted; there is no `form_id` parameter on this endpoint.\n- Field type and options depend on the form type; validate against the form's field schema\n\n**Limitation — dropdown option lists:** `Checkbox`, `Select`, `Radio`, and `YesNo` field types accept their type value on create but there is NO API parameter to supply their option list (no `field_options`/`choices`/`enum` field on this endpoint). Create the field with `field_type` set, then populate its options in BD admin's form editor. Until options are populated, the rendered field will be empty.\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`field_type` valid values (BD admin form-builder UI, full list):**\n\n*Select-type fields:* `Checkbox` (checkboxes), `Select` (dropdown list), `Radio` (radio buttons), `YesNo` (yes/no toggle)\n\n*Text inputs:* `Custom` (custom HTML), `Email`, `HTML` (section title / heading), `Button` (submit button), `Textbox` (single-line text), `textarea` (paragraph), `Url` (website URL)\n\n*Fancy fields:* `Date` (date picker), `DateTimeLocal` (date + time picker), `File` (file upload), `FroalaEditor` (rich text — basic), `FroalaEditorUserUpload` (+ image upload), `FroalaEditorUserUploadPreMadeElem` (+ pre-made elements), `FroalaEditorAdmin` (+ media manager), `Tip` (help alert box), `Hidden`, `Country` (country list), `State` (state list), `Number` (integer), `Password`, `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha` (Google reCAPTCHA), `HoneyPot` (spam protection), `Category` (top-level category list), `Years` (year picker)\n\n**Field naming rules:**\n- `field_name` — internal system key. **Underscores only, no spaces.** E.g. `first_name`, `company_email`. Used as HTML `name` attribute.\n- `field_text` — public-facing display label shown to form users. Free-form, e.g. \"First Name\", \"Your Email Address\".\n\n**Form composition rule:** a form should have **exactly ONE `Button` field** (the submit trigger). Adding multiple Button fields causes UI confusion.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/update": {
@@ -8043,7 +8258,7 @@
       "post": {
         "operationId": "createWebPage",
         "summary": "Create a page",
-        "description": "Create a new web page on the site. Writes live data.\n\nA WebPage is any static-ish page: the homepage (`seo_type=home`), about, contact, custom landing pages, category templates, profile templates, and search result templates. Backed by BD's `list_seo` table.\n\nPages are publicly accessible **immediately** once `content_active=1` (the default) and a valid `seo_type` is supplied — no admin action needed.\n\n**Use when:** adding a new custom landing page, about, contact, or other static-ish page. Required: `seo_type` (must match one of BD's admin-UI values — `content` is the safe default for generic pages) and `filename` (URL slug). Pages are live immediately once `content_active=1` (default).\n\n**Required:** `seo_type`, `filename`.\n\n**Parameter guidance:**\n- `seo_type` — page type identifier. Must be one of the fixed admin-UI values (invalid types produce unrenderable records). Common values: `home` (homepage replacement), `content` (generic static/landing page — BD admin default for \"new page\"), profile/search template types, etc. For a generic landing/static page, use `content`.\n- `filename` — URL slug (e.g. `about-us`), not the full URL. The public URL is `<site-domain>/<filename>`.\n- `content` — main HTML body. Supports `[widget=Name]` shortcodes AND template tokens.\n- `content_active=1` (default) — page is live; `0` = hidden.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify), `createRedirect` (if replacing an existing URL, create a 301 to preserve SEO).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `seo_id`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new web page on the site. Writes live data.\n\nA WebPage is any static-ish page: the homepage (`seo_type=home`), about, contact, custom landing pages, category templates, profile templates, and search result templates. Backed by BD's `list_seo` table.\n\nPages are publicly accessible **immediately** once `content_active=1` (the default) and a valid `seo_type` is supplied — no admin action needed.\n\n**Use when:** adding a new custom landing page, about, contact, or other static-ish page. Required: `seo_type` (must match one of BD's admin-UI values — `content` is the safe default for generic pages) and `filename` (URL slug). Pages are live immediately once `content_active=1` (default).\n\n**Required:** `seo_type`, `filename`.\n\n**Parameter guidance:**\n- `seo_type` — page type identifier. Must be one of the fixed admin-UI values (invalid types produce unrenderable records). Common values: `home` (homepage replacement), `content` (generic static/landing page — BD admin default for \"new page\"), profile/search template types, etc. For a generic landing/static page, use `content`.\n- `filename` — URL slug (e.g. `about-us`), not the full URL. The public URL is `<site-domain>/<filename>`.\n- `content` — main HTML body. Supports `[widget=Name]` shortcodes AND template tokens.\n- `content_active=1` (default) — page is live; `0` = hidden.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify), `createRedirect` (if replacing an existing URL, create a 301 to preserve SEO).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `seo_id`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8230,40 +8445,110 @@
                   },
                   "enable_hero_section": {
                     "type": "string",
-                    "description": "\"1\" = enable hero section"
+                    "enum": ["0", "1", "2"],
+                    "description": "Master switch for the page's hero banner (the full-width header section rendered ABOVE the main page content). `0` = disabled (no hero renders, regardless of other hero_* values), `1` = enabled on all devices, `2` = enabled on desktop but hidden on mobile. When `0`, all other `hero_*` / `h1_font_*` / `h2_font_*` fields are ignored at render time but their stored values are preserved — toggling back to `1` or `2` restores the previous config without having to re-enter it. Does NOT apply to the homepage (`seo_type=home`) — the homepage template ignores hero fields entirely. BD stores the values but never renders them on the homepage; skip all `hero_*` fields when updating seo_type=home."
+                  },
+                  "hero_hide_banner_ad": {
+                    "type": "string",
+                    "enum": ["0", "1"],
+                    "description": "When `1`, suppresses the site-wide \"Below Header Banner Ad\" on THIS page only (useful when the hero visually replaces that slot). `0` (default) keeps the banner ad in its normal position."
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image URL"
+                    "description": "Hero background image. Accepts either a BD-hosted relative path (e.g. `/images/bg202.webp`, produced when uploaded via the BD admin file picker) OR an external URL (e.g. `https://cdn.example.com/banner.jpg`) — external URLs are supported natively, no `auto_image_import` needed for web pages. Recommended dimensions: 1800 × 600 px."
                   },
-                  "hero_section_content": {
+                  "hero_background_image_size": {
                     "type": "string",
-                    "description": "Hero HTML content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
+                    "enum": ["mobile-ready", "standard"],
+                    "description": "Controls how the hero background image scales/crops across devices. `mobile-ready` (recommended) = responsive behavior tuned for mobile, `standard` = fixed-ratio behavior."
+                  },
+                  "hero_content_overlay_color": {
+                    "type": "string",
+                    "description": "Semi-transparent color layer rendered between the hero background image and the text content, used to improve text legibility over busy images. RGB format ONLY — e.g. `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) is NOT accepted. Combine with `hero_content_overlay_opacity` to control visibility."
+                  },
+                  "hero_content_overlay_opacity": {
+                    "type": "string",
+                    "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default `0.4`."
+                  },
+                  "hero_top_padding": {
+                    "type": "string",
+                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200` (i.e. `0`, `10`, `20`, ..., `200`). Default `70`."
+                  },
+                  "hero_bottom_padding": {
+                    "type": "string",
+                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. Default `60`."
+                  },
+                  "hero_column_width": {
+                    "type": "string",
+                    "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                    "description": "Width of the hero text-content column, expressed as a Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more padding on the sides of the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
-                    "enum": [
-                      "left",
-                      "center",
-                      "right"
-                    ],
-                    "description": "Hero alignment"
+                    "enum": ["left", "center", "right"],
+                    "description": "Horizontal alignment of the hero title/subtitle/content text block within its column. Default `center`."
                   },
-                  "hero_link_text": {
+                  "h1_font_color": {
                     "type": "string",
-                    "description": "Hero CTA link text"
+                    "description": "Main title (H1) font color in the hero. RGB format ONLY — e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field — these `h1_*` fields control ONLY the hero's H1 styling."
+                  },
+                  "h1_font_size": {
+                    "type": "string",
+                    "description": "Main title (H1) font size in pixels. Accepts integer values from `30` to `80`. Default `30`."
+                  },
+                  "h1_font_weight": {
+                    "type": "string",
+                    "enum": ["300", "400", "600", "800"],
+                    "description": "Main title (H1) font weight. `300`=Light, `400`=Normal (default), `600`=Bold, `800`=Extra Bold."
+                  },
+                  "h2_font_color": {
+                    "type": "string",
+                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY — e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field."
+                  },
+                  "h2_font_size": {
+                    "type": "string",
+                    "description": "Sub-title (H2) font size in pixels. Accepts integer values from `20` to `60`. Default `56`."
+                  },
+                  "h2_font_weight": {
+                    "type": "string",
+                    "enum": ["300", "400", "600", "800"],
+                    "description": "Sub-title (H2) font weight. `300`=Light, `400`=Normal, `600`=Bold (default), `800`=Extra Bold."
+                  },
+                  "hero_content_font_color": {
+                    "type": "string",
+                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY — e.g. `rgb(0,0,0)`."
+                  },
+                  "hero_content_font_size": {
+                    "type": "string",
+                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. Default `10`."
+                  },
+                  "hero_section_content": {
+                    "type": "string",
+                    "description": "Additional text/HTML/widget shortcode rendered BELOW the H1 and H2 in the hero section. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "hero_link_url": {
                     "type": "string",
-                    "description": "Hero CTA link URL"
+                    "description": "Hero call-to-action (CTA) button link URL. If empty, no CTA button is rendered. For internal links, a relative path is fine (e.g. `/signup`); for external, full URL with `http://` or `https://`."
+                  },
+                  "hero_link_text": {
+                    "type": "string",
+                    "description": "Hero CTA button label. Required (non-empty) for the button to render — `hero_link_url` alone without text will not produce a button."
                   },
                   "hero_link_target_blank": {
                     "type": "string",
-                    "enum": [
-                      "0",
-                      "1"
-                    ],
-                    "description": "open in new tab"
+                    "enum": ["0", "1"],
+                    "description": "When `1`, opens the CTA link in a new tab (`target=\"_blank\"`). `0` (default) opens in the same tab."
+                  },
+                  "hero_link_size": {
+                    "type": "string",
+                    "enum": ["", "btn-lg", "btn-xl"],
+                    "description": "CTA button size. `\"\"` (empty string, default) = Normal, `btn-lg` = Large, `btn-xl` = Extra Large. These are Bootstrap button-size classes applied verbatim."
+                  },
+                  "hero_link_color": {
+                    "type": "string",
+                    "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
+                    "description": "CTA button color variant. Maps to Bootstrap button classes: `primary` (default theme color), `info` (blue), `success` (green), `warning` (yellow), `danger` (red), `default` (neutral gray), `secondary` (theme secondary). Colors render per the site's theme palette, not literal colors."
                   },
                   "linked_post_type": {
                     "type": "string",
@@ -8329,9 +8614,10 @@
                       "profile_search_results",
                       "custom_widget_page",
                       "password_retrieval_page",
-                      "unsubscribed"
+                      "unsubscribed",
+                      "home"
                     ],
-                    "description": "Page type identifier. These are the values BD customers can choose from in admin:\\n  content                  = Single Web Page (USE THIS for custom/landing/static pages — it is the default)\\n  data_category            = Post Search Results\\n  profile_search_results   = Member Search Results\\n  custom_widget_page       = Custom Widget as Web Page\\n  password_retrieval_page  = Password Retrieval Page\\n  unsubscribed             = Unsubscribed Page\\nWhen a user asks for a \"landing page\", \"static page\", \"about page\", \"contact page\", or any generic custom page, always use \"content\".\\nNote: the underlying BD system has additional internal seo_type values (home, profile, payment, etc.) that are system-seeded and should NOT be created via API — customers never have a reason to call createPage with those."
+                    "description": "Page type identifier. On update, safest to OMIT this field unless intentionally changing it (most seo_type changes are destructive). Values:\\n  content                  = Single Web Page (generic static/landing page)\\n  data_category            = Post Search Results\\n  profile_search_results   = Member Search Results\\n  custom_widget_page       = Custom Widget as Web Page\\n  password_retrieval_page  = Password Retrieval Page\\n  unsubscribed             = Unsubscribed Page\\n  home                     = Homepage (system-seeded; included here so an update round-trip of the existing homepage record passes the enum check)"
                   },
                   "filename": {
                     "type": "string",
@@ -8493,40 +8779,110 @@
                   },
                   "enable_hero_section": {
                     "type": "string",
-                    "description": "\"1\" = enable hero section"
+                    "enum": ["0", "1", "2"],
+                    "description": "Master switch for the page's hero banner (the full-width header section rendered ABOVE the main page content). `0` = disabled (no hero renders, regardless of other hero_* values), `1` = enabled on all devices, `2` = enabled on desktop but hidden on mobile. When `0`, all other `hero_*` / `h1_font_*` / `h2_font_*` fields are ignored at render time but their stored values are preserved — toggling back to `1` or `2` restores the previous config without having to re-enter it. Does NOT apply to the homepage (`seo_type=home`) — the homepage template ignores hero fields entirely. BD stores the values but never renders them on the homepage; skip all `hero_*` fields when updating seo_type=home."
+                  },
+                  "hero_hide_banner_ad": {
+                    "type": "string",
+                    "enum": ["0", "1"],
+                    "description": "When `1`, suppresses the site-wide \"Below Header Banner Ad\" on THIS page only (useful when the hero visually replaces that slot). `0` (default) keeps the banner ad in its normal position."
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image URL"
+                    "description": "Hero background image. Accepts either a BD-hosted relative path (e.g. `/images/bg202.webp`, produced when uploaded via the BD admin file picker) OR an external URL (e.g. `https://cdn.example.com/banner.jpg`) — external URLs are supported natively, no `auto_image_import` needed for web pages. Recommended dimensions: 1800 × 600 px."
                   },
-                  "hero_section_content": {
+                  "hero_background_image_size": {
                     "type": "string",
-                    "description": "Hero HTML content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
+                    "enum": ["mobile-ready", "standard"],
+                    "description": "Controls how the hero background image scales/crops across devices. `mobile-ready` (recommended) = responsive behavior tuned for mobile, `standard` = fixed-ratio behavior."
+                  },
+                  "hero_content_overlay_color": {
+                    "type": "string",
+                    "description": "Semi-transparent color layer rendered between the hero background image and the text content, used to improve text legibility over busy images. RGB format ONLY — e.g. `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) is NOT accepted. Combine with `hero_content_overlay_opacity` to control visibility."
+                  },
+                  "hero_content_overlay_opacity": {
+                    "type": "string",
+                    "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default `0.4`."
+                  },
+                  "hero_top_padding": {
+                    "type": "string",
+                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200` (i.e. `0`, `10`, `20`, ..., `200`). Default `70`."
+                  },
+                  "hero_bottom_padding": {
+                    "type": "string",
+                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. Default `60`."
+                  },
+                  "hero_column_width": {
+                    "type": "string",
+                    "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                    "description": "Width of the hero text-content column, expressed as a Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more padding on the sides of the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
-                    "enum": [
-                      "left",
-                      "center",
-                      "right"
-                    ],
-                    "description": "Hero alignment"
+                    "enum": ["left", "center", "right"],
+                    "description": "Horizontal alignment of the hero title/subtitle/content text block within its column. Default `center`."
                   },
-                  "hero_link_text": {
+                  "h1_font_color": {
                     "type": "string",
-                    "description": "Hero CTA link text"
+                    "description": "Main title (H1) font color in the hero. RGB format ONLY — e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field — these `h1_*` fields control ONLY the hero's H1 styling."
+                  },
+                  "h1_font_size": {
+                    "type": "string",
+                    "description": "Main title (H1) font size in pixels. Accepts integer values from `30` to `80`. Default `30`."
+                  },
+                  "h1_font_weight": {
+                    "type": "string",
+                    "enum": ["300", "400", "600", "800"],
+                    "description": "Main title (H1) font weight. `300`=Light, `400`=Normal (default), `600`=Bold, `800`=Extra Bold."
+                  },
+                  "h2_font_color": {
+                    "type": "string",
+                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY — e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field."
+                  },
+                  "h2_font_size": {
+                    "type": "string",
+                    "description": "Sub-title (H2) font size in pixels. Accepts integer values from `20` to `60`. Default `56`."
+                  },
+                  "h2_font_weight": {
+                    "type": "string",
+                    "enum": ["300", "400", "600", "800"],
+                    "description": "Sub-title (H2) font weight. `300`=Light, `400`=Normal, `600`=Bold (default), `800`=Extra Bold."
+                  },
+                  "hero_content_font_color": {
+                    "type": "string",
+                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY — e.g. `rgb(0,0,0)`."
+                  },
+                  "hero_content_font_size": {
+                    "type": "string",
+                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. Default `10`."
+                  },
+                  "hero_section_content": {
+                    "type": "string",
+                    "description": "Additional text/HTML/widget shortcode rendered BELOW the H1 and H2 in the hero section. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "hero_link_url": {
                     "type": "string",
-                    "description": "Hero CTA link URL"
+                    "description": "Hero call-to-action (CTA) button link URL. If empty, no CTA button is rendered. For internal links, a relative path is fine (e.g. `/signup`); for external, full URL with `http://` or `https://`."
+                  },
+                  "hero_link_text": {
+                    "type": "string",
+                    "description": "Hero CTA button label. Required (non-empty) for the button to render — `hero_link_url` alone without text will not produce a button."
                   },
                   "hero_link_target_blank": {
                     "type": "string",
-                    "enum": [
-                      "0",
-                      "1"
-                    ],
-                    "description": "open in new tab"
+                    "enum": ["0", "1"],
+                    "description": "When `1`, opens the CTA link in a new tab (`target=\"_blank\"`). `0` (default) opens in the same tab."
+                  },
+                  "hero_link_size": {
+                    "type": "string",
+                    "enum": ["", "btn-lg", "btn-xl"],
+                    "description": "CTA button size. `\"\"` (empty string, default) = Normal, `btn-lg` = Large, `btn-xl` = Extra Large. These are Bootstrap button-size classes applied verbatim."
+                  },
+                  "hero_link_color": {
+                    "type": "string",
+                    "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
+                    "description": "CTA button color variant. Maps to Bootstrap button classes: `primary` (default theme color), `info` (blue), `success` (green), `warning` (yellow), `danger` (red), `default` (neutral gray), `secondary` (theme secondary). Colors render per the site's theme palette, not literal colors."
                   },
                   "linked_post_type": {
                     "type": "string",
@@ -8561,7 +8917,7 @@
             }
           }
         },
-        "description": "Update an existing web page by `seo_id`. Fields omitted are untouched. Writes live data.\n\nChanges go live immediately. No cache refresh needed for most edits. If changing `filename` (URL slug), consider creating a 301 via `createRedirect` so inbound links to the old slug keep working.\n\n**Use when:** editing copy, meta tags, social-share images, or toggling layout flags (hide header/footer, full-width, etc.). Changing `filename` breaks inbound links — create a `Redirect` via `createRedirect` to preserve SEO.\n\n**Required:** `seo_id`.\n\n**Common edits:**\n- Copy/content: `content`, `h1`, `h2`, `seo_text`, `content_footer`\n- SEO: `title`, `meta_desc`, `meta_keywords`\n- Social: `facebook_title`, `facebook_desc`, `facebook_image`\n- Layout: `content_layout`, `hide_header`, `hide_footer`, etc. (see mapping below)\n- Visibility: `content_active` (1 = live, 0 = hidden)\n\n**See also:** `createWebPage` (add new), `deleteWebPage` (remove), `createRedirect` (after slug changes).\n\n**Writes live data:** immediately visible.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing web page by `seo_id`. Fields omitted are untouched. Writes live data.\n\nChanges go live immediately. No cache refresh needed for most edits. If changing `filename` (URL slug), consider creating a 301 via `createRedirect` so inbound links to the old slug keep working.\n\n**Use when:** editing copy, meta tags, social-share images, or toggling layout flags (hide header/footer, full-width, etc.). Changing `filename` breaks inbound links — create a `Redirect` via `createRedirect` to preserve SEO.\n\n**Required:** `seo_id`.\n\n**Common edits:**\n- Copy/content: `content`, `h1`, `h2`, `seo_text`, `content_footer`\n- SEO: `title`, `meta_desc`, `meta_keywords`\n- Social: `facebook_title`, `facebook_desc`, `facebook_image`\n- Layout: `content_layout`, `hide_header`, `hide_footer`, etc. (see mapping below)\n- Visibility: `content_active` (1 = live, 0 = hidden)\n\n**See also:** `createWebPage` (add new), `deleteWebPage` (remove), `createRedirect` (after slug changes).\n\n**Writes live data:** immediately visible.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/delete": {
@@ -8672,7 +9028,7 @@
       "post": {
         "operationId": "createRedirect",
         "summary": "Create a redirect",
-        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Use when:** preserving SEO after any URL change — slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `type`, `old_filename`, `new_filename`.\n\n**Parameter interactions:**\n- `type` — source category: `profile`, `post`, `category`, `custom`, etc.\n- `old_filename` / `new_filename` — URL paths relative to the domain root (not full URLs)\n- `db_id` — database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`type` default: `custom`** — use `custom` unless you're explicitly mirroring BD's auto-generated redirect types (`profile`, `post`, `category`). Most API-created redirects should use `custom` since they're not tied to an auto-rename event from the BD admin UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Use when:** preserving SEO after any URL change — slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `old_filename`, `new_filename`. (`type` defaults to `custom` when omitted.)\n\n**Parameter interactions:**\n- `type` — source category: `profile`, `post`, `category`, `custom`, etc.\n- `old_filename` / `new_filename` — URL paths relative to the domain root (not full URLs)\n- `db_id` — database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`type` default: `custom`** — use `custom` unless you're explicitly mirroring BD's auto-generated redirect types (`profile`, `post`, `category`). Most API-created redirects should use `custom` since they're not tied to an auto-rename event from the BD admin UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Redirects"
         ],
@@ -8683,7 +9039,6 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "type",
                   "old_filename",
                   "new_filename"
                 ],
@@ -9134,7 +9489,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of TOP-level member categories. Read-only.\n\nTop Categories are the highest level of the 3-tier member classification (e.g., \"Restaurants\", \"Dentists\"). Each record's `profession_id` is what populates `users_data.profession_id` on member records. Backed by BD's `list_professions` table.\n\n**Use when:** populating a category dropdown, generating a site map, or discovering the `profession_id` of an existing category before assigning members to it. Returns ALL top-level categories. For sub-categories under a specific top, use `listSubCategories` with a `profession_id` filter.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTopCategory` (single by ID), `listSubCategories` (sub-categories filtered by `profession_id`), `createTopCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record has `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, `revision_timestamp`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of TOP-level member categories. Read-only.\n\nTop Categories are the highest level of the 3-tier member classification (e.g., \"Restaurants\", \"Dentists\"). Each record's `profession_id` is what populates `users_data.profession_id` on member records. Backed by BD's `list_professions` table.\n\n**Use when:** populating a category dropdown, generating a site map, or discovering the `profession_id` of an existing category before assigning members to it. Returns ALL top-level categories. For sub-categories under a specific top, use `listSubCategories` with a `profession_id` filter.\n\n**Permission note:** this endpoint is independently gated on the API key. A key may have `createUser` enabled (which auto-creates missing top categories via `profession_name`) while this read endpoint is not granted. On a 403 \"API Key does not have permission to access this endpoint\", enable `list_professions` (read) for the key in BD Admin → Developer Hub.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getTopCategory` (single by ID), `listSubCategories` (sub-categories filtered by `profession_id`), `createTopCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record has `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, `revision_timestamp`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy — AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | — |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` → parent Top Category; `master_id` → parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` → member; `service_id` → Sub Category |\n\n**How a member gets classified on their public profile:**\n- `users_data.profession_id` → points at a single Top Category (the member's primary classification; shown in URL slug)\n- `users_data.services` → CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n- `rel_services` rows (Member ↔ Sub Category links) → used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are the BD internal resource names. Use the tools named above.\n\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_professions/get/{profession_id}": {

@@ -70,8 +70,10 @@ After the API returns success, BD asynchronously downloads the image and replace
 - `send_email_notifications=1` on `createUser` triggers the welcome email (based on the membership plan's configured email). Default: off — API creates are silent.
 
 ### Uniqueness constraints
-- `email` must be unique unless the site setting `allow_duplicate_member_emails` is enabled.
-- `email` + `password` combo must ALWAYS be unique (regardless of site settings).
+- `email` uniqueness depends on the site setting `allow_duplicate_member_emails`:
+  - Setting OFF (default for most sites): BD rejects duplicate `email` on create with a validation error.
+  - Setting ON: duplicate `email` values are accepted and stored. Identical `email` + `password` pairs are also accepted — BD does NOT do an extra uniqueness check on the pair.
+  - The setting is not exposed via API. For idempotent import pipelines: call `listUsers` with `property=email&property_value=<email>` before create and check for existing records, OR attempt the create and handle a rejection by falling back to `updateUser`.
 - `token` (when supplied) must be exactly 32 alphanumeric characters AND unique across all members.
 
 ### Validation behaviors

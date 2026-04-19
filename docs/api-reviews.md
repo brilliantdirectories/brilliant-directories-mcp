@@ -18,7 +18,7 @@ Supports pagination + filtering via `property[]` / `property_value[]`.
 `POST /api/v2/users_reviews/create`
 
 **Required:** `user_id`
-**Optional:** `review_name`, `review_email`, `review_title`, `review_description`, `rating_overall` (1-5), `recommend` (0/1), `review_status` (0/1/2)
+**Optional:** `review_name`, `review_email`, `review_title`, `review_description`, `rating_overall` (1-5), `recommend` (0/1), `review_status` (0=Pending, 2=Accepted, 3=Declined, 4=Waiting for Admin — value 1 is NOT valid)
 
 ### 4. Update Review
 `PUT /api/v2/users_reviews/update`
