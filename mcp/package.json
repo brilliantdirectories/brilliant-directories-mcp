@@ -1,7 +1,7 @@
 {
   "name": "brilliant-directories-mcp",
   "mcpName": "io.github.brilliantdirectories/brilliant-directories-mcp",
-  "version": "6.1.5",
+  "version": "6.1.6",
   "description": "Official MCP server for Brilliant Directories — manage members, posts, leads, reviews, and more.",
   "main": "index.js",
   "bin": {

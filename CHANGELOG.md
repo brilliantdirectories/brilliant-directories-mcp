@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.6] - 2026-04-19
+
+### Changed — tightened `refreshSiteCache` tool description
+
+Cleaned up redundancy and added explicit anti-pattern warning:
+- Removed duplicate "does not register new page URLs" language (was stated twice — in opener and Parameter interactions section)
+- Added **Do NOT use for:** section with two concrete anti-patterns: (a) new pages (they go live immediately via `content_active=1`, not via this endpoint), (b) routine workflow noise (do not call after every bulk op — this is a targeted fallback, not a default post-step)
+- Summary renamed: "Refresh the site cache" → "Refresh the site cache (template/theme/widget changes only)" so agents see the scope in tool discovery before drilling into description
+
+Description length: 1346 → 1110 chars. Tighter, with the scope-narrowing warning baked in.
+
+The tool was already present and functional; this release just clarifies WHEN to reach for it so agents don't cache-thrash BD's servers after every bulk operation.
+
 ## [6.1.5] - 2026-04-19
 
 ### Added — real-time cost awareness for bulk operations
