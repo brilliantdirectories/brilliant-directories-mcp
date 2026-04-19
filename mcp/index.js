@@ -693,6 +693,8 @@ async function main() {
         `Pagination (all \`list*\` and \`search*\` endpoints only): \`limit\` (default 25, max 100) + \`page\` as an opaque cursor token taken from the previous response's \`next_page\` field. Never numeric offsets like \`page=2\`. Single-record \`get*\`, create/update/delete don't paginate.`,
         ``,
         `Writes are live and immediately visible on the public site. Confirm before any destructive or mass-modification operation. For reversible removal, prefer \`updateUser\` with \`active=3\` (Canceled) over \`deleteUser\` — the record stays queryable and can be reactivated.`,
+        ``,
+        `HTML fields (\`about_me\`, \`post_content\`, \`widget_data\`, \`email_body\`, \`content\`, etc.) take raw HTML. Do NOT wrap in \`<![CDATA[...]]>\` and do NOT entity-escape (\`&lt;\`/\`&gt;\`) — BD stores field values verbatim, so wrappers and escapes end up as literal visible text on the rendered page.`,
       ].join("\n"),
     }
   );

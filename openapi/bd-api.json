@@ -1414,11 +1414,11 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit."
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "The long description about this user."
+                    "description": "The long description about this user. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "quote": {
                     "type": "string",
@@ -1708,11 +1708,11 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit."
+                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "The long description about this user."
+                    "description": "The long description about this user. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "quote": {
                     "type": "string",
@@ -3272,11 +3272,12 @@
                     "type": "string"
                   },
                   "post_caption": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "post_content": {
                     "type": "string",
-                    "description": "HTML allowed"
+                    "description": "HTML allowed Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "post_status": {
                     "type": "integer",
@@ -3341,7 +3342,8 @@
                     "type": "string"
                   },
                   "post_content": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "post_status": {
                     "type": "integer",
@@ -3596,7 +3598,8 @@
                     "type": "string"
                   },
                   "group_desc": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "group_status": {
                     "type": "integer",
@@ -3657,7 +3660,8 @@
                     "type": "string"
                   },
                   "group_desc": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "group_status": {
                     "type": "integer",
@@ -4454,7 +4458,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML content"
+                    "description": "HTML content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "widget_viewport": {
                     "type": "string",
@@ -4515,7 +4519,8 @@
                     "type": "string"
                   },
                   "widget_data": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   }
                 }
               }
@@ -4722,7 +4727,7 @@
                   },
                   "email_body": {
                     "type": "string",
-                    "description": "HTML + merge tags"
+                    "description": "HTML + merge tags Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "email_type": {
                     "type": "string"
@@ -4812,7 +4817,8 @@
                     "type": "string"
                   },
                   "email_body": {
-                    "type": "string"
+                    "type": "string",
+                    "description": " Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "email_type": {
                     "type": "string"
@@ -8086,7 +8092,7 @@
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior)."
+                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior). Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "h1": {
                     "type": "string",
@@ -8102,11 +8108,11 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens"
+                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "content_footer": {
                     "type": "string",
-                    "description": "Additional HTML below main content"
+                    "description": "Additional HTML below main content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "content_active": {
                     "type": "integer",
@@ -8232,7 +8238,7 @@
                   },
                   "hero_section_content": {
                     "type": "string",
-                    "description": "Hero HTML content"
+                    "description": "Hero HTML content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "hero_alignment": {
                     "type": "string",
@@ -8349,7 +8355,7 @@
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior)."
+                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior). Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "h1": {
                     "type": "string",
@@ -8365,11 +8371,11 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens"
+                    "description": "Main HTML body — supports [widget=Name] shortcodes and template tokens Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "content_footer": {
                     "type": "string",
-                    "description": "Additional HTML below main content"
+                    "description": "Additional HTML below main content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "content_active": {
                     "type": "integer",
@@ -8495,7 +8501,7 @@
                   },
                   "hero_section_content": {
                     "type": "string",
-                    "description": "Hero HTML content"
+                    "description": "Hero HTML content Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."
                   },
                   "hero_alignment": {
                     "type": "string",

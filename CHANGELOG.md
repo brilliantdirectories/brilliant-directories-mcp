@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.1] - 2026-04-19
+
+### Fixed — "pass raw HTML, no CDATA/escaping" warning on all HTML-accepting fields (from real cold-agent feedback)
+
+A cold-agent test exposed a real failure: agent wrapped `about_me` HTML in `<![CDATA[...]]>` (reflex from XML-style APIs) and BD stored the literal wrapper as visible text instead of rendering the inner HTML. Required an `updateUser` cleanup pass to recover.
+
+Root cause: field descriptions said "HTML allowed" but didn't explicitly forbid CDATA wrapping or entity escaping. Agents trained on XML/SOAP conventions assumed they needed to wrap/escape.
+
+**Fix applied to all 21 HTML-accepting fields across 12 operations:**
+
+| Op | Fields |
+|---|---|
+| `createUser`, `updateUser` | `about_me`, `search_description` |
+| `createSingleImagePost`, `updateSingleImagePost` | `post_content`, `post_caption` |
+| `createMultiImagePost`, `updateMultiImagePost` | `group_desc` |
+| `createWebPage`, `updateWebPage` | `content`, `content_footer`, `hero_section_content`, `seo_text` |
+| `createWidget`, `updateWidget` | `widget_data` |
+| `createEmailTemplate`, `updateEmailTemplate` | `email_body` |
+
+Each affected field description now ends with: *"Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the field value verbatim; any wrapper/escape gets saved as literal text."*
+
+### Added — HTML-field rule to MCP instructions
+
+One line added to `initialize.instructions` so agents see the rule at session start, BEFORE they ever construct a payload:
+
+> *"HTML fields (`about_me`, `post_content`, `widget_data`, `email_body`, `content`, etc.) take raw HTML. Do NOT wrap in `<![CDATA[...]]>` and do NOT entity-escape (`&lt;`/`&gt;`) — BD stores field values verbatim, so wrappers and escapes end up as literal visible text on the rendered page."*
+
+This is belt-and-suspenders: the rule appears both at session-start context AND inline on every affected field description. Agents can't miss it.
+
 ## [6.2.0] - 2026-04-19
 
 ### Added — `refreshSiteCache` live-tested + discovered undocumented parameters
