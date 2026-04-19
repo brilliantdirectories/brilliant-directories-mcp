@@ -8827,8 +8827,8 @@
     "/api/v2/website_settings/refreshCache": {
       "post": {
         "operationId": "refreshSiteCache",
-        "summary": "Refresh the site cache (template/theme/widget changes only)",
-        "description": "Clears BD's internal template/theme/widget caches. Useful when recent admin edits to design settings or widgets aren't showing on the public site yet.\n\n**Use when:** the user has just updated a template, theme setting, or widget and the public site is still serving the old version. Also a safe troubleshooting step if they report a recent admin-edit not appearing after ~1 minute.\n\n**Do NOT use for:**\n- New pages — freshly created pages via `createWebPage` are live immediately via `content_active=1` + valid `seo_type`. This endpoint does NOT register new URLs with the public router.\n- Routine workflow noise — do not call after every bulk op. Most BD writes are live immediately; cache invalidation is a targeted fallback, not a default post-step.\n\n**Returns:** `{ status: success|error, message: ... }` — BD's standard envelope.\n\nUndocumented by BD publicly; exposed via admin API-permissions UI. Source article reference: none (BD-internal behavior).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "summary": "Refresh the site cache (template/theme/widget/menu/page invalidation)",
+        "description": "Clears BD's internal template/theme/widget caches. Useful when recent admin edits to design settings or widgets aren't showing on the public site yet.\n\n**Use when:** the user has just updated a template, theme setting, widget, menu, or page layout and the public site is still serving the old version. Also a safe troubleshooting step if they report a recent admin-edit not appearing after ~1 minute.\n\n**Optional parameters:**\n- `scope` — target one cache area only (`data_widgets`, `settings`, `web_pages`, `css`, `menus`, `sidebars`). Faster than a full refresh. Omit to refresh all 6.\n- `full=1` — include heavier db_optimization + file_permissions passes in addition to the 6 core areas. Slower; use only when the user reports persistent issues and lighter refreshes didn't help.\n\n**Do NOT use for:**\n- New pages — freshly created pages via `createWebPage` are live immediately via `content_active=1` + valid `seo_type`. This endpoint does NOT register new URLs with the public router.\n- Routine workflow noise — do not call after every bulk op. Most BD writes are live immediately; cache invalidation is a targeted fallback, not a default post-step.\n\n**Returns:** `{ status: \"success\", message: \"Cache refreshed successfully\", areas_refreshed: [...], scope: \"full\", full: false }`. The `areas_refreshed` array lists exactly what was cleared — useful for logging or reporting back to the user. Example default response:\n```json\n{\n  \"status\": \"success\",\n  \"message\": \"Cache refreshed successfully\",\n  \"areas_refreshed\": [\"data_widgets\", \"settings\", \"web_pages\", \"css\", \"menus\", \"sidebars\"],\n  \"scope\": \"full\",\n  \"full\": false\n}\n```\n\nWith `full=1` the `areas_refreshed` additionally includes `db_optimization` and `file_permissions`. Invalid `scope` values return an error listing the valid set: `{ status: \"error\", message: \"Invalid scope value: <x>. Valid values: ...\" }`.\n\nUndocumented by BD publicly; exposed via admin API-permissions UI.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Website Settings"
         ],
@@ -8839,6 +8839,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "data_widgets",
+                      "settings",
+                      "web_pages",
+                      "css",
+                      "menus",
+                      "sidebars"
+                    ],
+                    "description": "Target a specific cache area instead of refreshing all 6. Omit to refresh all. Valid values: data_widgets, settings, web_pages, css, menus, sidebars. Invalid scope returns an error listing the valid set."
+                  },
+                  "full": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Pass 1 to also run db_optimization + file_permissions refresh (heavier, slower). Pass 0 or omit for standard refresh of the 6 core areas only."
+                  }
                 }
               }
             }

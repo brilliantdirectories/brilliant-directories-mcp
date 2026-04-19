@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.0] - 2026-04-19
+
+### Added — `refreshSiteCache` live-tested + discovered undocumented parameters
+
+Live-tested against studev29106 and found the response shape is RICHER than previously documented, plus discovered two optional parameters BD's support docs don't mention:
+
+**New optional parameters discovered (both undocumented by BD publicly):**
+
+- **`scope`** — target one cache area only instead of refreshing all 6. Valid values: `data_widgets`, `settings`, `web_pages`, `css`, `menus`, `sidebars`. Invalid values return an error response listing the valid set. Faster than a full refresh when you only need one area invalidated.
+- **`full=1`** — include heavier `db_optimization` + `file_permissions` passes in addition to the 6 core areas. Slower but more thorough; use when lighter refreshes haven't resolved the issue.
+
+**Real response shape (was documented as just `{status, message}`, actually much richer):**
+
+```json
+{
+  "status": "success",
+  "message": "Cache refreshed successfully",
+  "areas_refreshed": ["data_widgets", "settings", "web_pages", "css", "menus", "sidebars"],
+  "scope": "full",
+  "full": false
+}
+```
+
+The `areas_refreshed` array lets agents report to the user exactly what was cleared. With `full=1`, the array additionally includes `db_optimization` and `file_permissions`.
+
+Tool description rewritten to include the full parameter list, real response shape with code-block example, and an explicit "Do NOT use for" section preventing cache-thrashing anti-patterns (routine post-op use, new page creation). Summary updated to "Refresh the site cache (template/theme/widget/menu/page invalidation)" so the scope is visible during tool discovery.
+
+Bumped as MINOR version (6.1.x → 6.2.0) since this adds two new accepted schema parameters — additive, non-breaking, but meaningful enough not to hide in a patch release.
+
 ## [6.1.6] - 2026-04-19
 
 ### Changed — tightened `refreshSiteCache` tool description
