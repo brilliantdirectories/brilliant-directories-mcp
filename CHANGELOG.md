@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.3] - 2026-04-19
+
+### Changed — member-taxonomy section clarified in MCP instructions
+
+Previous Taxonomy section could be confused with post types and didn't state the cardinality rule. Rewritten to:
+- Open with "Member taxonomy (distinct from post types)" so agents never conflate member categories with the `data_type`-based post type families
+- State the cardinality rule explicitly: "A member has EXACTLY ONE Top Category (`profession_id`) and MANY Sub / Sub-Sub Categories nested under it"
+- Reinforce on each tier: Top = "One per member", Sub = "Multiple per member, all scoped under that member's single `profession_id`"
+- Keep sub-sub nesting syntax cue (`master_id`) without expanding into a full subsection
+
+Prevents agents from e.g., trying to assign a member to two top-level categories or creating sub-categories under the wrong parent when bulk-importing members.
+
 ## [6.1.2] - 2026-04-18
 
 ### Changed — instructions reframed as identity, SKILL.md repurposed as skill-meta, tool-chaining behavior added
