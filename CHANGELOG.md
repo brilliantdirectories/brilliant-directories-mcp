@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.7] - 2026-04-20
+
+### Added — Mandatory `form_name` pre-check on `createForm`
+
+Same class of bug as the v6.10.4 duplicate-WebPage incident, extended to forms: BD does NOT enforce unique `form_name` values on the forms table, so two `createForm` calls with the same `form_name` both succeed and produce two separate form records with different `form_id` values. Downstream `createFormField` calls that target `form_name` become ambiguous, `[form=my_form_name]` shortcodes render unpredictably, and sidebar/template references are undefined.
+
+- **`createForm` top-level description**: new prominent callout right after "Required:" with the mandatory pre-check pattern. Call `listForms property=form_name property_value=<slug> property_operator==` before every `createForm`. On match: `updateForm` the existing record, OR ask the user, OR pick an alternate slug (`-v2`, `-2026`, etc.) and confirm.
+- **MCP instructions duplicate-silent-accept paragraph**: `createForm` (form_name on the forms table) added to the list of resources with no DB-level uniqueness, alongside `createUser`, `createTag`, `createUserMeta`, `createWebPage`.
+
+Same shape as the `createWebPage` pre-check (v6.10.4) — agents running identical prompts in two sessions produce identical-slug duplicates unless they check first.
+
+No schema-breaking changes; doc-only.
+
 ## [6.10.6] - 2026-04-20
 
 ### Fixed — Button `btn-light` removed from variant list; new JS-ready CSS-gate rule for admin editor compatibility
