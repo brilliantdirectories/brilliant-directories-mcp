@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.5] - 2026-04-20
+
+### Added — Form Button field `input_class` is required for styling
+
+The Submit Button field on every BD form needs `input_class` set or it renders as an unstyled native browser button. Agents creating forms without this produced working-but-ugly submits — users would accept the form built, notice the button looked broken, and ask for a fix.
+
+- **`createFormField` schema**: added `input_class` property (optional at schema level since it's only required on Button; non-Button fields can omit). Description explains canonical pattern `btn btn-lg btn-block <variant>` with the Bootstrap variant list (`btn-primary` / `btn-secondary` / `btn-danger` / `btn-success` / `btn-warning` / `btn-info` / `btn-light` / `btn-dark`) OR a custom class targeted by site CSS. Example value: `btn btn-lg btn-block btn-secondary`.
+- **`updateFormField` schema**: same property added for editing existing Button fields.
+- **`createFormField` tail-pattern description**: Button bullet now explicitly lists `input_class` as REQUIRED with the canonical pattern + variants + example.
+- **`createForm` top-level recipe step 7 (tail pattern)**: Button line now carries the `input_class` requirement inline so agents see it when reading the recipe top-down.
+- **MCP instructions form recipe paragraph**: same `input_class` rule appended to the Button-field sentence so cold agents see it on first load.
+
+Without `input_class`, the submit button renders with no Bootstrap styling — reads as a broken form to end users even though submission works.
+
 ## [6.10.4] - 2026-04-20
 
 ### Fixed — v6.9–v6.10 directive sanity-check sweep + live-observed duplicate-WebPage incident
