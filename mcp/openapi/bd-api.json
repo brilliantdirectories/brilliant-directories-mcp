@@ -4232,7 +4232,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of posttype records. Read-only.\n\n**Use when:** discovering which post types exist on this site AND their `data_type` families. The `data_type` value on each row tells you whether a post type belongs to `createSingleImagePost` (9/20) or `createMultiImagePost` (4). Use this BEFORE calling either create endpoint to pick the correct tool.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Payload size — filter, don't enumerate blindly:** each row has ~90 fields, and on sites with customized post types, layout fields (`search_results_layout`, `profile_results_layout`, `search_code_hidden`, `detail_page_code_hidden`) can embed entire PHP templates — responses have been seen at 80k+ chars. BD does not offer a `fields=` response-shaping parameter. The practical fix is to filter and cap:\n- If you know the target post type name, filter: `property=data_name&property_value=Blog&property_operator=LIKE&limit=5`\n- If you know the `data_id` already, skip this entirely — use `getPostType` (single record)\n- For \"discover blog-family post types\": filter by `data_type` (`=4` multi-image, `=20` single-image article/blog/event) with a small `limit` to see only the relevant family\n- For full enumeration for site-mapping, set `limit=100` and paginate; expect to burn tokens on a site with many customized types\n\n**See also:** `getPostType` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of posttype records. Read-only.\n\n**Use when:** discovering which post types exist on this site AND their `data_type` families. The `data_type` value on each row tells you whether a post type belongs to `createSingleImagePost` (9/20) or `createMultiImagePost` (4). Use this BEFORE calling either create endpoint to pick the correct tool. **Also the standard discovery step for the Member Listings post type** (singleton per site, `data_type=10`, `system_name=member_listings`): filter `property=data_type&property_value=10&property_operator==` to retrieve the single record; the `data_id` varies per site. Member Listings controls the member search results page UI/UX + profile/detail page — see `updatePostType` description for editable fields, code-group save rules, and master-fallback behavior.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**Payload size — filter, don't enumerate blindly:** each row has ~90 fields, and on sites with customized post types, layout fields (`search_results_layout`, `profile_results_layout`, `search_code_hidden`, `detail_page_code_hidden`) can embed entire PHP templates — responses have been seen at 80k+ chars. BD does not offer a `fields=` response-shaping parameter. The practical fix is to filter and cap:\n- If you know the target post type name, filter: `property=data_name&property_value=Blog&property_operator=LIKE&limit=5`\n- If you know the `data_id` already, skip this entirely — use `getPostType` (single record)\n- For \"discover blog-family post types\": filter by `data_type` (`=4` multi-image, `=20` single-image article/blog/event) with a small `limit` to see only the relevant family\n- For full enumeration for site-mapping, set `limit=100` and paginate; expect to burn tokens on a site with many customized types\n\n**See also:** `getPostType` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/get/{data_id}": {
@@ -4264,7 +4264,7 @@
             }
           }
         },
-        "description": "Fetch a single posttype record. Read-only.\n\n**Use when:** checking the configuration of one post type (which `data_type` family, whether active, custom field config). Commonly followed by `getPostTypeCustomFields` to enumerate per-type fields.\n\n**Required:** `data_id`.\n\n**See also:** `listPostTypes` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Fetch a single posttype record. Read-only.\n\n**Use when:** checking the configuration of one post type (which `data_type` family, whether active, custom field config, current search-results / profile-page template code). Commonly followed by `getPostTypeCustomFields` to enumerate per-type fields. **Also the canonical read before any `updatePostType` code-field edit** — see master-fallback note below.\n\n**Required:** `data_id`.\n\n**⚠️ Code-field master-fallback:** the up to eight HTML/PHP code fields on every post type record (`category_header`, `search_results_div`, `category_footer`, `profile_header`, `profile_results_layout`, `profile_footer`, `search_results_layout`, `comments_code`) begin life backed by the BD-core master template and only persist locally in the site DB when an admin (or API call) saves them. This endpoint returns the MASTER value for any code field that has no local override — so the agent always sees the real rendered code, not an empty string. This matters because any edit to one of the grouped code fields (search-results group = header+loop+footer, profile group = header+body+footer) MUST include all fields in that group on the write (see `updatePostType` description for the all-or-nothing save rule). Always read current values here BEFORE calling `updatePostType`.\n\n**See also:** `listPostTypes` (enumerate many; discover Member Listings via `data_type=10` filter), `updatePostType` (write; carries the full code-group save rules and Member Listings workflow), `getPostTypeCustomFields` (per-type custom field enum).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` — the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/custom_fields": {
@@ -4325,13 +4325,108 @@
                 ],
                 "properties": {
                   "data_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Post type primary key. Required. For the Member Listings post type (`data_type=10`, singleton per site), discover via `listPostTypes` filtered by `property=data_type&property_value=10&property_operator==` — `data_id` varies per site."
                   },
                   "category_tab": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Admin-UI label for the post-type tab."
                   },
                   "per_page": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Number of results per search results page. Default 9 (Member Listings). Recommended max 500 for site-speed reasons."
+                  },
+                  "h1": {
+                    "type": "string",
+                    "description": "Search Results page H1 heading."
+                  },
+                  "h2": {
+                    "type": "string",
+                    "description": "Search Results page H2 sub-heading."
+                  },
+                  "keyword_search_filter": {
+                    "type": "string",
+                    "enum": ["level_2", "level_3"],
+                    "description": "Post Keyword Search Options. `level_2` = default fields only (faster). `level_3` = default + custom fields (slower; sites with many posts/custom fields can be significantly slower). Default on Member Listings: `level_3`."
+                  },
+                  "enableLazyLoad": {
+                    "type": "string",
+                    "enum": ["0", "1", "2"],
+                    "description": "Pagination Display Options. `1` = Insta-Load Search Results (default on Member Listings), `0` = Standard Pagination, `2` = Hide Pagination."
+                  },
+                  "category_order_by": {
+                    "type": "string",
+                    "enum": [
+                      "alphabet-asc",
+                      "alphabet-desc",
+                      "userid-asc",
+                      "userid-desc",
+                      "last_name_asc",
+                      "last_name_desc",
+                      "reviews",
+                      "random"
+                    ],
+                    "description": "Display order of results. `alphabet-asc` (Member Name A-Z, default) / `alphabet-desc` / `userid-asc` (Member ID Oldest First) / `userid-desc` (Newest First) / `last_name_asc` / `last_name_desc` / `reviews` (Most Reviews First) / `random`."
+                  },
+                  "category_ignore_search_priority": {
+                    "type": "string",
+                    "enum": ["0", "1"],
+                    "description": "When sorting members, respect Membership Plan 'Search Priority'? `0` = Yes (respect plan priority, default), `1` = No (ignore plan priority)."
+                  },
+                  "post_type_cache_system": {
+                    "type": "string",
+                    "enum": ["0", "1"],
+                    "description": "Enable search-results cache. `1` = Yes (recommended; subsequent matching searches load faster). `0` = No (always query DB). **Cannot be `1` when `category_order_by=random`** — the admin UI disables the cache in that case; if you send `post_type_cache_system=1` with `category_order_by=random`, the combination is invalid."
+                  },
+                  "category_sidebar": {
+                    "type": "string",
+                    "description": "Sidebar to display on search results pages. Valid values: empty string (no sidebar), one of the 5 Master Default Sidebars (`Global Website Search`, `Member Profile Page`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`, `Member Search Result`), or any custom sidebar returned by `listSidebars`. **Semantic equivalent of `form_name` on WebPages — different variable name, same value set.** Default on Member Listings: `Member Search Result`."
+                  },
+                  "sidebar_search_module": {
+                    "type": "string",
+                    "description": "Widget name for the search module rendered inside the sidebar. Must match an existing widget on the site. Common values include `Bootstrap Theme - Search Module - Keyword_Location` (default on Member Listings), `No Search Module - None` (disables), `Bootstrap Theme - Search Module - Keyword Only`, `Bootstrap Theme - Search Module - Local Radius Search`, `Bootstrap Theme - Search Module - Top Category Only`, `Bootstrap Theme - Search Module - Top_Category_Location`, `Bootstrap Theme - Search Module - Top_Sub_Category`, plus the full Dynamic Category Filter set and post-search module variants. Full enum not enforced server-side — BD adds new widgets in core releases. If unsure which value is valid on THIS site, enumerate current widgets via `listWidgets` and match by `widget_name`. Also: the underlying sidebar chosen in `category_sidebar` must contain the `Bootstrap Theme - Search Module - Dynamic Sidebar Search` host widget for the chosen search-module widget to render."
+                  },
+                  "sidebar_position_mobile": {
+                    "type": "string",
+                    "enum": ["top", "bottom", "hide"],
+                    "description": "Sidebar position on mobile devices ONLY (desktop uses `menu_layout`/page-level defaults). `top` = above results, `bottom` = below results (default), `hide` = do not render sidebar on mobile."
+                  },
+                  "enable_search_results_map": {
+                    "type": "string",
+                    "enum": ["0", "1"],
+                    "description": "Display Google Map option at top of search results pages. `1` = Yes, show the map pin icon (default on Member Listings). `0` = No. Requires the Google Maps site feature to be enabled for the map itself to load."
+                  },
+                  "category_header": {
+                    "type": "string",
+                    "description": "**CODE FIELD — search results HEADER** (HTML/CSS/JS/iframe/PHP supported; widget-equivalent trust level — no input sanitization applied). Renders ABOVE the member-search results loop on the public page. Supports PHP variables (e.g. `<?php echo $user_data['full_name']; ?>`) and BD text labels `%%%text_label%%%`. ⚠️ **Master-fallback on read + all-or-nothing save on write** — see post-type-write-rules in tool description."
+                  },
+                  "search_results_div": {
+                    "type": "string",
+                    "description": "**CODE FIELD — search results LOOP** (HTML/CSS/JS/iframe/PHP supported; widget-equivalent trust level — no input sanitization applied). Renders ONCE PER matching member in the results list. Supports PHP variables and `%%%text_label%%%` tokens. ⚠️ **Part of the search-results code group** with `category_header` + `category_footer` — see all-or-nothing save rule in tool description."
+                  },
+                  "category_footer": {
+                    "type": "string",
+                    "description": "**CODE FIELD — search results FOOTER** (HTML/CSS/JS/iframe/PHP supported; widget-equivalent trust level — no input sanitization applied). Renders BELOW the member-search results loop. Supports PHP variables and `%%%text_label%%%` tokens. ⚠️ **Part of the search-results code group** with `category_header` + `search_results_div` — see all-or-nothing save rule in tool description."
+                  },
+                  "profile_header": {
+                    "type": "string",
+                    "description": "**CODE FIELD — profile/detail page HEADER** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). Renders ABOVE the main content on the single-record detail page (for Member Listings: the member profile page). ⚠️ **Part of the profile code group** with `profile_results_layout` + `profile_footer` — see all-or-nothing save rule."
+                  },
+                  "profile_results_layout": {
+                    "type": "string",
+                    "description": "**CODE FIELD — profile/detail page BODY** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). The main detail-page template — BD's equivalent of a WordPress `single.php`. Name is misleading: this is the DETAIL page for a single record, not a search-results layout. For Member Listings, this drives the member profile page. ⚠️ **Part of the profile code group** with `profile_header` + `profile_footer` — see all-or-nothing save rule."
+                  },
+                  "profile_footer": {
+                    "type": "string",
+                    "description": "**CODE FIELD — profile/detail page FOOTER** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). Renders BELOW the main content on the single-record detail page. ⚠️ **Part of the profile code group** with `profile_header` + `profile_results_layout` — see all-or-nothing save rule."
+                  },
+                  "search_results_layout": {
+                    "type": "string",
+                    "description": "**CODE FIELD — single-record detail page code** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). ⚠️ **Misleading variable name** — despite the `search_results_` prefix, this is the DETAIL page code for a single post record (BD's equivalent of WordPress `single.php`). Applies ONLY to post types that have a per-record detail page (blog, event, coupon, property, product, etc.). **NOT applicable to the Member Listings post type (`data_type=10`)** — members render via BD's core member profile system, not via a post-type template. Do not send this field on Member Listings updates. Standalone — not grouped with the profile triplet; saves independently. Uses master-fallback-on-read like the other code fields."
+                  },
+                  "comments_code": {
+                    "type": "string",
+                    "description": "**CODE FIELD — additional detail-page footer/embed code** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). Renders directly AFTER `search_results_layout` on the single-record detail page — intended for embed widgets, schema markup, analytics pixels, structured data, or any auxiliary code that needs to live at the bottom of the detail page. Applies ONLY to post types with a per-record detail page (blog, event, coupon, property, product, etc.). **NOT applicable to the Member Listings post type (`data_type=10`)** — Member Listings has no post-type-driven detail page. Do not send this field on Member Listings updates. Standalone — not grouped with the profile triplet or with `search_results_layout`; saves independently. Uses master-fallback-on-read like the other code fields."
                   }
                 }
               }
@@ -4350,7 +4445,7 @@
             }
           }
         },
-        "description": "Update an existing posttype record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** toggling a post type active/inactive, renaming, or changing per-page display counts. For custom-field changes you typically work in the BD admin UI.\n\n**Required:** `data_id`.\n\n**See also:** `deletePostType` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing posttype record by ID. Fields omitted are untouched (for most fields — see code-group exception below). Writes live data.\n\n**Use when:** toggling a post type active/inactive, renaming, changing per-page display counts, editing search-results UI or profile-page code, or (for Member Listings specifically) tuning keyword-search mode, pagination display, sidebar, or sort-order settings. For custom field definitions on a post type, work in the BD admin UI.\n\n**Required:** `data_id`.\n\n**⚠️ MEMBER LISTINGS SPECIAL CASE (`data_type=10`):** Every BD site has exactly one post type with `data_type=10` (system_name `member_listings`) — it controls the Member Search Results page UI/UX. **Unlike every other post type, Member Listings has NO profile/detail page of its own** — members already render via the normal member profile system (which is NOT a post-type template). As a result, on Member Listings ONLY the search-results surface is editable; the profile code group (`profile_header`/`profile_results_layout`/`profile_footer`) and the standalone `search_results_layout` field are NOT editable and must NOT be sent — they have no effect on Member Listings rendering. The `data_id` varies per site. **Before calling this endpoint** for Member Listings work, discover the record: `listPostTypes` with `property=data_type&property_value=10&property_operator==`. Cache the returned `data_id` for the session (it never changes for a site). **Editable fields for Member Listings (the complete closed set):** settings = `h1`, `h2`, `per_page`, `keyword_search_filter`, `enableLazyLoad`, `category_order_by`, `category_ignore_search_priority`, `post_type_cache_system`, `category_sidebar`, `sidebar_search_module`, `sidebar_position_mobile`, `enable_search_results_map`; code fields = `category_header`, `search_results_div`, `category_footer` (the search-results group — all-or-nothing save rule applies, see below). Nothing else. Do NOT mutate structural fields on Member Listings (`data_name`, `system_name`, `data_type`, `data_active`, `data_filename`, `form_name`, `icon`, `software_version`, `display_order`) — these are set by BD system seeding and changing them can break site rendering. Member Listings `data_active` should always be `1`; no legitimate reason to disable it via API.\n\n**⚠️ CODE FIELDS — master-fallback on GET + all-or-nothing save per group.** Up to eight code-template fields on a post-type record begin life backed by the MASTER post-type template (shared BD-core defaults) and only persist locally in the site DB when an admin (or API call) saves them. On `getPostType`/`listPostTypes`, BD returns the MASTER value for any code field that has no local override yet — so the agent always sees the real rendered code, not an empty string. On WRITE, fields in the same group save atomically: **if you update ANY field in a group, you MUST send all fields in that group** (preserving unchanged values from the prior GET). Writing only some group members causes the omitted ones to drift back to master on the next render cycle — the site will appear to lose customizations. The groups and which post types they apply to:\n  1. **Search-results group (every post type INCLUDING Member Listings):** `category_header` + `search_results_div` + `category_footer`. On edit: send all three. This is the ONLY code group on Member Listings.\n  2. **Profile/detail group (post types WITH a per-record detail page — blog, event, coupon, property, product, etc. — NOT Member Listings):** `profile_header` + `profile_results_layout` + `profile_footer`. On edit: send all three. DO NOT send these three on Member Listings — they have no effect there.\n  3. **Standalone fields (post types WITH a per-record detail page — NOT Member Listings):** `search_results_layout` (detail-page wrapper, BD's `single.php` analogue — misleading name) and `comments_code` (auxiliary footer code rendered directly after `search_results_layout`, used for embeds/schema markup/pixels). Both save independently — no group rule. Uses master-fallback-on-read like the grouped code fields. DO NOT send either on Member Listings.\n\n**Standard code-edit workflow:**\n  1. `getPostType(data_id=<found>)` — returns current values, falling back to master for any un-customized code fields.\n  2. Identify which group the user's change belongs to (search-results, profile, or standalone).\n  3. Build the update payload: the CHANGED field(s) with new values + the OTHER fields in the same group copied verbatim from the GET response.\n  4. `updatePostType` with `data_id` + the full group.\n  5. `refreshSiteCache` — post-type edits are cached and won't reflect publicly until refreshed. Always call after any successful `updatePostType`, even for non-code settings — cheap safety.\n\n**Code-field trust level:** `category_header`, `search_results_div`, `category_footer`, `profile_header`, `profile_results_layout`, `profile_footer`, `search_results_layout` are widget-equivalent — they accept arbitrary HTML, CSS, JS, iframes, and PHP (BD evaluates PHP server-side at render). Input sanitization rules (XSS/SQLi patterns) do NOT apply to these fields; anyone with API permission to edit post-type code already has full site code control. Supports PHP variables (e.g. `<?php echo $user_data['full_name']; ?>`) and BD text-label tokens (`%%%text_label%%%`) in templates.\n\n**See also:** `getPostType` (single), `listPostTypes` (discover by `data_type`), `deletePostType` (remove permanently — NOT for Member Listings; system-required).\n\n**Writes live data:** confirm intent with the user for any code-field edit on Member Listings — these changes affect every member-search page on the site. Changes go live on the next cache refresh.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/data_categories/delete": {

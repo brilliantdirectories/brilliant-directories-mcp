@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.0] - 2026-04-19
+
+### Added — Member Listings post type (`data_type=10`) workflow + post-type code-field master-fallback + all-or-nothing group-save rules
+
+BD sites have exactly one post type with `data_type=10` (`system_name=member_listings`), unique in that it has NO profile/detail page of its own — it controls only the Member Search Results page UI/UX (the member grid and its sort/filter/pagination/sidebar settings). Member profiles themselves render via BD's core member system, not via a post-type template. Until now our spec gave agents no special-case handling for this record; agents asked to "change X on member search results" would flail. This release adds the full Member Listings workflow + clarifies a subtle BD pattern that affects every post type's code-template fields.
+
+**`updatePostType` schema — Member Listings settings now exposed**
+Added 12 editable settings (previously the schema exposed only `data_id`, `category_tab`, `per_page`):
+- `h1` / `h2` — search results page heading + sub-heading
+- `per_page` — results per page (default 9; recommended max 500 for site speed)
+- `keyword_search_filter` — `level_2` (default fields only, fast) / `level_3` (default + custom, slower)
+- `enableLazyLoad` — `1` Insta-Load (default) / `0` Standard Pagination / `2` Hide
+- `category_order_by` — 8 values: `alphabet-asc`/`alphabet-desc`/`userid-asc`/`userid-desc`/`last_name_asc`/`last_name_desc`/`reviews`/`random`
+- `category_ignore_search_priority` — `0` respect membership plan priority (default) / `1` ignore
+- `post_type_cache_system` — `0` off / `1` on; cannot be `1` when `category_order_by=random` (admin UI enforces this)
+- `category_sidebar` — sidebar name (same value set as WebPages' `form_name`: 5 Master Defaults + `listSidebars` customs + empty)
+- `sidebar_search_module` — widget name; common values listed but full enum not frozen (BD adds widgets in core releases)
+- `sidebar_position_mobile` — `top` / `bottom` (default) / `hide` (mobile only)
+- `enable_search_results_map` — `0` / `1` Yes (default)
+
+**`updatePostType` schema — code fields now exposed**
+Added the 8 HTML/PHP template fields that drive search-results + detail-page rendering across all post types:
+- **Search-results triplet** (every post type, INCLUDING Member Listings): `category_header` + `search_results_div` + `category_footer`
+- **Profile/detail triplet** (post types with a per-record detail page — NOT Member Listings): `profile_header` + `profile_results_layout` + `profile_footer`
+- **Standalone fields** (post types with a per-record detail page — NOT Member Listings): `search_results_layout` (detail page wrapper, BD's `single.php` analogue — name is misleading), `comments_code` (auxiliary footer code rendered after `search_results_layout`, used for embeds/schema markup/pixels)
+
+All 8 code fields accept arbitrary HTML, CSS, JavaScript, iframes, AND PHP — BD evaluates PHP server-side at render. Supports BD text-label tokens (`%%%text_label%%%`) and PHP variables (`<?php echo $user_data['full_name']; ?>`). Widget-equivalent trust level — XSS/SQLi sanitization rules do NOT apply. Rationale: anyone with API permission to edit post-type code already has full site code control; mirrors the existing widget-field exemption.
+
+**BD master-fallback on GET — shipped BD-side 2026-04-19**
+The 8 code fields begin life backed by the BD-core MASTER post-type template. Until an admin (or API call) saves a local override, the site DB stores empty string — but the site RENDERS from the master at request time. BD now returns the master value on `getPostType`/`listPostTypes` when the local override is empty, so the agent always sees the real rendered code on read, not an empty string. Without this fix, an agent asked to "edit the loop code" would have nothing to read and would either refuse or (worse) write blank-replacement code. Documented on both `getPostType` and `updatePostType` descriptions + pulled into the top-level MCP instructions paragraph so cold agents internalize it at first load.
+
+**BD all-or-nothing save rule per group**
+On WRITE, fields in the same group save atomically. If an agent changes `category_header`, they MUST also send the current `search_results_div` + `category_footer` values (from the prior GET) in the same `updatePostType` call. Omitting group-mates causes the omitted fields to drift back to master on the next render — the site appears to "lose" customizations that were in the master but not re-saved locally. Same rule for the profile triplet. Standalone fields (`search_results_layout`, `comments_code`) save independently.
+
+**Standard code-edit workflow** (documented on `updatePostType`, `getPostType`, and in MCP instructions):
+1. `getPostType(data_id)` — returns all fields including master-fallback values
+2. Identify the group of the changed field
+3. Build update payload: changed field + all group-mates verbatim from GET
+4. `updatePostType`
+5. `refreshSiteCache` — post-type edits are cached; changes won't reflect publicly until refreshed. Always call after any successful `updatePostType`, even for non-code setting edits — cheap safety.
+
+**Member Listings discovery pattern**
+The `data_id` varies per site. Agents discover via `listPostTypes` filtered `property=data_type&property_value=10&property_operator==` → cache the single returned `data_id` for the session. `listPostTypes` and `getPostType` descriptions now document this workflow.
+
+**Structural-field guard**
+Description explicitly warns against mutating `data_name`, `system_name`, `data_type`, `data_active`, `data_filename`, `form_name`, `icon`, `software_version`, `display_order` on Member Listings. `data_active` should always be `1`; disabling via API would break member search site-wide.
+
+**MCP instructions additions**
+Three new paragraphs at the top-level instructions field (loaded on every MCP startup):
+- Member Listings workflow (discovery, editable-field set, off-limits fields)
+- Post-type code fields (master-fallback + 4 groups + all-or-nothing save rule + cache-refresh chain)
+- Post-type custom fields discovery (call `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` / `getUserFields` before writes that touch non-standard fields — per-site custom field schemas aren't in the OpenAPI spec and drift between sites)
+
+**VISION.md maintenance**
+- Removed obsolete "Phase 1 now" and "Phase 2 next" claims — both shipped through v6.8.x; now summarized as a shipped-status line with CHANGELOG pointer.
+- Removed historical "Things deliberately NOT done yet" bullet list — every item (npm org, Smithery, domain verification, version strategy) resolved months ago.
+- Corrected false claim that "the MCP server validates inputs against the spec before making API calls — bad requests never hit the BD server." Live v6.8.0 testing showed BD accepts out-of-enum integers silently (`active=99`, `review_status=1`, `lead_status=3`). Validation is best-effort, not guaranteed.
+- Added a "Periodic QA checkpoints — BD platform behaviors to re-verify" section documenting the 7 server-side behaviors our MCP docs depend on (master-fallback on GET, all-or-nothing group save, Member Listings singleton, duplicate silent-accept, enum silent-accept, listLeadMatches empty-state, users_meta cross-table collision). Re-test each on major BD releases.
+
+### Non-breaking
+No field removed, no required changed, no behavior regressed. Agents already calling `updatePostType` with only `data_id`+`category_tab`+`per_page` continue to work unchanged — the new properties are all optional additions.
+
 ## [6.8.1] - 2026-04-19
 
 ### Added — HTTP status-code taxonomy + BD API reference article link in MCP instructions
