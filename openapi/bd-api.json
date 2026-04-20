@@ -8412,6 +8412,22 @@
         }
       }
     },
+    "/_synthetic/brand_kit": {
+      "get": {
+        "operationId": "getBrandKit",
+        "summary": "Get the site's brand kit (colors + fonts) for design decisions",
+        "description": "Return a compact, semantically-labeled brand kit for this BD site — colors (body / primary / dark / muted / success / warm / alert accents, card surface) + fonts (body + heading Google Fonts). **Call this ONCE at the start of any design-related task** (building a widget, WebPage, post template, email, hero banner — anything where colors or fonts are chosen) so the output visually matches the site's brand.\n\n**Handler is synthetic — makes a single internal call to `/api/v2/website_design_settings/get?property=layout_group&property_value=theme_1` and transforms the raw `custom_N` slots into semantic labels using BD's canonical mapping (matches the mapping BD's admin AI Companion uses in `bd-core-files/admin/ai_companion/handler.php`).**\n\n**No args.** Read-only. Safe to call anytime.\n\n**Response shape:**\n```\n{\n  body: { background, text, font },\n  primary: { color, text_on },\n  dark:    { color, text_on },\n  muted:   { color, text_on },\n  success_accent: { color, text_on },\n  warm_accent:    { color, text_on },\n  alert_accent:   { color, text_on },\n  card: { background, border, text, title },\n  heading_font: \"<google font family>\",\n  usage_guidance: { primary, dark, muted, success_accent, warm_accent, alert_accent, tint_rule, font_rule }\n}\n```\n\n**Usage guidance embedded in response** — agents should read it every call. Key rules:\n- **Primary** = brand color — main CTAs, dominant accents.\n- **Dark** = high-contrast sections or strong backgrounds.\n- **Muted** = subtle section backgrounds, dividers, badges, pills.\n- **Success / Warm / Alert accents** = specific semantic states (confirmations / attention / urgency). Use sparingly.\n- **Tint rule:** derive lighter/darker tints from palette colors for hover states, gradients, low-emphasis backgrounds. **Do NOT introduce new unrelated hues.**\n- **Font rule:** the site's `body.font` and `heading_font` Google Fonts are already globally loaded by BD. Do NOT redefine them in your `content_css`. Only specify `font-family` in CSS when you are deliberately switching to a different font family AND importing it via `@import url('https://fonts.googleapis.com/...')` in the same CSS.\n\n**When a slot is empty on the site**, the handler applies BD's documented fallback defaults (same defaults BD's admin AI Companion uses). Response is never missing keys — every field always has a value.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s. Caches well on the agent side — the brand kit rarely changes within a session; call once, reuse._",
+        "tags": [
+          "Design"
+        ],
+        "responses": {
+          "200": {
+            "description": "Brand kit (semantic colors + fonts + usage guidance)",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    },
     "/api/v2/location_cities/get": {
       "get": {
         "operationId": "listCities",

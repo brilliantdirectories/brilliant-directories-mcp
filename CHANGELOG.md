@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.11.0] - 2026-04-20
+
+### Added — `getBrandKit` synthetic tool for design-task color + font context
+
+New MCP tool — **the first synthetic tool in this package** (all 175 prior tools are direct OpenAPI-to-MCP passthroughs; `getBrandKit` has a custom handler that transforms raw BD data into a compact semantic shape).
+
+**Purpose:** give AI agents a one-call way to pull the site's brand palette + fonts before any design task (widget, WebPage, post template, email, hero) so their output visually matches the site's brand instead of guessing colors.
+
+**Under the hood:**
+- Single BD API call to `/api/v2/website_design_settings/get?property=layout_group&property_value=theme_1&limit=250` — same endpoint BD's admin AI Companion uses
+- Transforms raw `custom_N` slots (BD's internal column names) into semantic labels using BD's canonical mapping sourced from `bd-core-files/admin/ai_companion/handler.php` (so the brand kit an API-driven agent sees matches what BD's in-admin AI sees for cross-tool parity)
+- Applies BD's documented fallback defaults (from the same handler) when a slot is empty — response is never missing keys
+
+**Response shape** — 10 semantic roles returned on every call:
+- `body.background` / `body.text` / `body.font`
+- `primary.color` / `primary.text_on`
+- `dark.color` / `dark.text_on`
+- `muted.color` / `muted.text_on`
+- `success_accent.color` / `success_accent.text_on`
+- `warm_accent.color` / `warm_accent.text_on`
+- `alert_accent.color` / `alert_accent.text_on`
+- `card.background` / `card.border` / `card.text` / `card.title`
+- `heading_font`
+- `usage_guidance` (inline — when to use primary vs dark vs muted, accent semantics, tint rule, font rule)
+
+**Slot mapping (BD's canonical theme_1 layout):**
+
+| Role | Slot | BD default |
+|---|---|---|
+| body.background | `custom_1` | `rgb(255,255,255)` |
+| body.text | `custom_2` | `rgb(51,51,51)` |
+| body.font | `custom_3` | `Inter` |
+| primary.color | `custom_58` | `rgb(39,108,207)` |
+| primary.text_on | `custom_59` | `rgb(255,255,255)` |
+| dark.color | `custom_60` | `rgb(24,46,69)` |
+| dark.text_on | `custom_61` | `rgb(255,255,255)` |
+| success_accent.color | `custom_62` | `rgb(3,138,114)` |
+| success_accent.text_on | `custom_63` | `rgb(255,255,255)` |
+| warm_accent.color | `custom_64` | `rgb(240,173,78)` |
+| warm_accent.text_on | `custom_65` | `rgb(255,255,255)` |
+| alert_accent.color | `custom_66` | `rgb(217,83,79)` |
+| alert_accent.text_on | `custom_67` | `rgb(255,255,255)` |
+| card.background | `custom_71` | `rgb(255,255,255)` |
+| card.border | `custom_72` | `rgb(230,232,236)` |
+| card.text | `custom_73` | `rgb(24,46,69)` |
+| muted.color | `custom_74` | `rgb(242,243,245)` |
+| muted.text_on | `custom_75` | `rgb(24,46,69)` |
+| card.title | `custom_134` | `rgb(24,46,69)` |
+| heading_font | `custom_208` | falls back to `body.font` |
+
+**Why `layout_group=theme_1` specifically:** live-test confirmed `setting_name` values like `custom_2` are NOT globally unique — the same slot name exists in multiple `layout_group`s simultaneously with different values. Filtering by `layout_group=theme_1` pins the call to the theme-level brand settings (where the agent-facing palette lives) and avoids cross-group ambiguity with `default_layout` or other groups.
+
+**MCP instructions** — new paragraph tells agents to call `getBrandKit` ONCE at the start of any design-related task, cache the result for the session, and derive all hover/tinted/gradient colors from the returned palette. Explicit rule: **do NOT introduce unrelated hues** and **do NOT redeclare `body.font` / `heading_font` in `content_css`** (they're already globally loaded by BD — only re-import if deliberately switching font families).
+
+**No args.** Read-only. Safe to call any time. Cheap (one BD API call, well under rate limit).
+
+No schema changes to any existing endpoint. New synthetic endpoint `/_synthetic/brand_kit` in the OpenAPI spec is a tool-registration stub — the actual handler intercepts in `mcp/index.js` before the generic dispatcher, so no `/_synthetic/*` call ever hits BD.
+
 ## [6.10.12] - 2026-04-20
 
 ### Added — No max-width wrappers on `profile_search_results` page content

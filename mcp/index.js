@@ -737,6 +737,8 @@ async function main() {
         ``,
         `WebPage asset routing — route each type of code to its dedicated field. The \`content\` field is a Froala rich-text editor: **HTML only — no \`<style>\` or \`<script>\` tags** (Froala strips them, also strips \`<form>\`, \`<input>\`, \`<select>\`, \`<textarea>\`, and \`contenteditable\` attributes). Route CSS/JS/head deps to their dedicated fields: **\`content_css\`** = raw CSS rules pasted directly, NO \`<style>\` wrapper, renders in page head, scope every selector to a unique page class (never bare \`body\`/\`h1\`/\`p\`; never target reserved platform classes \`.container\`/\`.froala-table\`/\`.image-placeholder\`). **\`content_footer_html\`** = JavaScript and scripts only (wrap in \`<script>\` tags, IIFE-wrap and scope to a unique page class; third-party embeds, pixels, schema) — NOT for extra body HTML. **\`content_head\`** = head-only deps (\`<link>\` stylesheets, \`<meta>\` tags, structured-data JSON-LD, head-required scripts). ⚠️ **\`content_footer\` — MISLEADING NAME, NOT footer HTML.** Misnamed relic column; BD repurposed it as the page-access gate. Valid values: \`""\` (Public For Everyone, default), \`"members_only"\` (logged-in members only), \`"digital_products"\` (only buyers of digital-product items). Do NOT put HTML in \`content_footer\`. Inline \`style="..."\` attributes on elements inside \`content\` are fine for one-off styling. PHP is NOT supported in any of these fields — they're data, not server-side templates; if a user asks about PHP logic, suggest a widget instead. **Admin Froala editor gotcha:** the admin editor applies \`content_css\` but does NOT run \`content_footer_html\` scripts. Any hide-by-default CSS (scroll reveals, tab panels, accordion collapse, modals, non-active slider slides) that JS is meant to un-hide will permanently hide that content in the admin editor. Gate such rules behind a \`.js-ready\` class on a page-scoped wrapper (e.g. \`.my-page.js-ready .reveal { opacity:0 }\` not \`.my-page .reveal { opacity:0 }\`), and have \`content_footer_html\` JS add that class on load: \`document.querySelector('.my-page')?.classList.add('js-ready');\` as its first line. Live site: JS adds the class immediately, CSS activates, reveals work. Admin editor: class never added, content stays visible and editable.`,
         ``,
+        `Brand kit — call \`getBrandKit\` ONCE at the start of any design-related task (building a widget, WebPage, post template, email, hero banner — anything where colors or fonts are chosen) so your output visually matches the site's brand. Returns a compact semantic palette (body / primary / dark / muted / success / warm / alert accents, card surface) plus body + heading Google Fonts, with inline \`usage_guidance\` explaining which role each color plays and tint rules. Cache the result for the rest of the session — the brand kit rarely changes within one conversation. **Derive hover/tinted/gradient colors from the returned palette values — never introduce unrelated hues.** The returned \`body.font\` and \`heading_font\` are already globally loaded on the site; do NOT redeclare them in \`content_css\` unless deliberately switching to a different family (and then \`@import\` the new Google Font in the same CSS).`,
+        ``,
         `Hero section readability safe-defaults. When an agent is enabling the hero on a WebPage (\`enable_hero_section=1\` or \`2\`) and the user hasn't explicitly set color/overlay/padding values, ALWAYS apply these defaults (ensures white text is readable over whatever background image): \`h1_font_color="rgb(255,255,255)"\`, \`h2_font_color="rgb(255,255,255)"\`, \`hero_content_overlay_color="rgb(0,0,0)"\`, \`hero_content_overlay_opacity="0.5"\`, \`hero_top_padding="100"\`, \`hero_bottom_padding="100"\`. Applies to BOTH \`content\` and \`profile_search_results\` page types. **Hero + first-section BG-color gap fix:** if the hero is enabled AND the first content section has any background color, BD inserts a ~40px white gap between them. Add \`.hero_section_container + div.clearfix-lg {display:none}\` to \`content_css\` to close the gap. Safe to include whenever hero is enabled and the page's first section has a colored background. **Cache refresh required on hero create/update:** after ANY \`createWebPage\`/\`updateWebPage\` that touches \`enable_hero_section\` or any \`hero_*\`/\`h1_font_*\`/\`h2_font_*\` field, call \`refreshSiteCache\` immediately — hero changes are cached and won't reflect publicly until refreshed.`,
         ``,
         `Hero image sourcing — whenever an agent enables a hero (\`enable_hero_section=1\` or \`2\`) without an image URL supplied by the user, pick a CONTENT-RELEVANT stock photo; never use random/placeholder generators (picsum.photos, lorem pixel, placekitten, etc. — those change on each page load, which looks broken to real users). Preferred source: **Pexels** (https://www.pexels.com) — free license, no attribution required, stable URLs, reliable image hotlinking. Workflow: pick a search term from the page topic (e.g. page about "doctors in LA" → search "doctor office" or "medical professional"; IVF clinics → "fertility clinic" or "couple holding hands"; beauty salons → "hair salon interior"), choose a safe-for-work image without watermarks/logos, and use the **"large" variant URL** (Pexels' direct-download-large size — NOT "original" which is often 5000+px and too heavy for a hero banner). Pexels large URL pattern: \`https://images.pexels.com/photos/<ID>/pexels-photo-<ID>.jpeg?auto=compress&cs=tinysrgb&w=1800\`. If the user supplies their own image URL, use that instead. Never hotlink from sources with restrictive licenses (Getty, Shutterstock watermark-stripped, etc.) — reputational risk for the site.`,
@@ -810,6 +812,101 @@ async function main() {
         content: [{ type: "text", text: `Unknown tool: ${name}` }],
         isError: true,
       };
+    }
+
+    // Synthetic tool: getBrandKit — intercept before generic dispatch.
+    // Makes one internal BD call to /website_design_settings/get filtered by
+    // layout_group=theme_1, then transforms raw custom_N slots into semantic
+    // labels using BD's canonical mapping (matches the one in
+    // bd-core-files/admin/ai_companion/handler.php for cross-tool parity).
+    if (name === "getBrandKit") {
+      try {
+        const result = await makeRequest(
+          config,
+          "GET",
+          "/api/v2/website_design_settings/get",
+          {
+            property: "layout_group",
+            property_value: "theme_1",
+            property_operator: "=",
+            limit: 250,
+          },
+          null
+        );
+        if (result.status !== 200 || !result.body || result.body.status !== "success") {
+          return {
+            content: [{ type: "text", text: `getBrandKit failed: unable to fetch design settings. Server response: ${typeof result.body === "string" ? result.body : JSON.stringify(result.body)}` }],
+            isError: true,
+          };
+        }
+        // Map raw rows by setting_name for O(1) lookup
+        const rows = Array.isArray(result.body.message) ? result.body.message : [];
+        const bySlot = {};
+        for (const row of rows) {
+          if (row && row.setting_name) bySlot[row.setting_name] = row.setting_value;
+        }
+        // Butler canonical mapping (18 color slots + 2 fonts) with BD-default fallbacks
+        const pick = (slot, fallback) => {
+          const v = bySlot[slot];
+          return (v === undefined || v === null || v === "") ? fallback : v;
+        };
+        const kit = {
+          body: {
+            background: pick("custom_1",  "rgb(255,255,255)"),
+            text:       pick("custom_2",  "rgb(51,51,51)"),
+            font:       pick("custom_3",  "Inter"),
+          },
+          primary: {
+            color:   pick("custom_58", "rgb(39,108,207)"),
+            text_on: pick("custom_59", "rgb(255,255,255)"),
+          },
+          dark: {
+            color:   pick("custom_60", "rgb(24,46,69)"),
+            text_on: pick("custom_61", "rgb(255,255,255)"),
+          },
+          muted: {
+            color:   pick("custom_74", "rgb(242,243,245)"),
+            text_on: pick("custom_75", "rgb(24,46,69)"),
+          },
+          success_accent: {
+            color:   pick("custom_62", "rgb(3,138,114)"),
+            text_on: pick("custom_63", "rgb(255,255,255)"),
+          },
+          warm_accent: {
+            color:   pick("custom_64", "rgb(240,173,78)"),
+            text_on: pick("custom_65", "rgb(255,255,255)"),
+          },
+          alert_accent: {
+            color:   pick("custom_66", "rgb(217,83,79)"),
+            text_on: pick("custom_67", "rgb(255,255,255)"),
+          },
+          card: {
+            background: pick("custom_71",  "rgb(255,255,255)"),
+            border:     pick("custom_72",  "rgb(230,232,236)"),
+            text:       pick("custom_73",  "rgb(24,46,69)"),
+            title:      pick("custom_134", "rgb(24,46,69)"),
+          },
+          heading_font: pick("custom_208", pick("custom_3", "Inter")),
+          usage_guidance: {
+            primary:        "Brand color — main CTA buttons, key interactive elements, dominant accents.",
+            dark:           "High-contrast sections, strong backgrounds, or text when appropriate to the theme.",
+            muted:          "Subtle section backgrounds, dividers, low-emphasis UI areas, badges, pills or tags.",
+            success_accent: "Confirmations, positive states, growth indicators, or a complementary design accent when layout benefits from a second color voice.",
+            warm_accent:    "Attention accent — badges, highlights, tags, warm visual punctuation when design needs a pop of energy.",
+            alert_accent:   "Urgency accent — errors, warnings, sale badges, limited-time callouts, elements that command immediate attention.",
+            tint_rule:      "Derive lighter or darker tints from any palette color for backgrounds, hover states, borders, or low-emphasis UI layers. Do NOT introduce new unrelated hues.",
+            font_rule:      "body.font and heading_font are already globally loaded on the site — do NOT redefine them in content_css. Only specify font-family in CSS when deliberately switching to a different family AND importing it via @import url('https://fonts.googleapis.com/...') in the same CSS.",
+          },
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(kit, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `getBrandKit error: ${err.message || String(err)}` }],
+          isError: true,
+        };
+      }
     }
 
     try {
