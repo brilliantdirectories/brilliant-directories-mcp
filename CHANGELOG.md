@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.2] - 2026-04-20
+
+### Added — `form_action_div` is required when `form_action_type=widget`
+
+The form recipe was missing one required field. When `form_action_type=widget` (Display Success Pop-Up Message — the agent default and most common setting), BD needs `form_action_div` set to the DOM target element ID that gets swapped when the success pop-up fires. Without it, the form submits but the user sees nothing happen. Canonical default: `#main-content`.
+
+- **`createForm` schema**: added `form_action_div` property with default `#main-content`. Description explains it's required when `form_action_type=widget`, ignored otherwise, must include the leading `#`.
+- **`updateForm` schema**: same property added with an "if flipping action type TO widget, set this" warning.
+- **`createForm` top-level description recipe**: new step 4 (`form_action_div=#main-content` when action type is widget). Existing steps 4–6 renumbered to 5–7.
+- **MCP instructions paragraph**: step 4 added with the same rule; downstream numbering bumped.
+
+No schema-breaking changes; `form_action_div` is optional but strongly recommended whenever `form_action_type=widget` (which is every agent-created form by default). Agents following the v6.10.1 recipe continue to work but silently produced broken success pop-ups; agents reading v6.10.2 docs will produce working pop-ups on first try.
+
 ## [6.10.1] - 2026-04-20
 
 ### Fixed — Post-v6.10.0 audit: 5 drift risks closed
