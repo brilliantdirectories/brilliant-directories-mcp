@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.8.0] - 2026-04-19
+
+### Added — blindspot pass: live-verified duplicate silent-accept, enum silent-accept, server hardening
+
+Three-agent audit (resource-coverage, MCP server code, live stress-test against a BD test site) identified 20+ blindspots across the non-WebPage surface. This release patches every live-verified finding. **No breaking changes** — all updates are safety guidance, pre-check patterns, and server resilience.
+
+**Live-verified behavior documented (2026-04-19):**
+- **Duplicate silent-accept on natural-key fields.** BD does NOT enforce uniqueness at the DB level on `createUser.email` (when site setting `allow_duplicate_member_emails` is ON), `createTag.tag_name` (within a `group_tag_id`), or `createUserMeta.(database, database_id, key)` triple. Two rapid identical creates both succeed with different primary keys — downstream lookups then become non-deterministic. Each affected endpoint now carries a **pre-check pattern** (list-first by natural key, reuse or confirm on match) + blanket "Duplicate silent-accept" paragraph in MCP instructions covering the pattern across all resources.
+- **Enum silent-accept.** BD accepts integers outside documented enums on `user.active` (observed `99`), `review.review_status` (documented `1` as invalid — stored verbatim), `lead.lead_status` (documented `3` doesn't exist — stored verbatim). Each affected field description now flags the silent-accept explicitly; new blanket rule in MCP instructions tells agents to always pass only documented values.
+- **`listUserMeta` cross-table collision is NOT theoretical.** Filtering by `database_id` alone on a live test user returned 12 rows — only 3 were legit user meta; 9 were admin-session breadcrumbs from `data_categories` with the same numeric ID. The 3:1 noise ratio is now documented on `listUserMeta`. v6.7.1 IDENTITY RULE validated and reinforced.
+- **`listLeadMatches` empty-state quirk.** When the `lead_matches` table has zero rows matching the filter, BD returns `{status:"error", message:"lead_matches not found", total:0}` instead of the standard `{status:"success", total:0, message:[]}`. Once matches exist, normal shape resumes. Documented on the endpoint — agents now treat the specific error message as empty-result, not failure.
+- **`createReview` actually requires `review_email`.** Live server rejects with `"The review email is required"` when omitted, despite prior schema listing only `user_id` as required. Added to schema `required` array; description rewritten with the server-observed error message.
+- **Homepage hero fields: stored but benign.** Prior v6.7.2 doc said "hero fields do not apply to homepage." Corrected — BD accepts and stores `enable_hero_section` + any `hero_*`/`h1_*`/`h2_*` on `seo_id=1`, but the homepage template does not render them. Doc now says "stored but benign/no-render; use the homepage widget configuration for homepage hero display."
+
+**Spec-level corrections:**
+- **`updateLead` enum conflict resolved.** Endpoint's top-level description listed `4=Closed, 5=Accepted, 6=Declined, 7=Expired, 8=Archived` while inline parameter description listed `4=Follow-Up, 5=Sold Out, 6=Closed, 7=Bad Leads, 8=Delete`. Consolidated to the admin-UI truth (verified from the BD admin lead-status select HTML): `1=Pending, 2=Matched, 4=Follow-Up, 5=Sold Out, 6=Closed, 7=Bad Leads, 8=Delete`. Applied to `createLead`, `updateLead`, `getLead` descriptions.
+- **`createMembershipPlan.subscription_type` no longer schema-required.** Previously required but description admitted we didn't know the valid values. Moved out of `required`; default `"member"` applies on omit. `profile_type` (paid/free/claim) remains the authoritative plan-tier field.
+- **`review_status` description on both `createReview` and `updateReview` corrected.** Value `1` is not documented but BD accepts it silently — agents now told to stick to `0`/`2`/`3`/`4` with explicit silent-accept warning.
+
+**MCP instructions — security hardening:**
+- **XSS pattern matching** — switched inline event handlers from a 4-item enumeration to `on[a-z]+=` pattern match (covers `onerror`/`onload`/`onclick`/`onmouseover` AND the other ~100 DOM handlers like `onfocus`/`ontoggle`/`onpointerdown`/`onanimationend` that were previously slipping through).
+- **URL-scheme blacklist expanded** — was `javascript:` only; now `javascript:`/`data:text/html`/`data:application/`/`vbscript:`. Plain `data:image/*` still permitted.
+- **CSS-injection rules** — new section blocking `expression(`/`javascript:`/`data:`/`@import`/`behavior:` inside `style=""` attributes and standalone `<style>` blocks (except in `email_body` where `<style>` is legitimate).
+- **Encoded-payload handling** — new instruction to HTML-entity-decode and URL-decode values ONCE before pattern matching, so `&#60;script&#62;` and `%3Cscript%3E` don't bypass.
+- **Case-insensitivity now explicit for ALL patterns**, not just `<script>`.
+- **Safe-HTML allow list widened** — added `<span>`, `<div>`, `<section>`, `<article>`, `<blockquote>`, `<table>`/`<thead>`/`<tbody>`/`<tr>`/`<th>`/`<td>`, `<hr>`, `<figure>`/`<figcaption>`. Previously the list was so narrow that ordinary CMS content would false-positive.
+- **Field taxonomy default** — any field not in either the plain-text or HTML-allowed list now defaults to plain-text unless its name contains `content`/`body`/`description`/`desc`/`html`/`text`. Previously left to agent judgment.
+- **User-confirmed-override path** — agents may now proceed on HTML-allowed fields after explicit user confirmation (e.g. legitimate SQL tutorial containing `UNION SELECT`), with a required one-line ack in the reply. Previously only widgets had an override path.
+- **Widget exemption refined** — still exempt from blocking, but agents warn (non-blocking) if `widget_javascript` contains obvious external-exfiltration shapes (`fetch(` or `XMLHttpRequest` to non-site domains).
+
+**MCP instructions — cache-refresh advisory expanded beyond hero.** New paragraph recommends `refreshSiteCache` after menu, menu-item, widget, membership-plan, and category CRUD. Direct-column WebPage updates (title, content, meta_desc) reflect immediately — refresh optional. Safe no-op when unnecessary.
+
+**MCP server hardening (code):**
+- **`resolveRef` now throws a clear error** with the ref path and missing segment instead of crashing with opaque `TypeError: Cannot read properties of undefined`.
+- **`Retry-After` header honored on 429** — previously ignored; server told agents "wait 60s" regardless of what BD asked for. Now captures the header and includes the server-requested backoff in the error message.
+- **SIGTERM/SIGINT graceful drain** — previously in-flight HTTP requests were abandoned silently when the host killed the server mid-call. Now tracks in-flight requests in a module-level set; on signal, waits up to 5s for them to complete before exit (or forcibly aborts if they exceed the drain window). Prevents "did the last write hit or not?" ambiguity in bulk-job interruptions.
+- **Debug-mode body redaction** — `--debug` previously logged raw request bodies, leaking `password`, `token`, `api_key`, `cookie`, `secret`, `auth` values to stderr. Now redacted before log.
+- **Double-encode fix in 401/403/429 error text** — server error bodies returned as string (HTML error pages) were being `JSON.stringify`'d again, mangling them. Now emitted raw when already-string.
+
+**Rendering fix:**
+- Review status + lead status + review_status enum descriptions had `\\n` (literal backslash-n) instead of `\n` (real newline) — fixed; these enums now render as proper bulleted lists.
+
+### Out of scope for this release (tracked)
+- Per-endpoint `\\n`-rendering fixes in remaining user/post/form-field enum descriptions (~15 locations) — rendering degradation, not safety issue. Dedicated pass planned.
+- Deeper cascade-cleanup docs on `deleteUser`/`deletePostType`/`deleteMembershipPlan`/`deleteTopCategory`/`deleteTag` — suspected orphan issues surfaced in audit but most not yet live-verified. `deleteUser` live test showed clean cascade (photos + meta purged), so audit's worry there was unfounded; others remain untested.
+- Array-syntax multi-filter round-trip through the MCP tool schema — still requires direct request construction for `property[]=x&property[]=y`; redesigning the tool schema to accept arrays is a larger change.
+
 ## [6.7.2] - 2026-04-19
 
 ### Fixed — sanity-check pass on WebPage + users_meta rules (cross-file consistency)

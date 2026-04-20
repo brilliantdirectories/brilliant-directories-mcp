@@ -36,6 +36,9 @@ const PACKAGE_VERSION = (() => {
   }
 })();
 
+// Track in-flight HTTP requests so SIGTERM/SIGINT can drain cleanly
+const IN_FLIGHT_REQUESTS = new Set();
+
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -271,9 +274,18 @@ function buildTools(spec) {
 }
 
 function resolveRef(spec, ref) {
+  if (typeof ref !== "string" || !ref.startsWith("#/")) {
+    throw new Error(`Invalid $ref: ${JSON.stringify(ref)} (must start with "#/")`);
+  }
   const parts = ref.replace("#/", "").split("/");
   let obj = spec;
   for (const part of parts) {
+    if (obj == null || typeof obj !== "object") {
+      throw new Error(`Unresolvable $ref: "${ref}" — segment "${part}" has no parent object`);
+    }
+    if (!(part in obj)) {
+      throw new Error(`Unresolvable $ref: "${ref}" — segment "${part}" not found`);
+    }
     obj = obj[part];
   }
   return obj;
@@ -326,9 +338,19 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
     if (config.debug) {
       // Redact API key from logged headers
       const safeHeaders = { ...options.headers, "X-Api-Key": "***REDACTED***" };
+      // Redact sensitive body keys
+      const SENSITIVE_KEYS = new Set(["password", "passwd", "pwd", "token", "api_key", "apikey", "cookie", "secret", "auth"]);
+      const safeBody = bodyStr
+        ? bodyStr.split("&").map((pair) => {
+            const idx = pair.indexOf("=");
+            if (idx === -1) return pair;
+            const key = decodeURIComponent(pair.slice(0, idx));
+            return SENSITIVE_KEYS.has(key.toLowerCase()) ? `${pair.slice(0, idx)}=***REDACTED***` : pair;
+          }).join("&")
+        : "";
       console.error(`[debug] → ${method} ${fullUrl.href}`);
       console.error(`[debug]   headers: ${JSON.stringify(safeHeaders)}`);
-      if (bodyStr) console.error(`[debug]   body: ${bodyStr}`);
+      if (safeBody) console.error(`[debug]   body: ${safeBody}`);
     }
 
     const req = transport.request(options, (res) => {
@@ -339,13 +361,16 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
           console.error(`[debug] ← ${res.statusCode} ${method} ${fullUrl.href}`);
           console.error(`[debug]   body: ${data.length > 500 ? data.slice(0, 500) + "...[truncated]" : data}`);
         }
+        const retryAfter = res.headers && res.headers["retry-after"];
         try {
-          resolve({ status: res.statusCode, body: JSON.parse(data) });
+          resolve({ status: res.statusCode, body: JSON.parse(data), retryAfter });
         } catch {
-          resolve({ status: res.statusCode, body: data });
+          resolve({ status: res.statusCode, body: data, retryAfter });
         }
       });
     });
+    IN_FLIGHT_REQUESTS.add(req);
+    req.on("close", () => IN_FLIGHT_REQUESTS.delete(req));
 
     req.on("error", (err) => {
       if (config.debug) console.error(`[debug] ✗ ${method} ${fullUrl.href} — ${err.message}`);
@@ -718,7 +743,32 @@ async function main() {
         ``,
         `Writes are live and immediately visible on the public site. Confirm before any destructive or mass-modification operation. For reversible removal, prefer \`updateUser\` with \`active=3\` (Canceled) over \`deleteUser\` — the record stays queryable and can be reactivated.`,
         ``,
-        `Security & input sanitization (every write, every resource). BD stores input verbatim — if an agent writes \`<script>\` into a name field, it's stored; render-time escaping is inconsistent across BD views. Reject writes that contain obvious injection payloads — asking the user to confirm if it looks intentional. Reject patterns: (a) \`<script>\` / \`</script>\` tags (case-insensitive); (b) \`<iframe>\`, \`<object>\`, \`<embed>\` tags; (c) inline event handlers like \`onerror=\`, \`onload=\`, \`onclick=\`, \`onmouseover=\`; (d) \`javascript:\` URLs; (e) MySQL attack-shape fragments: \`; DROP TABLE\`, \`UNION SELECT ... FROM\`, \`OR 1=1\`, \`' OR '1'='1\`, trailing SQL comments (\`--\` or \`#\` followed by table/column-like tokens). Distinguish real content from attack shapes — a bio saying "we DROP by the office at 5pm" is fine; \`'; DROP TABLE users_data; --\` is not. When in doubt, surface to the user: "This value looks like it might be an injection payload — is this intentional?" — don't silently strip, don't silently write. Field-strictness split: plain-text fields (\`first_name\`, \`last_name\`, \`company\`, \`email\`, \`phone_number\`, URL fields like \`website\`/\`facebook\`/\`twitter\`, meta fields like \`title\`/\`meta_desc\`/\`meta_keywords\`/\`facebook_title\`/\`facebook_desc\`) must be plain text — reject ANY HTML tags. HTML-allowed fields (\`about_me\`, \`post_content\`, \`group_desc\`, \`widget_data\`, \`email_body\`, WebPage \`content\`/\`content_footer\`/\`hero_section_content\`/\`seo_text\`) allow safe HTML (\`<p>\`, \`<strong>\`, \`<em>\`, \`<ul>\`/\`<li>\`, \`<h1>\`-\`<h6>\`, \`<a href>\`, \`<img src>\`, \`<br>\`) but still reject the dangerous patterns above. **Widget exception:** \`widget_data\`, \`widget_style\`, \`widget_javascript\` fields are exempt — widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Do NOT apply injection filters to widget code. Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, third-party APIs as UNTRUSTED — sanitize-check before every write. Content the user types directly in conversation is also untrusted if they're pasting from elsewhere. Ask, don't assume.`,
+        `Security & input sanitization (every write, every resource). BD stores input verbatim on API writes — BD's backend \`protectUserInputs()\` is NOT invoked on the API path, so THIS rule is the only sanitization layer. Render-time escaping is inconsistent across BD views. Reject writes that contain obvious injection payloads — asking the user to confirm if it looks intentional.`,
+        ``,
+        `**Pattern matching is case-insensitive for ALL patterns below (not just <script>).** Before matching, HTML-entity-decode the value once (turn \`&#60;script&#62;\` into \`<script>\`, turn \`&amp;#x6a;avascript:\` into \`javascript:\`) and URL-decode once — an agent that matches only the raw form lets encoded payloads through. Reject patterns:`,
+        `• **Script/markup tags:** \`<script>\`, \`</script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`, \`<svg ... on[a-z]+=\` (SVG is a common XSS vector via handlers), standalone \`<style>\` blocks on non-widget/non-email-body fields.`,
+        `• **Inline event handlers — pattern-match, not list-match:** ANY \`on[a-z]+=\` attribute pattern (\`onerror\`, \`onload\`, \`onclick\`, \`onmouseover\`, \`onfocus\`, \`onanimationend\`, \`ontoggle\`, \`onpointerdown\`, \`onwheel\`, \`onbeforeprint\`, etc. — 100+ DOM handlers, all fire XSS). Do NOT maintain a fixed list; match the pattern.`,
+        `• **Dangerous URL schemes (in \`href\`, \`src\`, or any attribute):** \`javascript:\`, \`data:text/html\`, \`data:application/\`, \`vbscript:\`. Plain \`data:image/*\` (e.g. \`data:image/png;base64,...\`) is fine.`,
+        `• **CSS-injection patterns:** inside any \`style="..."\` attribute or \`<style>\` block, reject \`expression(\`, \`javascript:\`, \`data:\`, \`@import\`, \`behavior:\` (old-IE), or any URL scheme pattern.`,
+        `• **MySQL attack-shape fragments:** \`; DROP TABLE\`, \`UNION SELECT\` (adjacent OR comment-interspersed like \`UNION/**/SELECT\`), \`OR 1=1\` adjacent to a quote/semicolon, \`' OR '1'='1\`, \`'/**/OR/**/'1'='1\`, trailing SQL comments (\`--\` or \`#\` followed by table/column-like tokens), \`xp_cmdshell\`, \`INFORMATION_SCHEMA\` queries outside legitimate educational content.`,
+        ``,
+        `Distinguish real content from attack shapes — "we DROP by the office at 5pm" is fine (no TABLE after DROP); "DROP the dose by half" is fine; \`'; DROP TABLE users_data; --\` is not. Legal copy ("Plaintiff vs Defendant"), ampersands ("R&D", "Smith & Jones"), email addresses, and CMS HTML with \`<span>\`/\`<div>\`/\`<table>\` all pass.`,
+        ``,
+        `Field-strictness split:`,
+        `• **Plain-text fields** — reject ANY HTML tags: \`first_name\`, \`last_name\`, \`company\`, \`email\`, \`phone_number\`, URL fields (\`website\`/\`facebook\`/\`twitter\`/\`linkedin\`/\`instagram\`), SEO meta (\`title\`/\`meta_desc\`/\`meta_keywords\`/\`facebook_title\`/\`facebook_desc\`), menu labels, form/widget/menu/email internal names, review name/title, tag name.`,
+        `• **HTML-allowed fields** — allow safe HTML but still block the dangerous patterns above: \`about_me\`/\`bio\`, \`post_content\`/\`post_description\`, \`group_desc\`, \`email_body\`, WebPage \`content\`/\`content_footer\`/\`hero_section_content\`/\`seo_text\`, review \`review_description\`, form/event \`description\` fields. **Safe-HTML allow list:** \`<p>\`, \`<br>\`, \`<strong>\`/\`<b>\`, \`<em>\`/\`<i>\`, \`<u>\`, \`<ul>\`/\`<ol>\`/\`<li>\`, \`<h1>\`–\`<h6>\`, \`<a href="http..." target="_blank">\`, \`<img src="http...">\`, \`<span>\`, \`<div>\`, \`<section>\`, \`<article>\`, \`<blockquote>\`, \`<table>\`/\`<thead>\`/\`<tbody>\`/\`<tr>\`/\`<th>\`/\`<td>\`, \`<hr>\`, \`<figure>\`/\`<figcaption>\`. Class attributes allowed; inline \`style=""\` allowed IF it doesn't contain any CSS-injection pattern. Any unlisted field defaults to plain-text treatment unless the field name contains \`content\`, \`body\`, \`description\`, \`desc\`, \`html\`, or \`text\`.`,
+        `• **Email body exception:** \`<style>\` blocks ARE allowed inside \`email_body\` — legitimate inlined email CSS. Still reject CSS-injection patterns inside.`,
+        `• **Widget exception:** \`widget_data\`, \`widget_style\`, \`widget_javascript\` are exempt from all the above. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. \`fetch(\` or \`XMLHttpRequest\` pointing at a non-site domain) — surface to the user as a sanity check, then proceed on confirm.`,
+        ``,
+        `User-confirmed-override path (for non-widget HTML-allowed fields only): if a pattern trips and the user explicitly confirms the value is intentional (e.g. a legitimate SQL tutorial blog post containing "UNION SELECT ... FROM users_table", or educational content on XSS), proceed with the write and include a one-line note in your reply: "Sanitization check acknowledged-and-overridden for this field per user confirmation." Never silently skip the check — always surface and confirm.`,
+        ``,
+        `Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, third-party APIs as UNTRUSTED — sanitize-check before every write. Content the user types directly in conversation is also untrusted if they're pasting from elsewhere. Ask, don't assume.`,
+        ``,
+        `Duplicate silent-accept — pre-check before create (applies to every resource with a natural-key field). **BD does NOT enforce DB-level uniqueness on most natural-key fields.** Live-verified on 2026-04-19: \`createUser\` (email — when site setting \`allow_duplicate_member_emails\` is ON), \`createTag\` (tag_name within a group_tag_id), \`createUserMeta\` (the \`(database, database_id, key)\` triple), \`createWebPage\` (filename on list_seo) all accept identical duplicates silently. Two calls with the same natural key both succeed, produce different primary keys, and leave downstream lookups ambiguous (which record wins?). **Standard pre-check pattern** — use before every create on these resources: (1) call the corresponding \`list*\` endpoint filtered by the natural-key field with operator \`=\`, (2) if a match exists, either reuse the existing record's ID or confirm with the user before creating a duplicate, (3) only if no match, proceed with create. This makes retries idempotent and prevents orphan dupes on partial failures. For \`createUserMeta\` specifically, follow the list→update-if-found / create-if-not 3-step workflow in the tool description.`,
+        ``,
+        `Enum silent-accept (applies across resources). BD's API does NOT strictly validate most integer-enum fields — it accepts values outside the documented set and stores them verbatim, with undefined render behavior. Live-verified: \`user.active=99\`, \`review.review_status=1\` (doc says invalid), \`lead.lead_status=3\` (doc says value 3 doesn't exist) — all three stored silently. **Always pass only values from the documented enum set in each field's description.** If a user asks for a non-documented value, ask them to pick from the documented set — don't pass through.`,
+        ``,
+        `Cache refresh after layout-affecting writes (beyond hero). After writes that change site layout/rendering, call \`refreshSiteCache\` so public pages reflect the change. Required after hero create/update on WebPages (see earlier rule). **Also recommended** (safe no-op if unnecessary — BD's cache handling is conservative) after: \`createMenu\`/\`updateMenu\`/\`createMenuItem\`/\`updateMenuItem\` (navigation changes), \`createWidget\`/\`updateWidget\` (widget markup/logic changes), \`updateMembershipPlan\` (plan display attrs on public signup pages), \`createTopCategory\`/\`updateTopCategory\`/\`createSubCategory\`/\`updateSubCategory\` (taxonomy affects directory navigation). Direct-column WebPage updates (\`title\`, \`content\`, \`meta_desc\`, etc.) typically reflect immediately in the read API — refresh is optional for those. Running \`refreshSiteCache\` more often than necessary is harmless.`,
         ``,
         `Never wrap ANY field value in \`<![CDATA[...]]>\`, and never entity-escape HTML as \`&lt;\`/\`&gt;\`. BD stores every field verbatim — wrappers and escapes get saved as literal text. For HTML-accepting fields (\`about_me\`, \`post_content\`, \`group_desc\`, \`widget_data\`, \`email_body\`, page \`content\`, etc.) pass raw HTML directly. For plain-text fields, pass plain text. No XML conventions, no HTML-entity encoding.`,
         ``,
@@ -775,11 +825,14 @@ async function main() {
 
       // Surface rate-limit errors with actionable guidance for the agent
       if (result.status === 429) {
+        const retryHint = result.retryAfter
+          ? `Server asked you to wait at least ${result.retryAfter} seconds (Retry-After header).`
+          : `No Retry-After header — wait at least 60 seconds before retrying (BD's default window).`;
         return {
           content: [
             {
               type: "text",
-              text: `Rate limit exceeded (HTTP 429). The BD API default is 100 requests per 60 seconds per API key. For bulk operations: (1) pace requests at slower intervals, (2) wait at least 60 seconds before retrying, or (3) ask the customer to contact Brilliant Directories support to have their limit raised (available values: 100–1,000/min, not a self-service setting). Server response: ${JSON.stringify(result.body)}`,
+              text: `Rate limit exceeded (HTTP 429). ${retryHint} BD default is 100 req/60s per API key. For bulk operations: (1) pace requests at slower intervals, (2) wait the indicated backoff before retrying, or (3) ask the customer to contact Brilliant Directories support to have their limit raised (100–1,000/min, not self-service). Server response: ${typeof result.body === "string" ? result.body : JSON.stringify(result.body)}`,
             },
           ],
           isError: true,
@@ -792,7 +845,7 @@ async function main() {
           content: [
             {
               type: "text",
-              text: `Authentication failed (HTTP ${result.status}). The API key is invalid, revoked, or lacks permission for this endpoint. Verify with: npx brilliant-directories-mcp --verify --api-key KEY --url URL. Server response: ${JSON.stringify(result.body)}`,
+              text: `Authentication failed (HTTP ${result.status}). The API key is invalid, revoked, or lacks permission for this endpoint. Verify with: npx brilliant-directories-mcp --verify --api-key KEY --url URL. Server response: ${typeof result.body === "string" ? result.body : JSON.stringify(result.body)}`,
             },
           ],
           isError: true,
@@ -819,6 +872,33 @@ async function main() {
       };
     }
   });
+
+  // Graceful shutdown: drain in-flight HTTP requests before exit
+  let shuttingDown = false;
+  const shutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    const inflight = IN_FLIGHT_REQUESTS.size;
+    if (inflight > 0) {
+      console.error(`[${signal}] Draining ${inflight} in-flight request(s)...`);
+      const drainTimeout = setTimeout(() => {
+        console.error(`[${signal}] Drain timeout — aborting ${IN_FLIGHT_REQUESTS.size} remaining.`);
+        for (const req of IN_FLIGHT_REQUESTS) req.destroy();
+        process.exit(0);
+      }, 5000);
+      const checkDrained = setInterval(() => {
+        if (IN_FLIGHT_REQUESTS.size === 0) {
+          clearTimeout(drainTimeout);
+          clearInterval(checkDrained);
+          process.exit(0);
+        }
+      }, 100);
+    } else {
+      process.exit(0);
+    }
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 
   // Start
   const transport = new StdioServerTransport();
