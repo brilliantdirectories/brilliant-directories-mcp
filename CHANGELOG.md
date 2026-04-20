@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.7] - 2026-04-20
+
+### Fixed — CRITICAL: CSV-no-spaces contradiction in createUser/updateUser
+
+`createUser` and `updateUser` descriptions contained `**Whitespace around commas is trimmed** — "a, b, c" works the same as "a,b,c"` — the direct opposite of the v6.13.4 universal CSV-no-spaces rule. An agent reading either tool in isolation would conclude spaces are safe for `services`, overriding the universal directive and producing the exact silent-corruption bug v6.13.4 was created to prevent. Replaced with language consistent with the universal rule: "Comma-only CSV — NO spaces around commas. BD splits on raw `,` and does NOT trim whitespace."
+
+Also fixed typo `seperated` → `separated` in the `services` field description.
+
+### Added — PATCH semantics spelled out at the top level
+
+v6.13.0 through v6.13.6 relied on per-tool `"Fields omitted are untouched"` phrasing. Four high-traffic endpoints were missing it (`updateUser`, `updateCity`, `updateState`, `updateCountry`) and the top-level instructions never stated it at all — so an agent reading only the server-level briefing had zero PATCH signal and could default to re-sending full records.
+
+Added to the universal schema-is-documentation directive: *"Updates use PATCH semantics — send ONLY the fields you want to change; omitted fields are untouched. Never re-send a full record just to tweak one setting. Single narrow exception: the post-type code-group all-or-nothing save rule on updatePostType."* Added `"Fields omitted are untouched (PATCH semantics)"` to the 4 missing endpoint descriptions.
+
+### Fixed — Hero defaults scope tightened (semantic only, no logic change)
+
+Hero readability safe-defaults rule reworded from ambiguous *"when hero is enabled"* to explicit *"on TRANSITION only — when `enable_hero_section` goes from 0/unset to 1/2"*. Adds the complement: *"do NOT re-apply defaults on updates that don't touch `enable_hero_section`"*. Prevents an agent tweaking a single hero field (e.g. `h1_font_size`) from silently overwriting custom colors/padding the user set previously. Same logic as before — just semantics that make the scope unmissable.
+
+### Added — Field-vs-hack universal directive + FormField view-flag rules
+
+New top-level paragraph codifies a universal pattern: when BD ships a first-class field/toggle for a thing the user asks about, USE THE FIELD — do not fake it with CSS/JS/template surgery. Names concrete cases: `content_layout=1` (WebPage full-bleed), WebPage `hide_header`/`hide_footer`/etc., Widget `widget_viewport`, EmailTemplate `unsubscribe_link=0`, MembershipPlan `sub_active=0` + `hide_*_amount` toggles, FormField view-flags.
+
+Separately: dedicated paragraph for FormField's 5 view-flags (`field_input_view`, `field_display_view`, `field_lead_previews`, `field_email_view`, `field_table_view`) — all default ON (`1`) on create (matches BD admin UI default), set to `0` only when the user explicitly asks to hide on a specific surface. Lists the canonical "user ask → correct flag" mappings to prevent agents from CSS-hacking / email-template string-manipulation.
+
+### Added — MembershipPlan hide_*_amount + visibility toggles as first-class schema fields
+
+Expanded `updateMembershipPlan` schema from 6 properties to 19, adding the full set of payment-cycle visibility toggles (`hide_initial_amount`, `hide_monthly_amount`, `hide_quarterly_amount`, `hide_semiyearly_amount`, `hide_yearly_amount`, `hide_biennially_amount`, `hide_triennially_amount`) plus related visibility flags (`hide_billing_links`, `hide_parent_accounts`, `hide_reviews_rating_options`, `hide_specialties`, `hide_notifications`) with proper `enum: [0, 1]` and clear descriptions. Previously these were returned on GET but missing from the update schema, making them harder to discover even though they were writable per the universal schema-is-documentation rule.
+
+Each description explains the key behavior: hidden payment cycles disappear from public checkout pages but remain available when an admin manually creates a subscription inside the BD admin area. Plus concise descriptions on the existing `sub_active` and `searchable` fields (previously enum-only, no description).
+
+Doc-only + schema-expansion (`updateMembershipPlan` gains 13 explicit fields). Zero code/behavior changes.
+
 ## [6.13.6] - 2026-04-20
 
 ### Added — Full-bleed WebPage sections: `content_layout=1` directive (anti-CSS-hack)
