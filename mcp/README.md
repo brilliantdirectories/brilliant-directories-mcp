@@ -12,7 +12,10 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
 2. **Your BD API key.** BD Admin sidebar → **Developer Hub** → **Generate API Key** → copy it.
-3. **Your BD site URL.** Include `https://`, no trailing slash. ✅ `https://mysite.com` · ❌ `mysite.com` · ❌ `https://mysite.com/`
+3. **Your BD site URL.** Include `https://`, no trailing slash.
+   - ✅ `https://mysite.com`
+   - ❌ `mysite.com` (missing `https://`)
+   - ❌ `https://mysite.com/` (trailing slash)
 
 ## Table of Contents
 
@@ -35,13 +38,40 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ## 30-Second Quickstart (try this first)
 
-Open a terminal (Mac: **Terminal.app** · Windows: **PowerShell** · Linux: your shell). Paste:
+The fastest way to set this up is to run our one-command wizard in your computer's **terminal**. If you've never used a terminal before, don't worry — it's just a text-only app for running commands. You open it, paste one line, press Enter, and follow the prompts. Here's how to open it on your OS:
+
+### Mac
+
+1. Press `Cmd` + `Space` on your keyboard (this opens Spotlight, Mac's search bar at the top of the screen).
+2. Type `Terminal` and press `Enter`. A window with a dark or light background and a blinking cursor opens — that's the terminal.
+
+### Windows
+
+1. Press the `Windows` key on your keyboard (the key with the Windows logo — usually between `Ctrl` and `Alt`). The Start menu opens.
+2. Type `PowerShell` and press `Enter`. A window with a blue or black background and a blinking cursor opens — that's PowerShell, Windows' terminal.
+
+### Linux
+
+1. Most Linux desktops: press `Ctrl` + `Alt` + `T`, OR open your apps menu and look for **Terminal** / **Konsole** / **GNOME Terminal**.
+
+---
+
+Once the terminal is open, copy this line, paste it in, and press `Enter`:
 
 ```bash
 npx brilliant-directories-mcp --setup
 ```
 
-A wizard asks for your URL + API key, tests the connection, asks which app you use, and writes the config file automatically. If it works, **fully quit and reopen your AI app** and [skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
+> **Tip — how to paste in the terminal:** `Cmd` + `V` on Mac, `Ctrl` + `Shift` + `V` or right-click → Paste in Windows PowerShell, `Ctrl` + `Shift` + `V` in most Linux terminals.
+
+A wizard asks for your URL + API key, tests the connection, asks which AI app you use (Cursor, Claude Desktop, etc.), and writes the config file for that app automatically.
+
+If it worked, **fully quit and reopen your AI app** (not just close the window — see the "fully quit" note below) and [skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
+
+> **What "fully quit" means:**
+> - **Mac:** the red dot (close button) only hides the window; the app keeps running. To fully quit: click the app's name in the top menu bar (e.g. "Cursor" next to the Apple logo) → **Quit Cursor**, OR press `Cmd` + `Q` while the app is focused.
+> - **Windows:** closing the window with the X usually exits the app, but some apps keep running in the system tray (bottom-right corner near the clock). To be safe: right-click the app icon in the system tray → **Quit** / **Exit**. If you don't see it there, the window X was enough.
+> - **Linux:** varies by desktop — use `Ctrl` + `Q` or the app's File → Quit menu.
 
 If the wizard errors, hangs, or your AI still says "no tools available" after restart, use the per-platform step-by-step below — it's the same outcome, just done by hand.
 
@@ -49,14 +79,16 @@ If the wizard errors, hangs, or your AI still says "no tools available" after re
 
 ## Setup by Platform
 
-Every method below uses this config block — keep it handy. Replace `YOUR_KEY` and `https://your-site.com` with your values:
+<a id="the-config-block"></a>
+
+Every method below uses **the config block** — keep it handy. Replace `ENTER_API_KEY` and `https://your-site.com` with your values:
 
 ```json
 {
   "mcpServers": {
     "bd-api": {
       "command": "npx",
-      "args": ["-y", "brilliant-directories-mcp", "--api-key", "YOUR_KEY", "--url", "https://your-site.com"]
+      "args": ["-y", "brilliant-directories-mcp", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
     }
   }
 }
@@ -75,11 +107,42 @@ Every method below uses this config block — keep it handy. Replace `YOUR_KEY` 
    - (Or Command Palette: `Cmd/Ctrl + Shift + P` → type "Open MCP Settings")
 3. Click **Tools & MCP** in the left sidebar.
 4. Click **New MCP Server**.
-5. Paste the config block above. Replace `YOUR_KEY` and `https://your-site.com` with your values.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
 6. Click Save.
 7. **Fully quit and reopen Cursor** (menu bar → Quit; or Mac `Cmd+Q`; or Windows right-click the taskbar icon → Quit).
 
-**File method (fallback):** edit `~/.cursor/mcp.json` (Mac/Linux) or `%USERPROFILE%\.cursor\mcp.json` (Windows). Paste the config block, save, fully quit and reopen Cursor.
+**File method (fallback — if the GUI method above doesn't work, or you prefer editing a config file directly):**
+
+Cursor reads its MCP server list from a file on your computer called `mcp.json`, which lives inside a hidden folder called `.cursor` in your home folder. "Home folder" means your personal user folder (e.g. `/Users/YourName/` on Mac or `C:\Users\YourName\` on Windows). The folder starts with a dot, which makes it hidden by default on Mac/Linux; you'll need to either show hidden files OR navigate to the path directly.
+
+#### Mac / Linux
+
+1. Open **Finder** (the blue smiley-face app in your Dock on Mac; your file manager app on Linux).
+2. Press `Cmd` + `Shift` + `G` on Mac (this opens a "Go to Folder" input box). On Linux, press `Ctrl` + `L` in most file managers to type a path directly.
+3. Type or paste: `~/.cursor`
+4. Press `Enter`.
+   - If the folder opens: good — continue to step 5.
+   - If you see "Folder doesn't exist" or similar: the folder hasn't been created yet. In Finder, press `Cmd` + `Shift` + `G` again and paste `~/` to go to your home folder. Create a new folder there named exactly `.cursor` (with the leading dot). Then go back to step 2.
+5. Inside the `.cursor` folder, look for a file called `mcp.json`.
+   - If it exists: right-click it → **Open With** → **TextEdit** (Mac) or any text editor you have (Linux: gedit, nano, VS Code, etc.).
+   - If it doesn't exist: create a new plain text file. In Finder, right-click inside the `.cursor` folder → **New Document** (if no option, open TextEdit → File → New → Format menu → **Make Plain Text** first, then save). Name the file exactly `mcp.json` (not `mcp.json.txt`).
+6. Paste [the config block](#the-config-block) into the file. Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Save.
+7. **Fully quit Cursor** and reopen it. ("Fully quit" means: in Cursor's top menu bar, click **Cursor** → **Quit Cursor**, or press `Cmd` + `Q` with Cursor focused. Just closing the window with the red dot doesn't count — Cursor keeps running.)
+
+#### Windows
+
+1. Press the `Windows` key on your keyboard, type `File Explorer`, press `Enter`. ("File Explorer" is the built-in Windows app for browsing folders — the same thing you use to look at your Documents or Downloads folder.)
+2. Click on the **address bar** at the top of the File Explorer window (the strip where the folder path shows, e.g. `This PC > Documents`). The path turns into editable text.
+3. Type or paste this exactly: `%USERPROFILE%\.cursor`
+4. Press `Enter`.
+   - If the folder opens: good — continue to step 5.
+   - If you see "Windows can't find" or similar: the folder hasn't been created yet. In File Explorer's address bar, paste `%USERPROFILE%` and press Enter to go to your user folder (e.g. `C:\Users\YourName`). Right-click in an empty area → **New** → **Folder** → name it exactly `.cursor` (with the leading dot). Go back to step 2.
+5. Inside the `.cursor` folder, look for a file called `mcp.json`.
+   - If it exists: right-click it → **Open with** → **Notepad** (or any text editor you have — VS Code, Notepad++, etc.).
+   - If it doesn't exist: right-click in an empty area of the folder → **New** → **Text Document**. Rename it exactly `mcp.json`. Windows may warn "if you change a file name extension, the file might become unusable" — click **Yes**.
+   - **Tip:** if you can't see file extensions (`.txt`, `.json`), enable them: in File Explorer's top menu → **View** → check **File name extensions**.
+6. Paste [the config block](#the-config-block) into the file. Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Save.
+7. **Fully quit Cursor** and reopen it. ("Fully quit" means: right-click the Cursor icon in your **system tray** — the row of icons at the bottom-right of your screen, near the clock — and click **Quit**. If Cursor isn't in the system tray, closing the window with the X is enough.)
 
 ---
 
@@ -89,7 +152,7 @@ Every method below uses this config block — keep it handy. Replace `YOUR_KEY` 
 
 1. Open Claude Desktop.
 2. From the **menu bar** (top of screen on Mac, top of app window on Windows): **Settings → Developer tab → Edit Config**. (This opens the config file in your default text editor.)
-3. Paste the config block above into the file. Save.
+3. Paste [the config block](#the-config-block) into the file. Save.
 4. **Fully quit and reopen Claude Desktop** (Mac `Cmd+Q`; Windows right-click taskbar icon → Quit).
 5. **Verify:** open a new chat. Look at the bottom-right of the input box for a hammer 🔨 icon with a number. That's the tool count. Click it to see the BD tools listed.
 
@@ -102,10 +165,10 @@ Config file path (in case you want to edit directly): `~/Library/Application Sup
 Terminal only (Claude Code has no MCP GUI). Paste in **Terminal.app** (Mac) or **PowerShell** (Windows):
 
 ```bash
-claude mcp add bd-api -- npx brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
+claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
-Replace `YOUR_KEY` and `https://your-site.com` with your values. Then close and reopen Claude Code.
+Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close and reopen Claude Code.
 
 ---
 
@@ -117,7 +180,7 @@ Replace `YOUR_KEY` and `https://your-site.com` with your values. Then close and 
 2. Click **Windsurf - Settings** at bottom-right (or Command Palette: `Cmd/Ctrl + Shift + P` → "Open Windsurf Settings").
 3. Go to **Cascade** section → find **Model Context Protocol (MCP)** → enable it.
 4. In the **Cascade panel**, click the **MCPs icon** (top-right) → **Configure** (opens the config file).
-5. Paste the config block above. Save.
+5. Paste [the config block](#the-config-block). Save.
 6. **Fully quit and reopen Windsurf.**
 
 ---
@@ -130,7 +193,7 @@ Replace `YOUR_KEY` and `https://your-site.com` with your values. Then close and 
 2. Click the **Cline icon** in the sidebar to open the Cline panel.
 3. Click the **MCP Servers icon** in Cline's top navigation bar.
 4. Click **Configure MCP Servers** (opens the config file in VS Code).
-5. Paste the config block above. Save.
+5. Paste [the config block](#the-config-block). Save.
 6. Back in the MCP Servers panel, you should see `bd-api` — toggle it **on** if not already.
 7. Reload the Cline panel (or close/reopen VS Code) if the tools don't appear.
 
@@ -164,7 +227,7 @@ n8n will prompt for your BD site URL and API key on import. No file editing requ
 2. Set:
    - Method: `GET`
    - URL: `https://your-site.com/api/v2/user/get`
-   - Header: `X-Api-Key: YOUR_KEY`
+   - Header: `X-Api-Key: ENTER_API_KEY`
 
 ---
 
@@ -178,27 +241,27 @@ n8n will prompt for your BD site URL and API key on import. No file editing requ
 
 ### curl / Any HTTP Client
 
-Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `YOUR_KEY` and `https://your-site.com` with real values.
+Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` and `https://your-site.com` with real values.
 
 ```bash
 # Verify your API key
-curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/token/verify
+curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/token/verify
 
 # List members
-curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/user/get?limit=10
+curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/user/get?limit=10
 
 # Create a member
-curl -X POST -H "X-Api-Key: YOUR_KEY" \
+curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
   -d "email=new@example.com&password=secret123&subscription_id=1&first_name=Jane&last_name=Doe" \
   https://your-site.com/api/v2/user/create
 
 # Search members
-curl -X POST -H "X-Api-Key: YOUR_KEY" \
+curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
   -d "q=dentist&address=Los Angeles&limit=10" \
   https://your-site.com/api/v2/user/search
 
 # Update a member
-curl -X PUT -H "X-Api-Key: YOUR_KEY" \
+curl -X PUT -H "X-Api-Key: ENTER_API_KEY" \
   -d "user_id=42&company=New Company Name" \
   https://your-site.com/api/v2/user/update
 ```
@@ -231,15 +294,15 @@ Once set up, you get new MCP versions automatically the next time you fully quit
 
 ## Troubleshooting
 
-**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `YOUR_KEY` and `https://your-site.com` with real values:
+**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` and `https://your-site.com` with real values:
 ```bash
-npx brilliant-directories-mcp --verify --api-key YOUR_KEY --url https://your-site.com
+npx brilliant-directories-mcp --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Prints `OK` if credentials work, `FAIL` with the error otherwise. Good first step for any connectivity issue.
 
 **Debug mode — see exactly what's happening:**
 ```bash
-npx brilliant-directories-mcp --debug --verify --api-key YOUR_KEY --url https://your-site.com
+npx brilliant-directories-mcp --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Logs every API request and response to stderr (your API key is automatically redacted), then exits. Useful when something isn't working and you want to share output with BD support.
 
@@ -351,10 +414,10 @@ Some endpoints support dynamic field discovery:
 
 ```bash
 # Get all available user fields
-curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/user/fields
+curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/user/fields
 
 # Get custom fields for a specific post type
-curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/data_posts/fields?form_name=my-form
+curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/data_posts/fields?form_name=my-form
 ```
 
 ## Stable asset URLs

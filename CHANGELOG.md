@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.3] - 2026-04-19
+
+### Changed — README plain-English rewrite (first pass)
+
+Initial round of README accessibility improvements for first-time users who aren't familiar with terminals, hidden config folders, or platform-specific UI conventions. Partial pass — more sections to follow based on live testing.
+
+- **Config block anchor + jump links.** Added `<a id="the-config-block"></a>` at the Setup-by-Platform section. All 4 previous "paste the config block above" references now link directly to the block so readers on long scrolls can jump back to it in one click.
+- **30-Second Quickstart — terminal-opening explained.** Previous version said "Open a terminal (Mac: Terminal.app · Windows: PowerShell · Linux: your shell)" with no explanation of what a terminal is or how to open it. Now includes:
+  - Plain-English intro ("a text-only app for running commands")
+  - Mac: `Cmd+Space` → type `Terminal` → Enter (step-by-step)
+  - Windows: `Win` key → type `PowerShell` → Enter
+  - Linux: `Ctrl+Alt+T` or the apps menu
+  - "How to paste in the terminal" tip (paste shortcuts differ per OS)
+  - New blockout explaining what "fully quit" actually means per OS (menu bar Quit on Mac vs system tray quit on Windows) — the quickstart tells users to "fully quit and reopen your AI app" but previously didn't explain what that means for a non-developer.
+- **Cursor file-method fallback — full rewrite.** Previous version: `edit ~/.cursor/mcp.json (Mac/Linux) or %USERPROFILE%\.cursor\mcp.json (Windows). Paste the config block, save, fully quit and reopen Cursor.` (Opaque to users who don't know what `~` is, what a hidden dot-folder is, or how to create one.) Now 14 explicit steps covering:
+  - What `mcp.json` is, what `.cursor` is, why it's hidden
+  - Mac/Linux walkthrough: Cmd+Shift+G Go-to-Folder, handling missing folder, creating `mcp.json` as plain text (TextEdit "Make Plain Text" step)
+  - Windows walkthrough: Win key → File Explorer, address-bar path editing, creating folder with leading dot, enabling file extensions in View menu, creating plain text file with correct name
+  - Inline "Fully quit" meaning per OS
+- **Placeholder rename.** Changed all `YOUR_KEY` placeholders in config blocks and code examples to `ENTER_API_KEY` (19 instances) — more imperative verb, clearer instruction.
+
+No schema changes. No code changes. README-only update, synced between root README.md (GitHub display) and mcp/README.md (npm package display).
+
 ## [6.9.2] - 2026-04-19
 
 ### Fixed — CRITICAL: Master Default Sidebars list is 6, not 5 (pre-existing error since v6.5.0)
