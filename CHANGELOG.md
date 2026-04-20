@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.8] - 2026-04-20
+
+### Changed — ChatGPT Custom GPT setup walkthrough rewritten from a live install session
+
+Live-walkthrough with a first-time user surfaced several issues in the previous ChatGPT section. Entire section rewritten accurately. Doc-only.
+
+- **🔒 CRITICAL: `Only me` sharing rule added up front.** Custom GPTs embed the BD API key in the Action. `Anyone with the link` sharing lets anyone with the URL invoke BD API calls on YOUR site using YOUR key — create members, delete pages, anything. `GPT Store` publishes it publicly. The previous section didn't cover the sharing step at all. Now a prominent red-flag callout at the top of the section + an explicit final step saying "pick `Only me` → Save."
+- **`Import from URL` doesn't work** — ChatGPT Actions rejects our spec's `{bd_site_url}` template variable with `Could not find a valid URL in 'servers'`. Previous instructions told users to Import from URL; they'd hit the error and be stuck. Now the section explicitly says **"cannot use Import from URL"** and walks users through the paste-and-hand-edit workflow:
+  1. Open raw JSON URL in browser, `Ctrl+A` → `Ctrl+C`
+  2. Paste into ChatGPT's Schema text box
+  3. Find the `"servers"` block near the top
+  4. Replace the ENTIRE block with `[{"url": "https://<your-actual-BD-site>"}]` — delete `description`, `variables`, everything except one hard-coded URL
+  5. Red error disappears, ~175 actions populate
+- **Privacy policy field** — required by ChatGPT, not mentioned in the previous section. Users blocked at save. Now documented: use `https://brilliantdirectories.com/privacy-policy` for private/testing GPTs.
+- **Skip Knowledge / Upload files / Capabilities / Conversation starters** — previous section implied all the main Configure fields mattered. Clarified: only Name + Description + Actions matter for this integration. Everything else is optional or unrelated.
+- **Button locations and navigation paths updated** per ChatGPT's current UI (button labels differ from version to version — e.g. "Create" button is top-right in the current UI, not the left-sidebar location implied by old docs).
+- **Authentication field-by-field table** — previous version was one sentence; now explicit per-field: `Authentication Type` = API Key, `API Key` = paste BD key, `Auth Type` = Custom (NOT Basic or Bearer), `Custom Header Name` = `X-Api-Key` (exact case). Explains why Custom (BD uses `X-Api-Key` not `Authorization: Bearer`).
+- **Cross-reference to Advanced Endpoints prerequisite** added — reminds users to enable ALL ON permissions before pasting the key, so the GPT doesn't hit 403s on common tools.
+- **"What won't work"** trailing note kept; added ChatGPT mobile apps (can't add Actions) to the list.
+
+No schema / code changes. README-only; synced root and `mcp/` copies.
+
+### Why the detail
+Live-walking a new user through this setup surfaced ~7 specific friction points in ~30 minutes. Each one is now an explicit instruction instead of a gotcha to discover. Agents reading the section end-to-end should produce a working private Custom GPT on first try.
+
 ## [6.10.7] - 2026-04-20
 
 ### Added — Mandatory `form_name` pre-check on `createForm`

@@ -205,19 +205,88 @@ Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close
 
 ### ChatGPT (GPT Actions)
 
-> ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. Instead, you create a **Custom GPT with Actions**, which calls our REST API directly using the OpenAPI spec we ship. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't available on the free tier). The free `chat.openai.com` default assistant can't use this.
+> ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. You build a **Custom GPT with Actions** that calls our REST API directly using our OpenAPI spec. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't on the free tier).
+>
+> 🔒 **CRITICAL: always set the GPT to `Only me` at the final sharing step.** Your BD API key gets embedded in the Action. `Anyone with the link` lets anyone you share the URL with invoke your BD API on your site — create members, delete pages, anything. `GPT Store` publishes it to the world. **Never pick either for a GPT with a real BD key.**
 
-1. Go to **chatgpt.com → Explore GPTs → Create** (or edit an existing GPT).
-2. In the GPT editor: **Configure tab → Actions → Create new action**.
-3. Under **Schema**, click **Import from URL** and paste:
-   ```
-   https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
-   ```
-4. When prompted for the `bd_site_url` server variable, enter your BD site URL (e.g. `https://mysite.com`).
-5. Under **Authentication**: click the gear icon → pick **API Key** → **Auth Type: Custom** → **Custom Header Name:** `X-Api-Key` → paste your key → **Save**.
-6. Save the GPT. You can now message the GPT and it'll call your BD site directly.
+**1. Create the GPT**
 
-> **What won't work:** the default ChatGPT assistant (no Actions support), ChatGPT free tier (no Custom GPTs), and any ChatGPT use case that requires MCP specifically. For those, use Claude Desktop / Claude Code / Cursor / Windsurf / Cline / VS Code instead.
+- Go to **chatgpt.com** → click your profile → **My GPTs** → **+ Create a GPT** (exact path varies by ChatGPT version; look for a `+ Create` button, usually top-right).
+- A two-tab editor opens. Click the **Configure** tab.
+
+**2. Basic info (top of the Configure form)**
+
+- **Name:** anything (e.g. `BD Assistant`).
+- **Description:** one-liner (e.g. `Manages my Brilliant Directories site`).
+- **Instructions:** optional. Leave blank, or add a behavior note like `Use the BD Actions to manage members, pages, forms, and posts. Ask before any destructive change.`
+- **Conversation starters / Knowledge / Upload files / Capabilities:** skip all. None are needed.
+
+**3. Add the Action** (this is where the BD integration lives)
+
+Scroll to the bottom of the Configure form → click **Create new action**. A new sub-form opens with `Authentication` / `Schema` / `Privacy policy` fields.
+
+**4. Schema — paste + hand-edit (cannot use "Import from URL")**
+
+⚠️ ChatGPT Actions rejects the `{bd_site_url}` template variable in our spec with the error `Could not find a valid URL in 'servers'`. You MUST paste the spec directly and hand-edit the servers block — Import from URL won't work.
+
+- Open [the raw OpenAPI spec](https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json) in your browser. `Ctrl+A` → `Ctrl+C` to copy everything.
+- In ChatGPT, paste into the **Schema** text box.
+- Near the top of the pasted JSON, find the `"servers"` block. It looks like:
+  ```json
+  "servers": [
+    {
+      "url": "{bd_site_url}",
+      "description": "Your Brilliant Directories website",
+      "variables": { "bd_site_url": { "default": "https://your-site.com", "description": "..." } }
+    }
+  ]
+  ```
+- Replace the ENTIRE block with a hard-coded URL to your BD site:
+  ```json
+  "servers": [
+    { "url": "https://launch60031.directoryup.com" }
+  ]
+  ```
+- Use YOUR actual BD site URL, no trailing slash. Delete everything else — `description`, `variables`, all of it.
+- Wait a moment after the edit — the red `Could not find a valid URL in 'servers'` error should disappear, and the **Available actions** list populates with ~175 BD tools.
+
+**5. Authentication**
+
+- Click the gear icon in the Authentication section.
+- **Authentication Type:** `API Key`
+- **API Key:** paste your BD API key (from BD Admin → Developer Hub). Make sure Advanced Endpoint permissions are ALL ON — see the [prerequisites](#before-you-start--3-things-you-need).
+- **Auth Type:** `Custom` (NOT Basic, NOT Bearer)
+- **Custom Header Name:** `X-Api-Key` (exact case)
+- Click **Save**.
+
+**6. Privacy policy**
+
+Required field — ChatGPT won't let you save the Action without a URL. For a private `Only me` GPT, use:
+
+```
+https://brilliantdirectories.com/privacy-policy
+```
+
+**7. Back out + save the GPT**
+
+- Click back-arrow or **Save** at the top of the Action sub-form to return to the main Configure screen.
+- Click **Create** in the top-right.
+
+**8. Sharing — `Only me` only** 🔒
+
+A `Share GPT` dialog opens with three options:
+
+- ✅ **`Only me`** — private to your account. **Pick this.**
+- ❌ `Anyone with the link` — anyone with the URL can invoke BD API calls on your site using your embedded key.
+- ❌ `GPT Store` — publishes to the public ChatGPT store.
+
+Click **`Only me`** → **Save**.
+
+**9. Test**
+
+Open the GPT from your `My GPTs` list. Ask *"list my first 5 members"*. First Action call prompts for permission — click **Allow**. You should see BD data come back.
+
+> **What won't work:** the default ChatGPT assistant (no Actions support), ChatGPT free tier (no Custom GPTs), ChatGPT mobile apps (can't add Actions), or any ChatGPT use case that requires the MCP protocol specifically. For those, use Claude Desktop / Claude Code / Cursor / Windsurf / Cline / VS Code instead.
 
 ---
 
