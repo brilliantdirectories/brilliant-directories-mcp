@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.0] - 2026-04-20
+
+### Added — Pre-check rules extended to post titles + 3 join-table pair-uniqueness cases
+
+Closes the remaining silent-duplicate surface on the API. v6.12.0 covered 15 name-based resources; this release adds the last 3 name-based cases plus 3 join-table pair/composite cases where BD does NOT enforce uniqueness at the DB level.
+
+**New name-based pre-check rules (3):**
+
+| Endpoint | Natural-key field | Consequence of duplicate |
+|---|---|---|
+| `createSingleImagePost` | `post_title` | URL-slug collision (BD derives `filename` from title; two posts fight for the same public URL) |
+| `createMultiImagePost` | `post_title` | Same URL-slug collision for albums/galleries |
+| `createFormField` | `field_name` scoped to `form_name` | Duplicate HTML `name` attribute on form submit — BD stores only one input, drops the other (unpredictable which) |
+
+**New pair-uniqueness pre-check rules (3):** join-table cases where BD does NOT enforce pair/composite uniqueness at the DB level. Pattern uses array-syntax multi-filter (`property[]=...&property_value[]=...&property_operator[]==` per field, AND-combined) to filter-find on the full pair/triple.
+
+| Endpoint | Pair/Triple | Consequence of duplicate |
+|---|---|---|
+| `createLeadMatch` | `(lead_id, user_id)` | Member gets double-billed for the same lead; inbox shows the match twice; reports double-count |
+| `createTagRelationship` | `(tag_id, object_id, tag_type_id)` | Same tag attaches to same object twice; tag counts inflate; widgets may render duplicate tag chips |
+| `createMemberSubCategoryLink` | `(user_id, service_id)` | Member double-counted in that Sub Category's listing widgets; per-link metadata (specialty/avg_price) ambiguous — which row wins? |
+
+All 6 rules follow the canonical filter-find pattern (server-side filter, not paginate-and-search — one tiny response regardless of site size) established in v6.12.0. The blanket instruction paragraph in `mcp/index.js` is reorganized to separate "Name-based (single natural-key field)" from "Pair / composite uniqueness (join tables)" — **21 resources total now carry pre-check rules**.
+
+### Removed — TagType write CRUD tools (safety)
+
+Removed `createTagType`, `updateTagType`, `deleteTagType` from the spec. Only `listTagTypes` and `getTagType` remain.
+
+**Why:** tag types are foundational taxonomy — each row defines a `tag_type_id` → `table_relation` mapping that drives `createTagRelationship` / `listTagRelationships` / widget filters / admin UI behavior. Accidental writes cascade across tags, groups, relationships, and any widget that binds to a `tag_type_id`. BD admin UI is the right surface for this; the API no longer exposes it.
+
+**Impact:** if an automation was creating/updating/deleting tag types via this MCP, it must be re-routed to BD admin. Read operations (`listTagTypes` / `getTagType`) are unchanged — enumerating existing tag types to pick the right `tag_type_id` for `createTagRelationship` still works normally. Op count: 176 → 173.
+
+Doc + spec change. No breaking changes to the 173 surviving tools.
+
+### Added — users_meta IDENTITY RULE hardening
+
+`(database, database_id)` is an atomic compound identity. The same numeric `database_id` routinely belongs to UNRELATED rows on different parent tables — `database_id`-alone queries return cross-table row mixes where one ID resolves as several different records simultaneously. A loop-delete by `meta_id` without checking `database` on each row can destroy unrelated resources' metadata.
+
+**Hardened across all 5 users_meta tools** (`listUserMeta`, `getUserMeta`, `createUserMeta`, `updateUserMeta`, `deleteUserMeta`):
+- `(database, database_id)` now framed explicitly as one atomic compound identity, not two independent fields. Agents must never treat `database_id` as a global identifier.
+- `listUserMeta` carries the closed-set list of 25 valid `database` values (`users_data`, `deleted_users_data`, `data_posts`, `list_seo`, `subscription_types`, `list_professions`, `list_services`, `rel_services`, `tags`, `tag_groups`, `rel_tags`, `leads`, `lead_matches`, `forms`, `form_fields`, `users_reviews`, `menus`, `menu_items`, `data_widgets`, `email_templates`, `301_redirects`, `data_categories`, `smart_lists`, `users_clicks`, `unsubscribe_list`). Pass only these — never invent table names.
+- `updateUserMeta` / `deleteUserMeta` require the agent either (a) `getUserMeta(meta_id)` first and inspect returned `database`+`database_id` before writing, OR (b) obtain `meta_id` from a `listUserMeta` whose results have been client-side filtered to the intended `(database, database_id)` pair. Never a `meta_id` from an unscoped list.
+- Until the server honors array-syntax multi-filter, the canonical workflow is: list by `database_id`, CLIENT-SIDE filter to rows where `database` matches the intended parent, then act.
+
+### Added — Orphan users_meta cleanup rule (applies to 17 delete tools)
+
+New top-level paragraph in `mcp/index.js` instructions enumerates which delete tools have EAV footprint and the canonical safe-cleanup workflow: scoped cleanup → per-row `deleteUserMeta(meta_id, database, database_id)`. **Never loop-delete by `database_id` alone.**
+
+- **Confirmed EAV parents (5 delete tools):** `deleteUser`, `deleteSingleImagePost`, `deleteMultiImagePost`, `deleteWebPage`, `deleteMembershipPlan`.
+- **Probable EAV parents (12 delete tools):** `deleteLead`, `deleteLeadMatch`, `deleteForm`, `deleteFormField`, `deleteReview`, `deleteMenu`, `deleteMenuItem`, `deleteWidget`, `deleteEmailTemplate`, `deleteRedirect`, `deletePostType` / `deleteDataType`. Zero rows is a normal expected outcome on these — running the scoped cleanup is cheap insurance.
+
+One canonical rule in the top-level instructions, not 17 per-tool duplicates — keeps tool descriptions lean while making the safety rule unmissable.
+
+### Added — Universal directive: update-tool schemas are documentation, not whitelists
+
+Closes a real hallucination pattern observed in the wild: an agent refused to edit `feature_categories` on a post type because it wasn't listed in `updatePostType`'s `properties` — the agent concluded "tool-schema limitation" and told the user the field couldn't be edited via the API. That was wrong. BD's backend accepts any field it recognizes as a column/EAV key on the target resource — the spec's `properties` list just documents the commonly-edited, enum-tagged, or interaction-annotated fields.
+
+Live-verified on `updatePostType data_id=14 feature_categories="..."`: the call succeeded and the new value persisted, even though `feature_categories` is not in the spec's properties list.
+
+Added a new top-level directive in `mcp/index.js` instructions: any field that appears in a resource's `get*`/`list*` response is updatable via that resource's `update*` tool, regardless of whether it's listed in the update schema. Agents should no longer refuse edits on schema-absence grounds; workflow is GET-to-confirm-field-exists → send update → re-GET to verify round-trip.
+
+Applies universally to every `update*` tool in the API, not just post types.
+
+Doc-only. No schema changes. No new tools. Zero breaking changes.
+
 ## [6.12.0] - 2026-04-20
 
 ### Added — Duplicate silent-accept pre-check rules extended to 10 more create endpoints
