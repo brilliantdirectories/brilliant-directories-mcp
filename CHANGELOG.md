@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.12] - 2026-04-20
+
+### Added — No max-width wrappers on `profile_search_results` page content
+
+Live-observed: agents creating `profile_search_results` SEO pages were wrapping the `content` HTML (or adding `content_css` rules) like `max-width: 960px; margin: 60px auto; padding: 0 20px;`. BD's page layout already supplies the outer container (width, centering, padding) for these pages — adding an inner wrapper double-constrains the content and renders the SEO copy as a narrow strip inside BD's already-centered layout. Visibly broken.
+
+Rule documented in:
+- **`createWebPage` + `updateWebPage` `profile_search_results` workflow — new step 7**: "No max-width wrappers in `content` (or `content_css`) on profile_search_results pages. BD's layout already provides the outer container — don't double-constrain." Downstream step 8 (country-only slug caveat) renumbered to step 9.
+- **MCP instructions `profile_search_results` paragraph**: brief one-liner appended to the h1/h2 double-render trap note, same rule.
+
+No schema-breaking changes. Doc-only. Agents reading either surface now know to let section content flow at the natural container width, scope styling to section-specific classes under a unique page wrapper, and never add top-level `max-width` + `margin: auto` as the outermost layout rule.
+
 ## [6.10.11] - 2026-04-20
 
 ### Fixed — Default `form_name` on `profile_search_results` pages is `Member Search Result`, not `Member Profile Page`
