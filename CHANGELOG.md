@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.1] - 2026-04-20
+
+### Fixed — Post-v6.10.0 audit: 5 drift risks closed
+
+Sanity-check audit of v6.10.0 form directives surfaced 2 HIGH-severity drift risks and 3 MEDIUM under-specifications. All closed in this release. No schema-breaking changes; doc-only.
+
+- **HIGH — `field_order` numeric example misled agents on busy forms.** v6.10.0 gave `98/99/100` as example `field_order` values for the ReCaptcha/HoneyPot/Button tail. Agent adding the tail to a form that already has `field_order=120` could copy the example and put the "tail" in the middle of the form. Now replaced with a rule: call `listFormFields` first, find current max `field_order`, use `max+1 / max+2 / max+3`. On a brand-new form `1/2/3` works. Never add fields AFTER Button. Applied in createFormField description, createForm top-level recipe step 6, and the MCP instructions paragraph.
+- **HIGH — `form_target` missing-on-redirect failure mode was silent.** BD accepts a `createForm` call with `form_action_type=redirect` and no `form_target` — doesn't 400, doesn't warn. The form then renders with an empty redirect and submissions go nowhere. Documented in both the `form_target` property description and the top-level recipe step 5: "not schema-enforced, agent MUST remember — BD accepts the create without it and the form silently goes nowhere on submit."
+- **MEDIUM — "Exactly ONE Button per form" now merged with the tail-pattern rule.** Previous createFormField text said "exactly ONE Button per form. Adding multiple Buttons causes UI confusion" as a standalone note. Now merged into the tail-pattern section: "`field_type=Button` — the submit button — exactly ONE Button per form, and it must be last." No more ambiguity between "at most one Button" and "Button must be last."
+- **MEDIUM — ReCaptcha / HoneyPot configuration scope made explicit.** Previous text said "no configuration needed beyond `field_type`" but left agents wondering about `field_required`, `field_placeholder`, and view-flags. Now explicit: "OMIT `field_required`, `field_placeholder`, and view-flags (`field_display_view` / `field_input_view` / `field_email_view`) — BD handles these fields specially server-side." Applied in createFormField + MCP instructions + createForm recipe step 6.
+- **MEDIUM — MCP instructions paragraph's "ascending field_order; these are the last three" strengthened.** Old wording could be misread as "any three with higher order than siblings." Now says "the three HIGHEST-ORDERED fields on the form — no other field can have `field_order` equal to or greater than theirs." Also repeats the `max+1/max+2/max+3` rule and the never-add-fields-after-Button rule.
+
+### Audit items that passed as-is
+- `form_url` %20-encoding guidance (v6.10.0 already had explicit "do not decode" rule).
+- `form_email_on` agent-vs-admin-UI default distinction (v6.10.0 already explicit).
+- `updateForm` flip-to-public warning with `listFormFields` audit step (v6.10.0 already covered).
+- Cross-surface consistency: all 4 surfaces (createForm, updateForm, createFormField, MCP instructions) carry the same values, same order, same conditionals with no contradictions.
+
 ## [6.10.0] - 2026-04-20
 
 ### Added — Form creation recipe: agents now have everything needed to build submittable forms
