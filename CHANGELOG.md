@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.4] - 2026-04-20
+
+### Fixed — v6.9–v6.10 directive sanity-check sweep + live-observed duplicate-WebPage incident
+
+Cold-read audit across every directive shipped between v6.9.0 and v6.10.3. One CRITICAL, two HIGH, two LOW findings closed — plus a live-observed incident where two AI sessions running the same prompt produced two WebPages at the same URL (`/free-ebook` created twice).
+
+- **CRITICAL — `updateWebPage.form_name` parameter description said "Five Master Default Sidebars" and omitted `Member Search Result`.** Every other surface (MCP instructions, `listSidebars`, `getSidebar`, `createWebPage.form_name`, `updatePostType.category_sidebar`) correctly said six. Agents editing an existing WebPage's sidebar in isolation — the most common read surface — would refuse a valid `Member Search Result` value or not suggest it when the user asked. Fixed to "Six" + full 6-master list.
+- **HIGH — `updateForm` description missed the silent-fail warning on `form_target`.** `createForm` said "BD accepts the create without it and the form silently goes nowhere on submit" but `updateForm` just said "also set `form_target`" — an agent flipping `form_action_type` TO `redirect` via update could leave `form_target` unset. Warning now matches `createForm`.
+- **HIGH — `updateFormField` description had no ReCaptcha/HoneyPot editing guidance.** `createFormField` told agents to OMIT `field_required` / `field_placeholder` / view-flags on those two field types; `updateFormField` didn't repeat it, so an agent editing an existing ReCaptcha/HoneyPot field could add those properties and break submission. Now mirrored. Also added a reorder warning — if moving a field via `field_order`, the ReCaptcha → HoneyPot → Button tail must remain the three highest-ordered fields.
+- **LOW — "one of the one of the 6 Master Default Sidebars" duplicated-phrase typo** in two places in `createWebPage`/`updateWebPage` profile_search_results workflow. Fixed.
+- **LOW — MCP hero image-sourcing rule said "every hero they create" — ambiguous about whether agents should always-enable-a-hero.** Clarified to "whenever an agent enables a hero without an image URL supplied by the user."
+
+**NEW live-observed finding — duplicate-`filename` prevention reinforced.**
+
+User reported: two Claude Desktop sessions with identical prompts produced two `createWebPage` calls with the same `filename=free-ebook` — both succeeded, both pages live at the same URL, different `seo_id`s. BD does not enforce unique filename (documented since v6.5.3) but the rule was buried inside the `profile_search_results` workflow section of the page descriptions. Now a prominent top-level rule on `createWebPage`:
+
+- **Mandatory pre-check** before EVERY `createWebPage` call (not just `profile_search_results`): `listWebPages property=filename property_value=<slug> property_operator==`. If a row exists — either `updateWebPage` the existing one, ask the user, or pick an alternate slug (append `-2`, `-3`, etc.) and confirm.
+- **MCP top-level duplicate silent-accept paragraph** updated with the live incident + the "pick an alternate slug" option so agents know they have three choices (reuse, confirm-overwrite, rename) rather than two.
+
+No schema-breaking changes; every fix is doc-only.
+
 ## [6.10.3] - 2026-04-20
 
 ### Added — Hero + first-section background-color gap fix
