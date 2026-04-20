@@ -45,10 +45,11 @@
       "limit": {
         "name": "limit",
         "in": "query",
-        "description": "Records per page. Default 25 if omitted. BD enforces NO server-side max — agent MUST self-limit to protect context. Recommended: 25 (most uses), 10 (scanning/filter loops), 5 (quick sampling). Avoid >50 — large responses (100+ members, 100+ posts, 100+ categories) routinely blow Claude's tool-result token budget and force early conversation truncation. For large datasets, paginate via the `page` cursor instead of raising `limit`. Parameter name is `limit` — `per_page` is silently ignored.",
+        "description": "Records per page. Default 25 if omitted. Server hard-caps at 100 — values above 100 are silently clamped (verified: limit=150 returns 100 records + a next_page cursor, not 150). When `page` is present, `limit` is ignored (size is baked into the cursor). Recommended for context efficiency: 25 (most uses), 10 (scanning/filter loops), 5 (sampling). Parameter name is `limit` — `per_page` is silently ignored.",
         "schema": {
           "type": "integer",
-          "default": 25
+          "default": 25,
+          "maximum": 100
         }
       },
       "page": {

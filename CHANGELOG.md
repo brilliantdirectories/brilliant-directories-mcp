@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.13] - 2026-04-20
+
+### Fixed — Pagination cap IS 100 (correcting v6.13.11's false "no cap" claim)
+
+v6.13.11 claimed BD enforced no server-side cap on `limit`. **That was wrong**, caused by a misread A/B test: on a 118-record site, my `limit=500` returned a large payload and I interpreted "big response" as "all 118 came back." Re-ran the test today grepping the actual record count: `limit=150` returned exactly **100** records plus a `next_page` cursor (`total_pages=2`), proving the server silently clamps to 100.
+
+BD's dev team source-confirmed the same: `base64_decode` on `page`, split on `*_*`, enforce max 100. My error — the shipped directive is now corrected.
+
+**Directive now accurately says:**
+
+- Default `limit` = 25 if omitted
+- Hard cap = 100; values above are silently clamped (you get a cursor, not all the records)
+- `page` is an opaque base64 cursor — format `base64_encode("{page_num}*_*{limit}")` — never decode or construct, pass verbatim from `next_page`
+- **Numeric `page=2` silently resets to page 1** (base64_decode of an integer → garbage → server falls back to page 1). Live-verified: looks like pagination is broken when you use numeric pages; you're actually looping page 1.
+- **When `page` is present, `limit` is ignored** — page size is baked into the cursor. To change page size mid-traversal, start over with a fresh `limit=N` and NO `page`
+- OpenAPI spec `limit` parameter: `maximum: 100` restored
+
+**Also kept (still true per live retest):** `is_null`, `is_not_null`, and `property_value=""` with `=` are all silently ignored no-ops on listUsers. Paginate + client-filter for string-null/empty discovery (or use numeric `=0` for zero-sentinel FKs like `profession_id`).
+
+Doc-only. Apology for the v6.13.11 regression — shipped from an assumption I should've grep-verified.
+
 ## [6.13.12] - 2026-04-20
 
 ### Fixed — Null-filter operators are no-ops + profile-photo detection uses `image_main_file`
