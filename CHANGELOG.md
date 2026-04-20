@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.5] - 2026-04-19
+
+### Changed — `content_layout` description clarified
+
+- `content_layout` (Full Screen Page Width) field on createWebPage/updateWebPage now explains what the toggle actually unlocks: edge-to-edge sections for full-bleed backgrounds, hero-style bands, and viewport-spanning imagery. Notes that plain text/content pages don't need it — only enable when the page's HTML has sections designed to break out of the contained width.
+
 ## [6.3.4] - 2026-04-19
 
 ### Changed — README restructured for max adoption

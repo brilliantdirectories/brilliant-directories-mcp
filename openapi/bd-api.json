@@ -8355,7 +8355,7 @@
                       0,
                       1
                     ],
-                    "description": "**Full Screen Page Width** — 1 = expand content edge-to-edge; 0 = default (contained) width."
+                    "description": "**Full Screen Page Width** — layout flag that enables edge-to-edge sections on this page. `0` (default) = content stays inside the site's normal max-width container (the contained layout used for most static pages). `1` = full-screen width, so individual rows/sections inside `content` can break out to the browser edges (useful for full-bleed background colors, hero-style bands, or image backgrounds that need to span the viewport). Only set to `1` if the page's HTML has sections designed to go edge-to-edge; plain text/content pages don't need it."
                   },
                   "content_sidebar": {
                     "type": "string",
@@ -8689,7 +8689,7 @@
                       0,
                       1
                     ],
-                    "description": "**Full Screen Page Width** — 1 = expand content edge-to-edge; 0 = default (contained) width."
+                    "description": "**Full Screen Page Width** — layout flag that enables edge-to-edge sections on this page. `0` (default) = content stays inside the site's normal max-width container (the contained layout used for most static pages). `1` = full-screen width, so individual rows/sections inside `content` can break out to the browser edges (useful for full-bleed background colors, hero-style bands, or image backgrounds that need to span the viewport). Only set to `1` if the page's HTML has sections designed to go edge-to-edge; plain text/content pages don't need it."
                   },
                   "content_sidebar": {
                     "type": "string",
