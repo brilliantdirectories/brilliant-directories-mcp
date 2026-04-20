@@ -26,12 +26,12 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 ## Table of Contents
 
 - [Setup by Platform](#setup-by-platform)
-  - [Cursor](#cursor-recommended-path)
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
+  - [ChatGPT (GPT Actions)](#chatgpt-gpt-actions)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
-  - [ChatGPT (GPT Actions)](#chatgpt-gpt-actions)
+  - [Cursor](#cursor)
   - [n8n](#n8n)
   - [Make / Zapier](#make--zapier)
   - [curl / any HTTP client](#curl--any-http-client)
@@ -93,52 +93,6 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
   }
 }
 ```
-
----
-
-### Cursor (recommended path)
-
-**GUI method (easiest — no terminal needed):**
-
-1. Open Cursor.
-2. **Settings menu**:
-   - Mac: menu bar → **Cursor → Settings → Cursor Settings**
-   - Windows / Linux: **File → Preferences → Cursor Settings**
-   - (Or Command Palette: `Cmd/Ctrl + Shift + P` → type "Open MCP Settings")
-3. Click **Tools & MCP** in the left sidebar.
-4. Click **New MCP Server**.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
-6. Click Save.
-7. **Fully quit and reopen Cursor** (menu bar → Quit; or Mac `Cmd+Q`; or Windows right-click the taskbar icon → Quit).
-
-<details>
-<summary><strong>Last resort: file method</strong> — only if the GUI above fails (click to expand)</summary>
-
-Use this if the Settings UI doesn't show "Tools & MCP", the "New MCP Server" button silently fails, or you just prefer editing files. Result is identical to the GUI method.
-
-Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory. Same file the GUI writes to.
-
-#### Mac / Linux
-
-1. Open **Finder** (Mac) or your file manager (Linux).
-2. `Cmd+Shift+G` (Mac) or `Ctrl+L` (Linux) to open a "Go to Folder" input.
-3. Type `~/.cursor` → Enter.
-   - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
-4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
-6. **Fully quit Cursor** (`Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**). Red-dot close doesn't quit.
-
-#### Windows
-
-1. Windows key → type `File Explorer` → Enter.
-2. Click the address bar at the top. Type `%USERPROFILE%\.cursor` → Enter.
-   - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
-3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
-   - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
-4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
-5. **Fully quit Cursor** — right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If not in tray, window X is enough.
-
-</details>
 
 ---
 
@@ -249,42 +203,92 @@ Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close
 
 ---
 
+### ChatGPT (GPT Actions)
+
+> ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. Instead, you create a **Custom GPT with Actions**, which calls our REST API directly using the OpenAPI spec we ship. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't available on the free tier). The free `chat.openai.com` default assistant can't use this.
+
+1. Go to **chatgpt.com → Explore GPTs → Create** (or edit an existing GPT).
+2. In the GPT editor: **Configure tab → Actions → Create new action**.
+3. Under **Schema**, click **Import from URL** and paste:
+   ```
+   https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+   ```
+4. When prompted for the `bd_site_url` server variable, enter your BD site URL (e.g. `https://mysite.com`).
+5. Under **Authentication**: click the gear icon → pick **API Key** → **Auth Type: Custom** → **Custom Header Name:** `X-Api-Key` → paste your key → **Save**.
+6. Save the GPT. You can now message the GPT and it'll call your BD site directly.
+
+> **What won't work:** the default ChatGPT assistant (no Actions support), ChatGPT free tier (no Custom GPTs), and any ChatGPT use case that requires MCP specifically. For those, use Claude Desktop / Claude Code / Cursor / Windsurf / Cline / VS Code instead.
+
+---
+
 ### Windsurf
 
-**GUI method:**
+Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 1. Open Windsurf.
-2. Click **Windsurf - Settings** at bottom-right (or Command Palette: `Cmd/Ctrl + Shift + P` → "Open Windsurf Settings").
-3. Go to **Cascade** section → find **Model Context Protocol (MCP)** → enable it.
-4. In the **Cascade panel**, click the **MCPs icon** (top-right) → **Configure** (opens the config file).
-5. Paste [the config block](#the-config-block). Save.
-6. **Fully quit and reopen Windsurf.**
+2. Open settings: click **Windsurf - Settings** at the bottom-right of the window, OR Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open Windsurf Settings`.
+3. In settings, find the **Cascade** section → **Model Context Protocol (MCP)** → enable it.
+4. In the Cascade panel on the right of your window, click the **MCPs icon** (top-right of the panel) → **Configure**. This opens the MCP config file.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+6. **Fully quit and reopen Windsurf** (`Cmd+Q` on Mac; on Windows right-click in the taskbar or system tray → Quit).
 
 ---
 
 ### Cline (VS Code extension)
 
-**GUI method:**
-
-1. Open VS Code with Cline installed.
-2. Click the **Cline icon** in the sidebar to open the Cline panel.
-3. Click the **MCP Servers icon** in Cline's top navigation bar.
-4. Click **Configure MCP Servers** (opens the config file in VS Code).
-5. Paste [the config block](#the-config-block). Save.
-6. Back in the MCP Servers panel, you should see `bd-api` — toggle it **on** if not already.
-7. Reload the Cline panel (or close/reopen VS Code) if the tools don't appear.
+1. Open VS Code with the **Cline** extension installed.
+2. Click the **Cline icon** in the VS Code sidebar to open the Cline panel.
+3. In Cline's top nav, click the **MCP Servers icon**.
+4. Click **Configure MCP Servers** — opens the Cline MCP config file in VS Code.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+6. Back in the MCP Servers panel, confirm `bd-api` appears — toggle it **on** if not already.
+7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
 
 ---
 
-### ChatGPT (GPT Actions)
+### Cursor
 
-1. In your GPT: **Configure > Actions > Create new action**
-2. Under **Schema**, choose **Import from URL** and paste:
-   ```
-   https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
-   ```
-3. When prompted for `bd_site_url`, enter your BD site (e.g., `https://mysite.com`)
-4. Set Authentication: **API Key**, Auth Type: **Custom**, Header Name: `X-Api-Key`, paste your key
+**GUI method (easiest — no terminal needed):**
+
+1. Open Cursor.
+2. Open settings:
+   - **Mac:** menu bar → **Cursor** → **Settings** → **Cursor Settings**
+   - **Windows / Linux:** **File** → **Preferences** → **Cursor Settings**
+   - Or: Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open MCP Settings`
+3. In the sidebar, click **Tools & MCP**.
+4. Click **New MCP Server**.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL.
+6. Click **Save**.
+7. **Fully quit and reopen Cursor.** `Cmd+Q` on Mac, or right-click Cursor in the Windows system tray → Quit. Closing the window isn't enough.
+
+<details>
+<summary><strong>Last resort: file method</strong> — only if the GUI above fails (click to expand)</summary>
+
+Use this if Settings doesn't show "Tools & MCP", the "New MCP Server" button silently fails, or you just prefer editing files. Same result as the GUI method.
+
+Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory. Same file the GUI writes to.
+
+#### Mac / Linux
+
+1. Open **Finder** (Mac) or your file manager (Linux).
+2. `Cmd+Shift+G` (Mac) or `Ctrl+L` (Linux) to open a "Go to Folder" input.
+3. Type `~/.cursor` → Enter.
+   - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
+4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+6. **Fully quit Cursor** (`Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**). Red-dot close doesn't quit.
+
+#### Windows
+
+1. Windows key → type `File Explorer` → Enter.
+2. Click the address bar at the top. Type `%USERPROFILE%\.cursor` → Enter.
+   - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
+3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
+   - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
+4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+5. **Fully quit Cursor** — right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If not in tray, window X is enough.
+
+</details>
 
 ---
 

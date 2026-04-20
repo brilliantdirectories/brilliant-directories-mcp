@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.8] - 2026-04-20
+
+### Changed — Setup-by-Platform reorder + 4-platform polish pass
+
+Reordered the per-platform setup sections to match actual user-ask frequency (most-common first, live-verified AI apps on top, OpenAPI/Actions alternative for ChatGPT next, IDE-integrated apps after). Cursor moved from top to position #6 — still fully documented with the `<details>` fallback, just no longer leading.
+
+**New order:**
+1. Claude Desktop
+2. Claude Code
+3. ChatGPT (GPT Actions)
+4. Windsurf
+5. Cline (VS Code extension)
+6. Cursor
+7. n8n
+8. Make / Zapier
+9. curl / any HTTP client
+
+**ChatGPT section — expanded.** Previous version was 4 terse steps with no context on why ChatGPT setup is different from every other platform. Now starts with a ⚠️ callout: ChatGPT doesn't support local MCP servers; the setup path is a **Custom GPT with Actions** calling our REST API via OpenAPI. Requires ChatGPT Plus / Team / Enterprise (Custom GPTs aren't on the free tier). Full step-by-step: go to Explore GPTs → Create → Actions → Import from URL (our spec) → API Key / Custom / `X-Api-Key` header auth. Trailing "What won't work" note so users don't try the default ChatGPT assistant or free tier and wonder why it's not working.
+
+**Windsurf section — minor polish.** Added a one-line intro clarifying "Windsurf's AI pane is called Cascade" (previous version used the term without introducing it). Command Palette shortcut kept; "fully quit" note added with Mac/Windows specifics.
+
+**Cline section — minor polish.** Tightened step wording. Behavior and steps unchanged.
+
+**Cursor section — moved + kept fully documented.** Full GUI walkthrough + the collapsed `<details>` file-method fallback (hidden folder navigation for Mac/Linux/Windows, plain-text file creation, fully-quit instructions) preserved as-is. Only change: dropped the "(recommended path)" heading tag since it's no longer in the top slot.
+
+### Rationale
+The previous order (Cursor first) reflected the internal dev environment, not user demand. Live-walkthrough data with a first-time user showed Claude Desktop is the most common first-install target, with Claude Code second (CLI users), ChatGPT third (biggest non-MCP audience), and IDE-integrated apps (Windsurf / Cline / Cursor) clustered after.
+
+### Not changed
+- Config block (anchor + jump links intact)
+- 30-Second Quickstart and prerequisites (unchanged from v6.9.5)
+- Claude Desktop full disambiguation + merge-with-comma walkthrough (unchanged from v6.9.5)
+
+### Still to come (not in this release)
+- Multi-site setup section ("your partner's pattern" — running multiple MCP instances for comparisons across BD sites)
+- "Each AI app has its own config" clarification after the quickstart
+- Per-platform screenshots (if we ever go with images)
+
 ## [6.9.7] - 2026-04-20
 
 ### Fixed — `content_footer` is the page-access gate, not footer HTML (v6.9.6 correction)
