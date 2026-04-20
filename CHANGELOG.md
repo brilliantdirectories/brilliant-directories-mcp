@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.9] - 2026-04-20
+
+### Added — README: Cursor Directory one-click install as the primary path
+
+Brilliant Directories MCP was accepted into the [Cursor Directory](https://cursor.directory/plugins/brilliant-directories). Updated the Cursor setup section in both READMEs (root `README.md` and npm-published `mcp/README.md`) to recommend the one-click directory install as the easiest path — no terminal, no config-file editing.
+
+**New primary method:**
+1. Click the Cursor Directory link → Install button
+2. Cursor opens the "Install MCP Server?" prompt with fields pre-filled (Command: `npx`, Arguments: `-y brilliant-directories-mcp@latest`)
+3. User fills their BD API key + URL into the RIGHT-side Environment Variable boxes only (left side stays as-is — those are the variable names the MCP reads, not where you paste credentials)
+4. Optional: rename the Name field from `server` to `brilliant-directories` for clarity in Cursor's Tools list
+5. Install → fully quit + reopen Cursor
+
+**Kept as fallbacks (collapsed in a `<details>` block):**
+- Cursor Settings GUI → Tools & MCP → New MCP Server (manual JSON paste)
+- Direct `~/.cursor/mcp.json` file editing (Mac/Linux + Windows instructions)
+
+Also reinforced the "left-side vs right-side" confusion point that users hit (variable names on the left, credential values on the right — only edit the right), with a concrete worked example showing real-looking values.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.8] - 2026-04-20
 
 ### Removed — Boilerplate noise pruning (signal-to-noise improvement)

@@ -438,7 +438,40 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 ### Cursor
 
-**GUI method (easiest — no terminal needed):**
+**Easiest method — Cursor Directory one-click install (no terminal, no file editing):**
+
+1. **Open this link** in your browser (make sure Cursor is installed first): **[cursor.directory/plugins/brilliant-directories](https://cursor.directory/plugins/brilliant-directories)**
+2. On that page, click the blue **Install** / **Add to Cursor** button. Your browser will ask for permission to open Cursor — allow it.
+3. Cursor opens an **"Install MCP Server?"** prompt with fields already filled in (`Name: server`, `Command: npx`, `Arguments: -y brilliant-directories-mcp@latest`, and two Environment Variables below).
+
+   **Optional — change the Name field** from `server` to `brilliant-directories` so it's easy to identify later in Cursor's Tools list. Purely cosmetic; works either way.
+4. **Fill in your credentials in the RIGHT-SIDE boxes only** (leave the left-side labels `BD_API_KEY` and `BD_API_URL` alone — those are the variable names Cursor passes to the MCP):
+
+   | Left side (variable name — do NOT change) | Right side (what YOU paste in) |
+   |---|---|
+   | `BD_API_KEY` | `YOUR_API_KEY` ← paste your BD API key here |
+   | `BD_API_URL` | `https://your-site.com` ← paste your BD site URL (include `https://`, no trailing slash) |
+
+   **Where to get your API key:** BD Admin → **Developer Hub** → **Generate API Key** → copy the long string BD shows you (BD shows it only once; if you lose it, generate a new one). See the [Before you start](#before-you-start--3-things-you-need) section if you haven't already enabled the advanced endpoint permissions — without those, most writes fail with 403.
+
+   **Example filled-in row:**
+   - Left: `BD_API_KEY` (pre-filled, don't touch)
+   - Right: `abc123def456...yourkey...xyz789`
+   - Left: `BD_API_URL` (pre-filled, don't touch)
+   - Right: `https://mydirectorysite.com`
+
+5. Click the blue **Install** button.
+6. **Fully quit and reopen Cursor** so it picks up the new MCP:
+   - **Windows:** right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. Closing the window isn't enough.
+   - **Mac:** `Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**. Red-dot close isn't enough.
+7. After reopen, you should see Brilliant Directories tools in Cursor's Tools & MCP panel (Settings → Tools & MCP).
+
+---
+
+<details>
+<summary><strong>Alternative methods</strong> — if the directory link doesn't work, or you prefer manual setup (click to expand)</summary>
+
+### Alternative A — Cursor Settings GUI (manual, no terminal)
 
 1. Open Cursor.
 2. Open settings:
@@ -447,16 +480,15 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
    - Or: Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open MCP Settings`
 3. In the sidebar, click **Tools & MCP**.
 4. Click **New MCP Server**.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL with your values.
 6. Click **Save**.
 7. **Fully quit and reopen Cursor.** `Cmd+Q` on Mac, or right-click Cursor in the Windows system tray → Quit. Closing the window isn't enough.
 
-<details>
-<summary><strong>Last resort: file method</strong> — only if the GUI above fails (click to expand)</summary>
+### Alternative B — Edit the config file directly
 
-Use this if Settings doesn't show "Tools & MCP", the "New MCP Server" button silently fails, or you just prefer editing files. Same result as the GUI method.
+Use this if the GUI doesn't show "Tools & MCP" or the "New MCP Server" button silently fails. Same result as the GUI method.
 
-Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory. Same file the GUI writes to.
+Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory.
 
 #### Mac / Linux
 
