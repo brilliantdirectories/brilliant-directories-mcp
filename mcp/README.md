@@ -55,7 +55,7 @@ Run our one-command wizard in a **terminal** (a text-only app for running comman
 **Paste this, press Enter:**
 
 ```bash
-npx brilliant-directories-mcp --setup
+npx brilliant-directories-mcp@latest --setup
 ```
 
 > **Paste shortcut:** `Cmd+V` (Mac). `Ctrl+Shift+V` or right-click (Windows/Linux).
@@ -77,7 +77,9 @@ If the wizard errors or tools still don't show up after restart, use the per-pla
 
 <a id="the-config-block"></a>
 
-Every method below uses **the config block** — keep it handy. Replace `ENTER_API_KEY` and `https://your-site.com` with your values:
+Every method below uses **the config block** — keep it handy. Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
+
+> **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version from the npm registry on every agent launch, instead of reusing whatever it cached previously. We ship frequent doc/safety/directive updates — pinning `@latest` means your AI agent always has the freshest guardrails without you having to remember to update. Keep the `@latest` in your config.
 
 ```json
 {
@@ -86,7 +88,7 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
       "command": "npx",
       "args": [
         "-y",
-        "brilliant-directories-mcp",
+        "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
       ]
@@ -122,7 +124,7 @@ Select all (`Cmd+A` / `Ctrl+A`), delete, paste:
       "command": "npx",
       "args": [
         "-y",
-        "brilliant-directories-mcp",
+        "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
       ]
@@ -163,7 +165,7 @@ Merge — don't overwrite. Two rules:
       "command": "npx",
       "args": [
         "-y",
-        "brilliant-directories-mcp",
+        "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
       ]
@@ -207,7 +209,7 @@ Close and reopen your terminal so PATH updates. Verify with `claude --version`.
 **Install BD MCP:**
 
 ```bash
-claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add bd-api -- npx brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
 Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Verify with `claude mcp list` — `bd-api` should appear. Close and reopen Claude Code.
@@ -239,7 +241,7 @@ If you run the Claude extension inside Cursor, Claude and Cursor's native agent 
     "brilliant-directories": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "brilliant-directories-mcp"],
+      "args": ["-y", "brilliant-directories-mcp@latest"],
       "env": {
         "BD_API_URL": "https://your-site.com",
         "BD_API_KEY": "ENTER_API_KEY"
@@ -303,7 +305,7 @@ Open it in any text editor. If the file doesn't exist yet, create it. Add this b
 ```toml
 [mcp_servers.bd-api]
 command = "npx"
-args = ["-y", "brilliant-directories-mcp", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+args = ["-y", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
 ```
 
 Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
@@ -565,13 +567,13 @@ Once set up, you get new MCP versions automatically the next time you fully quit
 
 **Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` and `https://your-site.com` with real values:
 ```bash
-npx brilliant-directories-mcp --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Prints `OK` if credentials work, `FAIL` with the error otherwise. Good first step for any connectivity issue.
 
 **Debug mode — see exactly what's happening:**
 ```bash
-npx brilliant-directories-mcp --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx brilliant-directories-mcp@latest --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Logs every API request and response to stderr (your API key is automatically redacted), then exits. Useful when something isn't working and you want to share output with BD support.
 
