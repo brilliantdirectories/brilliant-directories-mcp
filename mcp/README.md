@@ -56,20 +56,23 @@ This runs the full setup end-to-end with no prompts. Replace `cursor` with `clau
 
 ### Claude Code / Cursor / Windsurf / Cline (MCP)
 
-**Option A — `npx` (recommended, no install needed):**
+**Easiest path: use the wizard** from the [30-Second Quickstart](#30-second-quickstart) above — it handles all of this automatically.
+
+If you prefer to wire things up by hand, here's how per app. Replace `YOUR_KEY` with your BD API key and `https://your-site.com` with your BD site URL (include `https://`, no trailing slash).
+
+**Claude Code** — paste this one line in your terminal (Mac: Terminal.app · Windows: PowerShell):
 
 ```bash
 claude mcp add bd-api -- npx brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
 ```
 
-**Option B — Global install:**
+Then fully quit and reopen Claude Code.
 
-```bash
-npm install -g brilliant-directories-mcp
-claude mcp add bd-api -- brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
-```
+**Cursor** — open the MCP config file at `~/.cursor/mcp.json` (create it if missing: on Mac/Linux `mkdir -p ~/.cursor && touch ~/.cursor/mcp.json`; on Windows that path is `%USERPROFILE%\.cursor\mcp.json`). Paste the block below into the file, then save. Fully quit and reopen Cursor.
 
-**Cursor / Windsurf / Cline** — add to your MCP config file (`~/.cursor/mcp.json`, etc.):
+**Windsurf** — same JSON format; the file is `~/.codeium/windsurf/mcp_config.json` on Mac/Linux, `%USERPROFILE%\.codeium\windsurf\mcp_config.json` on Windows.
+
+**Cline** — same JSON format; the file is `~/Library/Application Support/Cline/MCP/cline_mcp_settings.json` on Mac, `%APPDATA%\Cline\MCP\cline_mcp_settings.json` on Windows.
 
 ```json
 {
@@ -81,6 +84,8 @@ claude mcp add bd-api -- brilliant-directories-mcp --api-key YOUR_KEY --url http
   }
 }
 ```
+
+After saving, **fully quit and reopen** the app (not just close the window — Mac `Cmd+Q`; Windows right-click taskbar → Quit).
 
 Then ask your AI: *"List all members on my BD site"* or *"Create a new member with email john@example.com"*
 
@@ -128,6 +133,8 @@ n8n will prompt for your BD site URL and API key on import. No file editing requ
 
 ### curl / Any HTTP Client
 
+Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `YOUR_KEY` and `https://your-site.com` with real values.
+
 ```bash
 # Verify your API key
 curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/token/verify
@@ -155,7 +162,7 @@ curl -X PUT -H "X-Api-Key: YOUR_KEY" \
 
 ## Troubleshooting
 
-**Verify your setup with one command:**
+**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `YOUR_KEY` and `https://your-site.com` with real values:
 ```bash
 npx brilliant-directories-mcp --verify --api-key YOUR_KEY --url https://your-site.com
 ```

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.2] - 2026-04-19
+
+### Changed — README: "where do I paste this?" clarity
+
+- Setup by Platform section now tells users WHERE to paste each command (Mac: Terminal.app · Windows: PowerShell) and what to do with JSON config blocks (which file path per app, how to create it if missing, what to do after saving).
+- Per-platform restart instruction inline ("fully quit and reopen") — not just implied.
+- Troubleshooting verify command now says where to paste it.
+
 ## [6.3.1] - 2026-04-19
 
 ### Changed — README idiot-proofing
