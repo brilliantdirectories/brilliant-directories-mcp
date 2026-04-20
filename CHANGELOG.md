@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.15] - 2026-04-20
+
+### Fixed — Subagent-audit findings, surgical truth updates
+
+Ran 4 parallel audit subagents against v6.13.14 directive. Each performed a real task (paginate 118 members, find photoless members, filter operator tests, rank categories by member count) and reported where the directive misled them. Batched fixes:
+
+- **Silent-drop sanity check** — BD returns `status: success` + full unfiltered `total` when a filter is dropped (bad operator, unknown column, derived field). Added explicit rule: compare filtered `total` vs. unfiltered — if equal, your filter was dropped. This was the single biggest trap across audits.
+- **Derived fields are NOT filterable** — list now explicit on `listUsers`: `full_name`, `status`, `user_location`, `image_main_file`, `card_info`, `revenue`, `subscription_schema`, `profession_schema`, `photos_schema`, `services_schema`, `tags`, `user_clicks_schema`, `transactions`. Update-tool "schema-is-documentation" rule is for WRITES; filters need real persisted columns only.
+- **Row weight warning** — `listUsers` row ≈ 7-8KB, `limit=10` ≈ 80KB per call. Directive now budgets: `limit=5` for enumerate-then-collect, `limit=10` only when full records needed, `limit=100` will blow context.
+- **LIKE behavior nailed down** — LIKE with `%` wildcards returns `"user not found"` (same shape as bad column, debugging trap); LIKE without wildcards silently behaves as `=`. Recommend `searchUsers q=<keyword>` for partial text.
+- **Count-only idiom named** — `limit=1` + read `total` from envelope, explicit now.
+- **Envelope numerics are STRINGS** (`"total":"107"`, not `107`) — cast before arithmetic.
+- **Default sort is modtime-ish, not primary-key** — pass `order_column` for deterministic order.
+- **N+1 fan-out warning** — no server-side member-count sort on categories; "top N by count" on K categories = K calls. If K > 20, narrow scope with the user upfront.
+- **`logo` / `profile_photo` are import-pipeline fields**, not read-signals — null on reads even when photos exist. Detection is via `image_main_file` placeholder-suffix check.
+- **Null-filter paragraph** compressed from 10 lines to 3 (behavior already covered in the silent-drop rule).
+
+Net: directive is ~20% LONGER in real truth but the false-positive traps (silent success that's actually full table, misleading LIKE, misread column signals) are now called out instead of discovered mid-task. Doc-only.
+
 ## [6.13.14] - 2026-04-20
 
 ### Added — Pagination: concrete sequential-page recipe
