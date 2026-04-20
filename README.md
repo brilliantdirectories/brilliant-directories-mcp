@@ -28,6 +28,7 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 - [Setup by Platform](#setup-by-platform)
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
+    - [Using Claude CLI inside Cursor](#using-claude-cli-inside-cursor)
   - [OpenAI (ChatGPT / Codex)](#openai-chatgpt--codex)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
