@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.12] - 2026-04-20
+
+### Fixed — Null-filter operators are no-ops + profile-photo detection uses `image_main_file`
+
+A/B-tested every pagination and filter claim against the live API on a 118-member site before writing anything. Three verified findings added to the top-level `instructions` directive.
+
+**Null / empty-value filters are silently ignored by the server:**
+
+- `property_operator=is_null` on `first_name` (a NOT-null column) → returned `total=118` (full dataset). Filter dropped.
+- `property_operator=is_not_null` → same: `total=118`. Filter dropped.
+- `property_value=""` with `operator==` on `logo` (all-null column) → `total=118`. Empty-string ≠ null on the server.
+- Control: `property=first_name&property_value=Sample&operator==` → `total=3`, correctly filtered. So `=` with a non-empty value works; the failure is specific to null/empty matching.
+
+Agents using these operators thought they were filtering; they were actually processing the entire table. New directive: **don't bother with `is_null`/`is_not_null`/`property_value=""` — paginate with a small `limit` and filter client-side instead.**
+
+**Exception — numeric zero-sentinel works:** `property=profession_id&property_value=0&operator==` correctly returned `total=8` (members with no top category). For any numeric FK that uses `0` to mean "unset" (profession_id, subscription_id, parent_id), `=0` filters server-side and saves the client-side loop.
+
+**Profile-photo detection:** every one of 118 tested members returned `profile_photo: null` and `logo: null` at the top level of the user record — even members with photos visibly rendered on the site. The authoritative field is `image_main_file` (BD's resolved URL, falls back to `https://<site>/images/profile-profile-holder.png` when no photo exists). Detection rule: member has a real photo IFF `image_main_file` is present AND does NOT end with `profile-profile-holder.png`. Use this pattern for any "find members missing a profile photo" task.
+
+**Offset pagination rumor refuted:** re-verified that numeric `page=1`, `page=2` return `"user not found"` errors. Only opaque base64 cursor tokens from the previous response's `next_page` field work for pagination. An offset-math formula `(page-1)*limit` circulating in BD support docs does NOT apply to `/api/v2/user/list`.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.11] - 2026-04-20
 
 ### Fixed — Pagination directive: parameter name + no server-side cap
