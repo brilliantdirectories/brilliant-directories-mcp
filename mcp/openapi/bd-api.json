@@ -8191,6 +8191,255 @@
         "description": "Permanently delete a smartlist record by ID. Destructive — cannot be undone via API.\n\n**Use when:** removing a saved filter configuration.\n\n**Required:** `smart_list_id`.\n\n**See also:** `updateSmartList` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
+    "/api/v2/location_cities/get": {
+      "get": {
+        "operationId": "listCities",
+        "summary": "List cities (location-based search & SEO slugs)",
+        "description": "Paginated enumeration of cities enabled on this site for location-based member/post browsing and SEO page URL generation. Read-only source-of-truth for city slugs used in search-result URLs. Backed by BD's `location_cities` table.\n\n**Use when:** resolving a human city name (e.g. \"Beverly Hills\") to its `city_filename` slug (e.g. `beverly-hills`) before constructing a search-result URL for a static SEO page, or discovering which cities this site has seeded.\n\n**Pagination:** cursor-based (`limit`, `page`).\n\n**Filter/sort:** standard `property`/`property_value`/`property_operator`. Useful filters: `city_ln` (full name, exact match), `city_filename` (slug, exact), `state_sn` (scope to one state), `country_sn` (scope to one country).\n\n**Returns:** `{ status: \"success\", message: [...rows] }` — each row has:\n- `locaiton_id` (integer PK, **BD schema typo — it is `locaiton_id`, NOT `location_id`**; pass the typo'd form when looking up a single record)\n- `city_ln` (full name)\n- `city_filename` (URL slug)\n- `state_sn` (2-letter state/province code; references `location_states.state_sn`)\n- `country_sn` (2-letter country code; references `list_countries.country_code`)\n\n**System-critical table — create & delete deliberately omitted from this MCP.** Cities are managed by BD automatically (a new city row is added when a member signs up from a new location). Creating cities via API risks slug collisions with auto-created rows, and deleting risks orphaning members whose `city` references the row. Use `updateCity` only for corrections (rename, fix typo in filename). For new cities, let the next member signup seed it.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` — empty-result responses return `{status: \"error\", message: \"location_cities not found\", total: 0}` (same ambiguous pattern as other list endpoints)._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/property_operator" },
+          { "$ref": "#/components/parameters/order_column" },
+          { "$ref": "#/components/parameters/order_type" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated city list",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/location_cities/get/{locaiton_id}": {
+      "get": {
+        "operationId": "getCity",
+        "summary": "Get a single city",
+        "description": "Fetch one city row. Read-only. Note BD schema typo: PK is `locaiton_id` (sic), not `location_id`.\n\n**Required:** `locaiton_id` (path).\n\n**See also:** `listCities` (enumerate + filter).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          {
+            "name": "locaiton_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "City primary key (BD schema typo: `locaiton_id`, NOT `location_id`)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "City record",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/location_cities/update": {
+      "put": {
+        "operationId": "updateCity",
+        "summary": "Update a city (corrections only)",
+        "description": "Update an existing city row. Read-mostly — use sparingly.\n\n**Use when:** correcting a typo in `city_ln` or `city_filename`, or reassigning a city's `state_sn` / `country_sn` if originally miscategorized. For a NEW city, DO NOT create via API — let the next member signup from that location auto-seed the row (BD handles this).\n\n**Required:** `locaiton_id` (BD schema typo — sic).\n\n**Warning on `city_filename` edits:** this is the URL slug used in every search-result page for that city. Changing it breaks all inbound links AND any static SEO pages (`seo_type=profile_search_results`) whose filename includes the old slug. If you must rename, create `Redirect` (301) records for each affected URL.\n\n**Writes live data.**\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["locaiton_id"],
+                "properties": {
+                  "locaiton_id": { "type": "integer", "description": "City PK (BD typo — sic)" },
+                  "city_ln": { "type": "string" },
+                  "city_filename": { "type": "string", "description": "URL slug. Changing this breaks inbound URLs — create redirects." },
+                  "state_sn": { "type": "string" },
+                  "country_sn": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "City updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/location_states/get": {
+      "get": {
+        "operationId": "listStates",
+        "summary": "List states / provinces / regions",
+        "description": "Paginated enumeration of states/provinces/regions enabled on this site. The `location_states` table is country-agnostic — it holds US states, Canadian provinces, UK regions, and any other first-admin-level division for any country active on this site, distinguished by `country_sn`. Read-only source-of-truth for state slugs in search-result URLs.\n\n**Use when:** resolving a state/province name (\"California\", \"Ontario\") to its `state_filename` slug (`california`, `ontario`) before constructing a search-result URL.\n\n**Pagination + filter/sort:** standard. Useful filters: `state_ln` (full name), `state_sn` (2-letter code), `state_filename` (slug), `country_sn` (scope to one country — e.g. `US`, `CA`).\n\n**Returns:** rows with `location_id` (PK — NO typo here, unlike cities), `state_sn`, `state_ln`, `state_filename`, `country_sn`.\n\n**System-critical table — create & delete deliberately omitted.** States are seeded by BD as needed. Use `updateState` only for corrections.\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/property_operator" },
+          { "$ref": "#/components/parameters/order_column" },
+          { "$ref": "#/components/parameters/order_type" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated state list",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/location_states/get/{location_id}": {
+      "get": {
+        "operationId": "getState",
+        "summary": "Get a single state/province",
+        "description": "Fetch one state row by `location_id`. Read-only.\n\n**Required:** `location_id` (path). Note: `location_states` PK is `location_id` (correctly spelled, unlike `location_cities.locaiton_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "State record",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/location_states/update": {
+      "put": {
+        "operationId": "updateState",
+        "summary": "Update a state (corrections only)",
+        "description": "Update a state row. Read-mostly — use for corrections.\n\n**Required:** `location_id`.\n\n**Warning on `state_filename`:** it's the URL slug in every search page using this state. Rename → broken URLs + orphaned SEO pages. Create redirects if you must.\n\n**Writes live data.**\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["location_id"],
+                "properties": {
+                  "location_id": { "type": "integer" },
+                  "state_sn": { "type": "string" },
+                  "state_ln": { "type": "string" },
+                  "state_filename": { "type": "string", "description": "URL slug. Rename breaks inbound URLs — create redirects." },
+                  "country_sn": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "State updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/list_countries/get": {
+      "get": {
+        "operationId": "listCountries",
+        "summary": "List countries",
+        "description": "Paginated enumeration of countries in the global reference table. Read-only reference.\n\n**Use when:** resolving a country name to its 2-letter `country_code` (ISO 3166-1 alpha-2) for cross-referencing in `location_states.country_sn` / `location_cities.country_sn`, or deriving a country URL slug.\n\n**Country URL slug derivation:** BD does NOT store a `country_filename` field. To construct the country segment of a search-result URL, derive it from `country_name` by lowercasing and replacing spaces with hyphens. Example: `country_name=\"United States\"` → `country-slug=\"united-states\"`.\n\n**Pagination + filter/sort:** standard. Useful filters: `country_code`, `country_name`, `active`.\n\n**Returns:** rows with `country_id`, `country_code`, `country_name`, `active` (`1`=active, `0`=inactive).\n\n**System-critical table — create & delete deliberately omitted.** Countries are a global reference list. Use `updateCountry` only for corrections (e.g. toggling `active`).\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/property_operator" },
+          { "$ref": "#/components/parameters/order_column" },
+          { "$ref": "#/components/parameters/order_type" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated country list",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/list_countries/get/{country_id}": {
+      "get": {
+        "operationId": "getCountry",
+        "summary": "Get a single country",
+        "description": "Fetch one country row. Read-only.\n\n**Required:** `country_id` (path).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "parameters": [
+          {
+            "name": "country_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country record",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/list_countries/update": {
+      "put": {
+        "operationId": "updateCountry",
+        "summary": "Update a country (corrections / active toggle)",
+        "description": "Update a country record. Read-mostly — primary use is toggling `active` to enable/disable a country on the site.\n\n**Required:** `country_id`.\n\n**Writes live data.**\n\n_Auth: `X-Api-Key` header._",
+        "tags": [
+          "Locations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["country_id"],
+                "properties": {
+                  "country_id": { "type": "integer" },
+                  "country_code": { "type": "string", "description": "ISO 3166-1 alpha-2 (e.g. `US`, `CA`, `GB`)" },
+                  "country_name": { "type": "string" },
+                  "active": { "type": "integer", "enum": [0, 1] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Country updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
     "/api/v2/list_seo/get": {
       "get": {
         "operationId": "listWebPages",
@@ -8258,7 +8507,7 @@
       "post": {
         "operationId": "createWebPage",
         "summary": "Create a page",
-        "description": "Create a new web page on the site. Writes live data.\n\nA WebPage is any static-ish page: the homepage (`seo_type=home`), about, contact, custom landing pages, category templates, profile templates, and search result templates. Backed by BD's `list_seo` table.\n\nPages are publicly accessible **immediately** once `content_active=1` (the default) and a valid `seo_type` is supplied — no admin action needed.\n\n**Use when:** adding a new custom landing page, about, contact, or other static-ish page. Required: `seo_type` (must match one of BD's admin-UI values — `content` is the safe default for generic pages) and `filename` (URL slug). Pages are live immediately once `content_active=1` (default).\n\n**Required:** `seo_type`, `filename`.\n\n**Parameter guidance:**\n- `seo_type` — page type identifier. Must be one of the fixed admin-UI values (invalid types produce unrenderable records). Common values: `home` (homepage replacement), `content` (generic static/landing page — BD admin default for \"new page\"), profile/search template types, etc. For a generic landing/static page, use `content`.\n- `filename` — URL slug (e.g. `about-us`), not the full URL. The public URL is `<site-domain>/<filename>`.\n- `content` — main HTML body. Supports `[widget=Name]` shortcodes AND template tokens.\n- `content_active=1` (default) — page is live; `0` = hidden.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify), `createRedirect` (if replacing an existing URL, create a 301 to preserve SEO).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `seo_id`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
+        "description": "Create a new web page on the site. Writes live data.\n\nA WebPage is any static-ish page: the homepage (`seo_type=home`), about, contact, custom landing pages, category templates, profile templates, and search result templates. Backed by BD's `list_seo` table.\n\nPages are publicly accessible **immediately** once `content_active=1` (the default) and a valid `seo_type` is supplied — no admin action needed.\n\n**Use when:** adding a new custom landing page, about, contact, or other static-ish page. Required: `seo_type` (must match one of BD's admin-UI values — `content` is the safe default for generic pages) and `filename` (URL slug). Pages are live immediately once `content_active=1` (default).\n\n**Required:** `seo_type`, `filename`.\n\n**Parameter guidance:**\n- `seo_type` — page type identifier. Must be one of the fixed admin-UI values (invalid types produce unrenderable records). Common values: `home` (homepage replacement), `content` (generic static/landing page — BD admin default for \"new page\"), profile/search template types, etc. For a generic landing/static page, use `content`.\n- `filename` — URL slug (e.g. `about-us`), not the full URL. The public URL is `<site-domain>/<filename>`.\n- `content` — main HTML body. Supports `[widget=Name]` shortcodes AND template tokens.\n- `content_active=1` (default) — page is live; `0` = hidden.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify), `createRedirect` (if replacing an existing URL, create a 301 to preserve SEO).\n\n**Writes live data:** changes are immediately visible on the public site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` including `seo_id`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n**Member Search Results SEO pages (`seo_type=profile_search_results`) — thin-content remedy workflow:** BD auto-generates dynamic search-result pages for every valid combination of location + category on the site (e.g. `california/beverly-hills/plumbers`). Google often penalizes these when they return only 1–2 members (thin content). The remedy is to create a STATIC `list_seo` record with `seo_type=profile_search_results`, `filename=<the exact URL slug>`, and `content=<unique SEO copy>` (intro paragraph, local context, FAQ, etc.) — that static record then overrides the dynamic rendering and the custom copy renders alongside the live results.\n\n*URL slug construction (the `filename` field, NO leading slash):* segments use hierarchy order and any left-parent is droppable to broaden the match. Always concatenate with `/` separators:\n  - Fullest: `country/state/city/top_cat/sub_cat`\n  - Common: `state/city/top_cat/sub_cat` (when site is single-country)\n  - `city/top_cat/sub_cat`, `top_cat/sub_cat`, `city`, `state`, `top_cat`, etc.\n\n*Where each segment comes from:*\n  - `country` segment: NOT a stored slug — derive from `list_countries.country_name` (via `listCountries`) by lowercasing and replacing spaces with hyphens (e.g. `\"United States\"` → `united-states`)\n  - `state` segment: `location_states.state_filename` (via `listStates`)\n  - `city` segment: `location_cities.city_filename` (via `listCities`)\n  - `top_cat` segment: top category's `filename` (via `listTopCategories`)\n  - `sub_cat` segment: sub-category's `filename` (via `listSubCategories`)\n\n*Agent workflow for \"add SEO to [category] in [location] page\":*\n  1. Resolve each named input to its slug via the relevant list endpoint (`listCities`, `listStates`, `listTopCategories`, `listSubCategories`) filtering by the full/human name field — exact-match `=` is reliable for these.\n  2. For ambiguous requests (e.g. user says \"Beverly Hills plumbers\" — could be `beverly-hills/plumbers` OR `california/beverly-hills/plumbers`), ask the user which URL variant they want UNLESS they've explicitly requested bulk/pattern-based updates.\n  3. Check for an existing `list_seo` record at that slug: `listWebPages` with `property=filename&property_value=<slug>&property_operator==`. If found → `updateWebPage`. If not → `createWebPage` with `seo_type=profile_search_results`, `filename=<slug>`, `content=<SEO HTML>`.\n  4. On create, recommended defaults: `content_active=1`, `custom_html_placement=4` (Below Body Content — safest for boilerplate SEO intro without disrupting the live member UI), `seo_type=profile_search_results`.\n  5. **h1/h2 double-render trap:** if the hero section is enabled (`enable_hero_section=1` or `2`), the page's `h1` and `h2` text fields render inside the hero banner. If your `content` HTML ALSO contains an `<h1>` or `<h2>`, the page renders BOTH — creating duplicate headings (bad for SEO). Safe rule: if you put `<h1>`/`<h2>` inside `content`, leave the page's `h1`/`h2` fields empty; if you want the hero to show the heading, set `h1`/`h2` on the record and don't repeat it in `content`.\n  6. `custom_html_placement` is only meaningful on `profile_search_results` (and later `data_category`) page types — ignored on regular `content` pages.\n\nBD handles the dynamic-to-static takeover automatically: once a `list_seo` record exists with a matching slug and `content_active=1`, it overrides the dynamic page for that URL. Millions of dynamic search URLs can exist on a site without any `list_seo` rows — they only enter `list_seo` when an admin/API explicitly converts them to static pages.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._",
         "tags": [
           "Pages"
         ],
@@ -8442,6 +8691,11 @@
                   "allowed_products": {
                     "type": "string",
                     "description": "Comma-separated plan/product IDs (empty = all plans)"
+                  },
+                  "custom_html_placement": {
+                    "type": "string",
+                    "enum": ["0", "1", "2", "3", "4"],
+                    "description": "Where to render the page's custom SEO content (`content` HTML) in relation to the dynamic search results, on `seo_type=profile_search_results` pages. Only meaningful for search-result static pages (and later `seo_type=data_category`) — ignored on regular `content` pages.\\n  0 = Inside Tab                (content + member results render in separate nav tabs)\\n  1 = Above Member Results      (within the results container; respects sidebar width)\\n  2 = Below Member Results      (within the results container)\\n  3 = Above Body Content        (full page container width — spans above sidebar + results)\\n  4 = Below Body Content        (full page container width — below sidebar + results) ← **recommended default for AI-generated SEO pages**\\nFor boilerplate SEO intro paragraphs / FAQ / local copy aimed at bolstering thin pages, `4` is the safest default because it renders full-width below the live results without disrupting the primary member-facing UX."
                   },
                   "enable_hero_section": {
                     "type": "string",
@@ -8777,6 +9031,11 @@
                     "type": "string",
                     "description": "Comma-separated plan/product IDs (empty = all plans)"
                   },
+                  "custom_html_placement": {
+                    "type": "string",
+                    "enum": ["0", "1", "2", "3", "4"],
+                    "description": "Where to render the page's custom SEO content (`content` HTML) in relation to the dynamic search results, on `seo_type=profile_search_results` pages. Only meaningful for search-result static pages (and later `seo_type=data_category`) — ignored on regular `content` pages.\\n  0 = Inside Tab                (content + member results render in separate nav tabs)\\n  1 = Above Member Results      (within the results container; respects sidebar width)\\n  2 = Below Member Results      (within the results container)\\n  3 = Above Body Content        (full page container width — spans above sidebar + results)\\n  4 = Below Body Content        (full page container width — below sidebar + results) ← **recommended default for AI-generated SEO pages**\\nFor boilerplate SEO intro paragraphs / FAQ / local copy aimed at bolstering thin pages, `4` is the safest default because it renders full-width below the live results without disrupting the primary member-facing UX."
+                  },
                   "enable_hero_section": {
                     "type": "string",
                     "enum": ["0", "1", "2"],
@@ -8917,7 +9176,7 @@
             }
           }
         },
-        "description": "Update an existing web page by `seo_id`. Fields omitted are untouched. Writes live data.\n\nChanges go live immediately. No cache refresh needed for most edits. If changing `filename` (URL slug), consider creating a 301 via `createRedirect` so inbound links to the old slug keep working.\n\n**Use when:** editing copy, meta tags, social-share images, or toggling layout flags (hide header/footer, full-width, etc.). Changing `filename` breaks inbound links — create a `Redirect` via `createRedirect` to preserve SEO.\n\n**Required:** `seo_id`.\n\n**Common edits:**\n- Copy/content: `content`, `h1`, `h2`, `seo_text`, `content_footer`\n- SEO: `title`, `meta_desc`, `meta_keywords`\n- Social: `facebook_title`, `facebook_desc`, `facebook_image`\n- Layout: `content_layout`, `hide_header`, `hide_footer`, etc. (see mapping below)\n- Visibility: `content_active` (1 = live, 0 = hidden)\n\n**See also:** `createWebPage` (add new), `deleteWebPage` (remove), `createRedirect` (after slug changes).\n\n**Writes live data:** immediately visible.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing web page by `seo_id`. Fields omitted are untouched. Writes live data.\n\nChanges go live immediately. No cache refresh needed for most edits. If changing `filename` (URL slug), consider creating a 301 via `createRedirect` so inbound links to the old slug keep working.\n\n**Use when:** editing copy, meta tags, social-share images, or toggling layout flags (hide header/footer, full-width, etc.). Changing `filename` breaks inbound links — create a `Redirect` via `createRedirect` to preserve SEO.\n\n**Required:** `seo_id`.\n\n**Common edits:**\n- Copy/content: `content`, `h1`, `h2`, `seo_text`, `content_footer`\n- SEO: `title`, `meta_desc`, `meta_keywords`\n- Social: `facebook_title`, `facebook_desc`, `facebook_image`\n- Layout: `content_layout`, `hide_header`, `hide_footer`, etc. (see mapping below)\n- Visibility: `content_active` (1 = live, 0 = hidden)\n\n**See also:** `createWebPage` (add new), `deleteWebPage` (remove), `createRedirect` (after slug changes).\n\n**Writes live data:** immediately visible.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n\n**BD Admin UI — field label mapping:**\n\nSome field names are opaque; this is what they're called in the BD admin page-settings screens.\n\n*Display/layout toggles (integer 0/1 unless noted):*\n| Field | Admin UI label |\n|---|---|\n| `content_layout` | Full Screen Page Width |\n| `section` | Hide Banner Ad Modules |\n| `hide_header` | Hide Header |\n| `hide_footer` | Hide Footer |\n| `hide_top_right` | Hide Top Header Menu |\n| `hide_header_links` | Hide Main Menu |\n| `content_images` | Click-Enlarge Images (value: `click_to_enlarge` to enable) |\n| `show_form` | **Apply NoIndex, NoFollow** (NOT a contact-form toggle — BD repurposed this column) |\n| `disable_css_stylesheets` | Disable Default CSS Stylesheets |\n| `disable_preview_screenshot` | Disable Screenshot Preview |\n| `seo_text` | Wildcard URL Rewrite (catch-all routing) |\n\n*SEO / meta:*\n| Field | Admin UI label |\n|---|---|\n| `title` | Page Meta Title |\n| `meta_desc` | Meta Description |\n| `meta_keywords` | Meta Keywords |\n| `h1` | H1 Heading |\n| `h2` | H2 Heading |\n\n*Social (Open Graph):*\n| Field | Admin UI label |\n|---|---|\n| `facebook_title` | Social Media Title |\n| `facebook_desc` | Social Media Description |\n| `facebook_image` | Social Media Shared Image (≥200×200px) |\n\nTemplate tokens: `title`, `meta_desc`, `meta_keywords`, `h1`, `h2` all support `%%%website_name%%%`, `%industry%`, `%profession%` (expanded at render time).\n\n**Hero section (optional banner rendered above page content):** toggled via `enable_hero_section` (`0`=off, `1`=all devices, `2`=hide on mobile). The full hero config spans ~23 fields: `hero_image` (external URLs supported natively — no `auto_image_import` needed), `hero_background_image_size`, `hero_content_overlay_color` (RGB format ONLY, e.g. `rgb(0,0,0)` — hex not accepted), `hero_content_overlay_opacity`, `hero_top_padding`/`hero_bottom_padding`, `hero_column_width`, `hero_alignment`, H1 styling (`h1_font_color`/`h1_font_size`/`h1_font_weight`), H2 styling (`h2_font_color`/`h2_font_size`/`h2_font_weight`), additional content styling (`hero_content_font_color`/`hero_content_font_size`/`hero_section_content`), CTA (`hero_link_url`/`hero_link_text`/`hero_link_target_blank`/`hero_link_size`/`hero_link_color`), and `hero_hide_banner_ad` to suppress the site-wide Below Header Banner Ad on this page. All color fields require RGB format. `enable_hero_section=0` is a master kill-switch — other hero_* values remain stored but are not rendered. The H1/H2 TEXT itself comes from the page's top-level `h1` and `h2` fields; the `h1_*`/`h2_*` here control ONLY hero styling. **Homepage:** the homepage record (`seo_type=home`, typically `seo_id=1`) cannot be CREATED via API — it's system-seeded. For homepage edits use `updateWebPage` with the existing `seo_id`. **Hero fields do NOT apply to the homepage.** The homepage template ignores `enable_hero_section` and all `hero_*`/`h1_*`/`h2_*` fields — BD accepts and stores them on the record, but they never render. Skip hero fields entirely when updating the homepage.\n\n**Member Search Results SEO pages (`seo_type=profile_search_results`) — thin-content remedy workflow:** BD auto-generates dynamic search-result pages for every valid combination of location + category on the site (e.g. `california/beverly-hills/plumbers`). Google often penalizes these when they return only 1–2 members (thin content). The remedy is to create a STATIC `list_seo` record with `seo_type=profile_search_results`, `filename=<the exact URL slug>`, and `content=<unique SEO copy>` (intro paragraph, local context, FAQ, etc.) — that static record then overrides the dynamic rendering and the custom copy renders alongside the live results.\n\n*URL slug construction (the `filename` field, NO leading slash):* segments use hierarchy order and any left-parent is droppable to broaden the match. Always concatenate with `/` separators:\n  - Fullest: `country/state/city/top_cat/sub_cat`\n  - Common: `state/city/top_cat/sub_cat` (when site is single-country)\n  - `city/top_cat/sub_cat`, `top_cat/sub_cat`, `city`, `state`, `top_cat`, etc.\n\n*Where each segment comes from:*\n  - `country` segment: NOT a stored slug — derive from `list_countries.country_name` (via `listCountries`) by lowercasing and replacing spaces with hyphens (e.g. `\"United States\"` → `united-states`)\n  - `state` segment: `location_states.state_filename` (via `listStates`)\n  - `city` segment: `location_cities.city_filename` (via `listCities`)\n  - `top_cat` segment: top category's `filename` (via `listTopCategories`)\n  - `sub_cat` segment: sub-category's `filename` (via `listSubCategories`)\n\n*Agent workflow for \"add SEO to [category] in [location] page\":*\n  1. Resolve each named input to its slug via the relevant list endpoint (`listCities`, `listStates`, `listTopCategories`, `listSubCategories`) filtering by the full/human name field — exact-match `=` is reliable for these.\n  2. For ambiguous requests (e.g. user says \"Beverly Hills plumbers\" — could be `beverly-hills/plumbers` OR `california/beverly-hills/plumbers`), ask the user which URL variant they want UNLESS they've explicitly requested bulk/pattern-based updates.\n  3. Check for an existing `list_seo` record at that slug: `listWebPages` with `property=filename&property_value=<slug>&property_operator==`. If found → `updateWebPage`. If not → `createWebPage` with `seo_type=profile_search_results`, `filename=<slug>`, `content=<SEO HTML>`.\n  4. On create, recommended defaults: `content_active=1`, `custom_html_placement=4` (Below Body Content — safest for boilerplate SEO intro without disrupting the live member UI), `seo_type=profile_search_results`.\n  5. **h1/h2 double-render trap:** if the hero section is enabled (`enable_hero_section=1` or `2`), the page's `h1` and `h2` text fields render inside the hero banner. If your `content` HTML ALSO contains an `<h1>` or `<h2>`, the page renders BOTH — creating duplicate headings (bad for SEO). Safe rule: if you put `<h1>`/`<h2>` inside `content`, leave the page's `h1`/`h2` fields empty; if you want the hero to show the heading, set `h1`/`h2` on the record and don't repeat it in `content`.\n  6. `custom_html_placement` is only meaningful on `profile_search_results` (and later `data_category`) page types — ignored on regular `content` pages.\n\nBD handles the dynamic-to-static takeover automatically: once a `list_seo` record exists with a matching slug and `content_active=1`, it overrides the dynamic page for that URL. Millions of dynamic search URLs can exist on a site without any `list_seo` rows — they only enter `list_seo` when an admin/API explicitly converts them to static pages.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/list_seo/delete": {

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.4.0] - 2026-04-19
+
+### Added — Locations resources + Member Search Results SEO workflow
+
+- New **Cities**, **States**, **Countries** resource families (read + update only — create and delete deliberately omitted to prevent collisions with BD's auto-seeding when new members sign up from a new location).
+  - `listCities`, `getCity`, `updateCity` (`/api/v2/location_cities/*`) — documents BD schema typo: city PK is `locaiton_id`, NOT `location_id`.
+  - `listStates`, `getState`, `updateState` (`/api/v2/location_states/*`) — PK is `location_id` (no typo). Country-agnostic (US states + Canadian provinces + any country's regions).
+  - `listCountries`, `getCountry`, `updateCountry` (`/api/v2/list_countries/*`). Note: no `country_filename` field — derive country URL slug by lowercasing `country_name` and replacing spaces with hyphens.
+- New field `custom_html_placement` on `createWebPage`/`updateWebPage` — enum `0` (Inside Tab), `1` (Above Member Results), `2` (Below Member Results), `3` (Above Body Content), `4` (Below Body Content — recommended default for AI-generated SEO pages). Only meaningful on `profile_search_results` page type.
+- **Member Search Results SEO workflow** paragraph added to createWebPage/updateWebPage descriptions AND to the MCP instructions field — explains the full slug construction (`country/state/city/top_cat/sub_cat` with any left-parent droppable), agent chain (resolve each segment via the relevant list endpoint), defaults, and the H1/H2 double-render trap when hero is enabled.
+
+### Notes
+
+- Locations are read-mostly by design in this MCP. BD auto-seeds cities/states when new members sign up from new locations. Creating cities/states via API risks duplicating auto-created rows with slightly different slugs; deleting risks orphaning every member referencing the row. `updateCity`/`updateState`/`updateCountry` are the only write operations exposed — intended for corrections (typos in filenames, reassigning state/country, toggling country `active`).
+
 ## [6.3.5] - 2026-04-19
 
 ### Changed — `content_layout` description clarified
