@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.11] - 2026-04-20
+
+### Fixed — Default `form_name` on `profile_search_results` pages is `Member Search Result`, not `Member Profile Page`
+
+Live-observed: agents creating `profile_search_results` pages were assigning `form_name="Member Profile Page"` per the directive's documented default. That's wrong — `Member Profile Page` is the sidebar designed for member profile/detail pages, not search-results pages. The correct default for `profile_search_results` pages is `Member Search Result` (one of the 6 Master Default Sidebars, purpose-built for this page type).
+
+Fixed in 4 locations:
+- `createWebPage` profile_search_results workflow step 4 (required defaults): now `form_name="Member Search Result"` with explicit "do NOT use Member Profile Page" warning.
+- `updateWebPage` profile_search_results workflow step 4: same fix.
+- Both descriptions' "if user requests different sidebar" fallback: now suggests `Member Search Result` as the safe default to offer, not `Member Profile Page`.
+- MCP instructions profile_search_results paragraph: `form_name="Member Search Result"` with inline "NOT Member Profile Page" clarifier.
+
+No schema-breaking changes; existing `profile_search_results` records created with `Member Profile Page` continue to render (they just have the wrong sidebar). Going forward, agents produce pages with the correct sidebar on first try.
+
 ## [6.10.10] - 2026-04-20
 
 ### Changed — OpenAI section honestly rewritten: Codex CLI is the real path, Custom GPT demoted to fallback
