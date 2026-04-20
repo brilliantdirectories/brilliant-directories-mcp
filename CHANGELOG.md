@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.11] - 2026-04-20
+
+### Fixed — Pagination directive: parameter name + no server-side cap
+
+Live-tested pagination against high-volume endpoints (`listUsers`, `listSubCategories`, `listSingleImagePosts`) and documented the ground truth in both the OpenAPI spec and the top-level MCP `instructions` array.
+
+**What changed:**
+
+- **Parameter name clarification** — the correct query parameter is `limit`. Passing `per_page` is silently ignored by BD's API and returns a full/default dump. Prior directive implied both might work.
+- **No server-side max cap** — earlier directive said *"limit (default 25, max 100)"*. Tested: BD does NOT enforce a max on `limit`. `limit=500` really returns 500 records (836KB response on `listUsers`). The previous "max 100" claim was wrong and led agents to think they had a safety net that doesn't exist.
+- **Self-limit defaults pushed harder** — agents must self-limit to protect Claude's tool-result token budget. New defaults: `limit=25` for normal browsing, `limit=10` for scan-and-filter loops, `limit=5` for sampling. Never > 50 unless explicitly asked AND `total` already verified small via `limit=1`.
+- **Efficiency pre-check pattern** — for "how many X are there" questions, call `list*` with `limit=1` first. Returns `total` in a tiny payload without dumping records. Saves context on counting questions that don't need the records themselves.
+- **Iterate don't inflate** — to process large datasets (1000+ members, etc.), loop the cursor with a small `limit` and filter client-side per page. Raising `limit` to fetch everything in one call overflows Claude's context and forces truncation.
+
+**Why this matters:** users were hitting Claude token/tool limits surprisingly fast on BD sites with hundreds of members, posts, or categories — root cause was agents pulling full lists at default-or-larger `limit` values. Sharper directive + accurate param name + no-cap warning should meaningfully cut context burn on common workflows.
+
+Doc-only. Zero schema/code/behavior changes in the MCP wrapper itself.
+
 ## [6.13.10] - 2026-04-20
 
 ### Fixed — Category `keywords` field: fuzzy-search synonyms, NOT SEO keywords
