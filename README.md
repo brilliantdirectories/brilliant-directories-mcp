@@ -45,6 +45,8 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ## 30-Second Quickstart (try this first)
 
+> **You do NOT need to install anything manually first.** `npx` (the command below) auto-downloads the MCP the first time it runs. Ignore any advice to run `npm install -g brilliant-directories-mcp` — that's only for developers building a CLI. Normal users just run the one command below.
+
 Run our one-command wizard in a **terminal** (a text-only app for running commands).
 
 **Open a terminal:**
@@ -619,7 +621,11 @@ Logs every API request and response to stderr (your API key is automatically red
 - **`403 API Key does not have permission to access this endpoint`** — this specific endpoint isn't granted on your key. Edit the key in BD Admin → Developer Hub and enable the missing endpoint (the error names it).
 - **`404 Not Found`** — your site URL is wrong. Must include `https://` and NO trailing slash. Correct: `https://mysite.com`. Wrong: `mysite.com` or `https://mysite.com/`.
 - **`429 Too Many Requests`** — rate limit hit (100 req/60s default). Wait 60 seconds, or email BD support to raise your site's limit up to 1,000/min.
-- **`Unknown tool` (from Claude)** — the MCP server didn't load the OpenAPI spec; reinstall with `npm install -g brilliant-directories-mcp`.
+- **`Unknown tool` (from Claude)** — the MCP server didn't load the OpenAPI spec. Usually fixed by fully quitting the AI app (not just closing the window) and reopening. If that doesn't fix it, your npx cache may have a broken install — delete the cache and try again:
+  - **Windows PowerShell:** `Remove-Item -Recurse -Force "$env:LOCALAPPDATA\npm-cache\_npx"`
+  - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
+  - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
+  - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
 - **`npx: command not found`** — Node.js isn't installed. Install from [nodejs.org](https://nodejs.org) (pick LTS).
 
 ---
