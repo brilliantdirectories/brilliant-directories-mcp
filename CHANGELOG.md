@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.3] - 2026-04-20
+
+### Fixed — Scope-mixing in Member Listings + post-type guardrails
+
+v6.13.2 shipped the fix for the "closed set" contradiction, but the Member Listings block and the `updatePostType` description still mixed Member-Listings-only rules with universal rules ambiguously. Agents editing non-Member-Listings post types (blog, event, coupon, property, product, etc.) could reasonably mis-apply guardrails that were only meant for `data_type=10`.
+
+**Reorganized into 4 clearly-scoped blocks** (applied symmetrically in `mcp/index.js` top-level instructions AND in `openapi/bd-api.json` `updatePostType` description):
+
+1. **Member Listings identity + edit path + data_id caching.** Scope: Member Listings only.
+2. **Cheat-sheet of common Member Listings UI/UX + search-results code fields** (15 total). Explicitly reframed as "reference, NOT a limit — every column returned on GET is writable per the universal rule." Examples of unlisted-but-writable fields (`feature_categories`, `icon`, `category_tab`) called out by name. Scope: Member Listings only.
+3. **Member Listings-specific guardrails** (profile fields have no effect here — skip). Explicit scope tag: "apply ONLY to `data_type=10`, NOT to any other post type. On every OTHER post type these ARE legitimate rendering fields — write them freely there."
+4. **Universal post-type safety** (structural fields `data_type`/`system_name`/`data_name`/`data_active`/`data_filename`/`form_name`/`software_version`/`display_order` — never mutate on any post type). Explicit scope tag: "applies to EVERY post type, not just Member Listings."
+
+No information removed. The 15-field Member Listings cheat-sheet stays (real discovery value). The profile-fields-skip rule stays but is now correctly tagged as Member-Listings-only (prevents false guardrails when editing blog/event/etc.). The structural-don't-touch rule is now correctly tagged as universal.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.2] - 2026-04-20
 
 ### Fixed — "complete closed set" contradiction that was making agents refuse legitimate writes
