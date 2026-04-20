@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.5] - 2026-04-20
+
+### Fixed — `createUserMeta` description: clarify `createWebPage` seeds EAV correctly on CREATE
+
+The `createUserMeta` description's "critical BD pattern" section explained the UPDATE-path EAV workaround but didn't explicitly remind agents that the CREATE path handles EAV seeding in a single `createWebPage` call. An agent reading just that tool's description in isolation could conclude they needed to double-call `createWebPage` + `createUserMeta` at create-time, wasting calls and potentially double-writing.
+
+Fixed by making the create/update distinction explicit:
+- **On CREATE:** `createWebPage` writes ALL fields correctly in a single call — direct columns AND users_meta rows are seeded together. No separate `createUserMeta` calls needed for the 18 EAV-backed fields at create-time.
+- **On UPDATE:** `updateWebPage` only writes direct columns — the users_meta-stored fields are silently ignored. The EAV workaround via `createUserMeta` / `updateUserMeta` with `database=list_seo` is ONLY for updating these fields on an existing page, never on initial create.
+
+Doc-only. Zero schema/code/behavior changes. The top-level instructions paragraph in `mcp/index.js` already carried the correct distinction — this release brings the `createUserMeta` tool-level description in alignment with it.
+
 ## [6.13.4] - 2026-04-20
 
 ### Added — Universal CSV-no-spaces directive (silent-corruption prevention)
