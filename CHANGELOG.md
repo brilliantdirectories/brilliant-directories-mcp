@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.12.0] - 2026-04-20
+
+### Added — Duplicate silent-accept pre-check rules extended to 10 more create endpoints
+
+BD does NOT enforce DB-level uniqueness on most natural-key fields. Two creates with the same name both succeed, produce different primary keys, and leave downstream lookups ambiguous (which record wins?). v6.9.x–v6.11.x already documented the pre-check pattern for 5 resources (`createUser` email, `createTag` tag_name, `createUserMeta` triple, `createWebPage` filename, `createForm` form_name). This release extends the same pattern to **10 additional create endpoints**, closing the remaining silent-duplicate surface on the API.
+
+**Endpoints that now carry a pre-check rule in their tool description:**
+
+| Endpoint | Natural-key field | Consequence of duplicate |
+|---|---|---|
+| `createEmailTemplate` | `email_name` | Wrong template fires on transactional triggers |
+| `createWidget` | `widget_name` | `[widget=Name]` shortcodes resolve to wrong widget |
+| `createMenu` | `menu_name` | Wrong menu renders in layout slots |
+| `createTopCategory` | `filename` | `/filename` URL resolves ambiguously |
+| `createSubCategory` | `filename` (scoped to `profession_id`) | URL collision within a parent category |
+| `createMembershipPlan` | `subscription_name` | Admin / billing / migration ambiguity |
+| `createTagGroup` | `group_tag_name` | Tag-manager ambiguity + broken group-bound filters |
+| `createSmartList` | `smart_list_name` | Lookups bind to the wrong list |
+| `createDataType` | `category_name` | Post-type UI corruption + posts under wrong type |
+| `createRedirect` | `old_filename` | **TWO checks** — exact-pair skip + reverse-rule loop prevention (prevents A→B + B→A redirect loops) |
+
+**The canonical pre-check pattern — server-side filter-find, NOT paginate-and-search:**
+
+```
+list<Resource> property=<natural-key-field> property_value=<proposed> property_operator==
+```
+
+Returns ONE tiny response regardless of how many records the site has. Sites in the wild have thousands of posts / widgets / redirects / email templates / plans — dumping full lists to search for a name burns rate limit and context for nothing. The filtered lookup is deterministic, cheap, and correct.
+
+**Flow:**
+1. Filter-find with `property_operator==` on the natural-key field.
+2. Zero rows → name is free, proceed with create.
+3. ≥1 row → taken. Reuse the existing record's ID via the corresponding `update*`, OR ask the user, OR pick an alternate name and re-check. Never silently create a duplicate.
+
+**`createRedirect` special case — redirects are uniquely dangerous** (wrong rules cause infinite loops and real SEO damage). TWO filter-finds required:
+- **Check 1 — exact-pair skip:** if a rule with the same `old_filename` + same `new_filename` already exists, skip the create (idempotent). If same `old_filename` but different `new_filename`, ask the user which destination wins.
+- **Check 2 — reverse-rule loop prevention:** if a rule B→A exists when creating A→B, STOP. Creating would produce an infinite redirect loop. Flag to the user and ask whether to delete the existing reverse rule first or abandon the create.
+
+**MCP instructions blanket paragraph updated** (line 781 in `mcp/index.js`) — the top-level duplicate silent-accept rule now lists all 15 resources, names the natural-key field on each, and emphasizes "server-side filter-find, NOT paginate-and-search" as the canonical mechanism. The per-tool descriptions carry the fully-expanded rule with the resource-specific consequence; the top-level rule is the general pattern.
+
+Doc-only. No schema changes. No new tools. Zero breaking changes.
+
 ## [6.11.3] - 2026-04-20
 
 ### Added — Existing CDATA/entity-escape rule now also covers tool-call scaffolding tags
