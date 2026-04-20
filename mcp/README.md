@@ -28,7 +28,7 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 - [Setup by Platform](#setup-by-platform)
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
-  - [ChatGPT (GPT Actions)](#chatgpt-gpt-actions)
+  - [OpenAI (ChatGPT / Codex)](#openai-chatgpt--codex)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
   - [Cursor](#cursor)
@@ -203,7 +203,76 @@ Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close
 
 ---
 
-### ChatGPT (GPT Actions)
+### OpenAI (ChatGPT / Codex)
+
+> ⚠️ **OpenAI support is CLI-only for this MCP today.** Here's the honest landscape:
+>
+> | OpenAI surface | Works with full BD MCP (175 tools)? |
+> |---|---|
+> | ChatGPT web (`chatgpt.com`) | ❌ No — Custom GPT Actions cap at **30 operations per GPT**; our MCP has 175 |
+> | ChatGPT Desktop app | ❌ No — same 30-op cap (loads the same Custom GPTs) |
+> | Codex Cloud app | ❌ No — uses OpenAI's App Server architecture; MCP support is partial/evolving |
+> | **Codex CLI** (terminal) | ✅ **Yes — full MCP support, no op cap** |
+>
+> If you want full BD automation through OpenAI: use **Codex CLI**. For Custom GPTs with Actions (narrow-scope use cases where 30 ops is enough), see the fallback section at the bottom.
+>
+> Users who want a GUI experience should use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap and no terminal required.
+
+#### Codex CLI setup (recommended OpenAI path)
+
+Codex CLI is OpenAI's terminal-based agent, similar to Claude Code. It supports local stdio MCP servers natively.
+
+**1. Install Codex CLI** (requires Node 18+ which you already have from the quickstart prereqs):
+
+```bash
+npm install -g @openai/codex
+```
+
+**2. Verify install:**
+
+```bash
+codex --version
+```
+
+**3. Sign in** (opens a browser to link your ChatGPT account — requires ChatGPT Plus, Pro, Team, or Enterprise):
+
+```bash
+codex
+```
+
+Follow the sign-in prompt on first run. After sign-in, exit with `Ctrl+C` — we're going to add BD before using it.
+
+**4. Edit the Codex config** to add BD MCP. Codex CLI uses **TOML format** (not JSON like Claude Desktop / Cursor).
+
+Config file path:
+- **Mac/Linux:** `~/.codex/config.toml`
+- **Windows:** `%USERPROFILE%\.codex\config.toml`
+
+Open it in any text editor. If the file doesn't exist yet, create it. Add this block:
+
+```toml
+[mcp_servers.bd-api]
+command = "npx"
+args = ["-y", "brilliant-directories-mcp", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+```
+
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+
+**5. Start Codex:**
+
+```bash
+codex
+```
+
+Ask it *"list my first 5 members on my BD site"*. It'll invoke the BD MCP tools and return data.
+
+> **`.toml` vs `.json` gotcha** — Codex CLI uses TOML syntax (square brackets for sections, `key = value` pairs, quoted strings). Don't paste a JSON config into `config.toml` — it won't parse. The block above is already in TOML format; copy it verbatim.
+
+---
+
+#### Fallback: ChatGPT Custom GPT with Actions (narrow scope only)
+
+If you're already in ChatGPT Plus/Team/Enterprise and want a browser-based GPT for a small slice of BD functionality (30 ops or fewer), you can build a Custom GPT with our OpenAPI spec. **Requires manually trimming our 175-op spec down to ≤30 operations before importing** — not covered here; this is advanced JSON editing. For full integration, use Codex CLI above.
 
 > ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. You build a **Custom GPT with Actions** that calls our REST API directly using our OpenAPI spec. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't on the free tier).
 >

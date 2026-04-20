@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.10] - 2026-04-20
+
+### Changed — OpenAI section honestly rewritten: Codex CLI is the real path, Custom GPT demoted to fallback
+
+Live-testing the ChatGPT Custom GPT flow surfaced a hard wall: Custom GPT Actions cap at **30 operations per GPT**, and our MCP exposes 175. That wall applies to ChatGPT web, ChatGPT Desktop, and the Codex Cloud desktop app (all three share the same Custom GPT infrastructure). The only OpenAI surface that supports full BD integration is **Codex CLI** (terminal-based).
+
+Section header renamed from `ChatGPT (GPT Actions)` to `OpenAI (ChatGPT / Codex)`. The section now leads with an honest tier table showing which OpenAI surfaces work vs. don't, followed by a complete Codex CLI walkthrough:
+
+**Tier table** up top (at-a-glance):
+- ChatGPT web — ❌ 30-op cap
+- ChatGPT Desktop — ❌ same 30-op cap
+- Codex Cloud app — ❌ App Server architecture, partial MCP support
+- Codex CLI — ✅ full MCP, no cap
+
+**Codex CLI walkthrough** (new, ~30 lines):
+1. `npm install -g @openai/codex`
+2. `codex --version` verify
+3. `codex` → sign in with ChatGPT Plus/Pro/Team/Enterprise (required tier; free tier can't use Codex)
+4. Edit `~/.codex/config.toml` (Mac/Linux) or `%USERPROFILE%\.codex\config.toml` (Windows)
+5. Add TOML block (TOML format, not JSON — gotcha called out explicitly):
+   ```toml
+   [mcp_servers.bd-api]
+   command = "npx"
+   args = ["-y", "brilliant-directories-mcp", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+   ```
+6. Test: `codex` then ask for BD members
+
+**Custom GPT section demoted to "Fallback"** subsection at the bottom with clear framing: only useful if you're already in ChatGPT Plus/Team, want a browser GUI, and are OK trimming our 175-op spec down to ≤30 ops manually before importing. Full integration path is Codex CLI above.
+
+**TOC updated:** `ChatGPT (GPT Actions)` → `OpenAI (ChatGPT / Codex)`.
+
+### Why this rewrite
+Previous section told users to build a Custom GPT from our full spec — which silently fails past op 30. Live walkthrough with a new user surfaced the 30-op wall only AFTER they'd followed every other step correctly (sign up, create GPT, paste schema, configure auth, privacy policy, `Only me` sharing). Every minute spent in that flow was wasted. New section steers OpenAI users to the path that actually works on the first try, and tells everyone else (GUI users) to pick Claude Desktop / Cursor / Windsurf / Cline instead.
+
+No code / schema changes. README-only; synced root + `mcp/` copies.
+
 ## [6.10.9] - 2026-04-20
 
 ### Fixed — CDATA/entity-escape rule reinforced at WebPage asset-routing decision point
