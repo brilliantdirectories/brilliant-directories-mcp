@@ -38,7 +38,9 @@ Once set up, you get new MCP versions automatically the next time you fully-quit
 
 ### What you can ask the AI to do
 
-Once connected, your AI can read AND write to your BD site. Examples: *"list all members who signed up this month"*, *"create a new member named Jane Doe with email jane@...,"* *"add a blog post by member 42 titled Welcome,"* *"show me unpaid invoices,"* *"add Jane to the VIP tag."* If the AI can do something on the site, it can probably do it via your agent now — 164 operations across members, posts, leads, reviews, pages, menus, widgets, and more.
+Once connected, your AI can READ and WRITE to your BD site. Examples: *"list all members who signed up this month"*, *"create a new member named Jane Doe with email jane@…"*, *"add a blog post by member 42 titled Welcome"*, *"show me unpaid invoices"*, *"add Jane to the VIP tag"*. 164 operations across members, posts, leads, reviews, pages, menus, widgets, and more.
+
+> ⚠️ **The AI can also DELETE and MODIFY live data** — members, posts, pages, tags, etc. Writes go directly to your live site with no undo. Before running bulk or destructive operations, test on ONE record first, and consider taking a backup. If you're unsure, ask the AI to *preview* (list/show) before it *acts*.
 
 ### For AI agents / scripts (non-interactive)
 
@@ -232,7 +234,7 @@ Multiple filters:
 GET /api/v2/user/get?property[]=city&property_value[]=Los Angeles&property[]=state_code&property_value[]=CA
 ```
 
-Operators: `=`, `LIKE`, `>`, `<`, `>=`, `<=`
+Operators: `=`, `>`, `<`, `>=`, `<=`. Additional operators (`LIKE`, `!=`, `in`, `not_in`, `not_like`, `is_null`, `is_not_null`, `between`) are in QA and rolling out across endpoints shortly. For now, stick with `=` for string match, or enumerate and filter client-side.
 
 ## Sorting
 
@@ -288,18 +290,7 @@ curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/user/fields
 curl -H "X-Api-Key: YOUR_KEY" https://your-site.com/api/v2/data_posts/fields?form_name=my-form
 ```
 
-## Files
-
-| File | Purpose |
-|------|---------|
-| [`openapi/bd-api.json`](openapi/bd-api.json) | OpenAPI 3.1 spec (single source of truth) |
-| [`mcp/index.js`](mcp/index.js) | MCP server for Claude/Cursor |
-| [`mcp/package.json`](mcp/package.json) | npm package definition |
-| [`docs/*.md`](docs/) | Raw API endpoint documentation |
-| [`LICENSE`](LICENSE) | MIT License |
-| [`CHANGELOG.md`](CHANGELOG.md) | Release history |
-
-### Stable asset URLs
+## Stable asset URLs
 
 For tools that import specs by URL (ChatGPT Actions, n8n, Postman):
 
@@ -315,7 +306,35 @@ https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp
 - API key permissions control which endpoints are accessible
 - Treat your API key like a password
 
+## FAQ
+
+**Does this cost anything?**
+The MCP server is free (MIT license, open source). Your AI agent's subscription (Claude, Cursor, etc.) is separate. API calls to your BD site count against your site's rate limit but don't cost extra.
+
+**Is my data sent to Anthropic / OpenAI / third parties?**
+Your BD site data passes from your BD site directly to the AI client on your machine, then to the AI provider you use (Anthropic, OpenAI, etc.) as part of your conversation with the AI. The MCP server itself doesn't relay data anywhere else — no telemetry, no third-party servers in between.
+
+**Can I connect more than one BD site?**
+Yes. Add multiple entries under `mcpServers` with different names (e.g. `bd-site-a`, `bd-site-b`), each with its own API key and URL. Your AI will see tools from both.
+
+**Can my team share one key, or should everyone have their own?**
+Each person should generate their own API key (BD Admin → Developer Hub). Keys are per-user so revoking one doesn't break anyone else.
+
+**How do I disconnect / remove the MCP?**
+- Claude Code: `claude mcp remove bd-api`
+- Cursor / Windsurf / Cline: delete the `bd-api` entry from the MCP config JSON file, save, fully quit and reopen the app.
+
+**How do I undo something the AI did?**
+BD's API doesn't have a universal undo. For members, prefer `updateUser active=3` (Canceled) over `deleteUser` — it's reversible. For destructive operations, back up first or test on one record.
+
+**Can I try this safely on a test site before production?**
+Yes. Generate a separate API key on a BD staging/dev site, set that URL + key in your MCP config. Once you trust the workflow, switch to production.
+
+**How do I know which endpoints my API key has permission for?**
+Check your key in BD Admin → Developer Hub. When you hit `403 API Key does not have permission to access this endpoint`, the error names the denied endpoint — enable it on the key, save, retry.
+
 ## Support
 
-- BD Support: https://support.brilliantdirectories.com
-- API Docs: https://support.brilliantdirectories.com/support/solutions/articles/12000108045
+- **Bug reports / feature requests:** https://github.com/brilliantdirectories/brilliant-directories-mcp/issues
+- **BD Support:** https://support.brilliantdirectories.com
+- **API Docs:** https://support.brilliantdirectories.com/support/solutions/articles/12000108045

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.3] - 2026-04-19
+
+### Changed — README final polish
+
+- Added destructive-write warning to the "What you can ask" section (AI can DELETE and MODIFY live data — no undo).
+- Added FAQ section covering: cost, data flow, multi-site, team keys, removal/disconnect, undo semantics, staging-vs-production, key permissions.
+- Fixed Filtering section: removed LIKE from the "ready" operator list; noted the expanded operator set is in QA.
+- Support section now names GitHub Issues as the bug-report/feature-request channel.
+- Dropped the repo-maintainer "Files" section (noise for end users).
+
 ## [6.3.2] - 2026-04-19
 
 ### Changed — README: "where do I paste this?" clarity
