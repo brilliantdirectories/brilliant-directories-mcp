@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.1] - 2026-04-20
+
+### Fixed — critical rule added: profile_search_results slugs must be real
+
+Live stress testing found that `profile_search_results` static pages 404 on the public URL if `filename` doesn't correspond to a real BD dynamic search URL (built from actual country/state/city/top_category/sub_category slugs on the site). Arbitrary/made-up slugs return HTTP 404 even though the `list_seo` record is created successfully — BD has no dynamic page to override.
+
+- Added explicit "CRITICAL" warning to `createWebPage`/`updateWebPage` descriptions
+- Added same rule to MCP instructions so cold agents get it at session start
+- Directed agents to use `seo_type=content` instead if they need a static page at an arbitrary URL
+
 ## [6.5.0] - 2026-04-20
 
 ### Added — Sidebars resource + full Member Search Results SEO page defaults
