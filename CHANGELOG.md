@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.14] - 2026-04-20
+
+### Added — Pagination: concrete sequential-page recipe
+
+v6.13.13 had the rules but not the recipe. Agents new to the cursor model would sometimes reconstruct the loop correctly from the rules and sometimes not. Added a 4-step copy-paste recipe to the top-level instructions:
+
+1. First call: `listX limit=10` → returns 10 records + `next_page` token
+2. Next call: `listX page=<that token>` (no `limit` — it's baked in) → records 11-20 + new token
+3. Repeat, each response hands you the next cursor
+4. Stop when `current_page >= total_pages`
+
+Example line: "118 members at limit=10 = 12 total pages = 12 calls to enumerate all members with tiny per-call payloads." Gives agents a concrete scale-reference so they can size loops and tell users up front "this will take N calls" instead of over-fetching.
+
+Doc-only.
+
 ## [6.13.13] - 2026-04-20
 
 ### Fixed — Pagination cap IS 100 (correcting v6.13.11's false "no cap" claim)
