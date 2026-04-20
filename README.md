@@ -194,32 +194,62 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 
 ### Claude Code
 
-Terminal only (Claude Code has no MCP GUI). Paste in any terminal — **Terminal.app** (Mac), **PowerShell** (Windows), or the **built-in terminal inside Cursor / VS Code** (``Ctrl+` `` on Windows/Linux, ``Cmd+` `` on Mac, or **View → Terminal**):
+Claude Code has no MCP GUI — install via terminal. Works in **Terminal.app** (Mac), **PowerShell** (Windows), or **Cursor / VS Code's built-in terminal** (``Ctrl+` `` Win/Linux, ``Cmd+` `` Mac, or **View → Terminal**).
+
+**Prerequisite:** the `claude` CLI must be installed:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Close and reopen your terminal so PATH updates. Verify with `claude --version`.
+
+**Install BD MCP:**
 
 ```bash
 claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
-Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close and reopen Claude Code.
+Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Verify with `claude mcp list` — `bd-api` should appear. Close and reopen Claude Code.
 
-> **That command is where you give your credentials.** The `--api-key` and `--url` flags are baked into the MCP server config (stored in `~/.claude.json`). You do NOT need to paste them again anywhere — Claude passes them automatically to the BD MCP on every tool call. To rotate or change them later, run `claude mcp remove bd-api` then re-run the `claude mcp add` command with the new values.
+> **Credentials live in that one command.** The `--api-key` and `--url` flags are baked into the MCP server config in your user-level Claude config file — passed automatically to BD on every tool call, no separate step. To rotate: `claude mcp remove bd-api`, then re-run `claude mcp add` with new values.
 
 #### Using Claude CLI inside Cursor
 
-Running the Claude extension / Claude CLI **inside Cursor** (instead of — or alongside — Cursor's native agent)? Install BD MCP into **Claude's** config, not Cursor's. They're two separate MCP hosts that happen to live in the same editor window:
+If you run the Claude extension inside Cursor, Claude and Cursor's native agent use **separate MCP hosts** — they don't share config:
 
-| Host | Config file | Panel that shows its MCPs |
+| Host | Config file (Windows / Mac/Linux) | Where you see its MCPs |
 |---|---|---|
-| **Claude CLI / extension** | `~/.claude.json` | Claude's own tool list (visible when you ask it what tools it has) |
-| **Cursor's native agent** | `~/.cursor/mcp.json` | Cursor **Settings → Tools & MCP** |
+| **Claude (inside Cursor or standalone)** | `C:\Users\<you>\.claude.json` / `~/.claude.json` | Claude's own tool list — ask Claude to list its tools, or use `/mcp` |
+| **Cursor's native agent** | `C:\Users\<you>\.cursor\mcp.json` / `~/.cursor/mcp.json` | Cursor **Settings → Tools & MCP** |
 
-Setup:
+**Simplest setup for users running Claude inside Cursor:** install for Claude only — Claude sees BD tools, you never need to touch Cursor's panel.
 
-1. **Open a terminal inside Cursor** (``Ctrl+` `` on Windows/Linux, ``Cmd+` `` on Mac, or **View menu → Terminal**) — you don't need to leave Cursor. Run the **Claude Code** install command above (`claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ... --url ...`). Credentials are included in that one command — no separate step. This writes to `~/.claude.json` globally; Claude-in-Cursor will see BD tools on next launch. Verify with `claude mcp list` in the same terminal — you should see `bd-api` listed.
-2. **Cursor's Tools & MCP panel will still show nothing. That's expected** — it only reflects `~/.cursor/mcp.json`, a separate host. Claude's MCPs don't appear there.
-3. If you ALSO want BD MCP available to Cursor's native agent (not only Claude), follow the [Cursor section](#cursor) below as well. The two configs don't cross-pollinate — each install gets its own `--api-key` + `--url`.
+1. Open a terminal inside Cursor (``Ctrl+` `` / ``Cmd+` ``) and run the `claude mcp add bd-api ...` command above. (Install the CLI first if needed — see prereq above.)
+2. Restart the Claude extension.
+3. **Cursor's Tools & MCP panel will stay empty — that's expected.** Claude's MCPs don't surface there; they're in a separate host file.
 
-> **How to tell which host is serving your MCP tools:** ask your agent to list its available tools. If you see `mcp__brilliant-directories__*` functions but Cursor's Tools & MCP panel is empty, the tools are coming from Claude's host, not Cursor's.
+**Want BD MCP in BOTH surfaces?** Run the Claude install above, AND follow the [Cursor section](#cursor) to add it to Cursor's native agent separately. Each host needs its own install with its own `--api-key` + `--url`.
+
+**Don't want to install the `claude` CLI?** The CLI is just a JSON editor for `~/.claude.json`. You can skip it and edit the file directly:
+
+```json
+{
+  "mcpServers": {
+    "brilliant-directories": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "brilliant-directories-mcp"],
+      "env": {
+        "BD_API_URL": "https://your-site.com",
+        "BD_API_KEY": "ENTER_API_KEY"
+      }
+    }
+  }
+}
+```
+
+Save, restart Claude, done. Same result as the CLI command. If the file doesn't exist yet, create it at the path shown in the table above.
 
 ---
 
