@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.5] - 2026-04-20
+
+### Changed — README brevity pass: surgical, not wordy
+
+Tightened the entire README setup surface without losing a single instruction. Goal: keep non-dev readers from glazing over, while still answering every click-by-click question a boomer would have. No info lost; just cut storytelling, redundant "here's why this matters" meta-commentary, and doubled-up explanations. Doc-only.
+
+**What got tightened (approximate character reduction shown):**
+- 30-Second Quickstart: ~55% shorter. Terminal-open steps collapsed to one-liner per OS. "Paste shortcut," "Fully quit," "Working?" each became a short inline callout instead of a multi-sentence paragraph. OS-specific `Terminal.app`/`PowerShell`/`Ctrl+Alt+T` kept surgically.
+- Prerequisites → Advanced Endpoints ALL ON callout: ~60% shorter. Five-step numbered list collapsed to a single arrow-separated click path (`Developer Hub → key → Actions → Permissions → Advanced Endpoints → ALL ON → Save Permissions`). "Why" sentence kept as a single terse trailing line.
+- Claude Desktop warnings (Connectors vs Developer, "new chat isn't enough"): ~65% shorter. Dropped the storytelling ("if you tried X and saw Y"), kept the imperative actions (what to skip, what to use, how to fully quit per OS).
+- Claude Desktop merge-with-comma walkthrough: ~35% shorter. Scenarios A and B kept as distinct branches, but the "don't try to rewrite," "two rules," and "notice only two things changed" explanations trimmed to one sentence each. Before/after JSON examples unchanged — they're the whole point.
+- Claude Desktop verify + troubleshoot: ~50% shorter. Kept the hammer-icon check and error-status paths; dropped the paragraph framing.
+- Cursor file-method `<details>` fallback: ~45% shorter across both Mac/Linux and Windows walkthroughs. Merged "what is a home folder" + "what is `~`" + "what is a hidden dot-folder" preambles into a single "Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory" sentence. Click-by-click steps kept surgical (each step still specifies the exact keystroke or click), just without the accompanying color commentary.
+
+No schema/code changes. Pure content compression on the README.
+
+### Still to come (not in this release)
+- Platform reorder: Claude Desktop first, Claude Code, ChatGPT, Cursor, rest
+- Multi-site setup section
+- "Each AI app has its own config" clarification after the quickstart
+- Brevity pass for the remaining per-platform sections (Claude Code, Windsurf, Cline, ChatGPT, n8n, Make/Zapier, curl) — likely lighter touch, those are already reasonably terse
+
 ## [6.9.4] - 2026-04-20
 
 ### Changed — README second pass: live-tested fixes from walkthrough with a new user

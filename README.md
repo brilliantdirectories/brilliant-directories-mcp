@@ -11,17 +11,13 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 ## Before you start — 3 things you need
 
 1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
-2. **Your BD API key (with the right permissions).** BD Admin sidebar → **Developer Hub** → **Generate API Key** → copy it.
+2. **Your BD API key (with the right permissions).** BD Admin → **Developer Hub** → **Generate API Key** → copy it.
 
-   > ⚠️ **Critical — enable advanced endpoint permissions, or your AI will hit 403 errors constantly.** A fresh BD API key is created with only a baseline set of endpoints enabled. If you want your AI agent to be able to create/update/delete pages, forms, menus, tags, email templates, reviews, leads, and every other resource, you MUST grant access to the advanced endpoints. Steps:
+   > ⚠️ **Enable advanced endpoint permissions, or the AI hits 403s on most writes.** Fresh keys have only baseline endpoints enabled.
    >
-   > 1. After generating the key, find it in the Developer Hub key list.
-   > 2. Click **Actions** next to the key → **Permissions** toggle.
-   > 3. Click the **Advanced Endpoints** tab.
-   > 4. Click **ALL ON** (turns on every advanced endpoint in one click).
-   > 5. Click **Save Permissions**.
+   > Developer Hub → find your key → **Actions** → **Permissions** → **Advanced Endpoints** tab → **ALL ON** → **Save Permissions**.
    >
-   > Without this step, the agent will work for basic member read/write but silently fail with "permission denied" on many common requests (create a page, build a form, add a menu item, etc.). Regenerating the key or toggling individual endpoints later is fine — but do the ALL ON once up front and save yourself the debugging.
+   > Skip this and the agent works for basic member read/write but fails on pages, forms, menus, tags, templates, reviews, leads, etc.
 3. **Your BD site URL.** Include `https://`, no trailing slash.
    - ✅ `https://mysite.com`
    - ❌ `mysite.com` (missing `https://`)
@@ -48,42 +44,31 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ## 30-Second Quickstart (try this first)
 
-The fastest way to set this up is to run our one-command wizard in your computer's **terminal**. If you've never used a terminal before, don't worry — it's just a text-only app for running commands. You open it, paste one line, press Enter, and follow the prompts. Here's how to open it on your OS:
+Run our one-command wizard in a **terminal** (a text-only app for running commands).
 
-### Mac
+**Open a terminal:**
+- **Mac:** `Cmd+Space` → type `Terminal` → Enter.
+- **Windows:** Windows key → type `PowerShell` → Enter.
+- **Linux:** `Ctrl+Alt+T`.
 
-1. Press `Cmd` + `Space` on your keyboard (this opens Spotlight, Mac's search bar at the top of the screen).
-2. Type `Terminal` and press `Enter`. A window with a dark or light background and a blinking cursor opens — that's the terminal.
-
-### Windows
-
-1. Press the `Windows` key on your keyboard (the key with the Windows logo — usually between `Ctrl` and `Alt`). The Start menu opens.
-2. Type `PowerShell` and press `Enter`. A window with a blue or black background and a blinking cursor opens — that's PowerShell, Windows' terminal.
-
-### Linux
-
-1. Most Linux desktops: press `Ctrl` + `Alt` + `T`, OR open your apps menu and look for **Terminal** / **Konsole** / **GNOME Terminal**.
-
----
-
-Once the terminal is open, copy this line, paste it in, and press `Enter`:
+**Paste this, press Enter:**
 
 ```bash
 npx brilliant-directories-mcp --setup
 ```
 
-> **Tip — how to paste in the terminal:** `Cmd` + `V` on Mac, `Ctrl` + `Shift` + `V` or right-click → Paste in Windows PowerShell, `Ctrl` + `Shift` + `V` in most Linux terminals.
+> **Paste shortcut:** `Cmd+V` (Mac). `Ctrl+Shift+V` or right-click (Windows/Linux).
 
-A wizard asks for your URL + API key, tests the connection, asks which AI app you use (Cursor, Claude Desktop, etc.), and writes the config file for that app automatically.
+The wizard asks for your URL + API key, tests the connection, asks which AI app you use, and writes its config.
 
-If it worked, **fully quit and reopen your AI app** (not just close the window — see the "fully quit" note below) and [skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
+**Then fully quit and reopen the AI app** (not just close the window):
+- **Mac:** `Cmd+Q`, or menu bar → app name → **Quit**.
+- **Windows:** right-click the app in the system tray (bottom-right by the clock; may be under `^`) → **Quit**.
+- **Linux:** `Ctrl+Q`, or File → Quit.
 
-> **What "fully quit" means:**
-> - **Mac:** the red dot (close button) only hides the window; the app keeps running. To fully quit: click the app's name in the top menu bar (e.g. "Cursor" next to the Apple logo) → **Quit Cursor**, OR press `Cmd` + `Q` while the app is focused.
-> - **Windows:** closing the window with the X usually exits the app, but some apps keep running in the system tray (bottom-right corner near the clock). To be safe: right-click the app icon in the system tray → **Quit** / **Exit**. If you don't see it there, the window X was enough.
-> - **Linux:** varies by desktop — use `Ctrl` + `Q` or the app's File → Quit menu.
+Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
-If the wizard errors, hangs, or your AI still says "no tools available" after restart, use the per-platform step-by-step below — it's the same outcome, just done by hand.
+If the wizard errors or tools still don't show up after restart, use the per-platform steps below — same outcome, done by hand.
 
 ---
 
@@ -127,47 +112,31 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
 7. **Fully quit and reopen Cursor** (menu bar → Quit; or Mac `Cmd+Q`; or Windows right-click the taskbar icon → Quit).
 
 <details>
-<summary><strong>Last resort: file method</strong> — only if the GUI method above won't work (click to expand)</summary>
+<summary><strong>Last resort: file method</strong> — only if the GUI above fails (click to expand)</summary>
 
-**When to use this:** the GUI method (Settings → Tools & MCP → New MCP Server) is the recommended path and works for 99% of users. Use the file method only if:
+Use this if the Settings UI doesn't show "Tools & MCP", the "New MCP Server" button silently fails, or you just prefer editing files. Result is identical to the GUI method.
 
-- Your Cursor version is too old and doesn't show a "Tools & MCP" sidebar entry
-- The "New MCP Server" button doesn't exist, doesn't open a dialog, or silently fails to save
-- You're on a work machine where something in the Cursor UI is disabled
-- You're comfortable editing config files directly and prefer it
-
-**What it does:** directly edits the same config file the GUI writes to — Cursor reads its MCP server list from `mcp.json` inside a hidden folder called `.cursor` in your home folder. "Home folder" is your personal user folder (e.g. `/Users/YourName/` on Mac or `C:\Users\YourName\` on Windows). The folder starts with a dot, which makes it hidden by default on Mac/Linux, so you'll navigate to it by typing the path directly.
-
-**What to expect:** if you do this correctly, the result is identical to the GUI method — after you save and restart Cursor, the MCP server appears in Settings → Tools & MCP just as if you'd added it via the UI.
+Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory. Same file the GUI writes to.
 
 #### Mac / Linux
 
-1. Open **Finder** (the blue smiley-face app in your Dock on Mac; your file manager app on Linux).
-2. Press `Cmd` + `Shift` + `G` on Mac (this opens a "Go to Folder" input box). On Linux, press `Ctrl` + `L` in most file managers to type a path directly.
-3. Type or paste: `~/.cursor`
-4. Press `Enter`.
-   - If the folder opens: good — continue to step 5.
-   - If you see "Folder doesn't exist" or similar: the folder hasn't been created yet. In Finder, press `Cmd` + `Shift` + `G` again and paste `~/` to go to your home folder. Create a new folder there named exactly `.cursor` (with the leading dot). Then go back to step 2.
-5. Inside the `.cursor` folder, look for a file called `mcp.json`.
-   - If it exists: right-click it → **Open With** → **TextEdit** (Mac) or any text editor you have (Linux: gedit, nano, VS Code, etc.).
-   - If it doesn't exist: create a new plain text file. In Finder, right-click inside the `.cursor` folder → **New Document** (if no option, open TextEdit → File → New → Format menu → **Make Plain Text** first, then save). Name the file exactly `mcp.json` (not `mcp.json.txt`).
-6. Paste [the config block](#the-config-block) into the file. Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Save.
-7. **Fully quit Cursor** and reopen it. ("Fully quit" means: in Cursor's top menu bar, click **Cursor** → **Quit Cursor**, or press `Cmd` + `Q` with Cursor focused. Just closing the window with the red dot doesn't count — Cursor keeps running.)
+1. Open **Finder** (Mac) or your file manager (Linux).
+2. `Cmd+Shift+G` (Mac) or `Ctrl+L` (Linux) to open a "Go to Folder" input.
+3. Type `~/.cursor` → Enter.
+   - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
+4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+6. **Fully quit Cursor** (`Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**). Red-dot close doesn't quit.
 
 #### Windows
 
-1. Press the `Windows` key on your keyboard, type `File Explorer`, press `Enter`. ("File Explorer" is the built-in Windows app for browsing folders — the same thing you use to look at your Documents or Downloads folder.)
-2. Click on the **address bar** at the top of the File Explorer window (the strip where the folder path shows, e.g. `This PC > Documents`). The path turns into editable text.
-3. Type or paste this exactly: `%USERPROFILE%\.cursor`
-4. Press `Enter`.
-   - If the folder opens: good — continue to step 5.
-   - If you see "Windows can't find" or similar: the folder hasn't been created yet. In File Explorer's address bar, paste `%USERPROFILE%` and press Enter to go to your user folder (e.g. `C:\Users\YourName`). Right-click in an empty area → **New** → **Folder** → name it exactly `.cursor` (with the leading dot). Go back to step 2.
-5. Inside the `.cursor` folder, look for a file called `mcp.json`.
-   - If it exists: right-click it → **Open with** → **Notepad** (or any text editor you have — VS Code, Notepad++, etc.).
-   - If it doesn't exist: right-click in an empty area of the folder → **New** → **Text Document**. Rename it exactly `mcp.json`. Windows may warn "if you change a file name extension, the file might become unusable" — click **Yes**.
-   - **Tip:** if you can't see file extensions (`.txt`, `.json`), enable them: in File Explorer's top menu → **View** → check **File name extensions**.
-6. Paste [the config block](#the-config-block) into the file. Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Save.
-7. **Fully quit Cursor** and reopen it. ("Fully quit" means: right-click the Cursor icon in your **system tray** — the row of icons at the bottom-right of your screen, near the clock — and click **Quit**. If Cursor isn't in the system tray, closing the window with the X is enough.)
+1. Windows key → type `File Explorer` → Enter.
+2. Click the address bar at the top. Type `%USERPROFILE%\.cursor` → Enter.
+   - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
+3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
+   - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
+4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+5. **Fully quit Cursor** — right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If not in tray, window X is enough.
 
 </details>
 
@@ -175,19 +144,21 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
 
 ### Claude Desktop
 
-> ⚠️ **Don't use Settings → Connectors for this MCP.** "Connectors" is for **remote** MCP servers hosted on a public URL (like `https://mcp.stripe.com`). Our BD MCP runs **locally on your computer** via `npx`, so you use **Settings → Developer → Edit Config** instead. If you tried pasting our GitHub URL into Connectors and got bounced to a GitHub authorization page, that's why — wrong door. The right door is below.
+> ⚠️ **Skip Settings → Connectors.** That's for remote MCP servers (public URLs like `https://mcp.stripe.com`). Ours runs locally via `npx`. Use **Settings → Developer → Edit Config** instead.
 >
-> ⚠️ **"Start a new chat" is NOT enough.** Claude Desktop loads MCP servers ONCE when the entire app launches. If you edit the config file and start a new chat without fully closing and reopening the app, you'll see Claude say "I have the connector in my config but the tools aren't loaded" — confusing because it sounds like it partially worked. It didn't. You **must fully quit the Claude Desktop app and reopen it** every time you change the config file. "Fully quit" on Windows means right-clicking the Claude icon in the system tray (bottom-right of screen, near the clock, may be hidden under the `^` arrow) → **Quit** (not just clicking the window X, which keeps Claude running in the tray). On Mac it means `Cmd+Q` while Claude is focused, or top menu bar → **Claude** → **Quit Claude** (not just the red-dot close button).
+> ⚠️ **New chat isn't enough — fully quit and reopen the app** after editing the config. Claude loads MCP servers only at app launch.
+> - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. Closing the window isn't enough.
+> - **Mac:** `Cmd+Q`, or menu bar → **Claude** → **Quit Claude**. Red-dot close isn't enough.
 
-**Steps (all inside the Claude Desktop app — no terminal):**
+**Steps (no terminal):**
 
 1. Open Claude Desktop.
-2. From the menu bar (top of screen on Mac, top of app window on Windows): **Settings → Developer tab → Edit Config**. This opens a file called `claude_desktop_config.json` in your default text editor (TextEdit on Mac, Notepad on Windows).
-3. Look at what's already in the file — it'll be **one of two situations**. Pick the matching scenario below:
+2. Menu bar → **Settings → Developer tab → Edit Config**. This opens `claude_desktop_config.json` in TextEdit (Mac) or Notepad (Windows).
+3. Pick your scenario:
 
-#### Scenario A — the file is empty `{}` or has no `mcpServers` entry
+#### Scenario A — file is empty `{}` or has no `mcpServers` entry
 
-Select everything (`Cmd+A` on Mac / `Ctrl+A` on Windows), delete it, paste this exact block:
+Select all (`Cmd+A` / `Ctrl+A`), delete, paste:
 
 ```json
 {
@@ -205,16 +176,15 @@ Select everything (`Cmd+A` on Mac / `Ctrl+A` on Windows), delete it, paste this 
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` and the URL. Save.
 
-#### Scenario B — the file already has content (e.g. `preferences`, Google connectors, other MCP servers)
+#### Scenario B — file already has content (preferences, Google connectors, other MCP servers)
 
-**Don't try to rewrite the whole file.** You just need to merge a new `mcpServers` block in. Two rules:
+Merge — don't overwrite. Two rules:
+- Comma between top-level entries.
+- Final `}` at the bottom stays one brace.
 
-- **A comma between top-level entries.** If the file currently has one top-level object like `"preferences": { ... }` and nothing else, the closing `}` at its end needs a `,` after it before you add your new `mcpServers` block.
-- **The final `}` at the very bottom stays as one brace.**
-
-Example — say your file currently looks like:
+**Before:**
 
 ```json
 {
@@ -225,7 +195,7 @@ Example — say your file currently looks like:
 }
 ```
 
-After merging, it should look like:
+**After:**
 
 ```json
 {
@@ -247,25 +217,21 @@ After merging, it should look like:
 }
 ```
 
-Notice only two things changed:
-- The `}` closing the `preferences` block now has a `,` after it.
-- The entire `mcpServers` block is added after, before the final `}`.
+Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` and the URL. Save.
 
-Replace `ENTER_API_KEY` and the URL with your values. Save.
-
-> **Sanity-check tip (recommended if you're new to JSON):** paste your final file contents into a JSON validator like [jsonlint.com](https://jsonlint.com) before restarting Claude. If there's a missing comma or extra brace, it'll tell you exactly which line. Missing comma = Claude silently fails to load the MCP, and you'll waste time debugging "no tools showing up" when the real problem is a character.
+> **Paste your final file into [jsonlint.com](https://jsonlint.com) before restarting.** Missing commas silently break the MCP — a validator flags them instantly.
 
 ---
 
-4. **Fully quit Claude Desktop.**
-   - **Mac:** `Cmd+Q` while Claude is focused, OR top menu bar → **Claude** → **Quit Claude**. (Closing the window with the red dot does NOT quit — Claude keeps running.)
-   - **Windows:** right-click the Claude icon in the **system tray** (bottom-right of your screen, near the clock — may be hidden under the `^` arrow) → **Quit**. If Claude isn't in the tray, open Task Manager (`Ctrl+Shift+Esc`), find `Claude` under Processes, right-click → **End task**.
-5. **Reopen Claude Desktop.** Start a new chat.
-6. **Verify:** look at the bottom-right of the input box for a **🔨 hammer icon with a number** — that's your tool count. Click it to see the BD tools listed (e.g. `createUser`, `listUsers`, `createWebPage`). If you see the hammer, you're done.
+4. **Fully quit Claude Desktop:**
+   - **Mac:** `Cmd+Q`, or menu bar → **Claude** → **Quit Claude**. Red-dot close doesn't quit.
+   - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If it's not there, Task Manager (`Ctrl+Shift+Esc`) → `Claude` → right-click → **End task**.
+5. **Reopen Claude. Start a new chat.**
+6. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**. That's your tool count. Click to see BD tools listed.
 
-> **If no hammer appears:** go to **Settings → Developer → Local MCP servers**. You should see a `bd-api` entry with a status. If it shows red or error, the status message tells you why — most common causes: JSON typo (validate with jsonlint), wrong API key, URL missing `https://` or having a trailing slash, or Node.js not installed on your computer.
+> **No hammer?** **Settings → Developer → Local MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash, Node.js not installed.
 
-**Config file path (if you want to open it directly without going through Settings):**
+**Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
