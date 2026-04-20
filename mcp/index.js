@@ -815,35 +815,66 @@ async function main() {
     }
 
     // Synthetic tool: getBrandKit — intercept before generic dispatch.
-    // Makes one internal BD call to /website_design_settings/get filtered by
-    // layout_group=theme_1, then transforms raw custom_N slots into semantic
-    // labels using BD's canonical mapping (matches the one in
-    // bd-core-files/admin/ai_companion/handler.php for cross-tool parity).
+    // BD stores design settings across multiple `layout_group`s (e.g. default_layout,
+    // theme_1), and the admin UI reads whichever row has the saved value regardless of
+    // group. BD's `handler.php` AI Companion also queries by setting_name only, taking
+    // whichever layout_group row comes back. We match that behavior: N parallel calls
+    // (one per slot in our Butler mapping), each filtered by setting_name only.
+    // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
     if (name === "getBrandKit") {
+      const SLOTS_WITH_DEFAULTS = {
+        custom_1:   "rgb(255,255,255)",
+        custom_2:   "rgb(51,51,51)",
+        custom_3:   "Inter",
+        custom_58:  "rgb(39,108,207)",
+        custom_59:  "rgb(255,255,255)",
+        custom_60:  "rgb(24,46,69)",
+        custom_61:  "rgb(255,255,255)",
+        custom_62:  "rgb(3,138,114)",
+        custom_63:  "rgb(255,255,255)",
+        custom_64:  "rgb(240,173,78)",
+        custom_65:  "rgb(255,255,255)",
+        custom_66:  "rgb(217,83,79)",
+        custom_67:  "rgb(255,255,255)",
+        custom_71:  "rgb(255,255,255)",
+        custom_72:  "rgb(230,232,236)",
+        custom_73:  "rgb(24,46,69)",
+        custom_74:  "rgb(242,243,245)",
+        custom_75:  "rgb(24,46,69)",
+        custom_134: "rgb(24,46,69)",
+        custom_208: null,  // falls back to custom_3 below if still empty
+      };
       try {
-        const result = await makeRequest(
-          config,
-          "GET",
-          "/api/v2/website_design_settings/get",
-          {
-            property: "layout_group",
-            property_value: "theme_1",
-            property_operator: "=",
-            limit: 250,
-          },
-          null
+        const slots = Object.keys(SLOTS_WITH_DEFAULTS);
+        // Parallel per-slot fetch — each call is filtered by setting_name only
+        // (no layout_group filter, matching BD's handler.php behavior).
+        const results = await Promise.all(
+          slots.map((slot) =>
+            makeRequest(
+              config,
+              "GET",
+              "/api/v2/website_design_settings/get",
+              {
+                property: "setting_name",
+                property_value: slot,
+                property_operator: "=",
+              },
+              null
+            ).catch((err) => ({ status: 0, body: null, error: err }))
+          )
         );
-        if (result.status !== 200 || !result.body || result.body.status !== "success") {
-          return {
-            content: [{ type: "text", text: `getBrandKit failed: unable to fetch design settings. Server response: ${typeof result.body === "string" ? result.body : JSON.stringify(result.body)}` }],
-            isError: true,
-          };
-        }
-        // Map raw rows by setting_name for O(1) lookup
-        const rows = Array.isArray(result.body.message) ? result.body.message : [];
         const bySlot = {};
-        for (const row of rows) {
-          if (row && row.setting_name) bySlot[row.setting_name] = row.setting_value;
+        for (let i = 0; i < slots.length; i++) {
+          const slot = slots[i];
+          const res = results[i];
+          if (res && res.status === 200 && res.body && res.body.status === "success") {
+            const rows = Array.isArray(res.body.message) ? res.body.message : [];
+            // Take the first row BD returns (BD's handler.php does the same — takes
+            // whichever layout_group row happens to come first for this setting_name).
+            if (rows[0] && rows[0].setting_value !== undefined) {
+              bySlot[slot] = rows[0].setting_value;
+            }
+          }
         }
         // Butler canonical mapping (18 color slots + 2 fonts) with BD-default fallbacks
         const pick = (slot, fallback) => {

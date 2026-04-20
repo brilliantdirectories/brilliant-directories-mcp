@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.11.1] - 2026-04-20
+
+### Fixed — `getBrandKit` now returns current values regardless of which `layout_group` they're stored in
+
+v6.11.0's `getBrandKit` queried `/website_design_settings/get?property=layout_group&property_value=theme_1` on the assumption that all brand-kit slots live in `theme_1`. **That assumption was wrong.** BD stores design settings across multiple `layout_group` records (`default_layout`, `theme_1`, etc.) and the admin Design Settings UI reads whichever row has the saved value regardless of group. On the test site (launch60031.directoryup.com), a user-edited `custom_2 = rgb(245, 47, 0)` lived in `default_layout`, not `theme_1` — so v6.11.0 missed it and returned the fallback `rgb(51,51,51)`.
+
+**Fix:** handler now makes **20 parallel calls** (one per slot) each filtered by `setting_name` only, with no `layout_group` filter. This matches what `bd-core-files/admin/ai_companion/handler.php` does (its SQL query is `WHERE setting_name IN (...)` with no group filter). BD returns whichever row has the value — the tool now sees the same values the admin UI does.
+
+**Performance:**
+- 20 parallel requests via `Promise.all`
+- Live-tested: ~830ms total on the test site (parallelism means the user waits for the slowest single call, not the sum)
+- Well under BD's 100 req/60s rate limit — even back-to-back `getBrandKit` calls wouldn't approach the ceiling
+- Agents cache the result session-side (MCP instructions tell them to call once per conversation and reuse) — so real-world cost is 20 calls once, not repeated
+
+**Why not fewer calls?** Tried and ruled out during v6.11.0 debug:
+- `property_operator=LIKE` with `custom_%` — BD errored (`LIKE` on this endpoint is unreliable, known quirk we document elsewhere)
+- `property_operator=in` with comma-separated values — BD errored
+- Array-syntax OR-across-`setting_name` — BD errored
+- Fetching unfiltered (`limit=250`) — BD caps page size at 100, total DB has 764 rows = 8 pages = 8 calls just to sweep the table, plus 700+ rows of noise
+
+Per-slot filtered GET is the only reliable shape BD's current API offers. 20 parallel reads is the right answer.
+
+**Live-verified fix on launch60031.directoryup.com:**
+- `custom_2` → `rgb(245, 47, 0)` ✓ (was returning fallback `rgb(51,51,51)` in v6.11.0)
+- All 20 slots resolved from their correct layout_groups in one call
+- Output shape identical to v6.11.0 — no breaking changes for agents that already integrated
+
 ## [6.11.0] - 2026-04-20
 
 ### Added — `getBrandKit` synthetic tool for design-task color + font context
