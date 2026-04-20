@@ -896,7 +896,8 @@
             "type": "string"
           },
           "keywords": {
-            "type": "string"
+            "type": "string",
+            "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
           },
           "revision_timestamp": {
             "type": "string"
@@ -949,7 +950,8 @@
             "type": "string"
           },
           "keywords": {
-            "type": "string"
+            "type": "string",
+            "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
           },
           "revision_timestamp": {
             "type": "string"
@@ -6654,7 +6656,8 @@
                     "type": "string"
                   },
                   "keywords": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
                   },
                   "sort_order": {
                     "type": "integer"
@@ -6718,7 +6721,8 @@
                     "type": "string"
                   },
                   "keywords": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
                   },
                   "sort_order": {
                     "type": "integer"
@@ -10033,7 +10037,7 @@
                   },
                   "keywords": {
                     "type": "string",
-                    "description": "SEO keywords, comma-separated."
+                    "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
                   },
                   "icon": {
                     "type": "string",
@@ -10102,7 +10106,8 @@
                     "type": "string"
                   },
                   "keywords": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."
                   },
                   "icon": {
                     "type": "string"

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.10] - 2026-04-20
+
+### Fixed — Category `keywords` field: fuzzy-search synonyms, NOT SEO keywords
+
+Category `keywords` fields (on Top Categories, Sub Categories, Sub-Sub Categories) had the generic prior description *"SEO keywords, comma-separated."* — which was technically wrong and was teaching agents to fill the field with long SEO meta-keyword phrases like `doctor near me, find a doctor, board certified physician`. BD uses this field internally as a **fuzzy-search synonym matcher** for on-site search (so someone typing "doc" or "physician" lands on the Doctor category page), not as an SEO signal.
+
+Replaced with tight 40-word directive on all 6 locations where the field appears (create/update tool bodies for TopCategory and SubCategory + shared Category/Service component schemas):
+
+> *"Fuzzy-search synonyms for on-site category matching — NOT SEO meta-keywords. Comma-separated single words (no spaces): synonyms, abbreviations, slang, common misspellings. Example for `Doctor`: `doc,physician,md,medic,gp,specialist`. ~5-10 max. Skip SEO phrases like `doctor near me` — those aren't fuzzy matchers. Optional."*
+
+Works with the v6.13.4 CSV-no-spaces universal rule (single words, comma-only, no whitespace). Explicitly calls out the wrong pattern (`doctor near me`) so agents don't regress.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.9] - 2026-04-20
 
 ### Added — README: Cursor Directory one-click install as the primary path
