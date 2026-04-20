@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.1] - 2026-04-20
+
+### Added — README: Claude CLI inside Cursor setup clarification
+
+Clarifies a confusing setup scenario for users running the Claude extension / CLI inside Cursor. Cursor's built-in `Tools & MCP` panel and Claude's MCP host are **two separate hosts** that live in the same editor window:
+- Claude reads from `~/.claude.json`
+- Cursor's native agent reads from `~/.cursor/mcp.json`
+
+A user who installed via `claude mcp add bd-api ...` correctly gets BD tools in Claude-in-Cursor but sees nothing in Cursor's `Tools & MCP` panel, and can reasonably conclude their install is broken. It isn't.
+
+New subsection added under `### Claude Code` in both the root `README.md` and the npm-published `mcp/README.md`:
+- Explains the two-host model with a comparison table (which host reads which config, which panel surfaces its MCPs)
+- Spells out credentials: the `--api-key` and `--url` flags in the `claude mcp add` command ARE where credentials are provided; they're stored in `~/.claude.json` and passed to BD automatically on every tool call. No separate credential step exists.
+- Notes the rotation workflow (`claude mcp remove bd-api` → re-run `claude mcp add` with new values)
+- Calls out that installing for Claude does NOT install for Cursor's native agent and vice versa — each host needs its own install with its own `--api-key` + `--url`
+
+Docs-only. No spec, code, schema, or behavior changes.
+
 ## [6.13.0] - 2026-04-20
 
 ### Added — Pre-check rules extended to post titles + 3 join-table pair-uniqueness cases

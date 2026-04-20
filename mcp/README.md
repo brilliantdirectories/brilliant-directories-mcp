@@ -201,6 +201,25 @@ claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ENTER_API_KEY -
 
 Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close and reopen Claude Code.
 
+> **That command is where you give your credentials.** The `--api-key` and `--url` flags are baked into the MCP server config (stored in `~/.claude.json`). You do NOT need to paste them again anywhere — Claude passes them automatically to the BD MCP on every tool call. To rotate or change them later, run `claude mcp remove bd-api` then re-run the `claude mcp add` command with the new values.
+
+#### Using Claude CLI inside Cursor
+
+Running the Claude extension / Claude CLI **inside Cursor** (instead of — or alongside — Cursor's native agent)? Install BD MCP into **Claude's** config, not Cursor's. They're two separate MCP hosts that happen to live in the same editor window:
+
+| Host | Config file | Panel that shows its MCPs |
+|---|---|---|
+| **Claude CLI / extension** | `~/.claude.json` | Claude's own tool list (visible when you ask it what tools it has) |
+| **Cursor's native agent** | `~/.cursor/mcp.json` | Cursor **Settings → Tools & MCP** |
+
+Setup:
+
+1. Run the **Claude Code** install command above (`claude mcp add bd-api -- npx brilliant-directories-mcp --api-key ... --url ...`). Credentials are included in that one command — no separate step. This writes to `~/.claude.json` globally; Claude-in-Cursor will see BD tools on next launch.
+2. **Cursor's Tools & MCP panel will still show nothing. That's expected** — it only reflects `~/.cursor/mcp.json`, a separate host. Claude's MCPs don't appear there.
+3. If you ALSO want BD MCP available to Cursor's native agent (not only Claude), follow the [Cursor section](#cursor) below as well. The two configs don't cross-pollinate — each install gets its own `--api-key` + `--url`.
+
+> **How to tell which host is serving your MCP tools:** ask your agent to list its available tools. If you see `mcp__brilliant-directories__*` functions but Cursor's Tools & MCP panel is empty, the tools are coming from Claude's host, not Cursor's.
+
 ---
 
 ### OpenAI (ChatGPT / Codex)
