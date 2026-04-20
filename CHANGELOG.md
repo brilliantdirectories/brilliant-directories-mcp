@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.8] - 2026-04-20
+
+### Removed — Boilerplate noise pruning (signal-to-noise improvement)
+
+Three-agent audit identified pure boilerplate repeated across ~175 tool descriptions with zero differentiation. Every word in a tool description competes for the agent's attention when selecting tools and parsing rules — pruning non-load-bearing repeats improves tool-selection accuracy and rule adherence without changing any behavior.
+
+**Stripped from `openapi/bd-api.json`:**
+- **171 auth/rate-limit footers** (`_Auth: \`X-Api-Key\` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: \`{...}\` with standard HTTP codes._`). Already verbatim in `info.description` — pure duplication. Kept 2 instances that carried unique operational info (brand-kit caching note, empty-result error-body gotcha).
+- **45 "Writes live data" boilerplate lines** (`**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.`). Replaced with ONE top-level universal directive near the start of the instructions block. Kept ~10 instances that carried endpoint-specific tails ("appears on member's public profile immediately", "the widget is available immediately but does nothing until referenced by...", etc.).
+- **19 generic Returns blocks** (`**Returns:** \`{ status: "success", message: {...createdRecord} }\` — includes the server-assigned ID (e.g., \`user_id\`, \`post_id\`). Use this ID for follow-up operations.`). Redundant with the response schema \`$ref\`. Kept Returns blocks that documented endpoint-specific response shapes.
+
+**Stripped from `mcp/index.js` top-level instructions (~150 words):**
+- Member Listings cheat-sheet shrunk from a 250-word in-block enumeration to a 2-line pointer directing to `updatePostType`'s tool description. `updatePostType` is always loaded when editing Member Listings; the top-level duplication was pure churn risk for future drift.
+- Opener flourishes trimmed (identity filler, over-explained PATCH examples, rationale hedges that didn't affect agent behavior on edge cases).
+- Removed "Plan the full sequence first, then execute" (already implied by "Chain or run multiple tools").
+- Tightened the 429 message-matching parenthetical (pattern-matching is obvious).
+- Tightened the field-vs-hack rule closer and hero image sourcing rationale.
+- Shortened the duplicate silent-accept opener.
+
+**Added one top-level compensating directive:**
+- "Every write goes to a live production site — there is no staging mode, no sandbox, no `?dry_run=1`" — replaces what the 45 per-tool "Writes live data" restatements were conveying, stated ONCE with authority at the top where agents read it fresh.
+
+**Impact:**
+- `openapi/bd-api.json`: **635,096 → 629,172 bytes** (~6 KB shorter)
+- `mcp/index.js`: ~150 words leaner in the instructions block
+- Net ~235 pure-boilerplate removals across the API surface
+- Zero behavior change. No directive removed — all load-bearing rules intact. Safety-critical rules (users_meta IDENTITY RULE, duplicate silent-accept, orphan cleanup, CSV-no-spaces, schema-is-documentation, PATCH semantics, field-vs-hack) all retained with their per-tool nuance.
+
+This release targets agent quality, not feature change: higher signal-to-noise → better tool selection → fewer contradictions to re-adjudicate at runtime → less drift over time. The ratio of "unique load-bearing content" to "repeated boilerplate" in per-tool descriptions is now markedly higher.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.7] - 2026-04-20
 
 ### Fixed — CRITICAL: CSV-no-spaces contradiction in createUser/updateUser
