@@ -11,7 +11,17 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 ## Before you start — 3 things you need
 
 1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
-2. **Your BD API key.** BD Admin sidebar → **Developer Hub** → **Generate API Key** → copy it.
+2. **Your BD API key (with the right permissions).** BD Admin sidebar → **Developer Hub** → **Generate API Key** → copy it.
+
+   > ⚠️ **Critical — enable advanced endpoint permissions, or your AI will hit 403 errors constantly.** A fresh BD API key is created with only a baseline set of endpoints enabled. If you want your AI agent to be able to create/update/delete pages, forms, menus, tags, email templates, reviews, leads, and every other resource, you MUST grant access to the advanced endpoints. Steps:
+   >
+   > 1. After generating the key, find it in the Developer Hub key list.
+   > 2. Click **Actions** next to the key → **Permissions** toggle.
+   > 3. Click the **Advanced Endpoints** tab.
+   > 4. Click **ALL ON** (turns on every advanced endpoint in one click).
+   > 5. Click **Save Permissions**.
+   >
+   > Without this step, the agent will work for basic member read/write but silently fail with "permission denied" on many common requests (create a page, build a form, add a menu item, etc.). Regenerating the key or toggling individual endpoints later is fine — but do the ALL ON once up front and save yourself the debugging.
 3. **Your BD site URL.** Include `https://`, no trailing slash.
    - ✅ `https://mysite.com`
    - ❌ `mysite.com` (missing `https://`)
@@ -88,7 +98,12 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
   "mcpServers": {
     "bd-api": {
       "command": "npx",
-      "args": ["-y", "brilliant-directories-mcp", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+      "args": [
+        "-y",
+        "brilliant-directories-mcp",
+        "--api-key", "ENTER_API_KEY",
+        "--url", "https://your-site.com"
+      ]
     }
   }
 }
@@ -111,9 +126,19 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
 6. Click Save.
 7. **Fully quit and reopen Cursor** (menu bar → Quit; or Mac `Cmd+Q`; or Windows right-click the taskbar icon → Quit).
 
-**File method (fallback — if the GUI method above doesn't work, or you prefer editing a config file directly):**
+<details>
+<summary><strong>Last resort: file method</strong> — only if the GUI method above won't work (click to expand)</summary>
 
-Cursor reads its MCP server list from a file on your computer called `mcp.json`, which lives inside a hidden folder called `.cursor` in your home folder. "Home folder" means your personal user folder (e.g. `/Users/YourName/` on Mac or `C:\Users\YourName\` on Windows). The folder starts with a dot, which makes it hidden by default on Mac/Linux; you'll need to either show hidden files OR navigate to the path directly.
+**When to use this:** the GUI method (Settings → Tools & MCP → New MCP Server) is the recommended path and works for 99% of users. Use the file method only if:
+
+- Your Cursor version is too old and doesn't show a "Tools & MCP" sidebar entry
+- The "New MCP Server" button doesn't exist, doesn't open a dialog, or silently fails to save
+- You're on a work machine where something in the Cursor UI is disabled
+- You're comfortable editing config files directly and prefer it
+
+**What it does:** directly edits the same config file the GUI writes to — Cursor reads its MCP server list from `mcp.json` inside a hidden folder called `.cursor` in your home folder. "Home folder" is your personal user folder (e.g. `/Users/YourName/` on Mac or `C:\Users\YourName\` on Windows). The folder starts with a dot, which makes it hidden by default on Mac/Linux, so you'll navigate to it by typing the path directly.
+
+**What to expect:** if you do this correctly, the result is identical to the GUI method — after you save and restart Cursor, the MCP server appears in Settings → Tools & MCP just as if you'd added it via the UI.
 
 #### Mac / Linux
 
@@ -144,19 +169,105 @@ Cursor reads its MCP server list from a file on your computer called `mcp.json`,
 6. Paste [the config block](#the-config-block) into the file. Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Save.
 7. **Fully quit Cursor** and reopen it. ("Fully quit" means: right-click the Cursor icon in your **system tray** — the row of icons at the bottom-right of your screen, near the clock — and click **Quit**. If Cursor isn't in the system tray, closing the window with the X is enough.)
 
+</details>
+
 ---
 
 ### Claude Desktop
 
-**GUI method:**
+> ⚠️ **Don't use Settings → Connectors for this MCP.** "Connectors" is for **remote** MCP servers hosted on a public URL (like `https://mcp.stripe.com`). Our BD MCP runs **locally on your computer** via `npx`, so you use **Settings → Developer → Edit Config** instead. If you tried pasting our GitHub URL into Connectors and got bounced to a GitHub authorization page, that's why — wrong door. The right door is below.
+>
+> ⚠️ **"Start a new chat" is NOT enough.** Claude Desktop loads MCP servers ONCE when the entire app launches. If you edit the config file and start a new chat without fully closing and reopening the app, you'll see Claude say "I have the connector in my config but the tools aren't loaded" — confusing because it sounds like it partially worked. It didn't. You **must fully quit the Claude Desktop app and reopen it** every time you change the config file. "Fully quit" on Windows means right-clicking the Claude icon in the system tray (bottom-right of screen, near the clock, may be hidden under the `^` arrow) → **Quit** (not just clicking the window X, which keeps Claude running in the tray). On Mac it means `Cmd+Q` while Claude is focused, or top menu bar → **Claude** → **Quit Claude** (not just the red-dot close button).
+
+**Steps (all inside the Claude Desktop app — no terminal):**
 
 1. Open Claude Desktop.
-2. From the **menu bar** (top of screen on Mac, top of app window on Windows): **Settings → Developer tab → Edit Config**. (This opens the config file in your default text editor.)
-3. Paste [the config block](#the-config-block) into the file. Save.
-4. **Fully quit and reopen Claude Desktop** (Mac `Cmd+Q`; Windows right-click taskbar icon → Quit).
-5. **Verify:** open a new chat. Look at the bottom-right of the input box for a hammer 🔨 icon with a number. That's the tool count. Click it to see the BD tools listed.
+2. From the menu bar (top of screen on Mac, top of app window on Windows): **Settings → Developer tab → Edit Config**. This opens a file called `claude_desktop_config.json` in your default text editor (TextEdit on Mac, Notepad on Windows).
+3. Look at what's already in the file — it'll be **one of two situations**. Pick the matching scenario below:
 
-Config file path (in case you want to edit directly): `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows).
+#### Scenario A — the file is empty `{}` or has no `mcpServers` entry
+
+Select everything (`Cmd+A` on Mac / `Ctrl+A` on Windows), delete it, paste this exact block:
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "brilliant-directories-mcp",
+        "--api-key", "ENTER_API_KEY",
+        "--url", "https://your-site.com"
+      ]
+    }
+  }
+}
+```
+
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+
+#### Scenario B — the file already has content (e.g. `preferences`, Google connectors, other MCP servers)
+
+**Don't try to rewrite the whole file.** You just need to merge a new `mcpServers` block in. Two rules:
+
+- **A comma between top-level entries.** If the file currently has one top-level object like `"preferences": { ... }` and nothing else, the closing `}` at its end needs a `,` after it before you add your new `mcpServers` block.
+- **The final `}` at the very bottom stays as one brace.**
+
+Example — say your file currently looks like:
+
+```json
+{
+  "preferences": {
+    "menuBarEnabled": false,
+    "legacyQuickEntryEnabled": false
+  }
+}
+```
+
+After merging, it should look like:
+
+```json
+{
+  "preferences": {
+    "menuBarEnabled": false,
+    "legacyQuickEntryEnabled": false
+  },
+  "mcpServers": {
+    "bd-api": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "brilliant-directories-mcp",
+        "--api-key", "ENTER_API_KEY",
+        "--url", "https://your-site.com"
+      ]
+    }
+  }
+}
+```
+
+Notice only two things changed:
+- The `}` closing the `preferences` block now has a `,` after it.
+- The entire `mcpServers` block is added after, before the final `}`.
+
+Replace `ENTER_API_KEY` and the URL with your values. Save.
+
+> **Sanity-check tip (recommended if you're new to JSON):** paste your final file contents into a JSON validator like [jsonlint.com](https://jsonlint.com) before restarting Claude. If there's a missing comma or extra brace, it'll tell you exactly which line. Missing comma = Claude silently fails to load the MCP, and you'll waste time debugging "no tools showing up" when the real problem is a character.
+
+---
+
+4. **Fully quit Claude Desktop.**
+   - **Mac:** `Cmd+Q` while Claude is focused, OR top menu bar → **Claude** → **Quit Claude**. (Closing the window with the red dot does NOT quit — Claude keeps running.)
+   - **Windows:** right-click the Claude icon in the **system tray** (bottom-right of your screen, near the clock — may be hidden under the `^` arrow) → **Quit**. If Claude isn't in the tray, open Task Manager (`Ctrl+Shift+Esc`), find `Claude` under Processes, right-click → **End task**.
+5. **Reopen Claude Desktop.** Start a new chat.
+6. **Verify:** look at the bottom-right of the input box for a **🔨 hammer icon with a number** — that's your tool count. Click it to see the BD tools listed (e.g. `createUser`, `listUsers`, `createWebPage`). If you see the hammer, you're done.
+
+> **If no hammer appears:** go to **Settings → Developer → Local MCP servers**. You should see a `bd-api` entry with a status. If it shows red or error, the status message tells you why — most common causes: JSON typo (validate with jsonlint), wrong API key, URL missing `https://` or having a trailing slash, or Node.js not installed on your computer.
+
+**Config file path (if you want to open it directly without going through Settings):**
+- Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ---
 

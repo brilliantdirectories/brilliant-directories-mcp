@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.4] - 2026-04-20
+
+### Changed — README second pass: live-tested fixes from walkthrough with a new user
+
+Spent a session watching a first-time user set up Claude Desktop end-to-end. Every confusion point they hit became a README fix. All doc-only; no code changes.
+
+- **CRITICAL new prerequisite callout — "Enable advanced endpoint permissions, or your AI will hit 403 errors constantly."** Newly generated BD API keys have only a baseline set of endpoints enabled. Create a page, create a form, add a menu item — all fail silently until the admin toggles advanced endpoints ON. User spent debugging cycles hitting 403s on common writes before we realized the key was under-permissioned. Now called out in the "Before you start" section with exact click path: BD Admin → Developer Hub → key → Actions → Permissions → Advanced Endpoints tab → ALL ON → Save Permissions.
+- **Claude Desktop — "Connectors vs Developer/Edit Config" disambiguation callout.** Claude Desktop has two totally separate MCP onboarding UIs and it's easy to hit the wrong one. Connectors is for remote servers hosted on a public HTTPS URL (like Stripe's MCP); our BD MCP runs LOCALLY via npx so it uses the Developer tab's "Edit Config" button instead. User pasted our GitHub URL into Connectors → got bounced to GitHub's OAuth authorization page. Now a prominent ⚠️ callout at the top of the Claude Desktop section explains which door is the right door and why.
+- **Claude Desktop — "Start a new chat is NOT enough" callout.** Claude Desktop loads MCP servers ONCE when the entire app launches. Editing the config file and starting a new chat without fully quitting the app leaves Claude in a confusing half-state where it says "I have the connector in my config but the tools aren't loaded" — sounds like a partial success, but no tools are actually callable. User hit this exact state. The fix: fully quit the app (Windows: right-click Claude icon in system tray near clock → Quit, OR Task Manager → End task; Mac: Cmd+Q or top menu bar → Claude → Quit Claude — NOT just closing the window). Now callout'd explicitly.
+- **Claude Desktop — merge-with-comma walkthrough for existing config files.** Biggest failure mode for non-dev users editing `claude_desktop_config.json`: the file often already has content (preferences, Google connectors, other MCP servers) and the new `mcpServers` block has to be merged in with a comma between top-level entries. One missing comma = silent fail, "no tools available," hours of debugging. Now explicit Scenario A (empty file → paste-over) vs Scenario B (existing content → merge-with-comma) branching, with a full before/after example showing exactly where the comma goes and what the final file looks like.
+- **Claude Desktop — jsonlint.com sanity-check tip.** Added recommendation to validate the final file at jsonlint.com before restarting Claude. A validator tells you immediately which line has the typo; otherwise the only failure signal is "hammer icon doesn't appear" with no diagnostic.
+- **Config block — multi-line `args` array.** Previous JSON had `args` as one long unreadable line. Now broken across lines so `--api-key ENTER_API_KEY` and `--url https://your-site.com` are each on their own line, easier to spot-edit and harder to botch.
+- **Placeholder rename (ongoing from 6.9.3):** `YOUR_KEY` → `ENTER_API_KEY` (more imperative, clearer action to a first-time reader).
+
+### Still to come (not in this release)
+- Platform reorder: Claude Desktop → Claude Code → ChatGPT → Cursor → rest (placed most-common-first)
+- Multi-site setup section (how to configure one MCP instance per BD site so an agent can compare across sites)
+- "Each AI app has its own config" clarification after the quickstart (running the wizard once configures ONE app, not all AI apps on your computer)
+- Per-platform walkthrough expansion for other platforms (Cursor, VS Code, Windsurf, Continue) to match the new Claude Desktop level of detail
+
 ## [6.9.3] - 2026-04-19
 
 ### Changed — README plain-English rewrite (first pass)
