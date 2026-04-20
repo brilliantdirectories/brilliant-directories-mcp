@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.3] - 2026-04-20
+
+### Added — Hero + first-section background-color gap fix
+
+When a WebPage has the hero enabled AND the first content section has any background color, BD's default layout inserts a ~40px blank white gap between them. The fix: add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css`. Now documented in:
+
+- **`createWebPage` + `updateWebPage` description**, right after the hero safe-defaults section. Includes when to apply (hero enabled + first section has BG color) and when it's unnecessary (first section has no background — gap not visually noticeable).
+- **MCP instructions hero paragraph**, same rule in tighter phrasing.
+
+Agents building hero pages with colored section backgrounds will now apply the fix proactively instead of the user reporting "weird white gap" after the fact.
+
 ## [6.10.2] - 2026-04-20
 
 ### Added — `form_action_div` is required when `form_action_type=widget`
