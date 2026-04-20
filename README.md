@@ -466,6 +466,8 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
    - **Mac:** `Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**. Red-dot close isn't enough.
 7. After reopen, you should see Brilliant Directories tools in Cursor's Tools & MCP panel (Settings → Tools & MCP).
 
+> **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `bd-site-one`, `bd-site-two`, `bd-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on bd-site-one, list the top categories"* or *"compare member counts between bd-site-one and bd-site-two"* or *"copy these 3 email templates from bd-site-one to bd-site-two"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
+
 ---
 
 <details>
