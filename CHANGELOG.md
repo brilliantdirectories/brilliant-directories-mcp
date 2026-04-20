@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.6] - 2026-04-20
+
+### Added — Full-bleed WebPage sections: `content_layout=1` directive (anti-CSS-hack)
+
+Live-observed: an agent asked to create a WebPage with a full-bleed background section reached for CSS tricks (`margin: 0 -9999px; padding: 0 9999px`) instead of setting BD's built-in `content_layout=1` ("Full Screen Page Width") field. The hack works-ish visually but:
+- Breaks horizontal scroll on some browsers
+- Fights any parent with `overflow: hidden`
+- Prevents future layout changes from working cleanly
+- Isn't accessible (focus tracking gets weird)
+
+BD ships a first-class page setting for this: `content_layout=1` on `createWebPage` / `updateWebPage`. The field existed and was documented per-field, but nothing in the top-level directives told agents to reach for it FIRST before writing CSS.
+
+Added:
+- **New top-level directive** in `mcp/index.js` WebPage section: "When a user wants full-bleed sections, set `content_layout=1` FIRST — don't fake it with negative-margin / 9999px-padding CSS." Includes the correct pattern: set `content_layout=1`, give each section its own background via scoped CSS in `content_css`, wrap readable text in a `<div class="container">` or page-scoped inner wrapper with `max-width` so copy stays centered while the background goes edge-to-edge.
+- **Strengthened per-field description** on `content_layout` in both `createWebPage` and `updateWebPage` schemas: explicitly calls out the negative-margin / 9999px-padding hack as an anti-pattern and names the three concrete downsides.
+
+Doc-only. Zero schema/code/behavior changes — the field already existed and worked correctly; this release just teaches agents to actually use it.
+
 ## [6.13.5] - 2026-04-20
 
 ### Fixed — `createUserMeta` description: clarify `createWebPage` seeds EAV correctly on CREATE
