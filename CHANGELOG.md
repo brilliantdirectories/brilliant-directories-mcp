@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.2] - 2026-04-19
+
+### Fixed — CRITICAL: Master Default Sidebars list is 6, not 5 (pre-existing error since v6.5.0)
+
+Authoritative BD admin UI HTML confirms the `<optgroup label="Default Sidebars">` dropdown contains exactly 6 hardcoded master defaults, in this verbatim order:
+
+1. `Global Website Search`
+2. `Member Profile Page`
+3. `Member Search Result`
+4. `Personal Post Feed`
+5. `Post Search Result`
+6. `Post Single Page`
+
+Our MCP server has been documenting only 5 (missing `Member Search Result`) since v6.5.0 when the Sidebars resource first shipped. v6.9.1 compounded this by explicitly telling agents to treat `Member Search Result` as a site-custom that might not exist on a given site. **Both were wrong.** `Member Search Result` is a hardcoded master default, always available on every BD site, and is the out-of-the-box default for the Member Listings post type's `category_sidebar`.
+
+Impact of the previous error: an agent asked to restore a site's Member Listings sidebar to `Member Search Result` (a common request) would either refuse ("that's a custom, not in listSidebars on this site") or require the admin to manually create it as a custom — both wrong. Agents configuring `form_name` on WebPages for the standard member-search-results SEO pages had the same blind spot.
+
+**All 5 locations fixed in this release:**
+- `updatePostType.category_sidebar` property description — now lists all 6 masters; notes `Member Search Result` as the Member Listings default.
+- `createWebPage.form_name` default for `profile_search_results` pages — rule wording now says "6 Master Default Sidebars" (value list was already correct — wording drift only).
+- `updateWebPage.form_name` — same fix as createWebPage.
+- `listSidebars` description — "this endpoint returns only custom sidebars; here are the 6 master defaults" — list now includes `Member Search Result`; workflow step says "check the 6 master defaults first."
+- MCP instructions `Sidebars` paragraph — now lists 6 masters in the admin-UI verbatim order; also clarifies that post types' `category_sidebar` field uses the same value set as WebPages' `form_name`.
+
+No schema-breaking changes. No code changes. Pure doc correction of a long-standing factual error.
+
 ## [6.9.1] - 2026-04-19
 
 ### Fixed — v6.9.0 sanity-check corrections
