@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.9] - 2026-04-20
+
+### Fixed — CDATA/entity-escape rule reinforced at WebPage asset-routing decision point
+
+Live incident: an agent creating a WebPage wrapped the HTML body in `<![CDATA[...]]>`, which BD stored as literal visible text on the rendered page. The existing "never wrap in CDATA, never entity-escape" rule was already documented on individual field descriptions (`content`, `seo_text`, `hero_section_content`) and in the MCP top-level instructions (line 785 of `mcp/index.js`), but the rule was absent from the WebPage asset-routing quick-reference bullets agents read at the moment of deciding which field gets which content. Plus, the three v6.9.6-new asset-routing fields (`content_css` / `content_footer_html` / `content_head`) weren't in the MCP top-level example list.
+
+Two surgical additions, zero new rules:
+
+- **`createWebPage` + `updateWebPage` asset-routing quick-reference:** new one-line reinforcement immediately after the 6-row routing list: *"All asset fields above accept raw content verbatim — never wrap in `<![CDATA[...]]>`, never entity-escape `<` as `&lt;` or `>` as `&gt;`. BD stores whatever you send; wrappers and escapes become literal visible text on the rendered page."* Places the rule at the moment of decision (agent reading routing matrix to pick a field = agent about to author the field content = perfect spot for the reminder).
+- **MCP top-level instructions example list:** added `content_css` / `content_footer_html` / `content_head` to the list of HTML-accepting fields on the existing "Never wrap ANY field value in `<![CDATA[...]]>`" paragraph. Closes the gap where an agent reading the top-level paragraph would see `content` named but not the three other asset routing fields — and subconsciously treat them as "different."
+
+Rejected Claude's suggestion to add a per-write verification step ("scan returned record for literal CDATA/entities after every write"). That's defensive paranoia that either gets ignored or over-applied; agents should already verify results and a per-tool self-check bloats every description. Prevention (clear rule at the decision point), not detection (post-hoc scanning).
+
+No schema changes. Doc-only.
+
 ## [6.10.8] - 2026-04-20
 
 ### Changed — ChatGPT Custom GPT setup walkthrough rewritten from a live install session
