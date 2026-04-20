@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.2] - 2026-04-20
+
+### Changed — accurate 403 guidance for list_professions and list_services
+
+Per BD dev clarification, `/api/v2/list_professions/*` and `/api/v2/list_services/*` (which back `listTopCategories`/`listSubCategories`/`getTopCategory`/`getSubCategory`/`createTopCategory`/etc.) are NOT in BD's public Swagger spec. The Developer Hub UI's "Categories (Professions)" and "Services" toggles gate DIFFERENT endpoints (`/api/v2/category/*` and `/api/v2/service/*`, which read separate legacy tables with likely-empty data). Enabling those UI toggles does NOT grant access to our endpoints.
+
+- Rewrote `listTopCategories` permission note with the accurate root cause + fix path (admin must manually insert rows into `bd_api_key_permissions`).
+- Same rewrite on `listSubCategories`.
+- MCP instructions `API key permissions` paragraph expanded with this specific gap so cold agents surface the right ask to site admins on 403.
+- Explicitly warned agents NOT to substitute `/api/v2/category/*` or `/api/v2/service/*` as fallbacks — different tables, inconsistent data.
+
 ## [6.5.1] - 2026-04-20
 
 ### Fixed — critical rule added: profile_search_results slugs must be real
