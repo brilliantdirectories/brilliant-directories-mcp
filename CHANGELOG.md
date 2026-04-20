@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.1] - 2026-04-19
+
+### Fixed — v6.9.0 sanity-check corrections
+
+Post-ship audit surfaced three issues in the v6.9.0 post-type and Member Listings docs. All fixed:
+
+- **CRITICAL — `category_sidebar` master-default list was wrong.** v6.9.0 mistakenly listed `Member Search Result` as a 6th Master Default Sidebar. Verified against the BD admin UI HTML — the canonical 5 Master Defaults are `Global Website Search`, `Member Profile Page`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`. `Member Search Result` is a custom sidebar that many BD sites ship with (and use as the Member Listings default), but it's site-specific — it'll appear in `listSidebars` when present, not in the hardcoded master-default set. An agent writing `Member Search Result` as a sidebar value on a site that doesn't have that custom would silently render "no sidebar." `updatePostType.category_sidebar` description corrected: 5 Master Defaults listed correctly, and a note added that `Member Search Result` is commonly a site-custom sidebar to check `listSidebars` for.
+- **HIGH — long-form widget-equivalent trust sentence on `updatePostType` description was missing `comments_code`.** Listed only 7 of the 8 code fields as widget-equivalent. Fixed — now lists all 8: `category_header`, `search_results_div`, `category_footer`, `profile_header`, `profile_results_layout`, `profile_footer`, `search_results_layout`, `comments_code`. Per-property descriptions and the top-level MCP instructions paragraph were already correct; this was a single-sentence straggler.
+- **MEDIUM — cache-refresh-layout paragraph in MCP instructions didn't name `updatePostType`.** The v6.9.0 post-type paragraph says "ALWAYS call `refreshSiteCache` after any successful `updatePostType`" but the separate general cache-refresh-layout paragraph (which lists Menus / Widgets / Categories / MembershipPlans) didn't include `updatePostType`. An agent reading the general paragraph alone could miss the "always refresh after post-type edits" rule. Fixed — `updatePostType` added to the "Also recommended" list with the stronger "not optional" qualifier to match the post-type-specific rule.
+
+No schema-breaking changes. No code changes. Pure doc/instruction patch.
+
 ## [6.9.0] - 2026-04-19
 
 ### Added — Member Listings post type (`data_type=10`) workflow + post-type code-field master-fallback + all-or-nothing group-save rules
