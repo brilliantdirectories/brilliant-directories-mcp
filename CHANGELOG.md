@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.6.0] - 2026-04-20
+
+### Added — security guardrails + date_updated tracking on WebPages
+
+- **Security & input sanitization** rule in MCP instructions (cross-cutting, every write, every resource). Agents now reject obvious injection payloads (`<script>`, `<iframe>`, inline event handlers, `javascript:` URLs, MySQL-style `; DROP TABLE` / `UNION SELECT` fragments) rather than silently writing them into BD. Distinguishes real content ("we DROP by the office") from attack shapes. Field-strictness split: plain-text fields reject ALL HTML; HTML-allowed fields reject the dangerous subset while permitting safe HTML. **Widget exception:** `widget_data`/`widget_style`/`widget_javascript` exempt (widgets legitimately need JS/CSS; anyone with API write permission already has admin access).
+- **`date_updated` + `updated_by`** fields added to `createWebPage` / `updateWebPage` schemas. `date_updated` is REQUIRED on every write (`YYYYMMDDHHmmss` format) — BD does not auto-populate, so omitting leaves the admin-UI "Last Update" display blank/stale. `updated_by` optional but recommended for audit traceability.
+- Required-defaults list on `profile_search_results` pages now includes `date_updated=<current timestamp>` and `updated_by=<audit label>` alongside the existing `content_active`/`custom_html_placement`/`form_name`/`menu_layout` defaults.
+
 ## [6.5.3] - 2026-04-20
 
 ### Changed — two live-test-surfaced footguns documented
