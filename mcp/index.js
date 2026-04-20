@@ -770,7 +770,7 @@ async function main() {
         ``,
         `Field-strictness split:`,
         `• **Plain-text fields** — reject ANY HTML tags: \`first_name\`, \`last_name\`, \`company\`, \`email\`, \`phone_number\`, URL fields (\`website\`/\`facebook\`/\`twitter\`/\`linkedin\`/\`instagram\`), SEO meta (\`title\`/\`meta_desc\`/\`meta_keywords\`/\`facebook_title\`/\`facebook_desc\`), menu labels, form/widget/menu/email internal names, review name/title, tag name.`,
-        `• **HTML-allowed fields** — allow safe HTML but still block the dangerous patterns above: \`about_me\`/\`bio\`, \`post_content\`/\`post_description\`, \`group_desc\`, \`email_body\`, WebPage \`content\`/\`content_footer\`/\`hero_section_content\`/\`seo_text\`, review \`review_description\`, form/event \`description\` fields. **Safe-HTML allow list:** \`<p>\`, \`<br>\`, \`<strong>\`/\`<b>\`, \`<em>\`/\`<i>\`, \`<u>\`, \`<ul>\`/\`<ol>\`/\`<li>\`, \`<h1>\`–\`<h6>\`, \`<a href="http..." target="_blank">\`, \`<img src="http...">\`, \`<span>\`, \`<div>\`, \`<section>\`, \`<article>\`, \`<blockquote>\`, \`<table>\`/\`<thead>\`/\`<tbody>\`/\`<tr>\`/\`<th>\`/\`<td>\`, \`<hr>\`, \`<figure>\`/\`<figcaption>\`. Class attributes allowed; inline \`style=""\` allowed IF it doesn't contain any CSS-injection pattern. Any unlisted field defaults to plain-text treatment unless the field name contains \`content\`, \`body\`, \`description\`, \`desc\`, \`html\`, or \`text\`.`,
+        `• **HTML-allowed fields** — allow safe HTML but still block the dangerous patterns above: \`about_me\`/\`bio\`, \`post_content\`/\`post_description\`, \`group_desc\`, \`email_body\`, WebPage \`content\`/\`content_css\`/\`content_footer_html\`/\`content_head\`/\`hero_section_content\`/\`seo_text\` (NOT \`content_footer\` — that's the access-gate enum, not HTML), review \`review_description\`, form/event \`description\` fields. **Safe-HTML allow list:** \`<p>\`, \`<br>\`, \`<strong>\`/\`<b>\`, \`<em>\`/\`<i>\`, \`<u>\`, \`<ul>\`/\`<ol>\`/\`<li>\`, \`<h1>\`–\`<h6>\`, \`<a href="http..." target="_blank">\`, \`<img src="http...">\`, \`<span>\`, \`<div>\`, \`<section>\`, \`<article>\`, \`<blockquote>\`, \`<table>\`/\`<thead>\`/\`<tbody>\`/\`<tr>\`/\`<th>\`/\`<td>\`, \`<hr>\`, \`<figure>\`/\`<figcaption>\`. Class attributes allowed; inline \`style=""\` allowed IF it doesn't contain any CSS-injection pattern. Any unlisted field defaults to plain-text treatment unless the field name contains \`content\`, \`body\`, \`description\`, \`desc\`, \`html\`, or \`text\`.`,
         `• **Email body exception:** \`<style>\` blocks ARE allowed inside \`email_body\` — legitimate inlined email CSS. Still reject CSS-injection patterns inside.`,
         `• **Widget exception:** \`widget_data\`, \`widget_style\`, \`widget_javascript\` are exempt from all the above. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. \`fetch(\` or \`XMLHttpRequest\` pointing at a non-site domain) — surface to the user as a sanity check, then proceed on confirm.`,
         ``,
@@ -782,7 +782,7 @@ async function main() {
         ``,
         `Enum silent-accept (applies across resources). BD's API does NOT strictly validate most integer-enum fields — it accepts values outside the documented set and stores them verbatim, with undefined render behavior. Live-verified: \`user.active=99\`, \`review.review_status=1\` (doc says invalid), \`lead.lead_status=3\` (doc says value 3 doesn't exist) — all three stored silently. **Always pass only values from the documented enum set in each field's description.** If a user asks for a non-documented value, ask them to pick from the documented set — don't pass through.`,
         ``,
-        `Cache refresh after layout-affecting writes (beyond hero). After writes that change site layout/rendering, call \`refreshSiteCache\` so public pages reflect the change. Required after hero create/update on WebPages (see earlier rule). **Also recommended** (safe no-op if unnecessary — BD's cache handling is conservative) after: \`updatePostType\` (post-type edits are cached; code fields and settings both — call refresh on EVERY successful updatePostType, not optional), \`createMenu\`/\`updateMenu\`/\`createMenuItem\`/\`updateMenuItem\` (navigation changes), \`createWidget\`/\`updateWidget\` (widget markup/logic changes), \`updateMembershipPlan\` (plan display attrs on public signup pages), \`createTopCategory\`/\`updateTopCategory\`/\`createSubCategory\`/\`updateSubCategory\` (taxonomy affects directory navigation). Direct-column WebPage updates (\`title\`, \`content\`, \`meta_desc\`, etc.) typically reflect immediately in the read API — refresh is optional for those. Running \`refreshSiteCache\` more often than necessary is harmless.`,
+        `Cache refresh after layout-affecting writes (beyond hero). After writes that change site layout/rendering, call \`refreshSiteCache\` so public pages reflect the change. **REQUIRED** after: (1) hero create/update on WebPages (see earlier rule); (2) every successful \`updatePostType\` (post-type edits are cached — code fields AND settings — and will not reflect publicly without a refresh). **Also recommended** (safe no-op if unnecessary — BD's cache handling is conservative) after: \`createMenu\`/\`updateMenu\`/\`createMenuItem\`/\`updateMenuItem\` (navigation changes), \`createWidget\`/\`updateWidget\` (widget markup/logic changes), \`updateMembershipPlan\` (plan display attrs on public signup pages), \`createTopCategory\`/\`updateTopCategory\`/\`createSubCategory\`/\`updateSubCategory\` (taxonomy affects directory navigation). Direct-column WebPage updates (\`title\`, \`content\`, \`meta_desc\`, etc.) typically reflect immediately in the read API — refresh is optional for those. Running \`refreshSiteCache\` more often than necessary is harmless.`,
         ``,
         `Never wrap ANY field value in \`<![CDATA[...]]>\`, and never entity-escape HTML as \`&lt;\`/\`&gt;\`. BD stores every field verbatim — wrappers and escapes get saved as literal text. For HTML-accepting fields (\`about_me\`, \`post_content\`, \`group_desc\`, \`widget_data\`, \`email_body\`, WebPage \`content\` / \`content_css\` / \`content_footer_html\` / \`content_head\`, etc.) pass raw HTML/CSS/JS directly. For plain-text fields, pass plain text. No XML conventions, no HTML-entity encoding.`,
         ``,
@@ -806,20 +806,13 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    const toolDef = toolMap[name];
-    if (!toolDef) {
-      return {
-        content: [{ type: "text", text: `Unknown tool: ${name}` }],
-        isError: true,
-      };
-    }
-
-    // Synthetic tool: getBrandKit — intercept before generic dispatch.
+    // Synthetic tool: getBrandKit — intercept BEFORE the toolMap lookup so the handler
+    // is independent of whether the spec entry happens to be registered in toolMap.
     // BD stores design settings across multiple `layout_group`s (e.g. default_layout,
-    // theme_1), and the admin UI reads whichever row has the saved value regardless of
-    // group. BD's `handler.php` AI Companion also queries by setting_name only, taking
+    // theme_1), and the admin UI reads whichever row has the saved value regardless
+    // of group. BD's admin AI Companion also queries by setting_name only, taking
     // whichever layout_group row comes back. We match that behavior: N parallel calls
-    // (one per slot in our Butler mapping), each filtered by setting_name only.
+    // (one per slot in our mapping), each filtered by setting_name only.
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
     if (name === "getBrandKit") {
       const SLOTS_WITH_DEFAULTS = {
@@ -864,16 +857,22 @@ async function main() {
           )
         );
         const bySlot = {};
+        const failedSlots = [];
         for (let i = 0; i < slots.length; i++) {
           const slot = slots[i];
           const res = results[i];
           if (res && res.status === 200 && res.body && res.body.status === "success") {
             const rows = Array.isArray(res.body.message) ? res.body.message : [];
-            // Take the first row BD returns (BD's handler.php does the same — takes
-            // whichever layout_group row happens to come first for this setting_name).
+            // Take the first row BD returns (BD's admin AI Companion does the same —
+            // takes whichever layout_group row happens to come first for this setting_name).
             if (rows[0] && rows[0].setting_value !== undefined) {
               bySlot[slot] = rows[0].setting_value;
             }
+            // Missing row (empty message array) is normal — slot just isn't set on this site;
+            // fallback applies silently, not a failure.
+          } else {
+            // Non-200 / non-success / network error — BD fetch actually failed for this slot
+            failedSlots.push(slot);
           }
         }
         // Butler canonical mapping (18 color slots + 2 fonts) with BD-default fallbacks
@@ -929,6 +928,15 @@ async function main() {
             font_rule:      "body.font and heading_font are already globally loaded on the site — do NOT redefine them in content_css. Only specify font-family in CSS when deliberately switching to a different family AND importing it via @import url('https://fonts.googleapis.com/...') in the same CSS.",
           },
         };
+        // If any BD fetches failed outright (network / non-200), surface it so the
+        // agent knows some values are fallbacks, not live site data. A missing row
+        // on a successful fetch (slot just isn't set) is NOT a failure — fallback
+        // silently applies; that's the documented design.
+        if (failedSlots.length > 0) {
+          kit._warnings = [
+            `${failedSlots.length} of ${slots.length} brand-kit slots failed to fetch from BD (network or non-200 response): ${failedSlots.join(", ")}. Those slots fell back to BD defaults, which may not match the site's actual branding. Retry the tool in a few seconds; if the list persists, the BD API may be having issues.`,
+          ];
+        }
         return {
           content: [{ type: "text", text: JSON.stringify(kit, null, 2) }],
         };
@@ -938,6 +946,15 @@ async function main() {
           isError: true,
         };
       }
+    }
+
+    // Generic tool dispatch for OpenAPI-backed tools
+    const toolDef = toolMap[name];
+    if (!toolDef) {
+      return {
+        content: [{ type: "text", text: `Unknown tool: ${name}` }],
+        isError: true,
+      };
     }
 
     try {

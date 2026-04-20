@@ -7,13 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.11.2] - 2026-04-20
+
+### Fixed — Three-agent sanity audit: C-level + H-level findings closed. Privacy scrub on public docs.
+
+Three sub-agents audited the spec, the `mcp/index.js` server code, and the user-facing docs (README / CHANGELOG / internal notes). Findings consolidated and every real CRITICAL + HIGH issue closed in this single release. Doc + small code fixes only; no schema changes.
+
+**Sanitization fixes:**
+- Scrubbed a live-test-site subdomain from README and recent CHANGELOG entries — replaced with generic `https://your-site.com` / "our BD test site" phrasing. Historical CHANGELOG entries that named the same subdomain will be rewritten in a follow-up git-history pass; going forward, no release notes or README reference specific site URLs.
+- Scrubbed references to an internal BD core-files path from public CHANGELOG entries — replaced with "BD's admin AI Companion logic" for the same meaning without exposing the internal file path.
+- Scrubbed mentions of our internal strategy document from public CHANGELOG entries — rules now restated inline ("per our Maintenance Contract", "our policy: avoid count numbers in user-facing copy", "tracked internally") without naming the internal file.
+
+**CRITICAL directive fixes:**
+- `mcp/index.js` HTML-allowed fields list had `content_footer` in it — but `content_footer` is the page-access gate enum (`""` / `members_only` / `digital_products`), NOT HTML. Fixed to list the actual HTML-accepting WebPage fields (`content_css` / `content_footer_html` / `content_head`) and explicitly call out that `content_footer` is the access-gate enum.
+- `getBrandKit` spec description described v6.11.0's broken approach (single `layout_group=theme_1` call). Rewritten to describe the actual v6.11.1+ behavior: 20 parallel per-slot calls filtered by `setting_name`, using BD's canonical semantic mapping, ~1s wall-clock, safe under rate limit.
+- `createWebPage.form_name` and `updateWebPage.form_name` field descriptions had the default for `profile_search_results` pages listed as `Member Profile Page` — contradicted the workflow step 4 which (correctly, as of v6.10.11) says `Member Search Result`. Both field-level descriptions now match: default is `Member Search Result`; explicit "NOT `Member Profile Page` — that's for member profile/detail pages, not search-results pages" clarifier.
+
+**HIGH directive fixes:**
+- `createWebPage` "Required:" prose now includes `date_updated` (YYYYMMDDHHmmss) alongside `seo_type` + `filename`, matching the schema `required` array. Previous prose omitted it.
+- `content_footer` description on both `createWebPage` and `updateWebPage` had a circular sentence ("for below-body HTML use `content`") — rewritten to "there is no dedicated 'extra HTML below the body' field — put below-body markup inside `content` itself (the body field)."
+- `getBrandKit` handler code: partial-failure path now surfaces a `_warnings` array on the response when any of the 20 BD fetches actually fail (network / non-200). Missing-row-on-success is NOT a failure (slot simply isn't set on this site, fallback applies silently, by design). Agents now get explicit signal when values are fallbacks due to upstream failures vs. by design.
+- `getBrandKit` dispatch order: intercept now runs BEFORE the generic `toolMap` lookup / "Unknown tool" check, so the synthetic handler is structurally independent of whether the spec entry happens to be present in the tool registration. Removes a subtle coupling.
+- README op-count scrubbing: three different op counts (175 tools / 175-op / 164 operations) in one document — user-facing counts rot as the spec evolves. Rewrote all three to future-proof wording: tier table now says "full BD MCP" without a count; Custom GPT fallback says "well over 30 operations"; bottom-of-README summary lists the domain areas (members / posts / leads / etc.) with no count. Our policy: no operation counts in user-facing copy.
+- MCP instructions cache-refresh paragraph had `updatePostType` inside the "Also recommended" list with a parenthetical "not optional" — contradicted itself. Split into explicit REQUIRED (hero writes + `updatePostType`) and recommended (menus / widgets / plans / categories).
+
+**Audit false positives (verified, no fix needed):**
+- Audit flagged `listSidebars` as referenced-but-missing; the tool IS in the spec and registered — audit was working from a stale tool list.
+
+**Medium/low findings deferred:** several phrasing inconsistencies, minor bloat in the Member Search Results SEO paragraph, `btn-light` exclusion could be made explicit in the Button variant list, `SLOTS_WITH_DEFAULTS` map values vs inline `pick()` defaults drift risk. None affect agent behavior today; batch into a future polish release.
+
+No schema-breaking changes. No new tools. All edits are doc/instruction corrections + one minor handler restructure.
+
 ## [6.11.1] - 2026-04-20
 
 ### Fixed — `getBrandKit` now returns current values regardless of which `layout_group` they're stored in
 
-v6.11.0's `getBrandKit` queried `/website_design_settings/get?property=layout_group&property_value=theme_1` on the assumption that all brand-kit slots live in `theme_1`. **That assumption was wrong.** BD stores design settings across multiple `layout_group` records (`default_layout`, `theme_1`, etc.) and the admin Design Settings UI reads whichever row has the saved value regardless of group. On the test site (launch60031.directoryup.com), a user-edited `custom_2 = rgb(245, 47, 0)` lived in `default_layout`, not `theme_1` — so v6.11.0 missed it and returned the fallback `rgb(51,51,51)`.
+v6.11.0's `getBrandKit` queried `/website_design_settings/get?property=layout_group&property_value=theme_1` on the assumption that all brand-kit slots live in `theme_1`. **That assumption was wrong.** BD stores design settings across multiple `layout_group` records (`default_layout`, `theme_1`, etc.) and the admin Design Settings UI reads whichever row has the saved value regardless of group. On our BD test site, a user-edited `custom_2 = rgb(245, 47, 0)` lived in `default_layout`, not `theme_1` — so v6.11.0 missed it and returned the fallback `rgb(51,51,51)`.
 
-**Fix:** handler now makes **20 parallel calls** (one per slot) each filtered by `setting_name` only, with no `layout_group` filter. This matches what `bd-core-files/admin/ai_companion/handler.php` does (its SQL query is `WHERE setting_name IN (...)` with no group filter). BD returns whichever row has the value — the tool now sees the same values the admin UI does.
+**Fix:** handler now makes **20 parallel calls** (one per slot) each filtered by `setting_name` only, with no `layout_group` filter. This matches what BD's admin AI Companion logic does internally (queries `WHERE setting_name IN (...)` with no group filter). BD returns whichever row has the value — the tool now sees the same values the admin UI does.
 
 **Performance:**
 - 20 parallel requests via `Promise.all`
@@ -29,7 +60,7 @@ v6.11.0's `getBrandKit` queried `/website_design_settings/get?property=layout_gr
 
 Per-slot filtered GET is the only reliable shape BD's current API offers. 20 parallel reads is the right answer.
 
-**Live-verified fix on launch60031.directoryup.com:**
+**Live-verified fix on our BD test site:**
 - `custom_2` → `rgb(245, 47, 0)` ✓ (was returning fallback `rgb(51,51,51)` in v6.11.0)
 - All 20 slots resolved from their correct layout_groups in one call
 - Output shape identical to v6.11.0 — no breaking changes for agents that already integrated
@@ -44,7 +75,7 @@ New MCP tool — **the first synthetic tool in this package** (all 175 prior too
 
 **Under the hood:**
 - Single BD API call to `/api/v2/website_design_settings/get?property=layout_group&property_value=theme_1&limit=250` — same endpoint BD's admin AI Companion uses
-- Transforms raw `custom_N` slots (BD's internal column names) into semantic labels using BD's canonical mapping sourced from `bd-core-files/admin/ai_companion/handler.php` (so the brand kit an API-driven agent sees matches what BD's in-admin AI sees for cross-tool parity)
+- Transforms raw `custom_N` slots (BD's internal column names) into semantic labels using BD's canonical mapping (same mapping BD's in-admin AI Companion applies, so API-driven agents and admin-UI agents see the same brand kit)
 - Applies BD's documented fallback defaults (from the same handler) when a slot is empty — response is never missing keys
 
 **Response shape** — 10 semantic roles returned on every call:
@@ -447,7 +478,7 @@ Live-verified on a real BD page: every WebPage record carries four asset-routing
 
 **MCP instructions — new WebPage asset routing paragraph.** Tight summary agents see at startup. Covers the 4-field routing matrix + the Froala strip rules + the "PHP is data, not server-side template" rule + a redirect to widgets when the user needs server-side logic.
 
-Source for this release: BD's internal AI Companion handler (`bd-core-files/admin/ai_companion/handler.php`), the canonical source for what the admin-UI AI sends agents editing the same fields. We mirrored that context into our MCP so API-driven agents have the same rules the admin-UI agent already operates under.
+Source for this release: BD's internal AI Companion logic, the canonical source for what the admin-UI AI sends agents editing the same fields. We mirrored that context into our MCP so API-driven agents have the same rules the admin-UI agent already operates under.
 
 ### Still to come (not in this release)
 - Cursor, Claude Code, VS Code, Windsurf, Continue per-platform walkthroughs brought up to Claude Desktop's level of detail
@@ -610,7 +641,7 @@ Three new paragraphs at the top-level instructions field (loaded on every MCP st
 - Post-type code fields (master-fallback + 4 groups + all-or-nothing save rule + cache-refresh chain)
 - Post-type custom fields discovery (call `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` / `getUserFields` before writes that touch non-standard fields — per-site custom field schemas aren't in the OpenAPI spec and drift between sites)
 
-**VISION.md maintenance**
+**Internal strategy notes**
 - Removed obsolete "Phase 1 now" and "Phase 2 next" claims — both shipped through v6.8.x; now summarized as a shipped-status line with CHANGELOG pointer.
 - Removed historical "Things deliberately NOT done yet" bullet list — every item (npm org, Smithery, domain verification, version strategy) resolved months ago.
 - Corrected false claim that "the MCP server validates inputs against the spec before making API calls — bad requests never hit the BD server." Live v6.8.0 testing showed BD accepts out-of-enum integers silently (`active=99`, `review_status=1`, `lead_status=3`). Validation is best-effort, not guaranteed.
@@ -1044,7 +1075,7 @@ Spelled out "Brilliant Directories" on first mention in the README tagline (was 
 
 Two issues caught:
 
-1. **README.md hard-coded "170 endpoints across 32 resources"** — exactly the kind of count-quoting that rots as the spec evolves. Per the VISION.md rule ("avoid count numbers in user-facing copy"), rewrote the headline to list the domains covered (members, posts, leads, reviews, categories, email templates, pages, redirects, smart lists, widgets, menus, forms, tags, membership plans, and more) without any endpoint count.
+1. **README.md hard-coded "170 endpoints across 32 resources"** — exactly the kind of count-quoting that rots as the spec evolves. Our policy: avoid count numbers in user-facing copy. Rewrote the headline to list the domains covered (members, posts, leads, reviews, categories, email templates, pages, redirects, smart lists, widgets, menus, forms, tags, membership plans, and more) without any endpoint count.
 
 2. **`mcp/README.md` never synced through v2.0.0–v6.0.3 renames** — the npm tarball ships `mcp/README.md`, not the root one, so **the npm page on npmjs.com was showing an outdated "Available Resources" table with old tool names** (`createPost`, `createPortfolioGroup`, `createCategory`, `Category Groups`, `createPage`, etc.). That resource table has now been synced from the root README. The npm page will reflect this on next publish — v6.0.4 carries the fix forward.
 
@@ -1458,7 +1489,7 @@ Removed all `category_group` endpoints from the spec. Investigation during end-t
 Rewrote the `createCategory` tool description end-to-end to reflect the 2-tier model and removed references to the now-removed `listCategoryGroups` call. Includes the full "create Restaurants with Sushi sub-category, assign Alice" worked example inline for agent-discovery-proof usage.
 
 ### Why major version bump
-Per the Maintenance Contract in VISION.md, removing operationIds (`listCategoryGroups` et al.) is a breaking change requiring a major bump. Third-party consumers that referenced these tools will need to adapt. Given our traffic is minimal and the tools were rarely-called (likely never working correctly at the BD level anyway), the cost of the break is low and the cleanup value is high.
+Per our Maintenance Contract, removing operationIds (`listCategoryGroups` et al.) is a breaking change requiring a major bump. Third-party consumers that referenced these tools will need to adapt. Given our traffic is minimal and the tools were rarely-called (likely never working correctly at the BD level anyway), the cost of the break is low and the cleanup value is high.
 
 ## [1.6.6] - 2026-04-18
 
@@ -1539,7 +1570,7 @@ Enriched ALL 170 operation descriptions in `openapi/bd-api.json` with structured
 - **Compact footer** — universal auth/rate-limit/error-format disclosure on every op in a single italicized line
 - **Hand-written descriptions preserved** — ops like `matchLead`, `refreshSiteCache`, `loginUser`, `verifyToken` keep their specific prose; only the footer is appended
 
-Average description length: 144 chars (only 18 ops) → 600+ chars (all 170 ops). Template is documented in VISION.md under "Tool description template" for all future endpoint additions.
+Average description length: 144 chars (only 18 ops) → 600+ chars (all 170 ops). Template is documented internally for all future endpoint additions.
 
 ## [1.5.4] - 2026-04-18
 
@@ -1613,7 +1644,7 @@ Before these enums, an agent could call `createPage` with `seo_type=custom` (inv
 Count: 165 → 170 operations. 31 → 32 resource groups.
 
 ### Open enum candidates
-Several fields (`email_type`, `type` on redirects, `click_type`, `lead_type`, `priority`, `form_layout`, plus a handful more) still need authoritative values from BD dev team. Tracked in VISION.md's "Open Enum Candidates" section (internal doc).
+Several fields (`email_type`, `type` on redirects, `click_type`, `lead_type`, `priority`, `form_layout`, plus a handful more) still need authoritative values from BD dev team. Tracked internally as open enum candidates.
 
 ## [1.4.4] - 2026-04-18
 

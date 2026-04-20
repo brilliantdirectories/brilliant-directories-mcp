@@ -207,7 +207,7 @@ Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Then close
 
 > ⚠️ **OpenAI support is CLI-only for this MCP today.** Here's the honest landscape:
 >
-> | OpenAI surface | Works with full BD MCP (175 tools)? |
+> | OpenAI surface | Works with the full BD MCP? |
 > |---|---|
 > | ChatGPT web (`chatgpt.com`) | ❌ No — Custom GPT Actions cap at **30 operations per GPT**; our MCP has 175 |
 > | ChatGPT Desktop app | ❌ No — same 30-op cap (loads the same Custom GPTs) |
@@ -272,7 +272,7 @@ Ask it *"list my first 5 members on my BD site"*. It'll invoke the BD MCP tools 
 
 #### Fallback: ChatGPT Custom GPT with Actions (narrow scope only)
 
-If you're already in ChatGPT Plus/Team/Enterprise and want a browser-based GPT for a small slice of BD functionality (30 ops or fewer), you can build a Custom GPT with our OpenAPI spec. **Requires manually trimming our 175-op spec down to ≤30 operations before importing** — not covered here; this is advanced JSON editing. For full integration, use Codex CLI above.
+If you're already in ChatGPT Plus/Team/Enterprise and want a browser-based GPT for a small slice of BD functionality (30 ops or fewer), you can build a Custom GPT with our OpenAPI spec. Our spec is **well over 30 operations**, so this path **requires manually trimming the OpenAPI spec down to ≤30 operations before importing** — advanced JSON editing, not covered here. For full integration, use Codex CLI above.
 
 > ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. You build a **Custom GPT with Actions** that calls our REST API directly using our OpenAPI spec. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't on the free tier).
 >
@@ -313,7 +313,7 @@ Scroll to the bottom of the Configure form → click **Create new action**. A ne
 - Replace the ENTIRE block with a hard-coded URL to your BD site:
   ```json
   "servers": [
-    { "url": "https://launch60031.directoryup.com" }
+    { "url": "https://your-site.com" }
   ]
   ```
 - Use YOUR actual BD site URL, no trailing slash. Delete everything else — `description`, `variables`, all of it.
@@ -498,7 +498,7 @@ Once connected, your AI can **read AND write** to your BD site. Example prompts:
 - *"Add Jane to the VIP tag"*
 - *"Set up a new landing page at /promo with a hero section"*
 
-164 operations across members, posts, leads, reviews, pages, menus, widgets, email templates, categories, and more.
+Comprehensive coverage across members, posts, leads, reviews, pages, forms, menus, widgets, email templates, tags, redirects, smart lists, categories, membership plans, and more.
 
 **What success looks like:** the AI returns the data you asked for, or confirms the action with a new ID.
 **What failure looks like:** the AI says "I don't have access to that," "no tools available," or "unknown function." → jump to [Troubleshooting](#troubleshooting).
