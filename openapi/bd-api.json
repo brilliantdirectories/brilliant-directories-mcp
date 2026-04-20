@@ -5323,13 +5323,32 @@
                   },
                   "form_email_on": {
                     "type": "integer",
-                    "enum": [
-                      0,
-                      1
-                    ]
+                    "enum": [0, 1],
+                    "default": 0,
+                    "description": "Send admin notification email on each submission. `0` = OFF (default when an agent creates a form — safer: spammy forms won't flood the admin inbox). `1` = ON. Admin UI defaults this to ON; agents default it to OFF unless user explicitly requests notifications."
                   },
                   "form_email_recipient": {
                     "type": "string"
+                  },
+                  "form_action_type": {
+                    "type": "string",
+                    "enum": ["", "widget", "notification", "redirect"],
+                    "default": "widget",
+                    "description": "What happens after a successful submit. `widget` = Display Success Pop-Up Message (default on agent create). `notification` = Display Success Alert Message (inline banner). `redirect` = Redirect to Another Page — requires `form_target` (destination URL) to be set. `\"\"` (empty) = no post-submit behavior defined; valid for some internal/programmatic forms but NOT for public-facing user forms. **When this field is set to `widget`, `notification`, or `redirect`, the form's fields list MUST end with a `ReCaptcha` field, then a `HoneyPot` field, then a `Button` (Submit) field — in that order. Without all three at the end, BD errors on submit and the form won't function.** See `createFormField`."
+                  },
+                  "form_target": {
+                    "type": "string",
+                    "description": "Destination URL. **Required when `form_action_type=redirect`; ignored otherwise.** Full URL (e.g. `https://mysite.com/thanks`). BD validates URL shape; malformed URLs cause the redirect to silently fail on submit."
+                  },
+                  "form_url": {
+                    "type": "string",
+                    "default": "/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form",
+                    "description": "Save Action URL — advanced setting that overrides the default `action=` attribute on the rendered HTML form. **Required exact value for every form an agent creates:** `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form`. This is the BD Save Form widget endpoint; without it, the submit wiring breaks. Do NOT decode the `%20` characters — BD needs the URL-encoded form verbatim."
+                  },
+                  "table_index": {
+                    "type": "string",
+                    "default": "ID",
+                    "description": "Unique field identifier column for the `form_table`. **Required exact value for every form an agent creates:** `ID`. This tells BD which column is the primary key on the submissions table. Without it, BD can't look up or update individual submission records."
                   }
                 }
               }
@@ -5348,7 +5367,7 @@
             }
           }
         },
-        "description": "Create a new form record. Writes live data.\n\n**Use when:** adding a new form container. Add fields afterward with `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**Enums:** `form_email_on`: `0`, `1`.\n\n**Parameter interactions:**\n- After creating the form, add fields via `createFormField` using the returned form identifier\n\n**See also:** `updateForm` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**Field defaults and valid values (from BD admin form-builder UI, confirmed 2026-04-18):**\n- `form_action` — `post` (default, form submits via POST) or `get` (form submits via URL query string). Most forms use `post`; use `get` only for search/filter forms where the submission should be bookmarkable.\n- `form_layout` — `bootstrapvertical` (default; Labels Above Inputs) or `bootstrap` (Labels Left of Inputs).\n- `form_table` — the database table submissions are posted into. Default: `website_contacts`. Override only when building a form that posts into a different BD table (rare; usually a custom workflow).\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new form record. Writes live data. Add fields afterward via `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\n**⚠️ Required form recipe (must follow for the form to submit without errors):**\n\n1. **`form_url`** — set to the exact value `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form`. This is the BD Save Form widget endpoint; without it the form's `action=` attribute is wrong and the submit won't wire up. URL-encoded spaces (`%20`) must stay encoded.\n2. **`table_index`** — set to the exact value `ID`. Tells BD which column is the primary key on the submissions table.\n3. **`form_action_type`** — set to `widget` (Display Success Pop-Up Message — safe default) unless the user specifies `notification` or `redirect`. Never leave empty for a public-facing form.\n4. **`form_email_on`** — set to `0` (OFF) unless the user explicitly asks for admin notification emails. Admin UI defaults this to ON; agent default is OFF to avoid spammy-form-floods-admin-inbox.\n5. **If `form_action_type=redirect`** — set `form_target=<destination URL>`.\n6. **When `form_action_type` is `widget` / `notification` / `redirect`**, the form's **fields list MUST end with these three fields in this order** (add via `createFormField` with ascending `field_order`):\n   - `field_type=ReCaptcha` — Google reCAPTCHA challenge\n   - `field_type=HoneyPot` — invisible spam trap\n   - `field_type=Button` — the actual Submit button\n\n**Without every rule above, BD errors on submit and the form won't function.** The ReCaptcha/HoneyPot fields need no configuration beyond `field_type` — BD handles everything else server-side.\n\n**Field defaults and valid values:**\n- `form_action` — `post` (default) or `get` (use `get` only for bookmarkable search/filter forms).\n- `form_layout` — `bootstrapvertical` (default; Labels Above Inputs) or `bootstrap` (Labels Left of Inputs).\n- `form_table` — submissions table, default `website_contacts`. Override only for custom workflows.\n- `form_action_type` — `widget` (default) / `notification` / `redirect` / `\"\"` (empty, internal-only).\n- `form_target` — required when `form_action_type=redirect`, otherwise ignored.\n- `form_email_on` — `0` (default) / `1` (enable notification emails to admin).\n\n**See also:** `updateForm` (modify existing), `createFormField` (add fields), `listFormFields` (inspect existing forms).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned form identifier.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/update": {
@@ -5375,7 +5394,26 @@
                     "type": "string"
                   },
                   "form_email_on": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Send admin notification email on each submission. `0` = OFF, `1` = ON."
+                  },
+                  "form_action_type": {
+                    "type": "string",
+                    "enum": ["", "widget", "notification", "redirect"],
+                    "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL, `\"\"` = no behavior (internal-only forms). **If changing TO `redirect`, also set `form_target`. If changing FROM empty to any of `widget`/`notification`/`redirect` on an existing form, verify the fields list ends with `ReCaptcha` → `HoneyPot` → `Button` (in that order) — otherwise submits will error.**"
+                  },
+                  "form_target": {
+                    "type": "string",
+                    "description": "Destination URL, required when `form_action_type=redirect`, ignored otherwise. Full URL with `https://`."
+                  },
+                  "form_url": {
+                    "type": "string",
+                    "description": "Save Action URL. Canonical value: `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form`. If a form was created via this API with the correct value, leave this field alone on update — only touch it to repair a form that was created without it."
+                  },
+                  "table_index": {
+                    "type": "string",
+                    "description": "Unique field identifier. Canonical value: `ID`. Leave alone on update unless repairing a broken form."
                   }
                 }
               }
@@ -5394,7 +5432,7 @@
             }
           }
         },
-        "description": "Update an existing form record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** renaming or re-configuring a form's wrapper.\n\n**Required:** `form_id`.\n\n**See also:** `createForm` (add new), `deleteForm` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing form record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `form_id`.\n\n**⚠️ If changing `form_action_type` to `widget` / `notification` / `redirect`** (or if it was already set to any of those), the form's fields list MUST end with `ReCaptcha` → `HoneyPot` → `Button` (in that order). Verify via `listFormFields` before changing `form_action_type` — if the tail pattern is missing, the form will error on submit. Add missing fields via `createFormField`.\n\n**⚠️ If changing to `redirect`**, also set `form_target` = destination URL.\n\n**See also:** `createForm` (add new), `deleteForm` (remove permanently), `listFormFields` / `createFormField` (inspect / add the ReCaptcha+HoneyPot+Button tail).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form/delete": {
@@ -5611,7 +5649,7 @@
             }
           }
         },
-        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_name` — the parent form slug (from `listForms` / `createForm`). Note: only `form_name` is accepted; there is no `form_id` parameter on this endpoint.\n- Field type and options depend on the form type; validate against the form's field schema\n\n**Limitation — dropdown option lists:** `Checkbox`, `Select`, `Radio`, and `YesNo` field types accept their type value on create but there is NO API parameter to supply their option list (no `field_options`/`choices`/`enum` field on this endpoint). Create the field with `field_type` set, then populate its options in BD admin's form editor. Until options are populated, the rendered field will be empty.\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`field_type` valid values (BD admin form-builder UI, full list):**\n\n*Select-type fields:* `Checkbox` (checkboxes), `Select` (dropdown list), `Radio` (radio buttons), `YesNo` (yes/no toggle)\n\n*Text inputs:* `Custom` (custom HTML), `Email`, `HTML` (section title / heading), `Button` (submit button), `Textbox` (single-line text), `textarea` (paragraph), `Url` (website URL)\n\n*Fancy fields:* `Date` (date picker), `DateTimeLocal` (date + time picker), `File` (file upload), `FroalaEditor` (rich text — basic), `FroalaEditorUserUpload` (+ image upload), `FroalaEditorUserUploadPreMadeElem` (+ pre-made elements), `FroalaEditorAdmin` (+ media manager), `Tip` (help alert box), `Hidden`, `Country` (country list), `State` (state list), `Number` (integer), `Password`, `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha` (Google reCAPTCHA), `HoneyPot` (spam protection), `Category` (top-level category list), `Years` (year picker)\n\n**Field naming rules:**\n- `field_name` — internal system key. **Underscores only, no spaces.** E.g. `first_name`, `company_email`. Used as HTML `name` attribute.\n- `field_text` — public-facing display label shown to form users. Free-form, e.g. \"First Name\", \"Your Email Address\".\n\n**Form composition rule:** a form should have **exactly ONE `Button` field** (the submit trigger). Adding multiple Button fields causes UI confusion.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Create a new formfield record. Writes live data.\n\n**Use when:** adding an input to an existing form.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Enums:** `field_required`: `0`, `1`.\n\n**Parameter interactions:**\n- `form_name` — the parent form slug (from `listForms` / `createForm`). Note: only `form_name` is accepted; there is no `form_id` parameter on this endpoint.\n- Field type and options depend on the form type; validate against the form's field schema\n\n**Limitation — dropdown option lists:** `Checkbox`, `Select`, `Radio`, and `YesNo` field types accept their type value on create but there is NO API parameter to supply their option list (no `field_options`/`choices`/`enum` field on this endpoint). Create the field with `field_type` set, then populate its options in BD admin's form editor. Until options are populated, the rendered field will be empty.\n\n**See also:** `updateFormField` (modify existing).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` — includes the server-assigned ID (e.g., `user_id`, `post_id`). Use this ID for follow-up operations.\n\n**`field_type` valid values (BD admin form-builder UI, full list):**\n\n*Select-type fields:* `Checkbox` (checkboxes), `Select` (dropdown list), `Radio` (radio buttons), `YesNo` (yes/no toggle)\n\n*Text inputs:* `Custom` (custom HTML), `Email`, `HTML` (section title / heading), `Button` (submit button), `Textbox` (single-line text), `textarea` (paragraph), `Url` (website URL)\n\n*Fancy fields:* `Date` (date picker), `DateTimeLocal` (date + time picker), `File` (file upload), `FroalaEditor` (rich text — basic), `FroalaEditorUserUpload` (+ image upload), `FroalaEditorUserUploadPreMadeElem` (+ pre-made elements), `FroalaEditorAdmin` (+ media manager), `Tip` (help alert box), `Hidden`, `Country` (country list), `State` (state list), `Number` (integer), `Password`, `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha` (Google reCAPTCHA), `HoneyPot` (spam protection), `Category` (top-level category list), `Years` (year picker)\n\n**Field naming rules:**\n- `field_name` — internal system key. **Underscores only, no spaces.** E.g. `first_name`, `company_email`. Used as HTML `name` attribute.\n- `field_text` — public-facing display label shown to form users. Free-form, e.g. \"First Name\", \"Your Email Address\".\n\n**⚠️ Required tail-end pattern for submittable forms.** When the parent form's `form_action_type` is `widget`, `notification`, or `redirect` (see `createForm`), the fields list MUST end with these three fields in this exact order — highest `field_order` values, last 3 positions:\n\n1. `field_type=ReCaptcha` (e.g. `field_order=98`)\n2. `field_type=HoneyPot` (e.g. `field_order=99`)\n3. `field_type=Button` (e.g. `field_order=100`)\n\nWithout all three at the end in order, BD errors on submit and the form won't function. ReCaptcha and HoneyPot need no configuration beyond `field_type` — pick any internal `field_name` (e.g. `recaptcha_field`, `hp_field`) and any `field_text` (empty string for ReCaptcha, something like `Leave this blank` for HoneyPot). The `Button` field's `field_text` is the visible submit-button label (e.g. `Send Message`, `Submit`).\n\n**Exactly ONE `Button` per form.** Adding multiple Buttons causes UI confusion and submission bugs.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/form_fields/update": {

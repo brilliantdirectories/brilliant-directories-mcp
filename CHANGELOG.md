@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.0] - 2026-04-20
+
+### Added — Form creation recipe: agents now have everything needed to build submittable forms
+
+Without the rules below, AI-created BD forms silently fail on submit. BD's admin UI enforces most of these via defaults and hidden form-save widget wiring; the API path bypasses that scaffolding, and agents need explicit guidance to avoid building broken forms. This release adds:
+
+**Four exact-value fields an agent must set on every `createForm` call:**
+- `form_url` = `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form` — the BD Save Form widget endpoint; without this, the rendered HTML form's `action=` attribute is wrong and submits don't wire up. URL-encoded `%20` must stay encoded.
+- `table_index` = `ID` — primary-key column on the submissions table; without it, BD can't look up or update individual submission records.
+- `form_action_type` = `widget` (default) / `notification` / `redirect` / `""` (empty = internal only). Post-submit behavior: success pop-up / success banner / redirect-to-URL / none. Agents default to `widget` unless user specifies.
+- `form_email_on` = `0` (agent default OFF) / `1`. Admin UI defaults to ON; API agent default is OFF so AI-generated forms don't flood admin inboxes.
+
+**One conditional field:**
+- `form_target` = destination URL. **Required when `form_action_type=redirect`, ignored otherwise.**
+
+**Three required fields at the END of every submittable form's field list** (via `createFormField`, highest `field_order` values, last 3 positions, in this exact order):
+1. `field_type=ReCaptcha`
+2. `field_type=HoneyPot`
+3. `field_type=Button`
+
+When the parent form's `form_action_type` is `widget`/`notification`/`redirect`, BD errors on submit if this tail pattern is missing or out of order. ReCaptcha and HoneyPot need no configuration beyond `field_type` — BD handles them server-side.
+
+**Updates shipped:**
+- `createForm` schema: added `form_action_type`, `form_target`, `form_url`, `table_index` properties with exact-value defaults and descriptions. `form_email_on` description now calls out the agent-default-OFF rule. Top-level description rewritten with the 6-step recipe numbered and called out.
+- `updateForm` schema: same properties added (with "leave alone unless repairing a broken form" guidance for `form_url` / `table_index`). Description now warns that flipping `form_action_type` to a public-facing value on an existing form requires auditing the tail pattern first — `listFormFields` before `updateForm` when the action type is changing.
+- `createFormField` description: replaced the generic "exactly one Button per form" note with the full tail-pattern rule + concrete `field_order` values + ReCaptcha/HoneyPot "no configuration needed beyond `field_type`" clarification.
+- MCP instructions: one new top-level paragraph summarizing the full recipe so cold agents internalize it at first load, not after trial and error.
+
+No schema-breaking changes; all new properties are optional additions. Existing callers passing only the prior required set continue to work; they just get forms that silently fail on submit unless they were already passing the correct values by convention. Agents reading the new description/recipe will produce working forms on first try.
+
+### Context
+Rules sourced from the BD admin form-builder UI — specifically the hidden "Save Action URL" and "Unique field identifier" advanced settings, plus the success-action dropdown, plus observation that every working BD form ships with ReCaptcha + HoneyPot + Button as its last three fields. Verified against an existing working form (`ebook_optin`) on the live test site.
+
 ## [6.9.9] - 2026-04-20
 
 ### Added — Asset-routing quick-reference at top of createWebPage / updateWebPage descriptions
