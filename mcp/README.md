@@ -8,73 +8,48 @@ Give any AI agent full access to your Brilliant Directories site with one API ke
 
 Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
-## Before you start — 2 things you need
+## Before you start — 3 things you need
 
-1. **Node.js installed.** If you've never run a terminal command before, install it from [nodejs.org](https://nodejs.org) (pick the "LTS" version, click through the installer). This is a one-time setup.
-2. **Your BD API key.** In your BD admin: sidebar → **Developer Hub** → **Generate API Key** → copy it.
+1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
+2. **Your BD API key.** BD Admin sidebar → **Developer Hub** → **Generate API Key** → copy it.
+3. **Your BD site URL.** Include `https://`, no trailing slash. ✅ `https://mysite.com` · ❌ `mysite.com` · ❌ `https://mysite.com/`
 
-You'll also need your BD site URL — use the FULL url with `https://` and NO trailing slash. Example: `https://mysite.com` (correct). Not `mysite.com`, not `https://mysite.com/`.
+## Table of Contents
 
-## 30-Second Quickstart
+- [Setup by Platform](#setup-by-platform)
+  - [Cursor](#cursor-recommended-path)
+  - [Claude Desktop](#claude-desktop)
+  - [Claude Code](#claude-code)
+  - [Windsurf](#windsurf)
+  - [Cline (VS Code extension)](#cline-vs-code-extension)
+  - [ChatGPT (GPT Actions)](#chatgpt-gpt-actions)
+  - [n8n](#n8n)
+  - [Make / Zapier](#make--zapier)
+  - [curl / any HTTP client](#curl--any-http-client)
+- [What you can ask the AI](#what-you-can-ask-the-ai)
+- [Updates are automatic](#updates-are-automatic)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Authentication, Rate Limits, Pagination, Filtering, Sorting, Resources](#authentication)
+- [Support](#support)
 
-Open a terminal (Mac: Terminal.app · Windows: PowerShell · Linux: your shell). Paste:
+## 30-Second Quickstart (try this first)
+
+Open a terminal (Mac: **Terminal.app** · Windows: **PowerShell** · Linux: your shell). Paste:
 
 ```bash
 npx brilliant-directories-mcp --setup
 ```
 
-The wizard asks for your BD site URL and API key, tests the connection, asks which app you use (Cursor / Claude Desktop / Windsurf / Claude Code), and writes the config for you. No JSON editing.
+A wizard asks for your URL + API key, tests the connection, asks which app you use, and writes the config file automatically. If it works, **fully quit and reopen your AI app** and [skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
-**Fully quit and reopen your AI app** (not just close the window — fully quit: Mac `Cmd+Q`, Windows right-click taskbar → Quit). Then ask your AI:
-
-> "List members on my BD site"
-
-**Success looks like:** the AI returns a table or list of member names/emails.
-**Failure looks like:** the AI says "I don't have access to that" or "no tools available." If that happens, jump to [Troubleshooting](#troubleshooting) below.
-
-### Updates are automatic
-
-Once set up, you get new MCP versions automatically the next time you fully-quit-and-reopen your AI app. No reinstall needed.
-
-### What you can ask the AI to do
-
-Once connected, your AI can READ and WRITE to your BD site. Examples: *"list all members who signed up this month"*, *"create a new member named Jane Doe with email jane@…"*, *"add a blog post by member 42 titled Welcome"*, *"show me unpaid invoices"*, *"add Jane to the VIP tag"*. 164 operations across members, posts, leads, reviews, pages, menus, widgets, and more.
-
-> ⚠️ **The AI can also DELETE and MODIFY live data** — members, posts, pages, tags, etc. Writes go directly to your live site with no undo. Before running bulk or destructive operations, test on ONE record first, and consider taking a backup. If you're unsure, ask the AI to *preview* (list/show) before it *acts*.
-
-### For AI agents / scripts (non-interactive)
-
-If an AI agent is guiding you, it can have you paste a single command with everything prefilled:
-
-```bash
-npx brilliant-directories-mcp --setup --url https://your-site.com --api-key YOUR_KEY --client cursor
-```
-
-This runs the full setup end-to-end with no prompts. Replace `cursor` with `claude-desktop`, `windsurf`, `claude-code`, or `print` (prints the JSON config instead of writing a file).
+If the wizard errors, hangs, or your AI still says "no tools available" after restart, use the per-platform step-by-step below — it's the same outcome, just done by hand.
 
 ---
 
 ## Setup by Platform
 
-### Claude Code / Cursor / Windsurf / Cline (MCP)
-
-**Easiest path: use the wizard** from the [30-Second Quickstart](#30-second-quickstart) above — it handles all of this automatically.
-
-If you prefer to wire things up by hand, here's how per app. Replace `YOUR_KEY` with your BD API key and `https://your-site.com` with your BD site URL (include `https://`, no trailing slash).
-
-**Claude Code** — paste this one line in your terminal (Mac: Terminal.app · Windows: PowerShell):
-
-```bash
-claude mcp add bd-api -- npx brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
-```
-
-Then fully quit and reopen Claude Code.
-
-**Cursor** — open the MCP config file at `~/.cursor/mcp.json` (create it if missing: on Mac/Linux `mkdir -p ~/.cursor && touch ~/.cursor/mcp.json`; on Windows that path is `%USERPROFILE%\.cursor\mcp.json`). Paste the block below into the file, then save. Fully quit and reopen Cursor.
-
-**Windsurf** — same JSON format; the file is `~/.codeium/windsurf/mcp_config.json` on Mac/Linux, `%USERPROFILE%\.codeium\windsurf\mcp_config.json` on Windows.
-
-**Cline** — same JSON format; the file is `~/Library/Application Support/Cline/MCP/cline_mcp_settings.json` on Mac, `%APPDATA%\Cline\MCP\cline_mcp_settings.json` on Windows.
+Every method below uses this config block — keep it handy. Replace `YOUR_KEY` and `https://your-site.com` with your values:
 
 ```json
 {
@@ -87,9 +62,77 @@ Then fully quit and reopen Claude Code.
 }
 ```
 
-After saving, **fully quit and reopen** the app (not just close the window — Mac `Cmd+Q`; Windows right-click taskbar → Quit).
+---
 
-Then ask your AI: *"List all members on my BD site"* or *"Create a new member with email john@example.com"*
+### Cursor (recommended path)
+
+**GUI method (easiest — no terminal needed):**
+
+1. Open Cursor.
+2. **Settings menu**:
+   - Mac: menu bar → **Cursor → Settings → Cursor Settings**
+   - Windows / Linux: **File → Preferences → Cursor Settings**
+   - (Or Command Palette: `Cmd/Ctrl + Shift + P` → type "Open MCP Settings")
+3. Click **Tools & MCP** in the left sidebar.
+4. Click **New MCP Server**.
+5. Paste the config block above. Replace `YOUR_KEY` and `https://your-site.com` with your values.
+6. Click Save.
+7. **Fully quit and reopen Cursor** (menu bar → Quit; or Mac `Cmd+Q`; or Windows right-click the taskbar icon → Quit).
+
+**File method (fallback):** edit `~/.cursor/mcp.json` (Mac/Linux) or `%USERPROFILE%\.cursor\mcp.json` (Windows). Paste the config block, save, fully quit and reopen Cursor.
+
+---
+
+### Claude Desktop
+
+**GUI method:**
+
+1. Open Claude Desktop.
+2. From the **menu bar** (top of screen on Mac, top of app window on Windows): **Settings → Developer tab → Edit Config**. (This opens the config file in your default text editor.)
+3. Paste the config block above into the file. Save.
+4. **Fully quit and reopen Claude Desktop** (Mac `Cmd+Q`; Windows right-click taskbar icon → Quit).
+5. **Verify:** open a new chat. Look at the bottom-right of the input box for a hammer 🔨 icon with a number. That's the tool count. Click it to see the BD tools listed.
+
+Config file path (in case you want to edit directly): `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows).
+
+---
+
+### Claude Code
+
+Terminal only (Claude Code has no MCP GUI). Paste in **Terminal.app** (Mac) or **PowerShell** (Windows):
+
+```bash
+claude mcp add bd-api -- npx brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
+```
+
+Replace `YOUR_KEY` and `https://your-site.com` with your values. Then close and reopen Claude Code.
+
+---
+
+### Windsurf
+
+**GUI method:**
+
+1. Open Windsurf.
+2. Click **Windsurf - Settings** at bottom-right (or Command Palette: `Cmd/Ctrl + Shift + P` → "Open Windsurf Settings").
+3. Go to **Cascade** section → find **Model Context Protocol (MCP)** → enable it.
+4. In the **Cascade panel**, click the **MCPs icon** (top-right) → **Configure** (opens the config file).
+5. Paste the config block above. Save.
+6. **Fully quit and reopen Windsurf.**
+
+---
+
+### Cline (VS Code extension)
+
+**GUI method:**
+
+1. Open VS Code with Cline installed.
+2. Click the **Cline icon** in the sidebar to open the Cline panel.
+3. Click the **MCP Servers icon** in Cline's top navigation bar.
+4. Click **Configure MCP Servers** (opens the config file in VS Code).
+5. Paste the config block above. Save.
+6. Back in the MCP Servers panel, you should see `bd-api` — toggle it **on** if not already.
+7. Reload the Cline panel (or close/reopen VS Code) if the tools don't appear.
 
 ---
 
@@ -159,6 +202,30 @@ curl -X PUT -H "X-Api-Key: YOUR_KEY" \
   -d "user_id=42&company=New Company Name" \
   https://your-site.com/api/v2/user/update
 ```
+
+---
+
+## What you can ask the AI
+
+Once connected, your AI can **read AND write** to your BD site. Example prompts:
+
+- *"List all members who signed up this month"*
+- *"Create a new member named Jane Doe with email jane@example.com"*
+- *"Add a blog post by member 42 titled 'Welcome to our directory'"*
+- *"Show me unpaid invoices"*
+- *"Add Jane to the VIP tag"*
+- *"Set up a new landing page at /promo with a hero section"*
+
+164 operations across members, posts, leads, reviews, pages, menus, widgets, email templates, categories, and more.
+
+**What success looks like:** the AI returns the data you asked for, or confirms the action with a new ID.
+**What failure looks like:** the AI says "I don't have access to that," "no tools available," or "unknown function." → jump to [Troubleshooting](#troubleshooting).
+
+> ⚠️ **The AI can also DELETE and MODIFY live data.** Writes go directly to your live site — no undo. Before running bulk or destructive operations, test on ONE record first. Consider a backup. If unsure, ask the AI to *preview* (list/show) before it *acts*.
+
+## Updates are automatic
+
+Once set up, you get new MCP versions automatically the next time you fully quit and reopen your AI app. No reinstall needed.
 
 ---
 

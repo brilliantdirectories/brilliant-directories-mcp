@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.3.3] - 2026-04-19
+## [6.3.4] - 2026-04-19
+
+### Changed — README restructured for max adoption
+
+- Clickable Table of Contents at the top, linking to every major section.
+- **Setup by Platform** is now per-app with explicit GUI-first step-by-step menu paths — you no longer need to know what a terminal is unless you want to. Sourced from each platform's current (2026) documentation:
+  - **Cursor**: `Cursor → Settings → Cursor Settings → Tools & MCP → New MCP Server`
+  - **Claude Desktop**: `Settings → Developer tab → Edit Config` (or use Extensions browser)
+  - **Claude Code**: terminal-only (no GUI)
+  - **Windsurf**: `Settings → Cascade → MCP Servers → Configure`
+  - **Cline (VS Code)**: Cline panel → MCP Servers icon → Configure
+- Wizard (`npx brilliant-directories-mcp --setup`) repositioned as "try this first; if it fails, use the per-platform steps below" — honest about when it works vs when to fall back.
+- Shared config-block-once, referenced-per-platform pattern — no more copy-paste drift between sections.
+- "What you can ask" + destructive-write warning moved below Setup where it's actually read in sequence.
 
 ### Changed — README final polish
 
