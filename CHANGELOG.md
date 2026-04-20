@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.6.1] - 2026-04-20
+
+### Added — hero readability safe-defaults + cache refresh rule
+
+- When an agent enables the hero (`enable_hero_section=1` or `2`) on any WebPage and the user hasn't specified color/overlay/padding values, apply these readability-safe defaults: `h1_font_color=rgb(255,255,255)`, `h2_font_color=rgb(255,255,255)`, `hero_content_overlay_color=rgb(0,0,0)`, `hero_content_overlay_opacity=0.5`, `hero_top_padding=100`, `hero_bottom_padding=100`. White text + black-50% overlay guarantees readable contrast over any background image. Universal to both `content` and `profile_search_results` page types.
+- **Cache refresh now required** after any `createWebPage` or `updateWebPage` that touches `enable_hero_section` or any `hero_*`/`h1_font_*`/`h2_font_*` field — agents must call `refreshSiteCache` immediately, otherwise hero changes are stored but not rendered publicly until BD's next cache cycle.
+- Rules added to both the createWebPage/updateWebPage description blocks AND the MCP instructions so cold agents apply them on first try.
+
 ## [6.6.0] - 2026-04-20
 
 ### Added — security guardrails + date_updated tracking on WebPages
