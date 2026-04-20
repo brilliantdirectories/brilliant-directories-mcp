@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.9] - 2026-04-20
+
+### Added — Asset-routing quick-reference at top of createWebPage / updateWebPage descriptions
+
+An agent audit flagged that the WebPage asset-routing rules (which code type goes in which field) were only discoverable by reading the full description end-to-end and cross-referencing per-field descriptions. Fine for an agent that loads the full schema; fragile for an agent that reads the description top-down and makes decisions as it goes.
+
+**Added**: a 6-bullet quick-reference at the TOP of both createWebPage and updateWebPage descriptions, right after "Required:". Agents now see the complete asset-routing matrix in the first ~30 lines of the description instead of having to scan ~200 lines of body copy:
+
+- Body HTML → `content` (Froala; strips `<style>` and `<script>`)
+- CSS rules → `content_css` (no `<style>` wrapper)
+- JavaScript → `content_footer_html` (yes, include `<script>` tags)
+- `<head>` deps → `content_head`
+- Hero banner → `enable_hero_section` + `hero_*` (EAV-stored on update)
+- Page-access gate → `content_footer` (misleading name, not HTML; enum `""` / `members_only` / `digital_products`)
+
+**Also fixed**: a leftover "5 master defaults" reference in the createWebPage / updateWebPage sidebar-workflow section (missed in v6.9.2's global fix). Now correctly reads "6 master defaults" per the verified admin-UI HTML.
+
+### Context — why agents were drifting
+An agent session reported not seeing the `content_css` / `content_footer_html` / `content_head` fields at all. **Those fields ARE exposed (since v6.9.6) and `content_footer` IS correctly typed as the page-access gate (since v6.9.7).** Root cause of the report: the MCP client's loaded schema was a cached pre-v6.9.6 version. MCP hosts only re-load server schemas on full app restart; running agents against a running MCP host session will continue to see whatever schema was loaded at server startup, even after `npm update` / `npx` cache refresh on the underlying package. **Fix on the user side**: fully quit and reopen the AI host app (Claude Desktop, Cursor, etc.) after any MCP package update. No code change needed — the README Claude Desktop section already documents this; just noting it here for CHANGELOG readers diagnosing similar "drift" reports.
+
+### Still not addressed
+- `mcp/index.js` top-level instructions routing paragraph is already correct as of v6.9.7 — not touched.
+- No multi-site README section yet — tracked for a later pass.
+
 ## [6.9.8] - 2026-04-20
 
 ### Changed — Setup-by-Platform reorder + 4-platform polish pass
