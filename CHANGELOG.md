@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.6] - 2026-04-20
+
+### Added — WebPage asset routing: `content_css`, `content_footer_html`, `content_head`
+
+Live-verified on a real BD page: every WebPage record carries four asset-routing fields that are NOT just "additional HTML" slots — they each have a specific purpose, and the main `content` field is a Froala rich text editor that STRIPS anything that isn't clean HTML. Agents were effectively routing all assets (CSS, JS, head deps) into `content`, which either got silently stripped or broke the Froala editor. Now every field has a dedicated description and a top-level MCP-instructions paragraph so agents route code to the right place on first try.
+
+**Field descriptions on createWebPage + updateWebPage:**
+- **`content`** — rewritten. Explicitly calls out that this is a Froala rich-text editor: HTML only, no `<style>` or `<script>` tags (stripped by Froala), also strips `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable`. Routes CSS/JS/head deps to their dedicated fields. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`.
+- **`content_css`** (NEW) — raw CSS rules only, no `<style>` wrapper. Renders in page `<head>`. Scope every selector to a unique page-specific class; never bare `body` / `h1` / `p`; never target reserved platform classes `.container` / `.froala-table` / `.image-placeholder`.
+- **`content_footer_html`** (NEW) — page-scoped JS + footer dependencies. Rendered before closing `</body>`. Wrap JS in `<script>` tags here (unlike `content`, this field accepts them). jQuery already global on BD sites. IIFE-wrap + unique-class scope to prevent leakage.
+- **`content_head`** (NEW) — page-scoped `<head>` dependencies. For `<link>` stylesheets, `<meta>` tags, structured data JSON-LD, verification tags, head-required third-party scripts (rare — prefer `content_footer_html` for most JS).
+- **`content_footer`** — clarified. Plain HTML fragment below the main body, distinct from `content_footer_html` which is the scripts/JS field.
+
+**MCP instructions — new WebPage asset routing paragraph.** Tight summary agents see at startup. Covers the 4-field routing matrix + the Froala strip rules + the "PHP is data, not server-side template" rule + a redirect to widgets when the user needs server-side logic.
+
+Source for this release: BD's internal AI Companion handler (`bd-core-files/admin/ai_companion/handler.php`), the canonical source for what the admin-UI AI sends agents editing the same fields. We mirrored that context into our MCP so API-driven agents have the same rules the admin-UI agent already operates under.
+
+### Still to come (not in this release)
+- Cursor, Claude Code, VS Code, Windsurf, Continue per-platform walkthroughs brought up to Claude Desktop's level of detail
+- Multi-site setup section
+- Platform reorder (Claude first, then ChatGPT, then Cursor)
+
 ## [6.9.5] - 2026-04-20
 
 ### Changed — README brevity pass: surgical, not wordy
