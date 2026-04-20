@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.2] - 2026-04-20
+
+### Fixed — "complete closed set" contradiction that was making agents refuse legitimate writes
+
+**Smoking-gun bug:** v6.13.0 added a top-level directive that `update*` tool schemas are DOCUMENTATION, not whitelists. But 16 paragraphs earlier in the same instruction block, the Member Listings description used the phrase *"Editable fields on Member Listings (complete closed set)"* — and `updatePostType`'s per-tool description repeated the same *"the complete closed set"* framing. Agents read the absolute closed-set rule first and treated the later schema-is-documentation rule as a weaker override, refusing to write unlisted fields like `feature_categories` even though BD accepts them natively.
+
+**Four-agent audit confirmed:**
+- Live wire-test: MCP forwards unlisted params verbatim (both `feature_categories` AND a fabricated `zzz_fake_field` pass through; BD accepts real columns, silently drops fake ones).
+- Code audit: `mcp/index.js:968-981` has an explicit `else { bodyParams[key] = val; }` branch for unlisted keys — no `ajv`/`zod`/`pick`/`whitelist` filtering anywhere.
+- Process diag: Claude Desktop runs the correct 6.13.1 binary — no version mismatch.
+- Doc audit: "closed set" phrasing appears at `bd-api.json:4448` + `mcp/index.js:720` — the contradiction vector.
+
+**Three surgical edits:**
+
+1. `mcp/index.js` — Member Listings paragraph rewritten: "**Commonly-edited** Member Listings fields" (not "complete closed set"). Explicit callout that any GET-returned column is also writable. "Omit X/Y/Z — harmless if sent, no rendering effect" replaces "Do NOT send X/Y/Z" (softer, non-contradicting).
+2. `openapi/bd-api.json` `updatePostType` description — same "Commonly-edited" rewrite, with `feature_categories` named as an example of a writable unlisted column.
+3. `mcp/index.js` — the "Update-tool schemas are DOCUMENTATION" directive hoisted from paragraph ~13 up to paragraph 4 (right after "Chain or run multiple tools"), before any per-tool specifics can introduce contradicting closed-set language. Reworded to explicitly disarm phrases like "commonly-edited", "editable fields", "main settings" as GUIDANCE not restrictions.
+
+**Impact:** agents on any surface (Claude Desktop, Claude Code, Cursor native, Codex, etc.) stop refusing legitimate writes to unlisted-but-real columns. The v6.13.0 universal directive now actually lands ahead of the contradictions that were drowning it out.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.1] - 2026-04-20
 
 ### Added — README: Claude CLI inside Cursor setup clarification
