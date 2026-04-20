@@ -445,9 +445,9 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 3. Cursor shows an **"Install MCP Server?"** prompt with most fields pre-filled. Two things you need to change:
 
    **Rename the Name field** (don't leave it as `server` — too generic):
-   - `brilliant-mysite` — site-name-based
-   - `brilliant-3579` — site-ID-based
-   - `brilliant-main` / `brilliant-staging` / `brilliant-client-acme` — nickname
+   - `brilliant-directories-60031` — site-ID-based (recommended pattern)
+   - `brilliant-directories-mysite` — site-name-based
+   - `brilliant-directories-main` / `brilliant-directories-staging` / `brilliant-directories-client-acme` — nickname
    - Why: Cursor lists every MCP by this Name; if you later add a second BD site, you'll need to tell them apart.
 
    **Fill Environment Variables — RIGHT side only:**
@@ -466,7 +466,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
    - **Mac:** `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**.
 6. Tools appear in **Settings → Tools & MCP**.
 
-> **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `bd-site-one`, `bd-site-two`, `bd-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on bd-site-one, list the top categories"* or *"compare member counts between bd-site-one and bd-site-two"* or *"copy these 3 email templates from bd-site-one to bd-site-two"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
+> **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-81245`, `brilliant-directories-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"* or *"copy these 3 email templates from brilliant-directories-60031 to brilliant-directories-81245"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
 
 ---
 
