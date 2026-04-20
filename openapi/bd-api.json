@@ -8780,7 +8780,7 @@
                   "hero_content_overlay_opacity": {
                     "type": "string",
                     "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
-                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default `0.4`."
+                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default in admin-UI creation is `0.4`. **KNOWN API QUIRK (live-verified 2026-04-19):** values sent via API update currently return stored as `\"0.0\"` regardless of the input (e.g. sending `0.5` reads back as `0.0`). If the overlay visibility matters, set it in the BD admin UI (SEO Settings → Hero Section → Overlay Visibility) until the API-side write is fixed. All other hero fields (colors, padding, image, fonts) write correctly."
                   },
                   "hero_top_padding": {
                     "type": "string",
@@ -9127,7 +9127,7 @@
                   "hero_content_overlay_opacity": {
                     "type": "string",
                     "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
-                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default `0.4`."
+                    "description": "Opacity of the `hero_content_overlay_color` layer, in 0.1 increments from `0.0` (fully transparent / invisible) to `1` (fully opaque). Admin UI labels these as 0–10 (10 = fully opaque). Default in admin-UI creation is `0.4`. **KNOWN API QUIRK (live-verified 2026-04-19):** values sent via API update currently return stored as `\"0.0\"` regardless of the input (e.g. sending `0.5` reads back as `0.0`). If the overlay visibility matters, set it in the BD admin UI (SEO Settings → Hero Section → Overlay Visibility) until the API-side write is fixed. All other hero fields (colors, padding, image, fonts) write correctly."
                   },
                   "hero_top_padding": {
                     "type": "string",

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.6.2] - 2026-04-20
+
+### Documented — hero_content_overlay_opacity API write quirk
+
+Live-verified: `hero_content_overlay_opacity` sent via API update (any method — MCP tool or raw curl) returns stored as `"0.0"` regardless of the input value (e.g. `0.5` sent, reads back `0.0`). All other hero fields (colors, padding, image, fonts, alignment) write correctly. Field description now flags this as a known quirk and tells agents to fall back to the BD admin UI for overlay opacity until fixed platform-side.
+
 ## [6.6.1] - 2026-04-20
 
 ### Added — hero readability safe-defaults + cache refresh rule
