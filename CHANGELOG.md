@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.7] - 2026-04-20
+
+### Fixed — `content_footer` is the page-access gate, not footer HTML (v6.9.6 correction)
+
+v6.9.6 shipped `content_footer` documented as "additional HTML below the main content." **Wrong.** Per BD platform-side clarification: `content_footer` is a misnamed relic column that BD repurposed as the **page-access gate** (Public / Members-Only / Digital Products Buyers). Writing HTML into it does nothing useful and may silently gate pages based on how BD parses the value. Corrected:
+
+- **`content_footer`** — now correctly documented as the page-access gate. Schema enum updated: `"" | "members_only" | "digital_products"`.
+  - `""` (empty, default) — Public For Everyone
+  - `"members_only"` — Only Allow Members (logged-in members only; non-members hit a login/signup wall)
+  - `"digital_products"` — Only Allow Digital Products Buyers
+  - ⚠️ "MISLEADING NAME" callout front-loaded in the description. Finer-grained member-tier and plan-based gating rules BD exposes separately — not covered in this release; will document when the full gate logic is specced out.
+- **`content_footer_html`** — tightened. Now explicitly says "JavaScript and scripts only" — NOT "JS + footer dependencies" (v6.9.6 phrasing implied HTML content was welcome). Also flags "Not for extra body HTML" so agents don't dump body HTML here thinking it renders below `content`.
+- **`content_css`** — tightened. Now blunt: "Paste raw CSS rules directly — do NOT wrap in `<style>` tags." Previous version said "no `<style>` wrapper" but the imperative phrasing is clearer.
+- **MCP instructions WebPage asset-routing paragraph** — updated to match. The full routing matrix now correctly reads: `content` (HTML body, Froala) / `content_css` (raw CSS) / `content_footer_html` (JS/scripts only) / `content_head` (head deps) / `content_footer` (MISLEADING — access gate, not HTML).
+
+### No new fields this release
+All changes are doc corrections on fields already in the schema. No schema-breaking changes.
+
+### Context
+v6.9.6 introduced `content_css` / `content_footer_html` / `content_head` with correct semantics — only the `content_footer` description was wrong. This release corrects that one field + tightens the two adjacent ones that were close but not imperative enough.
+
 ## [6.9.6] - 2026-04-20
 
 ### Added — WebPage asset routing: `content_css`, `content_footer_html`, `content_head`

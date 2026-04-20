@@ -8739,15 +8739,15 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
+                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS/scripts → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
                   },
                   "content_css": {
                     "type": "string",
-                    "description": "Custom CSS for this page — raw CSS rules only, NO `<style>` wrapper tags. Rendered in the page `<head>` at load time. **Scope every selector** under a unique page-specific class or ID (e.g. `.my-about-page h2 { ... }`) — unscoped selectors like `body`, `h1`, `p` affect the entire site. Never target reserved platform classes: `.container`, `.froala-table`, `.image-placeholder` — these are BD utilities, not styling targets."
+                    "description": "Custom CSS for this page. **Paste raw CSS rules directly — do NOT wrap in `<style>` tags.** Renders in the page `<head>` at load time. **Scope every selector** under a unique page-specific class or ID (e.g. `.my-about-page h2 { ... }`) — unscoped selectors like `body`, `h1`, `p` affect the entire site. Never target reserved platform classes: `.container`, `.froala-table`, `.image-placeholder` — these are BD utilities, not styling targets."
                   },
                   "content_footer_html": {
                     "type": "string",
-                    "description": "Page-scoped JavaScript and other footer dependencies — rendered just before the closing `</body>` tag. Wrap JS in `<script>` tags here (unlike `content`, this field accepts them). jQuery is already loaded globally on BD sites. Best practice: wrap custom JS in an IIFE `(function($){ /* ... */ })(jQuery);` and scope all selectors to a unique page class so JS doesn't leak to other pages. Also the right place for third-party script embeds (analytics, chat widgets, etc.) scoped to this page only."
+                    "description": "Page-scoped **JavaScript and other scripts** — rendered just before the closing `</body>` tag. Wrap JS in `<script>` tags here (unlike `content`, this field accepts them). jQuery is already loaded globally on BD sites. Best practice: wrap custom JS in an IIFE `(function($){ /* ... */ })(jQuery);` and scope all selectors to a unique page class so JS doesn't leak to other pages. Also the right place for third-party script embeds scoped to this page only (analytics pixels, chat widgets, schema, etc.). **Not for extra body HTML** — `content` is the body. This field is strictly for script / dependency tags."
                   },
                   "content_head": {
                     "type": "string",
@@ -8755,7 +8755,8 @@
                   },
                   "content_footer": {
                     "type": "string",
-                    "description": "Additional HTML below main content. Plain HTML fragment, unlike `content_footer_html` which is for scripts/footer dependencies. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`."
+                    "enum": ["", "members_only", "digital_products"],
+                    "description": "⚠️ **MISLEADING NAME — this is NOT page footer HTML.** Misnamed relic column; BD repurposed it as the **page-access gate**. Controls who can view the rendered public URL:\n- `\"\"` (empty, default) — **Public For Everyone**\n- `\"members_only\"` — **Only Allow Members** (logged-in members only; non-members hit a login/signup wall)\n- `\"digital_products\"` — **Only Allow Digital Products Buyers** (only buyers of digital-product items on the site)\n\nFiner-grained rules (which members, which plans, etc.) are handled by other related fields BD exposes separately; this column is just the top-level gate. Do NOT put HTML in this field — for page body use `content`, for scripts/JS use `content_footer_html`, for below-body HTML use `content` (there's no separate 'extra HTML below body' field)."
                   },
                   "content_active": {
                     "type": "integer",
@@ -9099,15 +9100,15 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
+                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS/scripts → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
                   },
                   "content_css": {
                     "type": "string",
-                    "description": "Custom CSS for this page — raw CSS rules only, NO `<style>` wrapper tags. Rendered in the page `<head>` at load time. **Scope every selector** under a unique page-specific class or ID (e.g. `.my-about-page h2 { ... }`) — unscoped selectors like `body`, `h1`, `p` affect the entire site. Never target reserved platform classes: `.container`, `.froala-table`, `.image-placeholder` — these are BD utilities, not styling targets."
+                    "description": "Custom CSS for this page. **Paste raw CSS rules directly — do NOT wrap in `<style>` tags.** Renders in the page `<head>` at load time. **Scope every selector** under a unique page-specific class or ID (e.g. `.my-about-page h2 { ... }`) — unscoped selectors like `body`, `h1`, `p` affect the entire site. Never target reserved platform classes: `.container`, `.froala-table`, `.image-placeholder` — these are BD utilities, not styling targets."
                   },
                   "content_footer_html": {
                     "type": "string",
-                    "description": "Page-scoped JavaScript and other footer dependencies — rendered just before the closing `</body>` tag. Wrap JS in `<script>` tags here (unlike `content`, this field accepts them). jQuery is already loaded globally on BD sites. Best practice: wrap custom JS in an IIFE `(function($){ /* ... */ })(jQuery);` and scope all selectors to a unique page class so JS doesn't leak to other pages. Also the right place for third-party script embeds (analytics, chat widgets, etc.) scoped to this page only."
+                    "description": "Page-scoped **JavaScript and other scripts** — rendered just before the closing `</body>` tag. Wrap JS in `<script>` tags here (unlike `content`, this field accepts them). jQuery is already loaded globally on BD sites. Best practice: wrap custom JS in an IIFE `(function($){ /* ... */ })(jQuery);` and scope all selectors to a unique page class so JS doesn't leak to other pages. Also the right place for third-party script embeds scoped to this page only (analytics pixels, chat widgets, schema, etc.). **Not for extra body HTML** — `content` is the body. This field is strictly for script / dependency tags."
                   },
                   "content_head": {
                     "type": "string",
@@ -9115,7 +9116,8 @@
                   },
                   "content_footer": {
                     "type": "string",
-                    "description": "Additional HTML below main content. Plain HTML fragment, unlike `content_footer_html` which is for scripts/footer dependencies. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`."
+                    "enum": ["", "members_only", "digital_products"],
+                    "description": "⚠️ **MISLEADING NAME — this is NOT page footer HTML.** Misnamed relic column; BD repurposed it as the **page-access gate**. Controls who can view the rendered public URL:\n- `\"\"` (empty, default) — **Public For Everyone**\n- `\"members_only\"` — **Only Allow Members** (logged-in members only; non-members hit a login/signup wall)\n- `\"digital_products\"` — **Only Allow Digital Products Buyers** (only buyers of digital-product items on the site)\n\nFiner-grained rules (which members, which plans, etc.) are handled by other related fields BD exposes separately; this column is just the top-level gate. Do NOT put HTML in this field — for page body use `content`, for scripts/JS use `content_footer_html`, for below-body HTML use `content` (there's no separate 'extra HTML below body' field)."
                   },
                   "content_active": {
                     "type": "integer",
