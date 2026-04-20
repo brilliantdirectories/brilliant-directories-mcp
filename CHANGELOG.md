@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.7.0] - 2026-04-20
+
+### Added — WebPage EAV-update workaround via users_meta + hero image sourcing rule
+
+- **Documented BD's list_seo split-storage pattern:** 18 fields on the `list_seo` table are stored in `users_meta` rather than as direct columns. On CREATE, `createWebPage` seeds them correctly; on UPDATE, `updateWebPage` silently ignores them. Agents must use `updateUserMeta`/`createUserMeta` with `database=list_seo` to persist those field updates. Affected fields: `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`.
+- **Reads merge automatically** — `getWebPage`/`listWebPages` return parent + users_meta values merged at top level. No separate query needed for reads.
+- **Delete cleanup rule** — `deleteWebPage` does NOT cascade-delete orphan users_meta rows. Agents must call `listUserMeta(database=list_seo, database_id=<deleted seo_id>)` and delete each matching row surgically.
+- **`createUserMeta` and `updateUserMeta` descriptions rewritten** to lead with the WebPage EAV workflow (was previously generic "attach key/value to any record").
+- **Hero image sourcing rule** — agents must use content-relevant Pexels photos (large variant, not "original"), never random-image placeholders like picsum.photos which change per page load and look broken to real users.
+- **`docs/api-user-meta.md`** rewritten with the full EAV pattern, WebPage-specific workflow, read-merge behavior, and delete cleanup instructions.
+
 ## [6.6.2] - 2026-04-20
 
 ### Documented — hero_content_overlay_opacity API write quirk
