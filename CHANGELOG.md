@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.3] - 2026-04-20
+
+### Changed — two live-test-surfaced footguns documented
+
+- Duplicate `filename` silent-accept — BD does NOT reject creating a second `list_seo` row at an existing filename. Docs now explicitly warn that skipping the pre-create `listWebPages` existence check will silently orphan a duplicate row with undefined render-time behavior.
+- Title-length truncation behavior — BD stores `title` verbatim, but Google/Bing truncate at ~55–60 chars in SERPs. Docs now tell agents to keep important words in the first 55 and pre-truncate client-side for precise control.
+
 ## [6.5.2] - 2026-04-20
 
 ### Changed — accurate 403 guidance for list_professions and list_services
