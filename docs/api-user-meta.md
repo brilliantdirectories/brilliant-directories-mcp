@@ -3,6 +3,18 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 
 Despite the name, `users_meta` is a **generic EAV (Entity-Attribute-Value) key/value table** used across BD — NOT limited to user records. It stores arbitrary key/value pairs attached to any BD table row, keyed by `(database, database_id)`. Model: `users_meta`. DB table: `users_meta`.
 
+## ⚠️ HARD SAFETY RULE — always include `database` + `database_id` on update and delete
+
+The **same `database_id` value can exist in users_meta pointing at completely unrelated parent tables**. Example: `database_id=123` might refer to a member in `users_data` AND a page in `list_seo` AND a subscription in `subscription_types` — four unrelated records sharing the same numeric ID across different tables.
+
+As a result, **every `update` and `delete` call must include `database` + `database_id` alongside `meta_id`**. The MCP spec now requires them as schema-level required fields to prevent agents from loop-deleting by `meta_id` alone across rows they didn't intend to touch.
+
+- `createUserMeta` — already requires `database`, `database_id`, `key`, `value` (safe by design)
+- `updateUserMeta` — now requires `meta_id`, `value`, **`database`, `database_id`**
+- `deleteUserMeta` — now requires `meta_id`, **`database`, `database_id`**
+
+**Never loop-delete or bulk-update by `database_id` alone.** When cleaning up orphans after a parent delete: list by `database_id`, client-side filter to ONLY the rows whose `database` matches the parent table name, then delete. Verify the filter before every destructive call.
+
 Common use cases:
 
 - Custom per-member attributes (`database=users_data`, `database_id=<user_id>`)

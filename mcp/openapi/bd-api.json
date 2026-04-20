@@ -7020,7 +7020,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of usermeta records. Read-only.\n\n**Use when:** enumerating metadata rows (key/value pairs). Filter by `database`+`database_id` to get metadata for one record.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort.\n\n**See also:** `getUserMeta` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Paginated enumeration of users_meta records (EAV key/value table). Read-only.\n\n**Use when:** enumerating metadata rows (key/value pairs) attached to a parent record in any BD table.\n\n**⚠️ IDENTITY RULE — filter by `database` AND `database_id` together, never just `database_id` alone.** The same `database_id` value can exist in users_meta pointing at different parent tables simultaneously — e.g. `database_id=123` may refer to rows in `users_data`, `list_seo`, `data_posts`, and `subscription_types` as four UNRELATED records. If you only filter by `database_id`, you'll get rows from all of them mixed together. ALWAYS also filter by `database=<parent_table>` (e.g. `list_seo`, `users_data`) — either via array-syntax multi-filter if supported, OR by listing by `database_id` and client-side filtering the results by the `database` field before acting. This rule is critical for all downstream writes (`updateUserMeta`, `deleteUserMeta`) — misidentifying a row can silently corrupt unrelated resource metadata.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property` + `property_value` + `property_operator` (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) to filter; `order_column` + `order_type` (`ASC`/`DESC`) to sort. Useful filters: `database`, `database_id`, `key`.\n\n**See also:** `getUserMeta` (single record by ID), `updateUserMeta`, `deleteUserMeta`.\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record includes `meta_id`, `database`, `database_id`, `key`, `value`, `date_added`, `revision_timestamp`.\n\n**Note on duplicates:** BD does NOT enforce a uniqueness constraint on `(database, database_id, key)` — the same field can have multiple rows (observed live). Read-layer merge uses last-write-wins, but stored data can bloat. When updating, consider patching ALL matching rows, or deleting duplicates first.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/get/{meta_id}": {
@@ -7128,7 +7128,9 @@
                 "type": "object",
                 "required": [
                   "meta_id",
-                  "value"
+                  "value",
+                  "database",
+                  "database_id"
                 ],
                 "properties": {
                   "meta_id": {
@@ -7136,6 +7138,14 @@
                   },
                   "value": {
                     "type": "string"
+                  },
+                  "database": {
+                    "type": "string",
+                    "description": "REQUIRED — parent table name this meta row is attached to (e.g. `list_seo`, `users_data`, `subscription_types`). MUST match the `database` value stored on the row being updated. This is a hard safety rule — the same `meta_id` verification plus `(database, database_id)` scoping prevents cross-table metadata corruption since the same `database_id` number can exist across multiple parent tables."
+                  },
+                  "database_id": {
+                    "type": "integer",
+                    "description": "REQUIRED — PK of the parent record this meta row is attached to. MUST match the `database_id` value stored on the row being updated. Same safety rule as `database`: the same numeric ID can belong to unrelated rows on different tables."
                   }
                 }
               }
@@ -7154,7 +7164,7 @@
             }
           }
         },
-        "description": "Update an existing users_meta record's `value` by `meta_id`. Fields omitted are untouched. Writes live data.\n\n**Use when:**\n- Changing a metadata value on any BD table row that was previously created via `createUserMeta`.\n- **Critical BD pattern: updating WebPage (`list_seo`) fields that `updateWebPage` silently skips.** BD's `list_seo` table mixes direct columns with EAV-stored values in `users_meta`. The `updateWebPage` endpoint only writes direct columns; for these 18 fields you MUST use this endpoint: `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`.\n\n**Workflow:** find the `meta_id` by calling `listUserMeta` with filter `database=<table>`, `database_id=<parent_id>`, `key=<field>`. Then call this endpoint with `meta_id` + `value`. If no row exists for that combo, use `createUserMeta` instead.\n\n**Required:** `meta_id`, `value`.\n\n**After hero/layout updates on a WebPage:** call `refreshSiteCache` so changes show publicly.\n\n**See also:** `createUserMeta` (add new when no row exists), `listUserMeta` (find the `meta_id` by filter), `deleteUserMeta` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Update an existing users_meta record's `value` by `meta_id`. Fields omitted are untouched. Writes live data.\n\n**⚠️ IDENTITY RULE — ALWAYS confirm BOTH `database` AND `database_id` before updating.** A users_meta row is identified by the PAIR `(database, database_id)` PLUS `key`. The same `database_id` value can exist pointing at different parent tables (e.g. `database_id=120` might refer to a member in `users_data` AND a page in `list_seo` AND a subscription in `subscription_types` — completely unrelated records sharing the same ID). ALWAYS verify the row's `database` field matches the table you intend to modify BEFORE calling `updateUserMeta` — misidentifying the row could silently overwrite unrelated resource metadata.\n\n**Use when:**\n- Changing a metadata value on any BD table row that was previously created via `createUserMeta`.\n- **Critical BD pattern: updating WebPage (`list_seo`) fields that `updateWebPage` silently skips.** BD's `list_seo` table mixes direct columns with EAV-stored values in `users_meta`. The `updateWebPage` endpoint only writes direct columns; for these 18 fields you MUST use this endpoint: `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`.\n\n**Workflow:** find the `meta_id` by calling `listUserMeta` with filter `database=<table>`, `database_id=<parent_id>`, `key=<field>`. Then call this endpoint with `meta_id` + `value`. If no row exists for that combo, use `createUserMeta` instead.\n\n**Required:** `meta_id`, `value`.\n\n**After hero/layout updates on a WebPage:** call `refreshSiteCache` so changes show publicly.\n\n**See also:** `createUserMeta` (add new when no row exists), `listUserMeta` (find the `meta_id` by filter), `deleteUserMeta` (remove permanently).\n\n**Writes live data:** confirm intent with the user for bulk operations. Changes are immediately visible on the live site.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` — the full updated record after changes applied.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/users_meta/delete": {
@@ -7171,11 +7181,21 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "meta_id"
+                  "meta_id",
+                  "database",
+                  "database_id"
                 ],
                 "properties": {
                   "meta_id": {
                     "type": "integer"
+                  },
+                  "database": {
+                    "type": "string",
+                    "description": "REQUIRED — parent table name (e.g. `list_seo`, `users_data`). Must match the row's stored `database` field. Prevents accidental cross-table deletion since the same `database_id` can exist in multiple parent tables."
+                  },
+                  "database_id": {
+                    "type": "integer",
+                    "description": "REQUIRED — parent record PK. Must match the row's stored `database_id` field. Agents MUST verify both `database` and `database_id` before calling delete to prevent destroying unrelated metadata on other tables with the same ID number."
                   }
                 }
               }
@@ -7194,7 +7214,7 @@
             }
           }
         },
-        "description": "Permanently delete a usermeta record by ID. Destructive — cannot be undone via API.\n\n**Use when:** removing a metadata row.\n\n**Required:** `meta_id`.\n\n**See also:** `updateUserMeta` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API — records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
+        "description": "Permanently delete a users_meta record by `meta_id`. DESTRUCTIVE — cannot be undone via API.\n\n**⚠️ HARD RULE — verify BOTH `database` AND `database_id` of the row BEFORE deleting.** A users_meta row is identified by the PAIR `(database, database_id)` PLUS `key`. The same `database_id` can point at different parent tables — e.g. `database_id=123` may refer to a row in `users_data`, `list_seo`, `data_posts`, and `subscription_types` simultaneously as four UNRELATED records. BEFORE calling this endpoint: (1) call `getUserMeta(meta_id)` or keep the row's full object from a prior `listUserMeta` response; (2) confirm the row's `database` value matches the table you intend to clean up. If you're batch-deleting orphans after a parent delete: list by the parent's `database_id`, then CLIENT-SIDE filter to ONLY the rows where `database` equals the parent table's name BEFORE deleting any `meta_id`. NEVER loop-delete by `database_id` alone — you will destroy unrelated resource metadata (member data, plan metadata, page settings) that happen to share the same numeric ID on other tables.\n\n**Use when:** removing a specific metadata row, OR cleaning up orphan meta rows after a parent record is deleted (BD does not cascade-delete users_meta when a parent is removed — it's the agent's job to find and delete the orphan rows surgically).\n\n**Required:** `meta_id`.\n\n**Post-parent-delete cleanup workflow (safe pattern):**\n1. `listUserMeta` with filter `database_id=<deleted parent's id>`\n2. In the returned array, filter CLIENT-SIDE to ONLY rows where `database` equals the parent table's name (e.g. `list_seo` for a deleted WebPage)\n3. For each filtered `meta_id`, call `deleteUserMeta(meta_id)`\n4. Never skip step 2 — the same `database_id` can belong to unrelated rows on other tables\n\n**See also:** `updateUserMeta` (modify without removing), `listUserMeta` (enumerate with filter).\n\n**Returns:** `{ status: \"success\", message: \"users_meta record was deleted\" }`. No body beyond the confirmation string.\n\n_Auth: `X-Api-Key` header. Rate limit: 100 req/60s (on 429, back off 60s). Errors: `{ \"status\": \"error\", \"message\": \"...\" }` with standard HTTP codes._"
       }
     },
     "/api/v2/tags/get": {

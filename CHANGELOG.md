@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.7.1] - 2026-04-19
+
+### Changed — users_meta safety hardening: `database` + `database_id` now REQUIRED on update and delete
+
+- **Root cause:** The same `database_id` value can exist in `users_meta` pointing at completely unrelated parent tables (e.g. `database_id=123` simultaneously referring to a member in `users_data`, a page in `list_seo`, and a subscription in `subscription_types`). An agent deleting or updating by `meta_id` alone — or worse, looping over rows matched only by `database_id` — WILL silently corrupt unrelated records across the site. Live-verified during 6.7.0 testing: page 120's meta result set included 4 `database=users_data` rows (unrelated to the list_seo page 120) mixed in with the list_seo rows.
+- **`updateUserMeta` schema** — `database` and `database_id` added to the `required` array (previously only `meta_id` + `value`). Description rewritten with "IDENTITY RULE — ALWAYS confirm BOTH `database` AND `database_id` before updating" section.
+- **`deleteUserMeta` schema** — `database` and `database_id` added to the `required` array (previously only `meta_id`). Description rewritten with strongest warning: "HARD RULE — verify BOTH `database` AND `database_id` of the row BEFORE deleting" + safe post-parent-delete cleanup workflow.
+- **`listUserMeta` description** rewritten with shared-ID collision warning and note that BD does not enforce uniqueness on `(database, database_id, key)` so duplicate rows are possible.
+- **MCP instructions** — new `users_meta IDENTITY RULE` paragraph (applies to every users_meta read, update, and delete — no exceptions) placed before the WebPage EAV workflow paragraph so cold agents internalize the pair-matching rule on first load.
+- **`docs/api-user-meta.md`** — prominent "HARD SAFETY RULE — always include `database` + `database_id` on update and delete" section added at the top explaining the cross-table collision, the new required fields, and the never-loop-delete-by-database_id-alone rule.
+
+This is a breaking change for any agent or automation that was calling `updateUserMeta`/`deleteUserMeta` with only `meta_id`. The change is deliberate — the old schema was unsafe by design and allowed quiet cross-table data corruption.
+
 ## [6.7.0] - 2026-04-20
 
 ### Added — WebPage EAV-update workaround via users_meta + hero image sourcing rule
