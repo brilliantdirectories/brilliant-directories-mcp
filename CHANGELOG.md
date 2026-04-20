@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.8.1] - 2026-04-19
+
+### Added — HTTP status-code taxonomy + BD API reference article link in MCP instructions
+
+New paragraph in the MCP instructions block:
+- Full error-code set agents will encounter: `400` / `401` / `403` / `405` / `429` — previously only `401`/`403`/`429` were called out; `400` and `405` were implicit.
+- **Exact 429 response body** — `{"status":"error","message":"Too many API requests per minute"}`. Literal and stable per BD's public docs. Agents can now pattern-match the string to distinguish rate-limit errors from other `status:"error"` responses.
+- **API key one-shot display rule** — when a BD admin generates a key in Developer Hub, BD shows it ONCE at creation. No reveal-key button afterward, no recovery path. When a user says "I lost my API key," the correct answer is always "generate a new one" (old key optionally revocable). Prevents agents from suggesting imaginary recovery flows.
+- **Citation** — https://support.brilliantdirectories.com/support/solutions/articles/12000108046 (BD's public API overview article) cited as authoritative reference for auth, rate limits, pagination, filters. Agents can point users at this URL when they ask for BD-side documentation.
+
+No code changes. No schema changes. Pure instructions-content patch.
+
 ## [6.8.0] - 2026-04-19
 
 ### Added — blindspot pass: live-verified duplicate silent-accept, enum silent-accept, server hardening
