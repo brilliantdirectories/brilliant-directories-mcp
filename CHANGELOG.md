@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.11.3] - 2026-04-20
+
+### Added — Existing CDATA/entity-escape rule now also covers tool-call scaffolding tags
+
+Live-observed: an agent's `content` field on a WebPage got saved with a literal `<parameter name="content">...</parameter>` wrapper leaked in from the agent's reasoning scaffolding. Rendered as visible broken markup on the live page.
+
+Same class of bug as CDATA (`<![CDATA[...]]>`) and entity-escape (`&lt;`) wrappers — agent's own tooling syntax leaks into the stored value, BD stores it verbatim, renders as text. We already had a strong rule forbidding the first two; it just didn't name the third pattern.
+
+Extended the existing "never wrap in CDATA / never entity-escape" rule in:
+- **MCP instructions** (top-level, line 787): added "never include tool-call scaffolding tags from your reasoning process" with concrete examples (`<parameter name="...">...</parameter>`, `<invoke>`, `<function_calls>`, OpenAI-style `{"function": {...}}` wrappers). Added an explicit recognition cue: "if your final string starts with `<parameter` or `<invoke` or contains `</parameter>` at the end — strip those before sending."
+- **19 per-field descriptions** across the spec (all the fields that already carried the CDATA/entity-escape rule): extended to include the scaffolding-tag prohibition inline.
+- **WebPage asset-routing quick-reference block** (createWebPage + updateWebPage, right under the 6-row routing bullets): same rule extension.
+
+One rule, one place to document it, one mental model for agents: "BD stores verbatim — pass only the final unwrapped string, no wrappers of any kind."
+
+Doc-only. No schema changes. No new tools. Zero breaking changes.
+
 ## [6.11.2] - 2026-04-20
 
 ### Fixed — Three-agent sanity audit: C-level + H-level findings closed. Privacy scrub on public docs.
