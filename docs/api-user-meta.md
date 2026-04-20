@@ -53,11 +53,11 @@ Single record.
 
 ### Update — `PUT /api/v2/users_meta/update`
 
-**Required:** `meta_id`, `value`. Fields omitted are untouched.
+**Required (v6.7.1):** `meta_id`, `value`, `database`, `database_id`. All four — always. `database`/`database_id` must match the row being updated; the schema enforces their presence to prevent cross-table corruption. Fields omitted beyond these four are untouched.
 
 ### Delete — `DELETE /api/v2/users_meta/delete`
 
-**Required:** `meta_id`. Irreversible.
+**Required (v6.7.1):** `meta_id`, `database`, `database_id`. All three — always. Schema-enforced. Irreversible.
 
 ## CRITICAL: WebPage (list_seo) EAV workaround
 
@@ -102,7 +102,8 @@ hero_link_url
 When an agent calls `deleteWebPage(seo_id=X)`, BD does NOT cascade-delete the corresponding users_meta rows. To prevent orphan buildup:
 
 1. Call `listUserMeta` with `database=list_seo`, `database_id=<X>`.
-2. Call `deleteUserMeta(meta_id=...)` for each returned row.
+2. Client-side filter the response — keep only rows whose `database` field equals `list_seo` (the same numeric `database_id` can belong to unrelated rows on other tables).
+3. Call `deleteUserMeta(meta_id=..., database=list_seo, database_id=<X>)` for each filtered row. All three fields required as of v6.7.1.
 
 Be SURGICAL — only delete meta rows where `database_id` exactly matches the deleted page's `seo_id`. Never bulk-delete across unrelated `database_id`s or `database` values.
 
@@ -122,6 +123,8 @@ GET /api/v2/users_meta/get
 PUT /api/v2/users_meta/update
   meta_id=39804
   value=0.5
+  database=list_seo
+  database_id=120
 
 # 2b. if not returned:
 POST /api/v2/users_meta/create

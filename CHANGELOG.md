@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.7.2] - 2026-04-19
+
+### Fixed — sanity-check pass on WebPage + users_meta rules (cross-file consistency)
+
+Two-agent audit of the v6.5.x–v6.7.1 WebPage/users_meta rule surface found a handful of contradictions, drift, and schema/description mismatches. All WebPage- and users_meta-scoped findings addressed in this release:
+
+- **CRITICAL — `hero_content_overlay_opacity` stale v6.6.2 quirk guidance removed.** Field description in both `createWebPage` and `updateWebPage` still told agents the API write was broken and to fall back to the admin UI. v6.7.0 already shipped the real fix (write via `updateUserMeta` with `database=list_seo`) but the stale text was never purged — creating direct contradiction with the EAV workflow five paragraphs below. Now rewritten as: "EAV-STORED FIELD — createWebPage seeds correctly, updateWebPage silently drops it. On update, route through updateUserMeta."
+- **CRITICAL — `deleteWebPage` now documents orphan users_meta cleanup.** The rule (list → client-side filter to `database=list_seo` → surgical delete each with database+database_id per v6.7.1) was documented in `createWebPage`/`updateWebPage`/`createUserMeta` but missing from the `deleteWebPage` endpoint description itself — the most important place for an agent deleting a page in isolation to see it.
+- **HIGH — `updateUserMeta` and `deleteUserMeta` description "Required:" prose now matches schema `required` arrays.** v6.7.1 moved `database`+`database_id` into the schema-enforced required lists, but the human-readable "Required:" line in each endpoint's description still read "meta_id, value" (update) and "meta_id" (delete) — agents reading the description instead of the schema would hit 400s mid-workflow and misdiagnose.
+- **HIGH — `date_updated` now schema-required on `createWebPage` and `updateWebPage`.** v6.6.0 claimed `date_updated` was required on every write but only in prose — the schema `required` arrays still listed only `seo_type`+`filename` (create) and `seo_id` (update). MCP tool-schema derivation is schema-driven, so agents that trusted the generated tool schema would forget the field. Now schema-enforced. `updateWebPage` "Required:" prose updated to match.
+- **HIGH — `docs/api-user-meta.md` drift repaired.** The Endpoints section's "Required:" lines and the hero-workflow + delete-cleanup code examples were still showing the pre-v6.7.1 single-field signatures (`deleteUserMeta(meta_id=...)`). Fixed to match the schema: all update examples now pass `database`+`database_id`; cleanup workflow now shows the client-side filter step.
+- **MEDIUM — `createUserMeta` description now carries the v6.7.1 downstream-delete safety note + cache-refresh rule.** Previously `updateUserMeta` carried both, but the EAV workflow has a create branch (when a meta row doesn't exist yet) that needed the same instructions.
+- **MEDIUM — updateWebPage hero safe-defaults block now flags `hero_content_overlay_opacity` as EAV-only on update.** Applying safe-defaults via `updateWebPage` alone was silently dropping the opacity value per the EAV split; now the safe-default bullet tells agents to route opacity through `updateUserMeta`.
+- **MEDIUM — `getUserMeta` description now carries the identity-check rule.** Fetching a single meta row is safe, but the returned `meta_id` is often piped into a subsequent update/delete — the agent must verify `database`/`database_id` on the response before using the ID for any write.
+- **LOW — WebPage enum descriptions rendering fix.** `seo_type`, `menu_layout`, and `custom_html_placement` enum descriptions in both create + update were using `\\n` (escaped backslash-n → literal `\n` character in the rendered markdown) instead of `\n` (JSON escape → real newline). Now render as proper bulleted value lists rather than run-on strings with visible `\n` markers. Six locations fixed. (Non-WebPage enums across other resources carry the same issue — out of scope for this pass, will be addressed in a dedicated rendering pass.)
+
+No schema-breaking changes relative to v6.7.1 other than the `date_updated` addition to `createWebPage`/`updateWebPage` required arrays — agents already passing `date_updated` (per v6.6.0 docs) continue working unchanged; agents that were omitting it will now hit a clear schema-validation error instead of silently writing a record with a stale update timestamp.
+
 ## [6.7.1] - 2026-04-19
 
 ### Changed — users_meta safety hardening: `database` + `database_id` now REQUIRED on update and delete
