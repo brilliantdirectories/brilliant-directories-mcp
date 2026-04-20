@@ -444,7 +444,12 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 2. On that page, click the blue **Install** / **Add to Cursor** button. Your browser will ask for permission to open Cursor — allow it.
 3. Cursor opens an **"Install MCP Server?"** prompt with fields already filled in (`Name: server`, `Command: npx`, `Arguments: -y brilliant-directories-mcp@latest`, and two Environment Variables below).
 
-   **Optional — change the Name field** from `server` to `brilliant-directories` so it's easy to identify later in Cursor's Tools list. Purely cosmetic; works either way.
+   **Change the Name field** from `server` to something that identifies WHICH BD site this install points at — especially if you manage more than one. Recommended patterns:
+   - `brilliant-mysite` (if your BD site is `mysite.com`)
+   - `brilliant-3579` (if you know your BD site ID)
+   - `brilliant-main`, `brilliant-staging`, `brilliant-client-acme` (any nickname you'll remember)
+
+   Why it matters: Cursor lists every installed MCP by this Name. If you later install BD MCP a second time for a different site (see the multi-site Pro tip below), they'll show up as separate entries and you'll need to tell them apart. `server` is too generic.
 4. **Fill in your credentials in the RIGHT-SIDE boxes only** (leave the left-side labels `BD_API_KEY` and `BD_API_URL` alone — those are the variable names Cursor passes to the MCP):
 
    | Left side (variable name — do NOT change) | Right side (what YOU paste in) |
