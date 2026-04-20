@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.6] - 2026-04-20
+
+### Fixed — Button `btn-light` removed from variant list; new JS-ready CSS-gate rule for admin editor compatibility
+
+Two changes:
+
+- **Button variant list correction.** `btn-light` is not a supported variant on BD sites by default — removed from the `input_class` pattern list on all 6 surfaces: createFormField description, createForm recipe, updateFormField description, createFormField schema property, updateFormField schema property, and MCP instructions form recipe paragraph. Remaining variants: `btn-primary` / `btn-secondary` / `btn-danger` / `btn-success` / `btn-warning` / `btn-info` / `btn-dark`, OR a custom site-CSS class.
+- **Admin Froala editor compatibility for JS-gated CSS effects.** Live-observed issue: agent-generated pages using scroll-reveal animations (`.reveal { opacity: 0 }` in CSS + IntersectionObserver in JS) become un-editable in the admin Froala editor because the editor applies `content_css` but does NOT run `content_footer_html` scripts. Hide-by-default CSS fires; JS to un-hide never runs; content permanently invisible in the admin. Same pattern affects tab panels, accordion collapsed states, modal hidden defaults, slider non-active slides — anything that starts hidden and relies on JS to reveal.
+
+  **Fix pattern documented:** gate hide-by-default rules behind a `.js-ready` class on a page-scoped wrapper, and have `content_footer_html` JS add that class on load as its first line. Live site: JS flips `.js-ready` on immediately, CSS activates, effects work. Admin editor: class never added, content stays visible and editable.
+
+  ```
+  /* content_css */
+  .my-page.js-ready .reveal { opacity: 0; }
+  .my-page.js-ready .reveal.is-visible { opacity: 1; }
+
+  /* content_footer_html */
+  <script>
+    document.querySelector('.my-page')?.classList.add('js-ready');
+    /* rest of reveal / slider / modal JS */
+  </script>
+  ```
+
+  Documented in 3 places:
+  - `content_css` property description: ⚠️ callout explaining the gotcha + pointing agents at the `.js-ready` gate pattern
+  - `content_footer_html` property description: reverse-cross-ref explaining the JS requirement + the first-line `classList.add('js-ready')` rule
+  - MCP instructions WebPage asset-routing paragraph: one-liner summary of the gotcha + gate pattern + JS first-line rule
+
+  Credit to a Claude session that surfaced the bug after building a scroll-reveal landing page that rendered perfectly on the live site but went invisible in the admin editor.
+
+No schema-breaking changes; doc-only.
+
 ## [6.10.5] - 2026-04-20
 
 ### Added — Form Button field `input_class` is required for styling
