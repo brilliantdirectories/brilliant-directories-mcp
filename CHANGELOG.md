@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.0] - 2026-04-20
+
+### Added — Sidebars resource + full Member Search Results SEO page defaults
+
+- New **Sidebars** resource (read-only: `listSidebars`, `getSidebar`). Returns site-custom sidebars only. Description hardcodes the 5 **Master Default Sidebars** that are always available on every BD site but never returned by the endpoint: `Global Website Search`, `Member Profile Page`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`.
+- `form_name` field description on createWebPage/updateWebPage corrected — it's a SIDEBAR name (not a contact form), documents master defaults, fallback rule, and default for `profile_search_results`.
+- `menu_layout` description updated with sidebar-position meaning and `profile_search_results` default (`3` = Left Slim).
+- **Member Search Results SEO workflow** expanded with required defaults on create: `form_name="Member Profile Page"`, `menu_layout=3`, `custom_html_placement=4`, `content_active=1`. Now also requires agents to AUTO-GENERATE all 5 SEO meta fields (`title`, `meta_desc`, `meta_keywords`, `facebook_title`, `facebook_desc`) targeted to the location+category combo — with char-budget guidance and varying Title vs Social Title. `facebook_image` deliberately omitted from auto-fill (needs a customer-uploaded asset).
+- **Country-only slug caveat** documented — live-verified that `filename=<country>` alone 404s for `profile_search_results` pages (country slug only works as a left-parent prefix on longer slugs).
+- MCP instructions: new Sidebar cross-cutting rule + expanded Member Search Results SEO rule.
+
 ## [6.4.0] - 2026-04-19
 
 ### Added — Locations resources + Member Search Results SEO workflow
