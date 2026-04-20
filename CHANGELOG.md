@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.4] - 2026-04-20
+
+### Added — Universal CSV-no-spaces directive (silent-corruption prevention)
+
+Closes a real live-observed bug: BD splits comma-separated fields on the raw `,` character WITHOUT trimming whitespace. When an agent writes `"Category 1, Category 2, Category 3"` (natural English with spaces after commas), BD stores the options as `"Category 1"`, `" Category 2"` (leading space), `" Category 3"` (leading space). URL filters, `post_category` matches, dropdown renderers, and any downstream consumer looking up the clean value treat the space-prefixed variants as different strings — posts tagged with the space-prefixed value become invisible to clean-value filters.
+
+Added as a new top-level universal directive in `mcp/index.js` instructions (paragraph 7, right after the schema-is-documentation rule):
+- **Rule:** always write CSV values as `"A,B,C"`, never `"A, B, C"`.
+- **Applies to:** every CSV-bearing field on every endpoint — `feature_categories`, `services`, `post_category`, `data_settings`, `triggers`, `stock_libraries`, comma-separated tag/user ID lists, etc.
+- **Normalization workflow:** when a user provides spaces in natural language, normalize client-side before sending. When updating a CSV that may already contain space-prefixed values from prior writes, GET first, normalize, write back the clean version, AND update any records referencing the old space-prefixed values.
+- **Exception:** spaces INSIDE an option name are fine — the rule is strictly about the separator.
+
+### Fixed — `list_seo` EAV field list hedged (silent-drop prevention)
+
+The 18-field EAV list in `createUserMeta`'s description (and its mirror in `mcp/index.js` top-level instructions) was enumerated as if exhaustive. That's structurally the same bug class as the Member Listings "closed set" we fixed in v6.13.3 — if BD's `list_seo` EAV layer has any other column beyond the 18 we've verified live, agents would confidently `updateWebPage` it, BD would silently drop the write, agent would report success, data would never land.
+
+Added a hedge to both locations: the 18 are "verified live; BD's `list_seo` EAV layer may include additional columns." Reliable detection: after `updateWebPage`, re-GET and compare; if the value didn't persist, fall back to `updateUserMeta` / `createUserMeta` with `database=list_seo`. Any GET-returned `list_seo` field can be written via the EAV path.
+
+### Fixed — `listUserMeta` "closed set" phrasing softened
+
+Changed "Valid `database` values (closed set — pass only these; never invent a table name)" to "Commonly-seen `database` values (BD may accept other table names with users_meta rows — prefer these for known resources)." Same list of 25 values, but reframed from hard whitelist to reference — consistent with the universal schema-is-documentation rule. If the user names an unfamiliar table, the agent now knows to GET-verify rather than refuse.
+
+Doc-only. Zero schema/code/behavior changes.
+
 ## [6.13.3] - 2026-04-20
 
 ### Fixed — Scope-mixing in Member Listings + post-type guardrails
