@@ -440,36 +440,31 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 **Easiest method — Cursor Directory one-click install (no terminal, no file editing):**
 
-1. **Open this link** in your browser (make sure Cursor is installed first): **[cursor.directory/plugins/brilliant-directories](https://cursor.directory/plugins/brilliant-directories)**
-2. On that page, click the blue **Install** / **Add to Cursor** button. Your browser will ask for permission to open Cursor — allow it.
-3. Cursor opens an **"Install MCP Server?"** prompt with fields already filled in (`Name: server`, `Command: npx`, `Arguments: -y brilliant-directories-mcp@latest`, and two Environment Variables below).
+1. **Open** → [cursor.directory/plugins/brilliant-directories](https://cursor.directory/plugins/brilliant-directories)
+2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
+3. Cursor shows an **"Install MCP Server?"** prompt with most fields pre-filled. Two things you need to change:
 
-   **Change the Name field** from `server` to something that identifies WHICH BD site this install points at — especially if you manage more than one. Recommended patterns:
-   - `brilliant-mysite` (if your BD site is `mysite.com`)
-   - `brilliant-3579` (if you know your BD site ID)
-   - `brilliant-main`, `brilliant-staging`, `brilliant-client-acme` (any nickname you'll remember)
+   **Rename the Name field** (don't leave it as `server` — too generic):
+   - `brilliant-mysite` — site-name-based
+   - `brilliant-3579` — site-ID-based
+   - `brilliant-main` / `brilliant-staging` / `brilliant-client-acme` — nickname
+   - Why: Cursor lists every MCP by this Name; if you later add a second BD site, you'll need to tell them apart.
 
-   Why it matters: Cursor lists every installed MCP by this Name. If you later install BD MCP a second time for a different site (see the multi-site Pro tip below), they'll show up as separate entries and you'll need to tell them apart. `server` is too generic.
-4. **Fill in your credentials in the RIGHT-SIDE boxes only** (leave the left-side labels `BD_API_KEY` and `BD_API_URL` alone — those are the variable names Cursor passes to the MCP):
+   **Fill Environment Variables — RIGHT side only:**
 
-   | Left side (variable name — do NOT change) | Right side (what YOU paste in) |
+   | Left (do NOT touch) | Right (paste your values) |
    |---|---|
-   | `BD_API_KEY` | `YOUR_API_KEY` ← paste your BD API key here |
-   | `BD_API_URL` | `https://your-site.com` ← paste your BD site URL (include `https://`, no trailing slash) |
+   | `BD_API_KEY` | your BD API key |
+   | `BD_API_URL` | `https://your-site.com` — include `https://`, no trailing slash |
 
-   **Where to get your API key:** BD Admin → **Developer Hub** → **Generate API Key** → copy the long string BD shows you (BD shows it only once; if you lose it, generate a new one). See the [Before you start](#before-you-start--3-things-you-need) section if you haven't already enabled the advanced endpoint permissions — without those, most writes fail with 403.
+   - API key → BD Admin → **Developer Hub** → **Generate API Key** (BD shows it once; if lost, generate a new one).
+   - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#before-you-start--3-things-you-need).
 
-   **Example filled-in row:**
-   - Left: `BD_API_KEY` (pre-filled, don't touch)
-   - Right: `abc123def456...yourkey...xyz789`
-   - Left: `BD_API_URL` (pre-filled, don't touch)
-   - Right: `https://mydirectorysite.com`
-
-5. Click the blue **Install** button.
-6. **Fully quit and reopen Cursor** so it picks up the new MCP:
-   - **Windows:** right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. Closing the window isn't enough.
-   - **Mac:** `Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**. Red-dot close isn't enough.
-7. After reopen, you should see Brilliant Directories tools in Cursor's Tools & MCP panel (Settings → Tools & MCP).
+4. Click **Install**.
+5. **Fully quit + reopen Cursor** (closing the window isn't enough):
+   - **Windows:** system tray (bottom-right, may be under `^`) → right-click Cursor → **Quit**.
+   - **Mac:** `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**.
+6. Tools appear in **Settings → Tools & MCP**.
 
 > **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `bd-site-one`, `bd-site-two`, `bd-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on bd-site-one, list the top categories"* or *"compare member counts between bd-site-one and bd-site-two"* or *"copy these 3 email templates from bd-site-one to bd-site-two"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
 
