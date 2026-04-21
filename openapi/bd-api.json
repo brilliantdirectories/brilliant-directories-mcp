@@ -1421,12 +1421,12 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text.",
+                    "description": "Short description shown under the user's name on search result pages. **170-char limit.**",
                     "maxLength": 170
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "The long description about this user. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "Long description of the member/user. Renders on their public profile page. HTML allowed (per universal safe-HTML rule)."
                   },
                   "quote": {
                     "type": "string",
@@ -1729,12 +1729,12 @@
                   },
                   "search_description": {
                     "type": "string",
-                    "description": "The short description about this user. Displays under your user's name on search result pages. 170 Character Limit. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text.",
+                    "description": "Short description shown under the user's name on search result pages. **170-char limit.**",
                     "maxLength": 170
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "The long description about this user. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "Long description of the member/user. Renders on their public profile page. HTML allowed (per universal safe-HTML rule)."
                   },
                   "quote": {
                     "type": "string",
@@ -2311,7 +2311,7 @@
                       3,
                       4
                     ],
-                    "description": "Review status (integer). Authoritative values from BD admin:\n  0 = Pending            (newly submitted, awaiting moderation)\n  2 = Accepted           (approved and visible on the member profile)\n  3 = Declined           (rejected by admin — not publicly visible)\n  4 = Waiting for Admin  (member has accepted, now needs admin sign-off)\nNote: value 1 is NOT documented — **but BD does NOT reject it. Passing `1` stores `\"1\"` verbatim with undefined render behavior.** Stick to the documented set. Normal moderation flow: 0 -> 2 (accepted) or 0 -> 3 (declined). When a member pre-accepts but admin review is still required, state 4 is used."
+                    "description": "Review status (integer):\n- `0` = Pending (awaiting moderation)\n- `2` = Accepted (visible on profile)\n- `3` = Declined (rejected, not public)\n- `4` = Waiting for Admin (member pre-accepted, needs admin sign-off)\n\nValue `1` is NOT documented. BD does NOT reject it — stores `\"1\"` verbatim with undefined render behavior. Stick to documented values. Normal flow: `0` → `2` (accepted) or `0` → `3` (declined)."
                   }
                 }
               }
@@ -2397,7 +2397,7 @@
                       3,
                       4
                     ],
-                    "description": "Review status (integer). Authoritative values from BD admin:\n  0 = Pending            (newly submitted, awaiting moderation)\n  2 = Accepted           (approved and visible on the member profile)\n  3 = Declined           (rejected by admin — not publicly visible)\n  4 = Waiting for Admin  (member has accepted, now needs admin sign-off)\nNote: value 1 is NOT documented — **but BD does NOT reject it. Passing `1` stores `\"1\"` verbatim with undefined render behavior.** Stick to the documented set. Normal moderation flow: 0 -> 2 (accepted) or 0 -> 3 (declined). When a member pre-accepts but admin review is still required, state 4 is used."
+                    "description": "Review status (integer):\n- `0` = Pending (awaiting moderation)\n- `2` = Accepted (visible on profile)\n- `3` = Declined (rejected, not public)\n- `4` = Waiting for Admin (member pre-accepted, needs admin sign-off)\n\nValue `1` is NOT documented. BD does NOT reject it — stores `\"1\"` verbatim with undefined render behavior. Stick to documented values. Normal flow: `0` → `2` (accepted) or `0` → `3` (declined)."
                   }
                 }
               }
@@ -4425,7 +4425,7 @@
                   },
                   "search_results_layout": {
                     "type": "string",
-                    "description": "**CODE FIELD — single-record detail page code** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). ⚠️ **Misleading variable name** — despite the `search_results_` prefix, this is the DETAIL page code for a single post record (BD's equivalent of WordPress `single.php`). Applies ONLY to post types that have a per-record detail page (blog, event, coupon, property, product, etc.). **NOT applicable to the Member Listings post type (`data_type=10`)** — members render via BD's core member profile system, not via a post-type template. Do not send this field on Member Listings updates. Standalone — not grouped with the profile triplet; saves independently. Uses master-fallback-on-read like the other code fields."
+                    "description": "**CODE FIELD — single-record detail page code** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). ⚠️ **Misleading name** — despite the `search_results_` prefix, this is the DETAIL page code for a single post record (BD's equivalent of WordPress `single.php`).\n\nApplies ONLY to post types with per-record detail pages (blog, event, coupon, property, product, etc.). **NOT applicable to Member Listings (`data_type=10`)** — members render via BD's core member profile system, not a post-type template. Do not send on Member Listings updates.\n\nStandalone — NOT in the profile triplet; saves independently. Uses master-fallback-on-read like other code fields."
                   },
                   "comments_code": {
                     "type": "string",
@@ -5035,7 +5035,7 @@
                 "properties": {
                   "email_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page — BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar.\n\n**Master Default Sidebars** (always available, NOT in `listSidebars` — hardcoded in BD core): `Global Website Search`, `Member Profile Page`, `Member Search Result`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`. Custom sidebars via `listSidebars` (returns site-local only). Unknown name → no sidebar rendered; ask user to pick from available.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` — that's for profile/detail pages, not search results)."
+                    "description": "Human-readable email template name (e.g. `welcome-basic`, `member-upgrade-confirmation`). Used as the lookup key when triggering sends from other endpoints (e.g. `createUser send_email_notifications=1` references the plan's `signup_email_template` which is this `email_name`). Keep kebab-case for consistency."
                   },
                   "email_subject": {
                     "type": "string",
@@ -5293,7 +5293,7 @@
                 "properties": {
                   "form_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page — BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar.\n\n**Master Default Sidebars** (always available, NOT in `listSidebars` — hardcoded in BD core): `Global Website Search`, `Member Profile Page`, `Member Search Result`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`. Custom sidebars via `listSidebars` (returns site-local only). Unknown name → no sidebar rendered; ask user to pick from available.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` — that's for profile/detail pages, not search results)."
+                    "description": "Human-readable email template name (e.g. `welcome-basic`, `member-upgrade-confirmation`). Used as the lookup key when triggering sends from other endpoints (e.g. `createUser send_email_notifications=1` references the plan's `signup_email_template` which is this `email_name`). Keep kebab-case for consistency."
                   },
                   "form_title": {
                     "type": "string"
@@ -5337,7 +5337,7 @@
                     "type": "string",
                     "enum": ["", "widget", "notification", "redirect"],
                     "default": "widget",
-                    "description": "What happens after a successful submit. `widget` = Display Success Pop-Up Message (default on agent create). `notification` = Display Success Alert Message (inline banner). `redirect` = Redirect to Another Page — requires `form_target` (destination URL) to be set. `\"\"` (empty) = no post-submit behavior defined; valid for some internal/programmatic forms but NOT for public-facing user forms. **When this field is set to `widget`, `notification`, or `redirect`, the form's fields list MUST end with a `ReCaptcha` field, then a `HoneyPot` field, then a `Button` (Submit) field — in that order. Without all three at the end, BD errors on submit and the form won't function.** See `createFormField`."
+                    "description": "Post-submit behavior:\n- `widget` = Success Pop-Up (agent default on create)\n- `notification` = Inline Success Alert Banner\n- `redirect` = Redirect to URL (REQUIRES `form_target` — destination URL)\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing)\n\n⚠️ **When set to `widget`/`notification`/`redirect`, the form's fields list MUST end with `ReCaptcha` → `HoneyPot` → `Button` (Submit) in that exact order.** Missing any of the three → BD errors on submit, form won't function. See `createFormField`."
                   },
                   "form_target": {
                     "type": "string",
@@ -6652,7 +6652,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal taxonomy-row label. **Even if the user says the word description — this is NOT an SEO description.** Not a meta-tag surface, not where Google-ranking copy goes, not the H1 / intro paragraph on the public category search page. Most BD themes do not render this field at all. For ANY SEO task on a category or sub-category — including requests phrased as write a description that ranks / improve SEO / add meta tags / write intro copy for the category page — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). This field accepts only a short internal blurb, not SEO prose."
+                    "description": "Short internal taxonomy-row label. **Even if the user says \"description\" — this is NOT an SEO description.** Not a meta-tag surface, not Google-ranking copy, not the H1/intro on the public category search page. Most BD themes don't render this field.\n\nFor ANY SEO task on a category or sub-category — \"write a description that ranks,\" \"improve SEO,\" \"add meta tags,\" \"write intro copy\" — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). Short internal blurb only here."
                   },
                   "filename": {
                     "type": "string"
@@ -6715,7 +6715,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal taxonomy-row label. **Even if the user says the word description — this is NOT an SEO description.** Not a meta-tag surface, not where Google-ranking copy goes, not the H1 / intro paragraph on the public category search page. Most BD themes do not render this field at all. For ANY SEO task on a category or sub-category — including requests phrased as write a description that ranks / improve SEO / add meta tags / write intro copy for the category page — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). This field accepts only a short internal blurb, not SEO prose."
+                    "description": "Short internal taxonomy-row label. **Even if the user says \"description\" — this is NOT an SEO description.** Not a meta-tag surface, not Google-ranking copy, not the H1/intro on the public category search page. Most BD themes don't render this field.\n\nFor ANY SEO task on a category or sub-category — \"write a description that ranks,\" \"improve SEO,\" \"add meta tags,\" \"write intro copy\" — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). Short internal blurb only here."
                   },
                   "profession_id": {
                     "type": "integer"
@@ -8738,7 +8738,7 @@
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior). Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "**Wildcard URL Rewrite.** `1` = any URL within this directory routes to this web page (catch-all behavior). Misnamed field — NOT SEO copy; SEO copy goes in `content` + meta fields."
                   },
                   "h1": {
                     "type": "string",
@@ -8754,7 +8754,7 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS/scripts → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
+                    "description": "Main page body — Froala rich-text editor. **HTML only** — Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS → `content_css` (target classes, not inline styles), JS → `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) → `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode.\n\nSupports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`."
                   },
                   "content_css": {
                     "type": "string",
@@ -8766,7 +8766,7 @@
                   },
                   "content_head": {
                     "type": "string",
-                    "description": "Page-scoped `<head>` dependencies — rendered inside the `<head>` tag. Use for `<link>` tags (external stylesheets, preconnect hints, canonical overrides), `<meta>` tags beyond what the standard SEO fields cover, verification tags, structured-data `<script type=\"application/ld+json\">`, and third-party `<script>` tags that MUST load in the head (rare — prefer `content_footer_html` for most JS)."
+                    "description": "Page-scoped `<head>` dependencies — rendered inside `<head>`. Use for: `<link>` tags (external stylesheets, preconnect hints, canonical overrides, Google Fonts), `<meta>` tags beyond standard SEO fields, verification tags, JSON-LD structured data (`<script type=\"application/ld+json\">`), head-required third-party scripts (rare — prefer `content_footer_html` for most JS)."
                   },
                   "content_footer": {
                     "type": "string",
@@ -8825,7 +8825,7 @@
                   },
                   "form_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page — BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar.\n\n**Master Default Sidebars** (always available, NOT in `listSidebars` — hardcoded in BD core): `Global Website Search`, `Member Profile Page`, `Member Search Result`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`. Custom sidebars via `listSidebars` (returns site-local only). Unknown name → no sidebar rendered; ask user to pick from available.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` — that's for profile/detail pages, not search results)."
+                    "description": "Human-readable email template name (e.g. `welcome-basic`, `member-upgrade-confirmation`). Used as the lookup key when triggering sends from other endpoints (e.g. `createUser send_email_notifications=1` references the plan's `signup_email_template` which is this `email_name`). Keep kebab-case for consistency."
                   },
                   "hide_from_menu": {
                     "type": "integer",
@@ -8889,7 +8889,7 @@
                   },
                   "date_updated": {
                     "type": "string",
-                    "description": "Last-update timestamp on the page record (drives the admin-UI \"Last Update\" display). Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260214232533`). **Required on every `createWebPage` and `updateWebPage` call** — always set to the CURRENT timestamp at call time (unless backfilling historical data from a migration, in which case pass the historical value). BD does NOT auto-populate this field; if you omit it, the admin UI shows a blank/stale date."
+                    "description": "Last-update timestamp driving admin-UI \"Last Update\" display. Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260214232533`).\n\n**Required on every `createWebPage` / `updateWebPage` call** — always set to CURRENT timestamp at call time (unless backfilling historical migration data). BD does NOT auto-populate; omitting it leaves the admin UI showing blank/stale."
                   },
                   "updated_by": {
                     "type": "string",
@@ -8903,7 +8903,7 @@
                   "enable_hero_section": {
                     "type": "string",
                     "enum": ["0", "1", "2"],
-                    "description": "Master switch for the page's hero banner (the full-width header section rendered ABOVE the main page content). `0` = disabled (no hero renders, regardless of other hero_* values), `1` = enabled on all devices, `2` = enabled on desktop but hidden on mobile. When `0`, all other `hero_*` / `h1_font_*` / `h2_font_*` fields are ignored at render time but their stored values are preserved — toggling back to `1` or `2` restores the previous config without having to re-enter it. Does NOT apply to the homepage (`seo_type=home`) — the homepage template ignores hero fields entirely. BD stores the values but never renders them on the homepage; skip all `hero_*` fields when updating seo_type=home."
+                    "description": "Hero banner master switch:\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n- `1` = enabled all devices\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** — `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
@@ -8982,7 +8982,7 @@
                   },
                   "hero_section_content": {
                     "type": "string",
-                    "description": "Additional text/HTML/widget shortcode rendered BELOW the H1 and H2 in the hero section. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "Additional text / HTML / widget shortcode rendered BELOW H1 and H2 in the hero section. Supports `[widget=Name]` shortcodes.\n\n**EAV-stored** — `createWebPage` seeds correctly, `updateWebPage` silently drops. On update, write via `updateUserMeta`/`createUserMeta` with `database=list_seo`."
                   },
                   "hero_link_url": {
                     "type": "string",
@@ -9099,7 +9099,7 @@
                   },
                   "seo_text": {
                     "type": "string",
-                    "description": "**Wildcard URL Rewrite** — 1 = any URL within this directory routes to this web page (catch-all behavior). Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "**Wildcard URL Rewrite.** `1` = any URL within this directory routes to this web page (catch-all behavior). Misnamed field — NOT SEO copy; SEO copy goes in `content` + meta fields."
                   },
                   "h1": {
                     "type": "string",
@@ -9115,7 +9115,7 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body — rendered by a Froala rich text editor. **HTML only, no `<style>` or `<script>` tags** (Froala strips them). Also strips `<form>`, `<input>`, `<select>`, `<textarea>`, and `contenteditable` attributes. **Do NOT put CSS or JS here** — route them to the dedicated fields: CSS → `content_css`, JS/scripts → `content_footer_html`, head-only dependencies → `content_head`. For one-off styling, inline `style=\"...\"` attributes on elements work fine. Supports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`. BD stores the value verbatim."
+                    "description": "Main page body — Froala rich-text editor. **HTML only** — Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS → `content_css` (target classes, not inline styles), JS → `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) → `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode.\n\nSupports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`."
                   },
                   "content_css": {
                     "type": "string",
@@ -9127,7 +9127,7 @@
                   },
                   "content_head": {
                     "type": "string",
-                    "description": "Page-scoped `<head>` dependencies — rendered inside the `<head>` tag. Use for `<link>` tags (external stylesheets, preconnect hints, canonical overrides), `<meta>` tags beyond what the standard SEO fields cover, verification tags, structured-data `<script type=\"application/ld+json\">`, and third-party `<script>` tags that MUST load in the head (rare — prefer `content_footer_html` for most JS)."
+                    "description": "Page-scoped `<head>` dependencies — rendered inside `<head>`. Use for: `<link>` tags (external stylesheets, preconnect hints, canonical overrides, Google Fonts), `<meta>` tags beyond standard SEO fields, verification tags, JSON-LD structured data (`<script type=\"application/ld+json\">`), head-required third-party scripts (rare — prefer `content_footer_html` for most JS)."
                   },
                   "content_footer": {
                     "type": "string",
@@ -9186,7 +9186,7 @@
                   },
                   "form_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page — BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar.\n\n**Master Default Sidebars** (always available, NOT in `listSidebars` — hardcoded in BD core): `Global Website Search`, `Member Profile Page`, `Member Search Result`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`. Custom sidebars via `listSidebars` (returns site-local only). Unknown name → no sidebar rendered; ask user to pick from available.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` — that's for profile/detail pages, not search results)."
+                    "description": "Human-readable email template name (e.g. `welcome-basic`, `member-upgrade-confirmation`). Used as the lookup key when triggering sends from other endpoints (e.g. `createUser send_email_notifications=1` references the plan's `signup_email_template` which is this `email_name`). Keep kebab-case for consistency."
                   },
                   "hide_from_menu": {
                     "type": "integer",
@@ -9250,7 +9250,7 @@
                   },
                   "date_updated": {
                     "type": "string",
-                    "description": "Last-update timestamp on the page record (drives the admin-UI \"Last Update\" display). Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260214232533`). **Required on every `createWebPage` and `updateWebPage` call** — always set to the CURRENT timestamp at call time (unless backfilling historical data from a migration, in which case pass the historical value). BD does NOT auto-populate this field; if you omit it, the admin UI shows a blank/stale date."
+                    "description": "Last-update timestamp driving admin-UI \"Last Update\" display. Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260214232533`).\n\n**Required on every `createWebPage` / `updateWebPage` call** — always set to CURRENT timestamp at call time (unless backfilling historical migration data). BD does NOT auto-populate; omitting it leaves the admin UI showing blank/stale."
                   },
                   "updated_by": {
                     "type": "string",
@@ -9264,7 +9264,7 @@
                   "enable_hero_section": {
                     "type": "string",
                     "enum": ["0", "1", "2"],
-                    "description": "Master switch for the page's hero banner (the full-width header section rendered ABOVE the main page content). `0` = disabled (no hero renders, regardless of other hero_* values), `1` = enabled on all devices, `2` = enabled on desktop but hidden on mobile. When `0`, all other `hero_*` / `h1_font_*` / `h2_font_*` fields are ignored at render time but their stored values are preserved — toggling back to `1` or `2` restores the previous config without having to re-enter it. Does NOT apply to the homepage (`seo_type=home`) — the homepage template ignores hero fields entirely. BD stores the values but never renders them on the homepage; skip all `hero_*` fields when updating seo_type=home."
+                    "description": "Hero banner master switch:\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n- `1` = enabled all devices\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** — `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
@@ -9343,7 +9343,7 @@
                   },
                   "hero_section_content": {
                     "type": "string",
-                    "description": "Additional text/HTML/widget shortcode rendered BELOW the H1 and H2 in the hero section. Pass raw HTML — do NOT wrap in `<![CDATA[...]]>`, do NOT escape as `&lt;` / `&gt;`, and do NOT include tool-call scaffolding tags (e.g. `<parameter name=\"...\">...</parameter>`, `<invoke>`, `<function_calls>`). BD stores the field value verbatim; any wrapper / escape / scaffolding renders as literal visible text."
+                    "description": "Additional text / HTML / widget shortcode rendered BELOW H1 and H2 in the hero section. Supports `[widget=Name]` shortcodes.\n\n**EAV-stored** — `createWebPage` seeds correctly, `updateWebPage` silently drops. On update, write via `updateUserMeta`/`createUserMeta` with `database=list_seo`."
                   },
                   "hero_link_url": {
                     "type": "string",
@@ -10036,7 +10036,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Top-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
+                    "description": "Short internal taxonomy-row label. **Even if the user says \"description\" — this is NOT an SEO description.** Most BD themes don't render this field. For SEO copy on the Top-Category public search page (H1, intro, meta tags), create a WebPage with `seo_type=profile_search_results` + matching slug (see `createWebPage`). Short internal blurb only here."
                   },
                   "keywords": {
                     "type": "string",
@@ -10107,7 +10107,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Top-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
+                    "description": "Short internal taxonomy-row label. **Even if the user says \"description\" — this is NOT an SEO description.** Most BD themes don't render this field. For SEO copy on the Top-Category public search page (H1, intro, meta tags), create a WebPage with `seo_type=profile_search_results` + matching slug (see `createWebPage`). Short internal blurb only here."
                   },
                   "keywords": {
                     "type": "string",
