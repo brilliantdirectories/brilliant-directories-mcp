@@ -122,6 +122,42 @@
         "description": "Opt in to return SEO meta fields (`seo_page_*_hidden`, `seo_social_*_hidden`, `search_description`). Default stripped.",
         "schema": { "type": "boolean", "default": false }
       },
+      "include_about": {
+        "name": "include_about",
+        "in": "query",
+        "description": "Opt in to return the `about_me` HTML bio. Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_content": {
+        "name": "include_content",
+        "in": "query",
+        "description": "Opt in to return the full `post_content` HTML body. Default stripped (`post_title` + `post_caption` always returned).",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_post_seo": {
+        "name": "include_post_seo",
+        "in": "query",
+        "description": "Opt in to return `post_meta_title`, `post_meta_description`, `post_meta_keywords`. Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_post_type": {
+        "name": "include_post_type",
+        "in": "query",
+        "description": "Opt in to return the full `data_category` post-type config object. Default: `data_id` only.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_author_full": {
+        "name": "include_author_full",
+        "in": "query",
+        "description": "Opt in to return the full original `user` nested object (every field BD returns, including `password` hash, session `token`, `cookie`). Default: curated `author` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`).",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_category_schema": {
+        "name": "include_category_schema",
+        "in": "query",
+        "description": "Opt in to restore full category metadata: `desc` (SEO description), `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`. Default lean keeps: category ID + `name` + `filename` + hierarchy links (`profession_id` on top/sub, `master_id` on sub for sub-sub parent). Hierarchy is always visible so agents can traverse top -> sub -> sub-sub without opt-in.",
+        "schema": { "type": "boolean", "default": false }
+      },
       "property_value": {
         "name": "property_value",
         "in": "query",
@@ -1294,7 +1330,8 @@
           { "$ref": "#/components/parameters/include_profession" },
           { "$ref": "#/components/parameters/include_tags" },
           { "$ref": "#/components/parameters/include_services" },
-          { "$ref": "#/components/parameters/include_seo_hidden" }
+          { "$ref": "#/components/parameters/include_seo_hidden" },
+          { "$ref": "#/components/parameters/include_about" }
         ],
         "responses": {
           "200": {
@@ -1334,7 +1371,8 @@
           { "$ref": "#/components/parameters/include_profession" },
           { "$ref": "#/components/parameters/include_tags" },
           { "$ref": "#/components/parameters/include_services" },
-          { "$ref": "#/components/parameters/include_seo_hidden" }
+          { "$ref": "#/components/parameters/include_seo_hidden" },
+          { "$ref": "#/components/parameters/include_about" }
         ],
         "responses": {
           "200": {
@@ -2056,7 +2094,8 @@
                   "include_profession": { "type": "boolean", "description": "Opt in to return `profession_schema`." },
                   "include_tags": { "type": "boolean", "description": "Opt in to return `tags` array." },
                   "include_services": { "type": "boolean", "description": "Opt in to return `services_schema` array." },
-                  "include_seo_hidden": { "type": "boolean", "description": "Opt in to return SEO-hidden meta fields." }
+                  "include_seo_hidden": { "type": "boolean", "description": "Opt in to return SEO-hidden meta fields." },
+                  "include_about": { "type": "boolean", "description": "Opt in to return the `about_me` HTML bio." }
                 }
               }
             }
@@ -3275,18 +3314,16 @@
           "Posts"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          },
-          {
-            "$ref": "#/components/parameters/property"
-          },
-          {
-            "$ref": "#/components/parameters/property_value"
-          }
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/include_content" },
+          { "$ref": "#/components/parameters/include_post_seo" },
+          { "$ref": "#/components/parameters/include_post_type" },
+          { "$ref": "#/components/parameters/include_author_full" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" }
         ],
         "responses": {
           "200": {
@@ -3300,7 +3337,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of post records. Read-only.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of post records. Read-only.\n\n**Lean by default (v6.16.0):** each row strips `post_content` (full HTML body), `post_meta_*` (SEO bundle), the full nested `user` author object, the full nested `data_category` post-type config, `user_clicks_schema.clicks` array, `list_service`, and ~25 admin-form residue fields. Replaces full `user` object with an `author: {...}` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`). Replaces click array with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/data_posts/get/{post_id}": {
@@ -3318,7 +3355,13 @@
             "schema": {
               "type": "integer"
             }
-          }
+          },
+          { "$ref": "#/components/parameters/include_content" },
+          { "$ref": "#/components/parameters/include_post_seo" },
+          { "$ref": "#/components/parameters/include_post_type" },
+          { "$ref": "#/components/parameters/include_author_full" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" }
         ],
         "responses": {
           "200": {
@@ -3332,7 +3375,7 @@
             }
           }
         },
-        "description": "Fetch a single post record. Read-only.\n\n**Use when:** fetching one post by `post_id`. For enumeration use `listSingleImagePosts`; for keyword search use `searchSingleImagePosts`.\n\n**Required:** `post_id`.\n\n**See also:** `listSingleImagePosts` (enumerate many), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single post record. Read-only.\n\n**Lean by default (v6.16.0):** response strips the same heavy nested buckets as `listSingleImagePosts` (see its lean note). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one post by `post_id`. For enumeration use `listSingleImagePosts`; for keyword search use `searchSingleImagePosts`.\n\n**Required:** `post_id`.\n\n**See also:** `listSingleImagePosts` (enumerate many), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/data_posts/fields": {
@@ -3703,25 +3746,17 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "q": {
-                    "type": "string"
-                  },
-                  "category": {
-                    "type": "string"
-                  },
-                  "data_id": {
-                    "type": "integer",
-                    "description": "Post type ID (strongly recommended)"
-                  },
-                  "user_id": {
-                    "type": "integer"
-                  },
-                  "page": {
-                    "type": "integer"
-                  },
-                  "limit": {
-                    "type": "integer"
-                  }
+                  "q": { "type": "string" },
+                  "category": { "type": "string" },
+                  "data_id": { "type": "integer", "description": "Post type ID (strongly recommended)" },
+                  "user_id": { "type": "integer" },
+                  "page": { "type": "integer" },
+                  "limit": { "type": "integer" },
+                  "include_content": { "type": "boolean", "description": "Opt in to return `post_content` HTML body." },
+                  "include_post_seo": { "type": "boolean", "description": "Opt in to return `post_meta_*` SEO bundle." },
+                  "include_post_type": { "type": "boolean", "description": "Opt in to return full `data_category` post-type config." },
+                  "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
+                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." }
                 }
               }
             }
@@ -3739,7 +3774,7 @@
             }
           }
         },
-        "description": "Keyword search across post records. Read-only.\n\n**Use when:** an admin or agent wants to find a post by keyword or title. Pass `data_id` to scope search to one post type - strongly recommended since results depend on per-post-type configuration.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Parameter interactions:**\n\n- `data_id` (post type) is strongly recommended - results vary significantly by post type configuration\n\n- `q` - keyword across post title, caption, content\n\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
+        "description": "Keyword search across post records. Read-only.\n\n**Lean by default (v6.16.0):** rows strip the same heavy nested buckets as `listSingleImagePosts` (see its lean note). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** an admin or agent wants to find a post by keyword or title. Pass `data_id` to scope search to one post type - strongly recommended since results depend on per-post-type configuration.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Parameter interactions:**\n\n- `data_id` (post type) is strongly recommended - results vary significantly by post type configuration\n\n- `q` - keyword across post title, caption, content\n\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/get": {
@@ -3750,18 +3785,15 @@
           "Portfolio Groups"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          },
-          {
-            "$ref": "#/components/parameters/property"
-          },
-          {
-            "$ref": "#/components/parameters/property_value"
-          }
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/property" },
+          { "$ref": "#/components/parameters/property_value" },
+          { "$ref": "#/components/parameters/include_content" },
+          { "$ref": "#/components/parameters/include_post_type" },
+          { "$ref": "#/components/parameters/include_author_full" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" }
         ],
         "responses": {
           "200": {
@@ -3775,7 +3807,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Lean by default (v6.16.0):** each row strips `group_desc` (HTML body, field name differs from Single posts), nested `user` author object, nested `data_category`, `user_clicks_schema.clicks`, and nested `users_portfolio` photo array (keeps `cover_photo_url`, `cover_thumbnail_url`, `total_photos` summary from the first photo). Strips ~25 admin-form residue fields. Replaces `user` with `author: {...}` summary. Replaces clicks with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/get/{group_id}": {
@@ -3793,7 +3825,12 @@
             "schema": {
               "type": "integer"
             }
-          }
+          },
+          { "$ref": "#/components/parameters/include_content" },
+          { "$ref": "#/components/parameters/include_post_type" },
+          { "$ref": "#/components/parameters/include_author_full" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" }
         ],
         "responses": {
           "200": {
@@ -3807,7 +3844,7 @@
             }
           }
         },
-        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Use when:** fetching one multi-image post by `group_id`. Photos in this post are loaded separately via `listMultiImagePostPhotos` with `group_id` filter.\n\n**Required:** `group_id`.\n\n**See also:** `listMultiImagePosts` (enumerate many), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Lean by default (v6.16.0):** response strips the same heavy nested buckets as `listMultiImagePosts` (see its lean note). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one multi-image post by `group_id`. Photos in this post are loaded separately via `listMultiImagePostPhotos` with `group_id` filter.\n\n**Required:** `group_id`.\n\n**See also:** `listMultiImagePosts` (enumerate many), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/fields": {
@@ -4046,12 +4083,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "q": {
-                    "type": "string"
-                  },
-                  "data_id": {
-                    "type": "integer"
-                  }
+                  "q": { "type": "string" },
+                  "data_id": { "type": "integer" },
+                  "include_content": { "type": "boolean", "description": "Opt in to return `group_desc` HTML body." },
+                  "include_post_type": { "type": "boolean", "description": "Opt in to return full `data_category` post-type config." },
+                  "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
+                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
+                  "include_photos": { "type": "boolean", "description": "Opt in to return `users_portfolio` full photo array." }
                 }
               }
             }
@@ -4069,7 +4107,7 @@
             }
           }
         },
-        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Use when:** searching multi-image posts by keyword. Pass `data_id` to scope to one multi-image post type.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
+        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Lean by default (v6.16.0):** rows strip the same heavy nested buckets as `listMultiImagePosts` (see its lean note). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** searching multi-image posts by keyword. Pass `data_id` to scope to one multi-image post type.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_portfolio/get": {
@@ -6652,12 +6690,9 @@
           "Services"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          }
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/include_category_schema" }
         ],
         "responses": {
           "200": {
@@ -6671,7 +6706,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of SUB-level member categories (services). Read-only.\n\nSub Categories are level 2 of the 3-tier member classification (e.g., \"Sushi\" under \"Restaurants\"). Each has a `profession_id` pointing at its parent Top Category. `master_id` points at a parent Sub Category for sub-sub-category nesting (`master_id=0` = directly under a Top Category). Backed by BD's `list_services` table.\n\n**Use when:** enumerating sub-categories (services) - always filter by `profession_id` to scope to one Top Category, otherwise you get all sub-cats across all tops (noisy). For sub-sub nesting, `master_id` filter narrows further.\n\n**Permission note - platform gap:** this endpoint (`/api/v2/list_services/*`) is NOT in BD's public Swagger spec, so the admin's API key permissions UI does NOT auto-generate a toggle for it. The admin's \"Services\" toggle gates the Swagger-documented `/api/v2/service/*` endpoints (a DIFFERENT legacy table) - enabling that toggle does NOT grant access here. On 403: admin must manually INSERT a row into `bd_api_key_permissions` for `endpoint_path='/api/v2/list_services/get'` (and the singular `/api/v2/list_services/get/{service_id}` for `getSubCategory`). Do NOT substitute `/api/v2/service/*` - different table, inconsistent data.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSubCategory` (single by ID), `listTopCategories` (parents), `createSubCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`. Each record has `service_id`, `name`, `desc`, `profession_id`, `master_id`, `filename`, `keywords`, `sort_order`, `lead_price`, `image`.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
+        "description": "Paginated enumeration of SUB-level member categories (services). Read-only.\n\n**Lean by default (v6.16.0):** each row keeps `service_id`, `profession_id` (parent Top Category link), `master_id` (parent Sub Category for sub-sub), `name`, `filename`. Strips `desc`, `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`. Pass `include_category_schema=1` to restore all category metadata. Hierarchy is always visible so agents can traverse top -> sub -> sub-sub without opt-in.\n\n\nSub Categories are level 2 of the 3-tier member classification (e.g., \"Sushi\" under \"Restaurants\"). Each has a `profession_id` pointing at its parent Top Category. `master_id` points at a parent Sub Category for sub-sub-category nesting (`master_id=0` = directly under a Top Category). Backed by BD's `list_services` table.\n\n**Use when:** enumerating sub-categories (services) - always filter by `profession_id` to scope to one Top Category, otherwise you get all sub-cats across all tops (noisy). For sub-sub nesting, `master_id` filter narrows further.\n\n**Permission note - platform gap:** this endpoint (`/api/v2/list_services/*`) is NOT in BD's public Swagger spec, so the admin's API key permissions UI does NOT auto-generate a toggle for it. The admin's \"Services\" toggle gates the Swagger-documented `/api/v2/service/*` endpoints (a DIFFERENT legacy table) - enabling that toggle does NOT grant access here. On 403: admin must manually INSERT a row into `bd_api_key_permissions` for `endpoint_path='/api/v2/list_services/get'` (and the singular `/api/v2/list_services/get/{service_id}` for `getSubCategory`). Do NOT substitute `/api/v2/service/*` - different table, inconsistent data.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSubCategory` (single by ID), `listTopCategories` (parents), `createSubCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`. Each record has `service_id`, `name`, `desc`, `profession_id`, `master_id`, `filename`, `keywords`, `sort_order`, `lead_price`, `image`.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
       }
     },
     "/api/v2/list_services/get/{service_id}": {
@@ -6689,7 +6724,8 @@
             "schema": {
               "type": "integer"
             }
-          }
+          },
+          { "$ref": "#/components/parameters/include_category_schema" }
         ],
         "responses": {
           "200": {
@@ -6703,7 +6739,7 @@
             }
           }
         },
-        "description": "Fetch a single SUB-level member category (service) by `service_id`. Read-only.\n\n**Use when:** fetching one sub-category by `service_id` - usually after discovering it via `listSubCategories`.\n\n**Required:** `service_id` (path).\n\n**See also:** `listSubCategories` (enumerate; filter by `profession_id` for scope), `getTopCategory` (fetch parent Top by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
+        "description": "Fetch a single SUB-level member category (service) by `service_id`. Read-only.\n\n**Lean by default (v6.16.0):** keeps `service_id`, `profession_id`, `master_id`, `name`, `filename`. Strips SEO metadata (`desc`, `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`). Pass `include_category_schema=1` to restore.\n\n\n**Use when:** fetching one sub-category by `service_id` - usually after discovering it via `listSubCategories`.\n\n**Required:** `service_id` (path).\n\n**See also:** `listSubCategories` (enumerate; filter by `profession_id` for scope), `getTopCategory` (fetch parent Top by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
       }
     },
     "/api/v2/list_services/create": {
@@ -10035,12 +10071,9 @@
           "Categories"
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/page"
-          }
+          { "$ref": "#/components/parameters/limit" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/include_category_schema" }
         ],
         "responses": {
           "200": {
@@ -10054,7 +10087,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of TOP-level member categories. Read-only.\n\nTop Categories are the highest level of the 3-tier member classification (e.g., \"Restaurants\", \"Dentists\"). Each record's `profession_id` is what populates `users_data.profession_id` on member records. Backed by BD's `list_professions` table.\n\n**Use when:** populating a category dropdown, generating a site map, or discovering the `profession_id` of an existing category before assigning members to it. Returns ALL top-level categories. For sub-categories under a specific top, use `listSubCategories` with a `profession_id` filter.\n\n**Permission note - platform gap:** this endpoint (`/api/v2/list_professions/*`) is NOT in BD's public Swagger spec, so the admin's API key permissions UI does NOT auto-generate a toggle for it. New keys default to DENY on this path even if the admin enables the \"Categories (Professions)\" toggle - that UI toggle gates the Swagger-documented `/api/v2/category/*` endpoints (a DIFFERENT legacy table). On a 403 here: the fix is to MANUALLY INSERT a row into `bd_api_key_permissions` for `endpoint_path='/api/v2/list_professions/get'` (and the singular `/api/v2/list_professions/get/{profession_id}` for `getTopCategory`). This is a platform-level gap worth reporting to BD dev team. Do NOT substitute `/api/v2/category/*` as a fallback - it reads a different, possibly-empty table and returns inconsistent data.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getTopCategory` (single by ID), `listSubCategories` (sub-categories filtered by `profession_id`), `createTopCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record has `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, `revision_timestamp`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy - AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | - |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` -> parent Top Category; `master_id` -> parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` -> member; `service_id` -> Sub Category |\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
+        "description": "Paginated enumeration of TOP-level member categories. Read-only.\n\n**Lean by default (v6.16.0):** each row keeps `profession_id`, `name`, `filename`. Strips `desc`, `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`. Pass `include_category_schema=1` to restore all category metadata.\n\n\nTop Categories are the highest level of the 3-tier member classification (e.g., \"Restaurants\", \"Dentists\"). Each record's `profession_id` is what populates `users_data.profession_id` on member records. Backed by BD's `list_professions` table.\n\n**Use when:** populating a category dropdown, generating a site map, or discovering the `profession_id` of an existing category before assigning members to it. Returns ALL top-level categories. For sub-categories under a specific top, use `listSubCategories` with a `profession_id` filter.\n\n**Permission note - platform gap:** this endpoint (`/api/v2/list_professions/*`) is NOT in BD's public Swagger spec, so the admin's API key permissions UI does NOT auto-generate a toggle for it. New keys default to DENY on this path even if the admin enables the \"Categories (Professions)\" toggle - that UI toggle gates the Swagger-documented `/api/v2/category/*` endpoints (a DIFFERENT legacy table). On a 403 here: the fix is to MANUALLY INSERT a row into `bd_api_key_permissions` for `endpoint_path='/api/v2/list_professions/get'` (and the singular `/api/v2/list_professions/get/{profession_id}` for `getTopCategory`). This is a platform-level gap worth reporting to BD dev team. Do NOT substitute `/api/v2/category/*` as a fallback - it reads a different, possibly-empty table and returns inconsistent data.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getTopCategory` (single by ID), `listSubCategories` (sub-categories filtered by `profession_id`), `createTopCategory` (add new).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record has `profession_id`, `name`, `desc`, `filename`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, `revision_timestamp`.\n\n\n---\n\n**Member Category Hierarchy (3 levels):**\n\nBD classifies members through a 3-level taxonomy - AI agents MUST understand all three to correctly create, assign, and query member categories:\n\n| Level | Tool nicknames | Endpoint | BD internal table | Key field | Parent reference |\n|---|---|---|---|---|---|\n| **1. Top Category** | `listTopCategories`, `createTopCategory`, etc. | `/api/v2/list_professions/*` | `list_professions` | `profession_id` (PK) | - |\n| **2. Sub Category** | `listSubCategories`, `createSubCategory`, etc. | `/api/v2/list_services/*` | `list_services` | `service_id` (PK) | `profession_id` -> parent Top Category; `master_id` -> parent Sub Category (for sub-sub nesting; 0 = direct child of Top) |\n| **3. Member ↔ Sub Category link** | `listMemberSubCategoryLinks`, `createMemberSubCategoryLink`, etc. | `/api/v2/rel_services/*` | `rel_services` | `rel_id` (PK) | `user_id` -> member; `service_id` -> Sub Category |\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
       }
     },
     "/api/v2/list_professions/get/{profession_id}": {
@@ -10072,7 +10105,8 @@
             "schema": {
               "type": "integer"
             }
-          }
+          },
+          { "$ref": "#/components/parameters/include_category_schema" }
         ],
         "responses": {
           "200": {
@@ -10086,7 +10120,7 @@
             }
           }
         },
-        "description": "Fetch a single TOP-level member category by `profession_id`. Read-only.\n\nA Top Category is the highest level of the 3-tier member classification. Backed by BD's `list_professions` table.\n\n**Use when:** you already have a `profession_id` and need its full record (name, filename, etc.). For enumeration use `listTopCategories`.\n\n**Required:** `profession_id` (path parameter).\n\n**See also:** `listTopCategories` (enumerate), `listSubCategories` (sub-categories under this one; filter by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - array of 1 record with full fields.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
+        "description": "Fetch a single TOP-level member category by `profession_id`. Read-only.\n\n**Lean by default (v6.16.0):** keeps `profession_id`, `name`, `filename`. Strips SEO metadata. Pass `include_category_schema=1` to restore.\n\n\nA Top Category is the highest level of the 3-tier member classification. Backed by BD's `list_professions` table.\n\n**Use when:** you already have a `profession_id` and need its full record (name, filename, etc.). For enumeration use `listTopCategories`.\n\n**Required:** `profession_id` (path parameter).\n\n**See also:** `listTopCategories` (enumerate), `listSubCategories` (sub-categories under this one; filter by `profession_id`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - array of 1 record with full fields.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** - those are the BD internal resource names. Use the tools named above.\n\n\n"
       }
     },
     "/api/v2/list_professions/create": {

@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.16.0] - 2026-04-21
+
+### Added — Lean-by-default extended to posts + categories, `include_about` added on users
+
+Phase 2 of the lean-response pattern. Same `include_*` opt-in design as v6.15.0, now covering 13 additional read endpoints across posts and categories. All behavioral rules preserved; every stripped field remains reachable via its opt-in flag.
+
+**Posts (6 endpoints: `listSingleImagePosts`, `getSingleImagePost`, `searchSingleImagePosts`, `listMultiImagePosts`, `getMultiImagePost`, `searchMultiImagePosts`)**
+
+Each post row currently includes a full nested `user` author object (password hash, token, session cookie, entire member profile — ~2KB), a full nested `data_category` post-type config (~1.5KB), `user_clicks_schema` with up to 10 click records (~2.5KB), and on Multi posts a nested `users_portfolio` photo array (1-5KB depending on photo count). Plus ~25 admin-form residue fields that leak from BD's admin edit flow. Total: ~8-15KB per row.
+
+Lean default strips all of the above and replaces with:
+
+- `author: {...}` — curated 10-field author summary: `user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`
+- `total_clicks: N` — count from the stripped clicks array
+- `total_photos: N` (Multi only) — count from the stripped portfolio array
+- `cover_photo_url`, `cover_thumbnail_url` (Multi only) — pulled from the first photo in the stripped array
+
+Post flags (all default `false`):
+
+- `include_content=1` — full HTML body (`post_content` on Single, `group_desc` on Multi)
+- `include_post_seo=1` — `post_meta_title`, `post_meta_description`, `post_meta_keywords` (Single only; Multi doesn't have these)
+- `include_post_type=1` — full `data_category` post-type config object (`data_id` always kept)
+- `include_author_full=1` — restores full original `user` nested object (every field BD returns, including `password` hash and session `token`). Replaces the curated `author` summary.
+- `include_clicks=1` — `user_clicks_schema.clicks` array
+- `include_photos=1` — full `users_portfolio` array (Multi only; no-op on Single)
+
+Post always-stripped (debug/form-flow residue): `form`, `au_location`, `noheader`, `id`, `save`, `website_id`, `form_name`, `myid`, `method`, `au_link`, `au_limit`, `au_main_info`, `au_comesf`, `au_header`, `au_hint`, `au_length`, `au_module`, `au_photo`, `au_selector`, `au_ttlimit`, `auHeaderTitle`, `sized`, `subaction`, `formname`, `logged_user`, `form_security_token`, `auto_image_import`, `list_service`.
+
+Per-row size: ~8-15KB → ~1.5-2KB. ~85% reduction on typical posts.
+
+**Categories (4 endpoints: `listTopCategories`, `getTopCategory`, `listSubCategories`, `getSubCategory`)**
+
+Hierarchy linkage is ALWAYS kept so agents can traverse top → sub → sub-sub without opt-in:
+
+- `profession_id` (top + sub)
+- `master_id` (sub; `0` = direct child of Top, otherwise `=` parent service_id for sub-sub)
+- `service_id` (sub only), `name`, `filename`
+
+SEO/display metadata bundled behind `include_category_schema=1`: `desc`, `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`, `tablesExists`.
+
+Per-row size: ~600B → ~80B. ~87% reduction on category records.
+
+**Users — one new flag**
+
+`include_about=1` — restores the `about_me` HTML bio (multi-paragraph, 500-2000 bytes per member). Default stripped. All other v6.15.0 user flags unchanged.
+
+### What this does NOT change
+
+- BD API behavior, tool surface, operationIds, required fields, enum values, cross-client compatibility, per-call latency.
+- `updateUser` / `updatePost` / `createPost` / other write and non-read tools: unchanged.
+- Agents that need any stripped field get it via the matching flag. No capability lost.
+
+### Why this wasn't done earlier
+
+v6.15.0 shipped lean defaults only for users as a focused first cut. Real-world testing confirmed the pattern works, surfaced that posts carry an even larger bloat footprint (nested `user` + `data_category` + photo array + click array + 25 admin residue fields), and that categories have a smaller but meaningful SEO bundle worth scoping behind a flag.
+
+### Implementation
+
+- `applyPostLean(body, includeFlags)` and `applyCategoryLean(body, includeFlags)` in `mcp/index.js` mirror the v6.15.0 `applyUserLean` pattern. ~120 lines of shaping code.
+- Shared helper `stripKeys(row, keys)` extracted.
+- 7 new `include_*` params added to OpenAPI shared components. Referenced from 10 endpoints as query params (GET) or body fields (search POSTs).
+- Dispatcher extended with `isPostReadTool` and `isCategoryReadTool` checks alongside the existing `isUserReadTool`. Flags stripped from outgoing args before calling BD so BD never sees these MCP-only params.
+- Top-level instructions block extends the v6.15.0 lean-defaults paragraph to cover posts + categories.
+
+### Measured impact
+
+- `listMultiImagePosts limit=1` response on test site: ~10KB → ~1.5KB (~85% reduction)
+- `listSingleImagePosts limit=1` on test site: ~9KB → ~1.5KB (~83% reduction)
+- `listTopCategories` full sweep: ~1.2KB → ~150B (~87% reduction)
+- Typical audit task hitting 50 posts + 10 categories goes from ~500KB of response traffic to ~75KB. Frees ~100K tokens per call-heavy task.
+
+### Future phases (not in 6.16.0)
+
+- Extend lean-by-default to leads, reviews, widgets, email templates, and other heavy list/get endpoints.
+- `include_extras` bundle flag for multi-flag workflows (open question).
+- Null-field / empty-string stripping — considered and deferred per domain-safety concerns (customer field relabeling makes blanket null-strip risky).
+
 ## [6.15.0] - 2026-04-21
 
 ### Added — Lean-by-default user-read responses with opt-in `include_*` flags

@@ -292,21 +292,19 @@ function resolveRef(spec, ref) {
 }
 
 // ---------------------------------------------------------------------------
-// Lean-response shaper (v6.15.0)
+// Lean-response shapers (v6.15.0 users, v6.16.0 posts + categories)
 //
-// User-read endpoints (listUsers / getUser / searchUsers) return ~8KB per row
-// by default. Most agent tasks need ~5% of that. We strip heavy nested buckets
-// and debug residue by default, and let agents opt-in via include_* flags.
-//
-// STRIP ALWAYS: save, form, formname, sized, faction, result (debug leakage).
-// HOLD BACK unless include_<name>=1:
-//   password, subscription_schema, photos_schema, transactions,
-//   profession_schema, tags, services_schema
-// HOLD BACK user_clicks_schema.clicks (replace with total_clicks: N).
-// SEO bundle (hold back unless include_seo_hidden=1):
-//   seo_page_title_hidden, seo_page_description_hidden, seo_page_keywords_hidden,
-//   seo_social_page_title_hidden, seo_social_page_description_hidden, search_description
+// Pattern: strip heavy nested buckets + debug residue by default; opt back in
+// per-call via include_* flags. Applied between BD response and agent return.
+// Shared helper `stripKeys(row, keys)` removes a list of fields in place.
 // ---------------------------------------------------------------------------
+
+function stripKeys(row, keys) {
+  if (!row || typeof row !== "object") return;
+  for (const k of keys) delete row[k];
+}
+
+// --- v6.15.0 USERS (listUsers / getUser / searchUsers) --------------------
 
 const USER_LEAN_INCLUDE_FLAGS = [
   "include_password",
@@ -318,6 +316,7 @@ const USER_LEAN_INCLUDE_FLAGS = [
   "include_tags",
   "include_services",
   "include_seo_hidden",
+  "include_about", // v6.16.0
 ];
 
 const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", "result"];
@@ -331,37 +330,6 @@ const USER_LEAN_SEO_BUNDLE = [
   "search_description",
 ];
 
-function leanUserRow(row, include) {
-  if (!row || typeof row !== "object") return row;
-  for (const k of USER_LEAN_ALWAYS_STRIP) delete row[k];
-  if (!include.password) delete row.password;
-  if (!include.subscription) delete row.subscription_schema;
-  if (!include.photos) delete row.photos_schema;
-  if (!include.transactions) delete row.transactions;
-  if (!include.profession) delete row.profession_schema;
-  if (!include.tags) delete row.tags;
-  if (!include.services) delete row.services_schema;
-  if (!include.clicks) {
-    const total =
-      row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
-        ? row.user_clicks_schema.total_clicks
-        : 0;
-    row.total_clicks = total;
-    delete row.user_clicks_schema;
-  }
-  if (row.photos_schema === undefined) {
-    // Preserve photo count summary even when array was stripped
-    const totalPhotos = Array.isArray(row._original_photos_schema)
-      ? row._original_photos_schema.length
-      : 0;
-    // (total_photos computed below when we still have the original - see applyUserLean)
-  }
-  if (!include.seo_hidden) {
-    for (const k of USER_LEAN_SEO_BUNDLE) delete row[k];
-  }
-  return row;
-}
-
 function applyUserLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const include = {
@@ -374,12 +342,29 @@ function applyUserLean(body, includeFlags) {
     tags: !!includeFlags.include_tags,
     services: !!includeFlags.include_services,
     seo_hidden: !!includeFlags.include_seo_hidden,
+    about: !!includeFlags.include_about,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
-    // Compute total_photos before stripping photos_schema
     const totalPhotos = Array.isArray(row.photos_schema) ? row.photos_schema.length : 0;
-    leanUserRow(row, include);
+    stripKeys(row, USER_LEAN_ALWAYS_STRIP);
+    if (!include.password) delete row.password;
+    if (!include.subscription) delete row.subscription_schema;
+    if (!include.photos) delete row.photos_schema;
+    if (!include.transactions) delete row.transactions;
+    if (!include.profession) delete row.profession_schema;
+    if (!include.tags) delete row.tags;
+    if (!include.services) delete row.services_schema;
+    if (!include.clicks) {
+      const total =
+        row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
+          ? row.user_clicks_schema.total_clicks
+          : 0;
+      row.total_clicks = total;
+      delete row.user_clicks_schema;
+    }
+    if (!include.seo_hidden) stripKeys(row, USER_LEAN_SEO_BUNDLE);
+    if (!include.about) delete row.about_me;
     if (!include.photos) row.total_photos = totalPhotos;
     return row;
   };
@@ -392,6 +377,182 @@ function applyUserLean(body, includeFlags) {
 }
 
 const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
+
+// --- v6.16.0 POSTS (list/get/search SingleImagePost + MultiImagePost) -----
+
+const POST_LEAN_INCLUDE_FLAGS = [
+  "include_content",
+  "include_post_seo",
+  "include_post_type",
+  "include_author_full",
+  "include_clicks",
+  "include_photos",
+];
+
+const POST_LEAN_ALWAYS_STRIP = [
+  // Admin-form residue that leaks into post read responses. 100% useless to agents.
+  "form", "au_location", "noheader", "id", "save", "website_id", "form_name",
+  "myid", "method", "au_link", "au_limit", "au_main_info", "au_comesf",
+  "au_header", "au_hint", "au_length", "au_module", "au_photo", "au_selector",
+  "au_ttlimit", "auHeaderTitle", "sized", "subaction", "formname",
+  "logged_user", "form_security_token", "auto_image_import",
+];
+
+const POST_LEAN_SEO_BUNDLE = [
+  "post_meta_title",
+  "post_meta_description",
+  "post_meta_keywords",
+];
+
+// HTML body field names differ between post families:
+// Single: post_content. Multi: group_desc.
+const POST_HTML_BODY_FIELDS = ["post_content", "group_desc"];
+
+const AUTHOR_SUMMARY_FIELDS = [
+  "user_id",
+  "first_name",
+  "last_name",
+  "company",
+  "email",
+  "phone_number",
+  "filename",
+  "image_main_file",
+  "subscription_id",
+  "active",
+];
+
+function applyPostLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    content: !!includeFlags.include_content,
+    post_seo: !!includeFlags.include_post_seo,
+    post_type: !!includeFlags.include_post_type,
+    author_full: !!includeFlags.include_author_full,
+    clicks: !!includeFlags.include_clicks,
+    photos: !!includeFlags.include_photos,
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    stripKeys(row, POST_LEAN_ALWAYS_STRIP);
+
+    // Author: replace full `user` nested object with a curated summary under `author`.
+    // include_author_full=1 preserves the original `user` key untouched.
+    if (row.user && typeof row.user === "object") {
+      if (include.author_full) {
+        // Keep original `user` as-is. No summary needed.
+      } else {
+        const author = {};
+        for (const k of AUTHOR_SUMMARY_FIELDS) {
+          if (k in row.user) author[k] = row.user[k];
+        }
+        // If BD didn't include image_main_file on the nested user (varies),
+        // leave it as undefined - agent can do a getUser if they need it.
+        row.author = author;
+        delete row.user;
+      }
+    }
+
+    // Post-type config: strip full nested object; data_id is already top-level.
+    if (!include.post_type) delete row.data_category;
+
+    // Clicks: strip click array, surface total_clicks.
+    if (!include.clicks) {
+      const total =
+        row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
+          ? row.user_clicks_schema.total_clicks
+          : 0;
+      row.total_clicks = total;
+      delete row.user_clicks_schema;
+    }
+
+    // list_service: platform-inconsistent, almost always `false`. Strip always.
+    delete row.list_service;
+
+    // Post content HTML body - opt-in. Field name differs: Single=post_content, Multi=group_desc.
+    if (!include.content) stripKeys(row, POST_HTML_BODY_FIELDS);
+
+    // Post SEO meta bundle - opt-in. (Single only; Multi posts don't have these.)
+    if (!include.post_seo) stripKeys(row, POST_LEAN_SEO_BUNDLE);
+
+    // Multi-image posts nest the full photo array under `users_portfolio`.
+    // Strip by default, surface total_photos count, keep cover photo URLs from first entry.
+    if (Array.isArray(row.users_portfolio)) {
+      const totalPhotos = row.users_portfolio.length;
+      if (!include.photos) {
+        const first = row.users_portfolio[0];
+        if (first && first.file_main_full_url) {
+          row.cover_photo_url = first.file_main_full_url;
+        }
+        if (first && first.file_thumbnail_full_url) {
+          row.cover_thumbnail_url = first.file_thumbnail_full_url;
+        }
+        row.total_photos = totalPhotos;
+        delete row.users_portfolio;
+      }
+    }
+
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const POST_READ_TOOLS = new Set([
+  "listSingleImagePosts",
+  "getSingleImagePost",
+  "searchSingleImagePosts",
+  "listMultiImagePosts",
+  "getMultiImagePost",
+  "searchMultiImagePosts",
+]);
+
+// --- v6.16.0 CATEGORIES (top + sub) ---------------------------------------
+//
+// Categories are lean-by-default. Hierarchy linkage fields (profession_id on
+// top+sub; master_id on sub for sub-sub parent) are ALWAYS returned so agents
+// can traverse top -> sub -> sub-sub without opt-in. SEO-style metadata
+// (desc, keywords, image, icon, sort_order, lead_price, timestamps) is
+// hold-back behind include_category_schema=1.
+
+const CATEGORY_LEAN_INCLUDE_FLAGS = ["include_category_schema"];
+
+const CATEGORY_SCHEMA_BUNDLE = [
+  "desc",
+  "keywords",
+  "image",
+  "icon",
+  "sort_order",
+  "lead_price",
+  "revision_timestamp",
+  "tablesExists",
+];
+
+function applyCategoryLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  if (includeFlags.include_category_schema) return body;
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    stripKeys(row, CATEGORY_SCHEMA_BUNDLE);
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const CATEGORY_READ_TOOLS = new Set([
+  "listTopCategories",
+  "getTopCategory",
+  "listSubCategories",
+  "getSubCategory",
+]);
 
 // ---------------------------------------------------------------------------
 // HTTP client
@@ -986,19 +1147,33 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`per_page\` is silently ignored.
 - When \`page\` is sent, \`limit\` is IGNORED (size is baked into the token). To change page size, start over with \`limit=N\` and no \`page\`.
 
-**Row weight** - \`listUsers\` / \`getUser\` / \`searchUsers\` are lean by default (~2KB/row). Core columns + \`revenue\` + \`image_main_file\` + \`filename_hidden\` + summary counts (\`total_clicks\`, \`total_photos\`) are always returned. Heavy nested buckets are stripped and must be opted back in per-call via the \`include_*\` flags on those 3 tools:
+**Row weight - lean-by-default with opt-in \`include_*\` flags** across 3 resource families. Only opt in when the task actually needs that nested data.
+
+**Users** (\`listUsers\` / \`getUser\` / \`searchUsers\`, ~2KB lean row): core columns + \`revenue\` + \`image_main_file\` + \`filename_hidden\` + \`total_clicks\` + \`total_photos\` always returned. Flags:
 
 - \`include_password=1\` - bcrypt hash
-- \`include_subscription=1\` - full plan object (\`subscription_id\` is always returned)
+- \`include_subscription=1\` - full plan object (\`subscription_id\` always kept)
 - \`include_clicks=1\` - click history array
-- \`include_photos=1\` - photo array (\`image_main_file\` URL is always returned)
+- \`include_photos=1\` - photo array (\`image_main_file\` URL always kept)
 - \`include_transactions=1\` - invoice array
-- \`include_profession=1\` - category metadata (\`profession_id\` is always returned)
+- \`include_profession=1\` - category metadata (\`profession_id\` always kept)
 - \`include_tags=1\` - member tags array
-- \`include_services=1\` - services / sub-categories array (BD's \`list_services\` table = sub-categories)
-- \`include_seo_hidden=1\` - SEO meta bundle (page title / desc / keywords / social variants / search_description)
+- \`include_services=1\` - sub-categories array (BD's \`list_services\` = sub-categories)
+- \`include_seo_hidden=1\` - SEO meta bundle
+- \`include_about=1\` - \`about_me\` HTML bio (v6.16.0)
 
-Only opt in when the task actually needs that nested data. Other endpoints (posts, leads, reviews, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
+**Posts** (\`listSingleImagePosts\` / \`getSingleImagePost\` / \`searchSingleImagePosts\` / \`listMultiImagePosts\` / \`getMultiImagePost\` / \`searchMultiImagePosts\`, v6.16.0, ~1.5-2KB lean row): core columns + \`author: {...}\` 10-field summary (replaces full \`user\` nested object) + \`total_clicks\` + (Multi only) \`cover_photo_url\` / \`cover_thumbnail_url\` / \`total_photos\`. Flags:
+
+- \`include_content=1\` - HTML body (\`post_content\` on Single, \`group_desc\` on Multi)
+- \`include_post_seo=1\` - \`post_meta_title\` / \`post_meta_description\` / \`post_meta_keywords\` (Single only)
+- \`include_post_type=1\` - full \`data_category\` post-type config (\`data_id\` always kept)
+- \`include_author_full=1\` - restores full \`user\` nested object (password, token, all fields); replaces curated \`author\` summary
+- \`include_clicks=1\` - click history array
+- \`include_photos=1\` - full \`users_portfolio\` photo array (Multi only; Single has single \`post_image\` field always kept)
+
+**Categories** (\`listTopCategories\` / \`getTopCategory\` / \`listSubCategories\` / \`getSubCategory\`, v6.16.0): hierarchy linkage always returned - \`profession_id\` on top+sub, \`master_id\` on sub (parent sub for sub-sub), \`name\`, \`filename\`. SEO bundle (\`desc\`, \`keywords\`, \`image\`, \`icon\`, \`sort_order\`, \`lead_price\`, \`revision_timestamp\`) stripped unless \`include_category_schema=1\`.
+
+Other endpoints (leads, reviews, widgets, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
 
 **Count-only idiom - use this for any "how many X" question:** call \`list*\` with \`limit=1\` and read \`total\` from the envelope. One tiny call, no records enumerated.
 
@@ -1600,12 +1775,21 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
     }
 
     try {
-      // Extract v6.15.0 lean-response include flags (user-read tools only); these are
+      // Extract lean-response include flags (user/post/category read tools); these are
       // MCP-wrapper params, not BD API params - never forward to BD.
       const includeFlags = {};
       const isUserReadTool = USER_READ_TOOLS.has(name);
-      if (isUserReadTool) {
-        for (const flag of USER_LEAN_INCLUDE_FLAGS) {
+      const isPostReadTool = POST_READ_TOOLS.has(name);
+      const isCategoryReadTool = CATEGORY_READ_TOOLS.has(name);
+      const leanFlagList = isUserReadTool
+        ? USER_LEAN_INCLUDE_FLAGS
+        : isPostReadTool
+          ? POST_LEAN_INCLUDE_FLAGS
+          : isCategoryReadTool
+            ? CATEGORY_LEAN_INCLUDE_FLAGS
+            : null;
+      if (leanFlagList) {
+        for (const flag of leanFlagList) {
           if (args && flag in args) {
             includeFlags[flag] = args[flag];
             delete args[flag];
@@ -1635,9 +1819,11 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
 
-      // v6.15.0: apply lean-response shaping for user-read endpoints
-      if (isUserReadTool && result.body) {
-        result.body = applyUserLean(result.body, includeFlags);
+      // Apply lean-response shaping per resource family (v6.15.0 users, v6.16.0 posts + categories)
+      if (result.body) {
+        if (isUserReadTool) result.body = applyUserLean(result.body, includeFlags);
+        else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags);
+        else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
       }
 
       // Surface rate-limit errors with actionable guidance for the agent
