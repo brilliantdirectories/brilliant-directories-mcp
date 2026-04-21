@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.26.0] - 2026-04-21
+
+### Added — confirmed filter operators now documented in instruction block
+
+BD deployed broader operator support than we were relying on. Live-tested across users, posts, leads, and ran an edge-case sweep — results substantially better than prior docs claimed.
+
+**Now confirmed working** on every `list*` tool (BD's `/{resource}/get` list-style endpoints):
+
+- `=` (was already in)
+- `!=` — returns rows NOT matching the value
+- `>=` (and by extension `>`, `<`, `<=` using same pattern)
+- `in` — OR-on-values for one field, comma-separated; unmatched values silently skipped
+- `not_in` — inverse of `in`
+- `LIKE` — with `%` wildcards or without. Previously returned "user not found" on populated columns; that regression is gone.
+- **Multi-condition AND via array syntax** — `property[]=A&property_value[]=X&property_operator[]==&property[]=B&property_value[]=Y&property_operator[]==` — all conditions must match. Use this for compound lookups like "Jasons in LA" or join-table pre-checks (lead_matches pair, tag relationship triple).
+- Zero-sentinel `=0` on integer FK fields — returns rows where the FK is unset.
+
+**Not supported or broken (BD returns HTTP 400 or silent-drops):**
+
+- `between` — HTTP 400 across every resource tested. Use `>=` + `<=` combined via multi-AND for ranges.
+- `is_null` / `is_not_null` — silently drops on some endpoints (returns full unfiltered dataset — dangerous agent trap). Do not use.
+- `property_value=""` with `=` — HTTP 400. For finding empty-string fields, paginate and filter client-side.
+
+**No native OR across different fields.** `in` is OR-on-values for a single field. For `A=X OR B=Y` across two different fields, two calls + client-side merge.
+
+### Changed — retired "CLIENT-SIDE intersect" workaround in 3 places
+
+The workaround for unsupported multi-condition filters is now unnecessary since server-side AND via array syntax works. Updated:
+
+- Top-level filter rule — removed "multi-condition not honored" claim
+- Create-side duplicate pre-check (pair/composite uniqueness) — now uses server-side multi-AND in one call instead of server-filter + client-intersect
+- users_meta orphan cleanup after parent delete — now filters server-side by both `database` and `database_id` together
+
 ## [6.25.1] - 2026-04-21
 
 ### Fixed — `mcp/README.md` out-of-sync with root `README.md`

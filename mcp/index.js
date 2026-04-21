@@ -1510,17 +1510,32 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 The error envelope \`{status: "error", message: "<X> not found", total: 0}\` fires for bad \`property\` NAME, bad cursor, bad \`order_column\`, LIKE-with-wildcards (see below), AND legitimate empty results - all indistinguishable; treat as "zero or malformed." Observed \`<X>\` variants: \`user\`, \`record\`, \`data_categories\`, internal table names.
 
-**Operator reliability:**
+**Global filter operators — apply to every \`list*\` tool** (BD's \`/{resource}/get\` paths returning structured JSON lists). Set via \`property\` + \`property_value\` + \`property_operator\`, or array-syntax (\`property[]=...&property_value[]=...&property_operator[]=...\`) for multi-condition.
 
-- \`=\` - the only reliable operator across endpoints. Exact, case-insensitive on strings via \`utf8_general_ci\`. Numeric zero-sentinel works (\`profession_id=0\` returns members with no top category).
-- \`LIKE\` with \`%\` wildcards - returns \`"user not found"\` even on populated columns. Verified: \`first_name LIKE 'Sample%'\` and \`email LIKE '%sample%'\` both 0 hits on records that clearly match. Conflates with bad-column error shape - debugging trap.
-- \`LIKE\` without wildcards - silently behaves as \`=\`. Passes trivial tests, fails real ones.
-- \`is_null\` / \`is_not_null\` / \`property_value=""\` - silent no-ops (see null-filter rule below).
-- \`!=\`, \`in\`, \`not_in\`, \`between\`, \`>\`, \`<\`, \`>=\`, \`<=\` - sometimes observed in the backend but per-endpoint-variable (not all in the spec enum). Do not rely on without per-call verification.
+**Confirmed working:**
 
-For partial text matching on users, use \`searchUsers q=<keyword>\` instead of \`LIKE\`. Expanded operator set is in BD's QA pipeline; retest post-deploy before trusting.`,
+- \`=\` — exact match. Case-insensitive on strings. \`property=first_name&property_value=Jason&property_operator==\`
+- \`!=\` — not equal. \`property=first_name&property_value=Sample&property_operator=!=\`
+- \`>=\` — greater or equal. \`property=user_id&property_value=10&property_operator=>=\` (\`>\`, \`<\`, \`<=\` follow same pattern but retest per need)
+- \`in\` — OR-on-values for ONE field, comma-separated. Unmatched values silently skipped; matched ones return. \`property=first_name&property_value=Sample,Michael&property_operator=in\`
+- \`not_in\` — inverse of \`in\`. \`property=post_status&property_value=0,1&property_operator=not_in\`
+- \`LIKE\` — with \`%\` wildcards or without. \`property=first_name&property_value=Samp%&property_operator=LIKE\` (without wildcards acts as \`=\`)
+- **Multi-condition AND via array syntax** — stack conditions, all must match. Index-aligned. \`property[]=first_name&property_value[]=Jason&property_operator[]==&property[]=city&property_value[]=Los Angeles&property_operator[]==\`
+- **Zero-sentinel** on integer foreign keys — \`property=profession_id&property_value=0&property_operator==\` returns rows with unset FK.
+
+**Not supported (HTTP 400 today) or broken:**
+
+- \`between\` — rejected across every resource tested. Use \`>=\` + \`<=\` combined via multi-AND if you need a range.
+- \`is_null\` / \`is_not_null\` — **silently drops** on some endpoints (returns unfiltered dataset — dangerous). Do not use.
+- \`property_value=""\` (empty string with \`=\`) — HTTP 400 today. For finding empty-string fields, paginate and filter client-side.
+
+**No native OR across different fields.** \`in\` is OR-on-values for ONE field. For \`A=X OR B=Y\` across two different fields, make two filtered calls and merge client-side.
+
+**\`search*\` tools (BD's \`/{resource}/search\`) are a different shape** — keyword-driven (\`q=<term>\`) with different response format. Use \`list*\` with filters for structured data queries; use \`search*\` only when the agent needs BD's keyword-search results view.
+
+**Silent-drop sanity check.** If a filter value is rejected (\`is_null\`, unknown enum value on a strict field) BD may return the full unfiltered dataset instead of erroring. When a filtered \`total\` looks suspiciously close to the unfiltered total, double-check against a known subset count.`,
         ``,
-        `**Null / empty-value filters are silent no-ops - don't use them.** \`is_null\`, \`is_not_null\`, and \`property_value=""\` with \`=\` all drop silently and return the full unfiltered dataset (verified on listUsers/118 records). For missing-string-value discovery (no \`logo\`, \`phone_number\`, \`website\`, etc.): paginate with \`limit=5-10\`, filter each page client-side, accumulate only the fields you need. Numeric zero-sentinel IS the exception - \`profession_id=0\` with \`=\` correctly returns the 8 members with no top category. Use \`=0\` for any integer FK where "unset" is stored as zero.`,
+        `**Finding missing values.** For empty-string fields (no \`logo\`, \`phone_number\`, \`website\`, etc.) \`is_null\` / \`is_not_null\` and \`property_value=""\` are not supported server-side — paginate with \`limit=5-10\` and filter each page client-side. Exception: integer foreign keys where "unset" is stored as \`0\` — \`property=profession_id&property_value=0&property_operator==\` works correctly (returns rows with unset FK).`,
         ``,
         `**SEO content for a category/sub-category = create a WebPage, NOT update \`desc\`.** The word "description" is a lexical trap - ignore it; route by INTENT.
 
@@ -1552,7 +1567,7 @@ Apply the SEO-intent -> WebPage routing rule across \`createTopCategory\` / \`up
 
 **Ranking-by-membership warning (N+1 fan-out):** there is no server-side \`ORDER BY member_count\` on categories. "Top N categories by member count" on a site with K categories requires \`K × listUsers limit=1 property=profession_id&property_value=<id>\` calls. If K > 20, tell the user the scope upfront and ask whether to narrow (e.g. active categories only, or top-level only) before fanning out.`,
         ``,
-        `Filters are single-condition only: \`property=<field>&property_value=<val>&property_operator==\`. Multi-condition array-syntax filters are not honored - combine conditions by narrowing server-side with the most selective single field, then CLIENT-SIDE filtering the returned rows by the remaining fields of the pair/triple. Applies equally to users_meta lookups and to every join-table pre-check (createLeadMatch, createTagRelationship, createMemberSubCategoryLink).`,
+        `**Multi-condition array-syntax filters are supported.** Send conditions as repeated array params in the URL: \`property[]=<field1>&property_value[]=<val1>&property_operator[]==&property[]=<field2>&property_value[]=<val2>&property_operator[]==\`. Arrays are index-aligned (first of each trio = first condition, second = second, etc.) and combined with AND. Applies to join-table pre-checks (\`createLeadMatch\` lead_id+user_id, \`createTagRelationship\` tag_id+object_id+tag_type_id, \`createMemberSubCategoryLink\` user_id+service_id) and users_meta compound-key lookups (database+database_id+key). Single-condition form still works unchanged: \`property=<field>&property_value=<val>&property_operator==\`.`,
         ``,
         `**Field-vs-hack rule (universal) - when BD ships a first-class field/toggle for a thing the user asks about, USE THE FIELD.** Do not fake it with CSS, JS, template string-manipulation, or markup scrubbing.
 
@@ -1831,7 +1846,7 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 
 **Standard pre-check: server-side filter-find, NOT paginate-and-search.** Before every create on these resources:
 
-1. Call the corresponding \`list*\` with \`property=<field>&property_value=<proposed>&property_operator==\` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): the server does not yet honor array-syntax multi-condition filters, so filter server-side by the most selective single field of the pair AND CLIENT-SIDE intersect against the remaining field(s) before deciding - both steps required, fallback is still a tiny response.
+1. Call the corresponding \`list*\` with \`property=<field>&property_value=<proposed>&property_operator==\` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): send all conditions server-side in one call using array syntax - \`property[]=lead_id&property_value[]=<X>&property_operator[]==&property[]=user_id&property_value[]=<Y>&property_operator[]==\` (conditions AND'd). Same shape for tag relationships (3-field) and user↔sub-category links (2-field). One round trip, no client-side intersect needed.
 2. If a match exists: reuse the existing ID, update instead, ask the user, OR (for name-based) pick an alternate and re-check.
 3. Only if zero rows, proceed with create.
 
@@ -1843,7 +1858,7 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 
 **Cleanup workflow after any parent delete:**
 
-1. \`listUserMeta\` scoped by \`database_id=<parent id>\`, then CLIENT-SIDE filter to rows where \`database===<parent table>\` before touching any row (server does not yet honor array-syntax multi-filter - client-side filter is mandatory).
+1. \`listUserMeta\` scoped by BOTH \`database_id=<parent id>\` AND \`database=<parent table>\` using array syntax in one call: \`property[]=database&property_value[]=<parent_table>&property_operator[]==&property[]=database_id&property_value[]=<parent_id>&property_operator[]==\`. Returns only the orphan rows for this parent with no cross-table noise.
 2. For each matching row: \`deleteUserMeta(meta_id, database=<parent_table>, database_id=<id>)\` - all three required.
 
 **Delete tools where this cleanup applies:**
