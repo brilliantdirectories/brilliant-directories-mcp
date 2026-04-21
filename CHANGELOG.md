@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.19.1] - 2026-04-21
+
+### Changed — scrub internal test-site references from public docs
+
+Replaced references to an internal dev site (`studev29106.directoryup.com`, `launch60031.directoryup.com`) in `docs/api-users.md` and earlier `CHANGELOG.md` entries with generic placeholders (`yoursite.example.com`). No code changes; docs-only patch.
+
 ## [6.19.0] - 2026-04-21
 
 ### Removed — `createUserMeta` hidden from the agent tool surface
@@ -1804,7 +1810,7 @@ This is belt-and-suspenders: the rule appears both at session-start context AND 
 
 ### Added — `refreshSiteCache` live-tested + discovered undocumented parameters
 
-Live-tested against studev29106 and found the response shape is RICHER than previously documented, plus discovered two optional parameters BD's support docs don't mention:
+Live-tested and found the response shape is RICHER than previously documented, plus discovered two optional parameters BD's support docs don't mention:
 
 **New optional parameters discovered (both undocumented by BD publicly):**
 

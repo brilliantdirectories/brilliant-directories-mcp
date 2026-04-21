@@ -32,9 +32,9 @@ profile_url = site_domain + "/" + user.filename
 ```
 
 **Example:**
-- Site: `https://launch60031.directoryup.com`
-- User `filename`: `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`
-- Full URL: `https://launch60031.directoryup.com/united-states/monterey-park/doctor/harrison-hasanuddin-d-o`
+- Site: `https://yoursite.example.com`
+- User `filename`: `united-states/monterey-park/doctor/jane-doe-m-d`
+- Full URL: `https://yoursite.example.com/united-states/monterey-park/doctor/jane-doe-m-d`
 
 **DO NOT** guess prefixes like `/business/`, `/profile/`, `/member/`, `/listing/`. BD's server-side router uses `filename` verbatim — whatever path is stored there is what resolves. The path format varies per site based on admin settings (some sites use pretty URLs with country/state/city/category segments; others use flat slugs), but the API consumer never needs to care: **just concatenate domain + filename and the URL works.**
 
@@ -86,7 +86,7 @@ After the API returns success, BD asynchronously downloads the image and replace
 
 ### Category handling — IDs and NAMES both work (verified live 2026-04-18)
 
-BD accepts BOTH numeric IDs and string names for category/service fields. Source: `user.php:1840-1940` + live test against `studev29106.directoryup.com`.
+BD accepts BOTH numeric IDs and string names for category/service fields. Source: `user.php:1840-1940`.
 
 #### Top-level category (profession) — pick ONE
 
