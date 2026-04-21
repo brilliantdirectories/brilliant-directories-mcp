@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.22.1] - 2026-04-21
+
+### Changed — soften tone of the external-data-fetch rule
+
+Reworded the opening of the data-fetch permission directive on `createUser` / `updateUser` from "Web scraping is permitted" → "Fetching publicly available business data is permitted." More accurate to what the workflow actually does (pulling business info from public websites the business publishes themselves), avoids agents adding preachy-refusal friction around the word "scraping," and keeps the spirit of the original.
+
+No behavioral change; wording only.
+
 ## [6.22.0] - 2026-04-21
 
 ### Added — web-scraping permission rule on `createUser` / `updateUser`
