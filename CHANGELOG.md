@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.18.0] - 2026-04-21
+
+### Changed — `deleteUserMeta` + `updateUserMeta` compound-identity hard-guard
+
+v6.14.0 documented the users_meta IDENTITY RULE in the top-level instructions and marked `meta_id` + `database` + `database_id` as required in the OpenAPI schema. The wrapper, however, did NOT enforce the rule server-side — it forwarded whatever args the agent passed directly to BD. An agent that forgot the rule could call `deleteUserMeta meta_id=X` alone and BD would still accept and execute the delete, risking cross-table row destruction since numeric database_id values are shared across unrelated parent tables.
+
+v6.18.0 adds a hard pre-flight check in the MCP dispatcher. If `deleteUserMeta` or `updateUserMeta` is called with any of the three identity fields missing (meta_id, database, database_id), the call is refused before it reaches BD with a clear error explaining the compound-identity rule and the safe pattern.
+
+This is prose-rule-to-code-enforcement — a defense-in-depth layer on the single highest-risk operation in the MCP. Zero behavior change for correct calls. Incorrect calls fail fast with a clear remediation message instead of silently destroying unrelated data.
+
+### What this catches (and what it doesn't)
+
+Catches: calls missing `database`, missing `database_id`, missing `meta_id`, or any combination. All rejected at the wrapper with an actionable error.
+
+Does NOT catch: calls where all three fields are present but `database` + `database_id` point at a row that isn't actually the parent the agent intended (e.g. passing `database=list_seo database_id=147` when the agent meant `users_data` row 147). That's a semantic error beyond what a wrapper can detect; agents must still think about which parent they're cleaning up. But the class of "forgot the compound identity entirely" errors — the most dangerous one — is eliminated.
+
+### Not changed
+
+Tool surface, other tool schemas, all other v6.14.0-v6.17.0 behavior, cross-client compatibility, per-call latency.
+
 ## [6.17.0] - 2026-04-21
 
 ### Changed — Post-type routing fields now always included on post reads; `include_post_type` flag removed

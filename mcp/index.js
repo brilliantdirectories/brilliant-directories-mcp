@@ -1808,6 +1808,32 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
         }
       }
 
+      // v6.18.0 SAFETY GUARD: users_meta writes must pass compound identity.
+      // Protects against cross-table destruction - the same `database_id` belongs
+      // to UNRELATED rows on different parent tables. Acting on meta_id or
+      // database_id alone risks mutating/deleting an unrelated table's row.
+      if (name === "deleteUserMeta" || name === "updateUserMeta") {
+        const missing = [];
+        if (args.meta_id === undefined || args.meta_id === null || args.meta_id === "") {
+          missing.push("meta_id");
+        }
+        if (!args.database || typeof args.database !== "string" || args.database.trim() === "") {
+          missing.push("database");
+        }
+        if (args.database_id === undefined || args.database_id === null || args.database_id === "") {
+          missing.push("database_id");
+        }
+        if (missing.length > 0) {
+          return {
+            content: [{
+              type: "text",
+              text: `${name} SAFETY GUARD (v6.18.0): users_meta writes require ALL THREE of meta_id + database + database_id. Missing: ${missing.join(", ")}.\n\nWHY: users_meta rows share database_id values across unrelated tables. A numeric database_id may simultaneously be a WebPage's seo_id, a member's user_id, a post's post_id, AND a plan's subscription_id - all rows with the same ID on different tables. Acting without the full compound identity risks destroying unrelated resource metadata.\n\nSAFE PATTERN: always pass all three on every users_meta write. For orphan-cleanup after a parent delete, list by database_id then CLIENT-SIDE filter to rows where database matches the intended parent table, then delete each matching meta_id with all three fields.\n\nSee top-level users_meta IDENTITY RULE.`
+            }],
+            isError: true,
+          };
+        }
+      }
+
       // Build URL path with path params substituted
       let urlPath = toolDef.path;
       const queryParams = {};
