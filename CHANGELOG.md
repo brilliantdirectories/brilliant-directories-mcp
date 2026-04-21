@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.22] - 2026-04-20
+
+### Fixed — `@import` in `content_css` is NOT accepted (causes FOUC/CLS)
+
+Agents loading Google Fonts via `@import url('https://fonts.googleapis.com/...')` inside WebPage `content_css` caused flash-of-unstyled-content and cumulative layout shift — the page paints without the font, then shifts when the imported resource loads. Prior directive (brand-kit `font_rule`) actually recommended `@import` as the switch-font path, which was wrong.
+
+Corrected two places:
+
+- **Top-level WebPage CSS rule** — added absolute line: "NEVER use `@import` inside `content_css`. Not accepted. Load external stylesheets and Google Fonts in `content_head` as `<link rel=\"stylesheet\" href=\"...\">` tags, then use the font-family or class in `content_css`."
+- **Brand-kit `font_rule`** — flipped from "import via `@import url(...)` in the same CSS" to "load in `content_head` as a `<link>` tag."
+
+Consistent with existing sanitization rule (line 786) which already flagged `@import` as a CSS-injection pattern to reject. Previous directive contradicted itself — now aligned.
+
+Doc-only.
+
 ## [6.13.21] - 2026-04-20
 
 ### Fixed — Timestamp directive: full truth across all resources (100% live-verified)
