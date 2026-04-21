@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.22.2] - 2026-04-21
+
+### Changed — README polish
+
+- Renamed "Before you start — 3 things you need" → "⚠️ REQUIREMENTS — Before you start." Draws the eye on the key precondition block.
+- Reordered the 3 items: (1) Node.js → (2) BD site URL → (3) BD API key. URL comes before key since users often know their URL; the key step now links to the BD walkthrough at https://support.brilliantdirectories.com/support/solutions/articles/12000088768.
+- Promoted the Advanced Endpoints permissions warning out of a nested blockquote into a prominent "🚨 PERMISSIONS — DO NOT SKIP THIS" callout. This is the single most common reason new integrations hit 403s on writes; it was buried before.
+- Updated cross-reference anchors (`#before-you-start--3-things-you-need` → `#requirements--before-you-start`) in the ChatGPT Custom GPT and Cursor Directory sections.
+- Removed specific tool-count numbers ("175", "~175") in the ChatGPT docs; replaced with "100+" so the docs don't need a bump every time operations grow.
+
+Docs-only; no code/behavior change.
+
 ## [6.22.1] - 2026-04-21
 
 ### Changed — soften tone of the external-data-fetch rule
