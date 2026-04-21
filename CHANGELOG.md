@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.23] - 2026-04-20
+
+### Fixed — Timestamps: treat as REQUIRED on every update (live-confirmed no auto-populate)
+
+Ran a live write test on `updateWidget`: sent an update that omitted both timestamp fields, got back the unchanged baseline values from a month ago — confirming BD does NOT auto-populate on update. Directive now treats both fields as REQUIRED-by-convention even though the API doesn't enforce them, because the downstream cost of stale timestamps (misfiring cache invalidation, lying "recently updated" sorts, broken admin audit trails) is high.
+
+Also noted: the MCP wrapper's tool schema doesn't list `revision_timestamp`/`date_updated` explicitly, but the dispatcher forwards unlisted body params verbatim — so agents can send them and they reach BD.
+
+Directive now covers:
+- MUST-SET rule on every `update*` call
+- Verified formats for each field (revision_timestamp dashes+colons universal; date_updated is resource-dependent; date_added on users_meta is no-separators)
+- Which resources expose which fields (widgets + WebPages carry both; others carry revision_timestamp only)
+
+Doc-only.
+
 ## [6.13.22] - 2026-04-20
 
 ### Fixed — `@import` in `content_css` is NOT accepted (causes FOUC/CLS)
