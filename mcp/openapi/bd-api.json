@@ -937,7 +937,8 @@
             "type": "string"
           },
           "desc": {
-            "type": "string"
+            "type": "string",
+            "description": "Short internal description stored on the taxonomy row. NOT the field rendered on the public Sub-Category search-results page — most BD themes do not output this. For SEO copy on the category's search page (H1, intro paragraph, meta tags), create a WebPage with `seo_type=profile_search_results` and the matching slug instead. See `createWebPage` for the pattern."
           },
           "profession_id": {
             "type": "integer",
@@ -6650,7 +6651,8 @@
                     "description": "Parent category ID"
                   },
                   "desc": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Sub-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
                   },
                   "filename": {
                     "type": "string"
@@ -6712,7 +6714,8 @@
                     "type": "string"
                   },
                   "desc": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Sub-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
                   },
                   "profession_id": {
                     "type": "integer"
@@ -10033,7 +10036,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Long description / summary for the category."
+                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Top-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
                   },
                   "keywords": {
                     "type": "string",
@@ -10103,7 +10106,8 @@
                     "type": "string"
                   },
                   "desc": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Top-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
                   },
                   "keywords": {
                     "type": "string",

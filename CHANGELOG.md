@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.16] - 2026-04-20
+
+### Fixed — Category SEO content routes to a WebPage, not `desc`
+
+Agents asked to "create SEO content for these categories" were writing long H1/intro/meta copy into the Sub Category / Top Category `desc` field, which most BD themes do NOT render on the public search-results page. The content persisted to what is effectively a dead field while the live search pages stayed untouched.
+
+Added a routing rule to the top-level instructions and to all 5 `desc` field descriptions (createTopCategory, updateTopCategory, createSubCategory, updateSubCategory, shared Service schema):
+
+> "SEO content for a category" = create a WebPage with `seo_type=profile_search_results` and the matching slug. The category's own `desc` is a short internal label, not the public SEO surface. Route H1/intro/meta/long copy to the WebPage system.
+
+The full `profile_search_results` WebPage recipe (slug hierarchy, required defaults, auto-generated meta) was already in the directive — agents just weren't finding it from the category-update entry point. The new rule wires the intent directly to the right tool.
+
+Doc-only.
+
 ## [6.13.15] - 2026-04-20
 
 ### Fixed — Subagent-audit findings, surgical truth updates
