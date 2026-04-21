@@ -797,6 +797,13 @@ const WRITE_KEEP_SETS = {
   // Web pages
   createWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
   updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
+
+  // Widgets — full echo includes widget_data/widget_style/widget_javascript
+  // which can be 200KB+ on large widgets (e.g. Admin - Froala Editor Scripts
+  // is 204KB of widget_data alone). Strip the three heavy code fields and
+  // echo only identity + classification + timestamps + shortcode.
+  createWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
+  updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the
@@ -1415,6 +1422,15 @@ Asymmetry is normal - e.g. \`createUser\` may be enabled (it silently auto-creat
 
 Flag this as a BD platform gap when reporting the 403 to the site admin.`,
         ``,
+        `**4xx auto-recovery - on any 401 or 403, call \`verifyToken\` ONCE before giving up.** The response tells you what's actually wrong so you can give the user precise next steps instead of generic "it failed":
+
+- \`verifyToken\` returns \`status: success\` -> the key is valid, the 401/403 was endpoint-level. Tell the user the EXACT denied endpoint and ask them to enable it in BD Admin -> Developer Hub on the key. Do NOT substitute a different endpoint or retry the same one.
+- \`verifyToken\` returns an error -> the key itself is dead (revoked, rotated, deleted, typo in config). Tell the user to generate a new key (BD shows new keys once; there is no recovery path for the lost value) and update their client config.
+
+**Do NOT call \`verifyToken\` on 400 / 404 / 429 / 5xx** - those are payload / missing-record / rate-limit / server issues, not auth. Fix the payload (400), confirm the record ID exists (404), back off 60s+ (429), or retry later (5xx).
+
+**One \`verifyToken\` per failure, not a loop.** If the same tool 4xx's twice in a row after verifyToken confirmed the key, stop and report to the user - the endpoint is permanently denied on this key.`,
+        ``,
         `**Pagination (all \`list*\` / \`search*\` endpoints).**
 
 - \`limit\` = records per page, default 25, server-capped at 100. Values >100 silently clamped (verified: \`limit=150\` returned 100 rows + cursor).
@@ -1460,9 +1476,9 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 
 **users_meta writes are restricted to \`updateUserMeta\` / \`deleteUserMeta\`.** \`createUserMeta\` is NOT exposed as a tool - BD auto-seeds users_meta rows on every parent-record create (users, WebPages, post types, plans, etc.) for each EAV field the parent supports, so agents never need to manually create. If \`listUserMeta\` returns no row for a key you expected, that parent doesn't support that field - do NOT try to fabricate it.
 
-**Write responses are ALWAYS lean.** Every \`create*\` / \`update*\` across users, posts (single + multi), post types, top + sub categories, and web pages returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object. The \`include_*\` flags do NOT apply to write responses — they only work on \`get*\` / \`list*\` / \`search*\`. If you need the full record after a write, call the matching \`get*\` with whatever \`include_*\` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
+**Write responses are ALWAYS lean.** Every \`create*\` / \`update*\` across users, posts (single + multi), post types, top + sub categories, web pages, and widgets returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object, no raw widget_data/widget_style/widget_javascript. The \`include_*\` flags do NOT apply to write responses — they only work on \`get*\` / \`list*\` / \`search*\`. If you need the full record after a write, call the matching \`get*\` with whatever \`include_*\` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
 
-Other endpoints (leads, reviews, widgets, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
+Other endpoints (leads, reviews, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
 
 **Count-only idiom - use this for any "how many X" question:** call \`list*\` with \`limit=1\` and read \`total\` from the envelope. One tiny call, no records enumerated.
 

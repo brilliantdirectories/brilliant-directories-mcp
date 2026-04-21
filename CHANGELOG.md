@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.25.0] - 2026-04-21
+
+### Added — widgets now lean-echo on create/update (WRITE_KEEP_SETS)
+
+`createWidget` / `updateWidget` were not in the write-response lean-shaper list. On a site with large template widgets (Admin - Froala Editor Scripts is ~204KB of `widget_data`), every write echoed the full ~220KB record back for no reason — agents only need "did it land, what's its identity?" Added both to `WRITE_KEEP_SETS`.
+
+**Keep-set (7):** `widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`.
+
+Stripped on write echo: `widget_data`, `widget_style`, `widget_javascript` plus admin-form residue.
+
+**Measured impact:** `updateWidget` on widget_id=31 drops from ~219KB down to ~0.4KB. ~99.8% reduction, largest single-op win in the lean-shaping series.
+
+### Added — 4xx auto-recovery directive
+
+New paragraph in server instructions: on 401/403, agents call `verifyToken` once to distinguish revoked-key (regenerate in Developer Hub) from endpoint-permission-off (enable the specific endpoint on the key). Do NOT call `verifyToken` on 400 (payload), 404 (missing record), 429 (rate limit), or 5xx (server). Max one verify per failure — no retry loops. Gives users precise next steps instead of generic "it failed."
+
+### Added — smoke test with `prepublishOnly` hook
+
+New file: `mcp/__tests__/smoke.js`. Spawns the MCP over stdio, calls 8 lean-shaped `list*` endpoints, asserts row key counts stay under site-calibrated ceilings and that heavy fields (`content`, `password`, `services_schema`, `post_content`, `group_desc`, plan config fields, post-type code templates) never leak into baseline responses.
+
+Wired into `mcp/package.json` as `prepublishOnly` — `npm publish` auto-runs it and aborts publish on failure. Catches the exact class of regression the v6.24.0 MembershipPlans shaper-inversion bug was (9 keys → 168 keys would fail the assertion loudly).
+
+Requires `BD_API_KEY` + `BD_API_URL` env vars on the publish machine. Runs in ~7s.
+
+### Verified — 200KB widget byte-exact round-trip
+
+Live-tested widget_id=31 (Admin - Froala Editor Scripts, 204,267 chars of HTML/PHP/JS, 3,609 `\r\n` pairs). Appended a 34-char marker, PUT to `/api/v2/data_widgets/update`, GET-back, sha256 compared.
+
+- **Payload up:** 276KB urlencoded
+- **Round-trip time:** ~3.9s PUT + ~2.6s GET
+- **Integrity:** byte-exact match (sha256 identical), CRLF preserved, no stripping/truncation/charset mangling
+- **Revert:** clean, sha256 returned to original
+
+Confirms BD's `post_max_size=100M` + MCP forwarding layer handle 4k-line widgets with no special handling.
+
+### Verified — emoji + 4-byte UTF-8 round-trip
+
+Live-tested `updateUser` with `quote="Emoji test: 😀🚀❤️ / BMP: ✓★— / end"`. All three 4-byte emoji (U+1F600, U+1F680, U+2764 U+FE0F) plus BMP symbols stored byte-exact. No stripping, substitution, or entity-escape. No "no emoji" rule added to instructions — emoji work as of the test date on user-data tables.
+
 ## [6.24.1] - 2026-04-21
 
 ### Fixed — MembershipPlans lean-shape was inverted; now a proper keep-list
