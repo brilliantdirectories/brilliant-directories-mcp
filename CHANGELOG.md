@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.21.0] - 2026-04-21
+
+### Added — destructive-as-last-resort rule
+
+Universal directive applying to every resource family: `delete*` ops, cascade-wiping field changes (`profession_id` change on `updateUser`, `images_action=remove_*`, `credit_action=deduct/override`), bulk schema edits — all require EXPLICIT user request. Agents must not choose the destructive path because it "feels cleaner." "Fix these pages" / "make them better" / "improve" are update requests, not delete-and-recreate requests.
+
+Three-part rule embedded in the top-level instructions block:
+
+1. Never silent-destructive. When a record exists but is wrong, the fix is `update*`, not `delete*` + `create*`.
+2. If the user requests destruction explicitly, warn before firing. Quote what will be destroyed, tell the user it cannot be undone via the API, get explicit go-ahead.
+3. If `update*` genuinely cannot reach the target state (wrong `data_type` on a post BD won't change; structural change the resource doesn't support), explain why to the user, propose delete+recreate, get confirmation, warn about undoability, then execute.
+
+### Added — hero required as default on `profile_search_results` pages
+
+These SEO-override pages underperform as thin-content on Google. End-users typically don't know to ask for a hero. Codifying it as a default makes the pattern reliable.
+
+New required-default line on `createWebPage` / `updateWebPage` for `seo_type=profile_search_results` (unless user overrides):
+
+- `enable_hero_section=1` + content-relevant Pexels `hero_image` + the 6 readability safe-defaults from the existing hero rule (`rgb(255,255,255)` H1/H2, `rgb(0,0,0)` overlay at 0.5, 100/100 padding). All color fields RGB only; source image per the Pexels workflow; call `refreshSiteCache` after write (hero is cache-gated).
+
+User can opt out with `enable_hero_section=0`. Added to both the top-level MCP instructions block and the `createWebPage` operation description.
+
+### Polish
+
+- Corrected stale "across 3 resource families" → "5 resource families" in the row-weight section (stale since post types + web pages were added).
+- Scrubbed version references from a code header comment (per the "no versions in agent-visible text" rule; see CHANGELOG for history instead).
+- CHANGELOG footnote cleanup: v6.20.0 entry attributed Users lean-shaping to v6.14.0; actually v6.15.0.
+
 ## [6.20.0] - 2026-04-21
 
 ### Added — lean-by-default shaping on `listWebPages` and `getWebPage`
@@ -24,7 +52,7 @@ WebPages are the fifth resource family to get lean-shaping (after users, posts, 
 
 **Why:** on sites with heavy pages a single `list_seo` row routinely runs 10-30KB once code assets are populated. A `listWebPages limit=25` without shaping can exceed 500KB — enough to trigger context truncation on long agent workflows. Most WebPage tasks only need metadata (enumerate existing pages, check `filename` uniqueness, read hero config); asset content is only needed before `updateWebPage` edits body/CSS/JS.
 
-**Behavior parity:** matches the pattern established for Users (v6.14.0), Posts (v6.16.0), Categories (v6.16.0), and Post Types (v6.19.0). Same `applyXLean` + `X_READ_TOOLS` + dispatcher hook shape; same instruction-block pattern in the row-weight section. No new surface area, no breaking changes.
+**Behavior parity:** matches the pattern established for Users (v6.15.0), Posts (v6.16.0), Categories (v6.16.0), and Post Types (v6.19.0). Same `applyXLean` + `X_READ_TOOLS` + dispatcher hook shape; same instruction-block pattern in the row-weight section. No new surface area, no breaking changes.
 
 ### Code-level
 

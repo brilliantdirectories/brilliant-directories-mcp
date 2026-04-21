@@ -302,7 +302,7 @@ function resolveRef(spec, ref) {
 }
 
 // ---------------------------------------------------------------------------
-// Lean-response shapers (v6.15.0 users, v6.16.0 posts + categories)
+// Lean-response shapers (users, posts, categories, post types, web pages)
 //
 // Pattern: strip heavy nested buckets + debug residue by default; opt back in
 // per-call via include_* flags. Applied between BD response and agent return.
@@ -1084,6 +1084,8 @@ async function main() {
         ``,
         `**Every write goes to a live production site - there is no staging mode, no sandbox, no \`?dry_run=1\`.** Every create/update/delete takes effect immediately on the real public site. For bulk operations (many records, potentially destructive changes, schema-like edits) confirm intent with the user before executing.`,
         ``,
+        `**Destructive actions are LAST RESORT - only when the user explicitly asks OR when no non-destructive path exists.** When a record exists but is wrong - content thin, wrong fields set, missing sections, bad styling - the fix is \`update*\`, NOT \`delete*\` then \`create*\`. Deleting a record BD can't cascade (users_meta orphans after \`deleteWebPage\`, subscription history after \`deleteUser\`, member links after \`deleteSubCategory\`) destroys history (revision timestamps, audit trails, inbound links that 404) and creates cleanup work. Update preserves all of it.\n\n**Scope of "destructive":** any \`delete*\` op; any field that wipes related rows (\`profession_id\` change on \`updateUser\` wipes sub-category links; \`images_action=remove_*\`; \`credit_action=deduct/override\`); any bulk / schema-like edit with cascading effects.\n\n**Rule:**\n\n1. **Never silent-destructive.** Never choose the destructive path to make work feel cleaner. "Fix these pages" / "make them better" / "improve" / "clean up" are UPDATE requests, not delete-and-recreate requests.\n\n2. **User requested explicitly? Warn before firing.** Quote what will be destroyed, tell the user it cannot be undone via the API, and get explicit go-ahead. Example: "Deleting these 5 pages will also leave orphan users_meta rows that I'll need to clean up surgically after. This cannot be undone through the API. Confirm delete+cleanup, or would you rather I update them in place?"\n\n3. **Update genuinely cannot reach the target state?** Last-resort path: explain specifically what update can't do (wrong \`data_type\` on a post that BD won't change; structural change the resource doesn't support), propose delete+recreate, get confirmation, warn about undoability, THEN execute.\n\nAgents defaulting to delete+recreate because it "feels cleaner" is the failure mode this rule exists to prevent.`,
+        ``,
         `For business decisions (who, what, when, tone, scope), ask only what you need to proceed, then execute.`,
         ``,
         `Chain or run multiple tools to compile the data points needed. Most real tasks need more than one call - e.g., creating a member with a scraped logo: \`listMembershipPlans\` (pick plan) -> \`createUser\` (with \`profession_name\`, \`services\`, \`logo\` URL, \`auto_image_import=1\`). Writing a blog post authored by a member: \`listUsers\` (find author) -> \`listPostTypes\` (find blog type, read its \`data_type\`) -> \`createSingleImagePost\`.`,
@@ -1276,7 +1278,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`per_page\` is silently ignored.
 - When \`page\` is sent, \`limit\` is IGNORED (size is baked into the token). To change page size, start over with \`limit=N\` and no \`page\`.
 
-**Row weight - lean-by-default with opt-in \`include_*\` flags** across 3 resource families. Only opt in when the task actually needs that nested data.
+**Row weight - lean-by-default with opt-in \`include_*\` flags** across 5 resource families. Only opt in when the task actually needs that nested data.
 
 **Users** (\`listUsers\` / \`getUser\` / \`searchUsers\`, ~2KB lean row): core columns + \`revenue\` + \`image_main_file\` + \`filename_hidden\` + \`total_clicks\` + \`total_photos\` always returned. Flags:
 
@@ -1547,6 +1549,7 @@ Before create, check existence: \`listWebPages property=filename property_value=
 - \`menu_layout=3\` (Left Slim)
 - \`date_updated=<current YYYYMMDDHHmmss timestamp>\` - BD does NOT auto-populate; always set to now on every write
 - \`updated_by\` (optional audit label like "AI Agent" or "API")
+- \`enable_hero_section=1\` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply the readability safe-defaults per the hero rule: \`h1_font_color="rgb(255,255,255)"\`, \`h2_font_color="rgb(255,255,255)"\`, \`hero_content_overlay_color="rgb(0,0,0)"\`, \`hero_content_overlay_opacity="0.5"\`, \`hero_top_padding="100"\`, \`hero_bottom_padding="100"\`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set \`hero_image\` to the chosen URL. Call \`refreshSiteCache\` after the write - hero is cache-gated. User can opt out with \`enable_hero_section=0\` if they prefer a plain page.
 
 **Auto-generate SEO meta for the specific location+category combo** using human names (not slugs) with natural "[city] [category]" / "in [location]" phrasing:
 
