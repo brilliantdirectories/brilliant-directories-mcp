@@ -1445,7 +1445,7 @@ Applies to BOTH \`content\` and \`profile_search_results\` page types.
 
 **Do NOT re-apply defaults on updates that don't touch \`enable_hero_section\`.** If the hero is already on and the user is tweaking a single hero field, respect their existing color/overlay/padding values. Only the field(s) they explicitly asked about should change.
 
-**Hero + first-section BG-color gap fix:** if the hero is enabled AND the first content section has any background color, BD inserts a ~40px white gap between them. Add \`.hero_section_container + div.clearfix-lg {display:none}\` to \`content_css\` to close the gap. Safe to include whenever hero is enabled and the page's first section has a colored background.
+**Hero + first-section BG-color gap fix (\`seo_type=content\` ONLY):** when hero is enabled AND the first content section has a background color, BD inserts a ~40px white gap between them. Add \`.hero_section_container + div.clearfix-lg {display:none}\` to \`content_css\` to close the gap. **Do NOT add this rule on \`profile_search_results\` or \`data_category\` pages** - on those, the live search-results block renders directly after the hero and the clearfix provides necessary spacing; hiding it makes results butt-join the hero with no breathing room.
 
 **Cache refresh required on hero create/update:** after ANY \`createWebPage\` / \`updateWebPage\` that touches \`enable_hero_section\` or any \`hero_*\` / \`h1_font_*\` / \`h2_font_*\` field, call \`refreshSiteCache\` immediately - hero changes are cached and won't reflect publicly until refreshed.`,
         ``,

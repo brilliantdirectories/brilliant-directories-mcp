@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.21.1] - 2026-04-21
+
+### Fixed — scoped the hero-gap-fix CSS rule to `content` pages only
+
+The `.hero_section_container + div.clearfix-lg {display:none}` snippet that closes BD's 40px white gap between a hero and a colored first-section was previously advised as "safe to include whenever hero is enabled." On `profile_search_results` and `data_category` pages that's wrong — the clearfix provides necessary spacing between the hero and the live search-results block; hiding it makes results butt-join the hero with no breathing room.
+
+Rule corrected in three places:
+
+- Top-level MCP instructions block (hero-defaults section)
+- `createWebPage` OpenAPI description (hero sub-section)
+- `updateWebPage` OpenAPI description (hero-edit sub-section)
+
+All three now explicitly say: the gap-fix rule applies to `seo_type=content` pages only; NOT on `profile_search_results` / `data_category`.
+
 ## [6.21.0] - 2026-04-21
 
 ### Added — destructive-as-last-resort rule
