@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.20.0] - 2026-04-21
+
+### Added — lean-by-default shaping on `listWebPages` and `getWebPage`
+
+WebPages are the fifth resource family to get lean-shaping (after users, posts, categories, post types). Heavy asset fields are now stripped by default; agents opt in when they need them.
+
+**Always returned:** all structural + metadata fields — `seo_id`, `seo_type`, `filename`, `title`, `meta_desc`, `meta_keywords`, `h1`, `h2`, `content_active`, `content_layout`, `form_name`, `menu_layout`, `enable_hero_section`, every `hero_*` field, etc.
+
+**Stripped by default:** `content` (body HTML), `content_css`, `content_head`, `content_footer_html`.
+
+**Opt-in flags:**
+
+- `include_content=1` — restores `content` body HTML.
+- `include_code=1` — restores `content_css`, `content_head`, `content_footer_html`.
+
+**Why:** on sites with heavy pages a single `list_seo` row routinely runs 10-30KB once code assets are populated. A `listWebPages limit=25` without shaping can exceed 500KB — enough to trigger context truncation on long agent workflows. Most WebPage tasks only need metadata (enumerate existing pages, check `filename` uniqueness, read hero config); asset content is only needed before `updateWebPage` edits body/CSS/JS.
+
+**Behavior parity:** matches the pattern established for Users (v6.14.0), Posts (v6.16.0), Categories (v6.16.0), and Post Types (v6.19.0). Same `applyXLean` + `X_READ_TOOLS` + dispatcher hook shape; same instruction-block pattern in the row-weight section. No new surface area, no breaking changes.
+
+### Code-level
+
+- New: `applyWebPageLean(body, includeFlags)` in `mcp/index.js`
+- New: `WEB_PAGE_READ_TOOLS` set (`listWebPages`, `getWebPage`)
+- New: `WEB_PAGE_LEAN_INCLUDE_FLAGS` (`include_content`, `include_code`)
+- New: `WEB_PAGE_CODE_BUNDLE` (the 3 stripped code fields)
+- Wired into existing dispatcher lean-flag extraction and response-shaping ladder
+- `openapi/bd-api.json`: added `include_content` + `include_code` params to `listWebPages` and `getWebPage`; extended operation descriptions to document the lean shape
+
+### Not touched
+
+Tool surface unchanged (173 tools, identical names/schemas/enums/requireds). `createWebPage`, `updateWebPage`, `deleteWebPage` write paths unchanged. `searchWebPages` does not exist as an operation — no change needed there.
+
 ## [6.19.1] - 2026-04-21
 
 ### Changed — scrub internal test-site references from public docs

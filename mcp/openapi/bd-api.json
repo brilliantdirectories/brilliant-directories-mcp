@@ -8746,7 +8746,7 @@
       "get": {
         "operationId": "listWebPages",
         "summary": "List pages (list_seo)",
-        "description": "Paginated enumeration of web pages (`list_seo` records). Read-only.\n\nReturns every static/SEO page on the site - homepage, about, contact, custom landing pages, templates, etc. Filter by `seo_type` to get pages of a specific type (e.g., only `content` pages).\n\n**Use when:** listing all site pages (homepage, about, contact, landing, templates). Filter by `seo_type` to scope (e.g., `content` for custom landing pages). For one page by `seo_id` use `getWebPage`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getWebPage` (single by ID), `createWebPage` (new page), `updateWebPage`.\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`. Each record has `seo_id`, `seo_type`, `filename`, `title`, `meta_desc`, `content`, `content_active`, plus all other page fields.\n\n",
+        "description": "Paginated enumeration of web pages (`list_seo` records). Read-only.\n\nReturns every static/SEO page on the site - homepage, about, contact, custom landing pages, templates, etc. Filter by `seo_type` to get pages of a specific type (e.g., only `content` pages).\n\n**Use when:** listing all site pages. Filter by `seo_type` to scope. For one page by `seo_id` use `getWebPage`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule.\n\n**Lean-by-default:** heavy asset fields stripped unless opted in. Structural + metadata fields always returned (`seo_id`, `seo_type`, `filename`, `title`, `meta_desc`, `meta_keywords`, `h1`, `h2`, `content_active`, `content_layout`, `form_name`, `menu_layout`, `enable_hero_section`, all `hero_*` fields, etc.). Flags:\n\n- `include_content=1` - return `content` (body HTML).\n- `include_code=1` - return `content_css`, `content_head`, `content_footer_html`.\n\nOn sites with heavy pages, a single row can be 10-30KB with code assets; `listWebPages limit=25` without stripping can exceed 500KB. Opt in only when you actually need the asset content (e.g. before `updateWebPage` edits to body/CSS/JS).\n\n**See also:** `getWebPage` (single by ID), `createWebPage`, `updateWebPage`.\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`.",
         "tags": [
           "Pages"
         ],
@@ -8756,6 +8756,18 @@
           },
           {
             "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "include_content",
+            "in": "query",
+            "description": "Opt in to return the `content` (body HTML) field on each row. Default stripped.",
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "include_code",
+            "in": "query",
+            "description": "Opt in to return `content_css`, `content_head`, `content_footer_html` on each row. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
+            "schema": { "type": "boolean", "default": false }
           }
         ],
         "responses": {
@@ -8788,6 +8800,18 @@
               "type": "integer"
             },
             "description": "Page primary key"
+          },
+          {
+            "name": "include_content",
+            "in": "query",
+            "description": "Opt in to return the `content` (body HTML) field. Default stripped.",
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "include_code",
+            "in": "query",
+            "description": "Opt in to return `content_css`, `content_head`, `content_footer_html`. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
+            "schema": { "type": "boolean", "default": false }
           }
         ],
         "responses": {
@@ -8802,7 +8826,7 @@
             }
           }
         },
-        "description": "Fetch a single web page by `seo_id`. Read-only.\n\n**Use when:** fetching one page's full content + metadata. Common for \"let me read the current About page before editing it\" workflows.\n\n**Required:** `seo_id` (path).\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`.\n\n"
+        "description": "Fetch a single web page by `seo_id`. Read-only.\n\n**Use when:** fetching one page's metadata (+ optionally its body/CSS/JS) before editing. Common for \"let me read the current About page before editing it\" workflows.\n\n**Required:** `seo_id` (path).\n\n**Lean-by-default:** same as `listWebPages` - heavy asset fields stripped unless opted in. Structural + metadata fields always returned. Flags:\n\n- `include_content=1` - return `content` (body HTML).\n- `include_code=1` - return `content_css`, `content_head`, `content_footer_html`.\n\nBefore `updateWebPage` edits to body, CSS, head, or footer HTML/JS, pass the matching flag so you have the current value to modify.\n\n**See also:** `listWebPages` (enumerate), `updateWebPage` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`."
       }
     },
     "/api/v2/list_seo/create": {

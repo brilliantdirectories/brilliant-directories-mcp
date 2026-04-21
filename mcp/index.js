@@ -642,6 +642,47 @@ function applyPostTypeLean(body, includeFlags) {
 
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 
+// --- v6.20.0 WEB PAGES (list/get list_seo) --------------------------------
+//
+// Page rows carry heavy asset fields: `content` (body HTML), `content_css`,
+// `content_head`, `content_footer_html`. On sites with big pages this trivially
+// pushes rows into the 10-30KB range; a `listWebPages limit=25` blows context.
+// Most agent tasks routing through WebPages only need structural/meta fields;
+// code assets opt in per-request.
+
+const WEB_PAGE_LEAN_INCLUDE_FLAGS = [
+  "include_content",
+  "include_code",
+];
+
+const WEB_PAGE_CODE_BUNDLE = [
+  "content_css",
+  "content_head",
+  "content_footer_html",
+];
+
+function applyWebPageLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    content: !!includeFlags.include_content,
+    code: !!includeFlags.include_code,
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (!include.content) delete row.content;
+    if (!include.code) stripKeys(row, WEB_PAGE_CODE_BUNDLE);
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -1266,6 +1307,11 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`include_post_comment_settings=1\` - restores \`post_comment_settings\` JSON.
 - \`include_review_notifications=1\` - restores the 5 review-notification email template fields.
 
+**Web pages** (\`listWebPages\` / \`getWebPage\`): all structural + metadata fields always returned (seo_id, seo_type, filename, title, meta_desc, meta_keywords, h1/h2, content_active, content_layout, form_name, menu_layout, enable_hero_section, all hero_* fields, etc.). Strips: \`content\` (body HTML), \`content_css\`, \`content_head\`, \`content_footer_html\`. On heavy-content sites a row can be 10-30KB with code assets; opt in only when editing asset content. Flags:
+
+- \`include_content=1\` - restores \`content\` (body HTML).
+- \`include_code=1\` - restores \`content_css\`, \`content_head\`, \`content_footer_html\`. Needed before \`updateWebPage\` edits to CSS/head/footer JS so you have the current value to modify.
+
 **users_meta writes are restricted to \`updateUserMeta\` / \`deleteUserMeta\`.** \`createUserMeta\` is NOT exposed as a tool - BD auto-seeds users_meta rows on every parent-record create (users, WebPages, post types, plans, etc.) for each EAV field the parent supports, so agents never need to manually create. If \`listUserMeta\` returns no row for a key you expected, that parent doesn't support that field - do NOT try to fabricate it.
 
 Other endpoints (leads, reviews, widgets, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
@@ -1875,6 +1921,7 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
       const isPostReadTool = POST_READ_TOOLS.has(name);
       const isCategoryReadTool = CATEGORY_READ_TOOLS.has(name);
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
+      const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
@@ -1883,7 +1930,9 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
             ? CATEGORY_LEAN_INCLUDE_FLAGS
             : isPostTypeReadTool
               ? POST_TYPE_LEAN_INCLUDE_FLAGS
-              : null;
+              : isWebPageReadTool
+                ? WEB_PAGE_LEAN_INCLUDE_FLAGS
+                : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -1973,12 +2022,13 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
 
-      // Apply lean-response shaping per resource family (v6.15 users, v6.16 posts+cats, v6.19 post-types)
+      // Apply lean-response shaping per resource family (v6.15 users, v6.16 posts+cats, v6.19 post-types, v6.20 web pages)
       if (result.body) {
         if (isUserReadTool) result.body = applyUserLean(result.body, includeFlags);
         else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags);
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
+        else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
       }
 
       // Surface rate-limit errors with actionable guidance for the agent
