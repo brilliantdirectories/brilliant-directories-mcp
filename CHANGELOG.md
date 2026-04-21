@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.21] - 2026-04-20
+
+### Fixed — Timestamp directive: full truth across all resources (100% live-verified)
+
+v6.13.20 covered `revision_timestamp` correctly but missed nuance that live-probing surfaced. Ran 9 parallel GETs against the live demo site and mapped every timestamp field's actual format.
+
+**Verified live (2026-04-20):**
+
+- **`revision_timestamp`** — UNIVERSAL format across every resource that carries it: `YYYY-MM-DD HH:mm:ss` (dashes + colons). Confirmed on widgets, forms, email templates, top categories, sub-categories, post types, membership plans, users_meta, AND list_seo WebPages. Zero exceptions across 9 resources.
+- **`date_updated`** — format is RESOURCE-DEPENDENT. Widgets: `YYYY-MM-DD HH:mm:ss` (dashes + colons). list_seo WebPages: `YYYYMMDDHHmmss` (NO separators). Same field name, different format.
+- **`date_added`** on users_meta — `YYYYMMDDHHmmss` (no separators). Third timestamp field agents might encounter.
+
+**Corrections to v6.13.20:**
+
+- v6.13.20 didn't call out that `list_seo` WebPages carry BOTH fields (`revision_timestamp` AND `date_updated`) in DIFFERENT formats on the same row. Now explicit.
+- v6.13.20 didn't cover widgets' dual-timestamp pattern (both `revision_timestamp` and `date_updated`, both in the dashes-and-colons format). Now explicit.
+- v6.13.20 hinted `list_seo.date_updated` was in the old no-separator format based on the existing directive but never re-verified — this pass confirmed it IS still `YYYYMMDDHHmmss` on list_seo.
+
+Rule: on every `update*` call, set the current time in whichever timestamp fields that resource exposes, using the format observed on GET. Never guess format from field name alone.
+
+Doc-only.
+
 ## [6.13.20] - 2026-04-20
 
 ### Fixed — `revision_timestamp` must be set on every update (BD does NOT auto-populate)
