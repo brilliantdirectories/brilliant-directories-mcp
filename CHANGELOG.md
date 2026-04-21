@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.18.1] - 2026-04-21
+
+### Fixed — users_meta safety guard hardening (subagent-audit findings)
+
+v6.18.0 added a hard pre-flight check on `deleteUserMeta` and `updateUserMeta`. A 3-agent subagent audit found four gaps:
+
+1. **CRITICAL — `createUserMeta` was not guarded.** An agent writing a new meta row with the wrong `(database, database_id)` could corrupt an unrelated parent table's EAV space. Same threat class as update/delete; v6.18.0 only addressed the two it explicitly named. v6.18.1 extends the guard to `createUserMeta` (requires `database` + `database_id`; `meta_id` not required since BD assigns it).
+
+2. **CONCERNING — `args === undefined` threw a raw TypeError** when MCP delivered a tool call with absent `arguments`. Guard now safely normalizes non-object args to `{}` and returns the actionable guard message instead of a crash.
+
+3. **CONCERNING — `meta_id=0` and `database_id=0` (numeric or string "0") passed the guard.** BD AUTO_INCREMENT IDs start at 1; zero is functionally invalid. Guard now explicitly rejects zero values and names them in the error message.
+
+4. **MINOR — case-sensitive tool name match.** Guard now lowercases the tool name before comparison; defense-in-depth against any client normalization or spec drift.
+
+### What this does NOT change
+
+- Tool surface, schemas, all other v6.14.0-v6.18.0 behavior.
+- Correct calls with all identity fields present: zero behavior change, zero latency change.
+
 ## [6.18.0] - 2026-04-21
 
 ### Changed — `deleteUserMeta` + `updateUserMeta` compound-identity hard-guard

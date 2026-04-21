@@ -1808,26 +1808,52 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
         }
       }
 
-      // v6.18.0 SAFETY GUARD: users_meta writes must pass compound identity.
-      // Protects against cross-table destruction - the same `database_id` belongs
-      // to UNRELATED rows on different parent tables. Acting on meta_id or
-      // database_id alone risks mutating/deleting an unrelated table's row.
-      if (name === "deleteUserMeta" || name === "updateUserMeta") {
+      // v6.18.0/6.18.1 SAFETY GUARD: users_meta writes must pass compound identity.
+      // Protects against cross-table destruction/corruption - the same `database_id`
+      // belongs to UNRELATED rows on different parent tables. Acting on meta_id or
+      // database_id alone risks mutating/deleting/corrupting an unrelated table.
+      //
+      // v6.18.1 hardening:
+      //   - Case-insensitive tool name match (defense-in-depth)
+      //   - createUserMeta included (same corruption risk as update)
+      //   - Safely handle undefined/non-object args (no TypeError)
+      //   - Reject numeric/string zero for meta_id + database_id (BD AUTO_INCREMENT starts at 1)
+      const lname = typeof name === "string" ? name.toLowerCase() : "";
+      const isUsersMetaWrite =
+        lname === "deleteusermeta" ||
+        lname === "updateusermeta" ||
+        lname === "createusermeta";
+      if (isUsersMetaWrite) {
+        const a = (args && typeof args === "object") ? args : {};
+        const isCreate = lname === "createusermeta";
         const missing = [];
-        if (args.meta_id === undefined || args.meta_id === null || args.meta_id === "") {
-          missing.push("meta_id");
+        const invalid = [];
+        // meta_id required only for update/delete; createUserMeta assigns it.
+        if (!isCreate) {
+          if (a.meta_id === undefined || a.meta_id === null || a.meta_id === "") {
+            missing.push("meta_id");
+          } else if (a.meta_id === 0 || a.meta_id === "0") {
+            invalid.push("meta_id (zero is not a valid row id; BD auto-increment starts at 1)");
+          }
         }
-        if (!args.database || typeof args.database !== "string" || args.database.trim() === "") {
+        // database required always. Must be non-empty string.
+        if (!a.database || typeof a.database !== "string" || a.database.trim() === "") {
           missing.push("database");
         }
-        if (args.database_id === undefined || args.database_id === null || args.database_id === "") {
+        // database_id required always. Reject zero.
+        if (a.database_id === undefined || a.database_id === null || a.database_id === "") {
           missing.push("database_id");
+        } else if (a.database_id === 0 || a.database_id === "0") {
+          invalid.push("database_id (zero is not a valid parent row id)");
         }
-        if (missing.length > 0) {
+        if (missing.length > 0 || invalid.length > 0) {
+          const parts = [];
+          if (missing.length > 0) parts.push(`Missing: ${missing.join(", ")}`);
+          if (invalid.length > 0) parts.push(`Invalid: ${invalid.join("; ")}`);
           return {
             content: [{
               type: "text",
-              text: `${name} SAFETY GUARD (v6.18.0): users_meta writes require ALL THREE of meta_id + database + database_id. Missing: ${missing.join(", ")}.\n\nWHY: users_meta rows share database_id values across unrelated tables. A numeric database_id may simultaneously be a WebPage's seo_id, a member's user_id, a post's post_id, AND a plan's subscription_id - all rows with the same ID on different tables. Acting without the full compound identity risks destroying unrelated resource metadata.\n\nSAFE PATTERN: always pass all three on every users_meta write. For orphan-cleanup after a parent delete, list by database_id then CLIENT-SIDE filter to rows where database matches the intended parent table, then delete each matching meta_id with all three fields.\n\nSee top-level users_meta IDENTITY RULE.`
+              text: `${name} SAFETY GUARD (v6.18.1): users_meta writes require compound identity (${isCreate ? "database + database_id" : "meta_id + database + database_id"}). ${parts.join(". ")}.\n\nWHY: users_meta rows share database_id values across unrelated tables. A numeric database_id may simultaneously be a WebPage's seo_id, a member's user_id, a post's post_id, AND a plan's subscription_id - all rows with the same ID on different tables. Acting without the full compound identity risks destroying (delete) or corrupting (update/create) unrelated resource metadata on the WRONG parent table.\n\nSAFE PATTERN: always pass the full compound identity on every users_meta write. For orphan-cleanup after a parent delete, list by database_id then CLIENT-SIDE filter to rows where database matches the intended parent table, then delete each matching meta_id with all three fields.\n\nSee top-level users_meta IDENTITY RULE.`
             }],
             isError: true,
           };
