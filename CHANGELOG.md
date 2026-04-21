@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.14.0] - 2026-04-21
+
+### Changed — Token-efficiency pass across instructions, operations, and field descriptions
+
+Sustained multi-phase effort to reduce session-start token cost while strengthening behavioral rules. No tool-surface changes. Every behavioral rule agents rely on is preserved or strengthened. Tool count, operationIds, required fields, and enum values are unchanged.
+
+**Phase 2.1 — response-description cleanup (`openapi/bd-api.json`):**
+Minimized 2xx response description boilerplate to a uniform `"Success"` across all operations. The response prose is not shipped to the AI via `tools/list` but inflates the source file; keeping it minimal improves repo-hygiene and future audits. Zero AI-facing change.
+
+**Phase 1.5 — operation + field description rewrite (all 174 tools, 5 waves):**
+Rewrote every tool's `summary` / `description` and every field's `description` into a directive, bullet-friendly format. Dedup'd cross-tool boilerplate (pagination, filter-property hints, users_meta compound identity, schema-is-documentation rule) into named blocks referenced by tool descriptions rather than repeated per-op. Restored specific field-level filter hints that a deduplication pass earlier dropped. Emoji-scrubbed the spec per house convention (BD DB is `utf8` 3-byte, not `utf8mb4`). Multi-byte ASCII substitution pass (em-dash → hyphen, smart-quote → ASCII) for byte savings with zero meaning change. Markdown-hygiene pass added blank lines before bullet lists so LLM tokenizers read them as structured content.
+
+**Phase 1 — instructions block rewrite (`mcp/index.js` top-level `instructions` array, 27 paragraphs):**
+Restructured the 27 heaviest / densest / safety-critical paragraphs of the session-start instructions into proper markdown: bold section leads, bulleted lists, numbered workflow steps. Each rewrite validated by 4 parallel subagent audits — strict rule preservation, adversarial agent-failure-mode hunting, 8-axis quality scoring, cross-spec consistency against the OpenAPI spec. 99 of 99 audits returned SAFE. Adversarial-audit findings were tightened in-place:
+
+- `createUser` duplicate-email pre-check scoped to `allow_duplicate_member_emails=1` only.
+- users_meta IDENTITY RULE promoted to canonical and referenced tri-scope (read/update/delete) from the orphan-cleanup paragraph, so agents landing on the cleanup rule alone still see the compound-identity warning.
+- Duplicate silent-accept pair/composite filter-find merged as sub-bullet of step 1 so linear-step execution cannot skip the client-side intersect.
+- Concrete "even low IDs like `1` routinely return hundreds of cross-table rows" warning restored after initial pass dropped it.
+- `content_footer` enum entries now include behavioral explanations (`"members_only"` = login wall, `"digital_products"` = buyer gate) not just the enum values.
+- `data_type=10` (Member Listings) split out of the admin-internal cheatsheet bucket — explicitly marked editable via `updatePostType`, consistent with the Member Listings rule elsewhere.
+
+Paragraphs rewritten by original idx in the array: 10, 12, 35, 37, 39, 41, 43, 45, 47, 49, 51, 55, 61, 65, 69, 71, 73, 75, 77, 79, 81, 102, 110, 112, 116, 118, 122.
+
+### What this changes for agents
+
+- Rules render as markdown (bullets, numbered steps, bold section leads) instead of inline prose walls — LLMs tokenize them as structured content.
+- Every field name, tool name, enum value wrapped in inline backticks consistently.
+- Safety warnings (NEVER / CRITICAL / SURGICAL / "Do NOT") on their own visual lines instead of buried mid-paragraph.
+- Rules citeable by named section ("the Count-only idiom", "the EAV field list", "the Required defaults block", "the users_meta IDENTITY RULE", "Group 1 triplet").
+- Cross-paragraph dedup via named back-references instead of verbatim repetition.
+- Tool descriptions and field descriptions across all 174 operations now match the same directive + bullet + inline-code house style as the instructions block.
+
+### What this does NOT change
+
+- Tool surface: still 173 OpenAPI operations + 1 synthetic helper = 174 tools.
+- Tool schemas, operationIds, required fields, enum values: unchanged.
+- Cross-client compatibility: still works on Claude, Cursor, ChatGPT Apps. No client-specific features.
+- Per-call latency: unchanged (same tool count, same schemas).
+- Behavioral rules: every rule agents rely on is preserved or strengthened. No rule dropped.
+
+### Measured size impact (AI-facing, vs `backup/openapi-pre-trim-2026-04-20` baseline)
+
+- `mcp/index.js` (instructions block): 104,102 B → 102,786 B (−1,316 B, −1.3%)
+- `openapi/bd-api.json`: 634,212 B → 571,402 B (−62,810 B, −9.9%)
+- `mcp/openapi/bd-api.json` (sync target): 634,212 B → 571,402 B (kept byte-identical to source)
+- Combined AI-facing session-start (counting source + shipped once): 738,314 B → 674,188 B (−64,126 B, −8.7%)
+- Approximate token savings per session: ~16,000 tokens
+
+### What we did NOT ship in 6.14.0 (explicit non-goals deferred)
+
+- Tool-surface reduction (174 → ~15 parent routers). Deferred until measured agent-confusion data. Real session-start savings (~40-55 KB) but costs every call.
+- Tool-pair merges (single-image + multi-image post pairs → one `createPost`).
+- Thin get/delete consolidation into generic routers.
+- Tool search / `defer_loading: true` (ChatGPT-only; rejected for cross-client parity).
+- JSON minification of the OpenAPI spec (hurts review, zero AI benefit — MCP reshapes at runtime).
+- Aggressive trimming past the behavioral-preservation bar. If a rule served any agent-behavior purpose, it stayed.
+- 20-task A/B regression audit. The 99 per-paragraph subagent audits (preservation + adversarial + quality + cross-spec) were used instead. Post-ship runtime issues will be triaged as observed.
+
+### Validation
+
+- 27 instructions-block rewrites × up to 4 audits each = 99 subagent audits. All SAFE.
+- Each rewrite installed via surgical string-replacement in `mcp/index.js` to preserve the rest of the file byte-for-byte.
+- `node --check mcp/index.js` passed after every install.
+- No tool schema, operationId, enum, or required-field touched.
+- `openapi/bd-api.json` and `mcp/openapi/bd-api.json` synced and byte-identical.
+
 ## [6.13.23] - 2026-04-20
 
 ### Fixed — Timestamps: treat as REQUIRED on every update (live-confirmed no auto-populate)
