@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.21.2] - 2026-04-21
+
+### Changed — simplify hero gap-fix rule to page-type-scoped, nothing else
+
+The `.hero_section_container + div.clearfix-lg {display:none}` CSS rule is now scoped by page type only: add on `seo_type=content` pages with hero; never on any other page type. Dropped the prior nuance about "first content section has a background color" — that was adding cognitive overhead without improving accuracy.
+
+Stress-test with a blind agent on v6.21.1 got this inverted (included the rule on `profile_search_results`, omitted on `content`). Tighter wording should fix the ambiguity.
+
+Three places updated identically: top-level instructions block, `createWebPage` description, `updateWebPage` description.
+
 ## [6.21.1] - 2026-04-21
 
 ### Fixed — scoped the hero-gap-fix CSS rule to `content` pages only
