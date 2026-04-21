@@ -1520,7 +1520,7 @@ The error envelope \`{status: "error", message: "<X> not found", total: 0}\` fir
 - \`in\` — OR-on-values for ONE field, comma-separated. Unmatched values silently skipped; matched ones return. \`property=first_name&property_value=Sample,Michael&property_operator=in\`
 - \`not_in\` — inverse of \`in\`. \`property=post_status&property_value=0,1&property_operator=not_in\`
 - \`LIKE\` — with \`%\` wildcards or without. \`property=first_name&property_value=Samp%&property_operator=LIKE\` (without wildcards acts as \`=\`)
-- **Multi-condition AND via array syntax** — stack conditions, all must match. Index-aligned. \`property[]=first_name&property_value[]=Jason&property_operator[]==&property[]=city&property_value[]=Los Angeles&property_operator[]==\`
+- **Multi-condition AND via array syntax** — stack ANY combination of the operators above, all AND'd together. Index-aligned: \`property[i]\` + \`property_value[i]\` + \`property_operator[i]\` form one condition. Mix operators freely — e.g. \`first_name LIKE 'Sa%' AND active = 2\` becomes \`property[]=first_name&property_value[]=Sa%&property_operator[]=LIKE&property[]=active&property_value[]=2&property_operator[]==\`. Add a 3rd, 4th, 5th condition with more \`[]\` trios. URL-encode reserved chars (\`%\` → \`%25\`, space → \`%20\` or \`+\`) at send time.
 - **Zero-sentinel** on integer foreign keys — \`property=profession_id&property_value=0&property_operator==\` returns rows with unset FK.
 
 **Not supported (HTTP 400 today) or broken:**
@@ -1652,9 +1652,9 @@ Applies to BOTH \`content\` and \`profile_search_results\` page types.
 
 **Safety rules (read, update, especially DELETE):**
 
-- **ALWAYS** filter/match on BOTH \`database\` AND \`database_id\` together - never \`database_id\` alone.
+- **ALWAYS** filter/match on BOTH \`database\` AND \`database_id\` together via server-side multi-condition array syntax — never \`database_id\` alone. Shape: \`property[]=database&property_value[]=<parent_table>&property_operator[]==&property[]=database_id&property_value[]=<parent_id>&property_operator[]==\`. Add a \`key\` triple for a specific field. One call, exact scope, no cross-table noise.
 - **NEVER** loop-delete by \`database_id\` alone - this WILL delete unrelated records on other tables.
-- When the MCP list tool doesn't expose array-syntax multi-filter, list by whichever single field narrows hardest (usually \`database_id\`), then CLIENT-SIDE filter results by \`database\` match before acting.
+- If a single-field query is ever unavoidable, CLIENT-SIDE filter results by \`database\` match before acting — belt-and-suspenders for the destructive path.
 
 A single mistake here can cascade-destroy member data, plan metadata, and page settings that happen to share the same ID across unrelated tables.`,
         ``,
@@ -1671,7 +1671,7 @@ A single mistake here can cascade-destroy member data, plan metadata, and page s
 
 **Update workflow for each EAV field:**
 
-1. \`listUserMeta\` with filter \`database=list_seo\`, \`database_id=<seo_id>\`, \`key=<field>\` to find the existing \`meta_id\`.
+1. \`listUserMeta\` with compound filter — send all three conditions server-side in one call: \`property[]=database&property_value[]=list_seo&property_operator[]==&property[]=database_id&property_value[]=<seo_id>&property_operator[]==&property[]=key&property_value[]=<field>&property_operator[]==\`. Returns the existing \`meta_id\` (or empty if unprovisioned).
 2. If found -> \`updateUserMeta(meta_id=..., database=list_seo, database_id=<seo_id>, value=<new value>)\`.
 3. If not found -> the WebPage doesn't have that EAV key provisioned. BD auto-seeds these on \`createWebPage\`; a missing row means the field is unsupported on this site. Confirm the field name; do NOT manually create a row (\`createUserMeta\` is intentionally not exposed as a tool).
 
