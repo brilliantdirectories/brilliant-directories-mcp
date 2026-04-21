@@ -1613,24 +1613,25 @@ Applies to BOTH \`content\` and \`profile_search_results\` page types.
 
 **Cache refresh required on hero create/update:** after ANY \`createWebPage\` / \`updateWebPage\` that touches \`enable_hero_section\` or any \`hero_*\` / \`h1_font_*\` / \`h2_font_*\` field, call \`refreshSiteCache\` immediately - hero changes are cached and won't reflect publicly until refreshed.`,
         ``,
-        `**Hero image sourcing.** Whenever an agent enables a hero (\`enable_hero_section=1\` or \`2\`) without an image URL supplied by the user, pick a CONTENT-RELEVANT stock photo. **Never use random/placeholder generators** (picsum.photos, lorem pixel, placekitten, etc.).
+        `**Image sourcing - priority order.** When the user asks for or implies an image (hero banner, member \`logo\`/\`profile_photo\`/\`cover_photo\`, post \`post_image\`, anywhere) without supplying a URL, follow this order:
 
-**Preferred source: Pexels** (https://www.pexels.com) - free license, no attribution required, stable URLs, reliable image hotlinking.
+1. **User-supplied URL** - if given, use that.
+2. **The SUBJECT's own website** - if the write is about a named real entity (business, school, person, product, institution), the subject's own domain is the correct source. Visit the site, pick a relevant image, use its direct URL. Brand-accurate, no hotlink protection, no stock-photo "obvious AI slop" feel. Example: spotlight on Juilliard -> grab from \`juilliard.edu\`, NOT Pexels "music student" stock.
+3. **Pexels stock (fallback)** - only when the write is generic (category landing page about "doctors in LA" with no specific doctor in focus; hero on a topic page). URL pattern: \`https://images.pexels.com/photos/<ID>/pexels-photo-<ID>.jpeg?auto=compress&cs=tinysrgb&w=1800\`. Use "large" size, NOT "original" (often 5000+px).
 
-**Workflow:**
+**Banned image sources** (never use, period):
 
-1. Pick a search term from the page topic:
-   - Page about "doctors in LA" -> search "doctor office" or "medical professional"
-   - IVF clinics -> "fertility clinic" or "couple holding hands"
-   - Beauty salons -> "hair salon interior"
+- Random/placeholder generators: \`picsum.photos\`, \`lorempixel.com\`, \`placekitten.com\`, etc.
+- Wikimedia / Wikipedia: \`upload.wikimedia.org\`, \`commons.wikimedia.org\`, \`*.wikipedia.org/wiki/File:*\`, any \`/thumb/\` variant. Wikimedia enforces hotlink protection / User-Agent filtering - images render in a browser but serve an error placeholder on the live BD page.
+- Restrictive-license sources: Getty, Shutterstock (watermark-stripped), Adobe Stock, etc. Reputational / legal risk.
+
+**If you reached for Wikimedia because the subject is a real entity** (Juilliard, Harvard, a museum, a famous person), that's the wrong instinct - go to step 2 and pull from the subject's own website instead. Wikimedia isn't a "free alternative" for real-entity writes; the subject's own domain is.
+
+**Workflow for Pexels fallback** (when actually used):
+
+1. Pick a search term from page topic: "doctor office", "hair salon interior", "fertility clinic".
 2. Choose a safe-for-work image without watermarks/logos.
-3. Use the **"large" variant URL** - Pexels' direct-download-large size. NOT "original" (often 5000+px, too heavy for a hero banner).
-
-Pexels large URL pattern: \`https://images.pexels.com/photos/<ID>/pexels-photo-<ID>.jpeg?auto=compress&cs=tinysrgb&w=1800\`
-
-If the user supplies their own image URL, use that instead.
-
-**Never hotlink from sources with restrictive licenses** (Getty, Shutterstock watermark-stripped, etc.) - reputational risk for the site.`,
+3. Use the "large" variant URL.`,
         ``,
         `**users_meta IDENTITY RULE (applies to every users_meta read, update, and delete - no exceptions).** A users_meta row is identified by the PAIR \`(database, database_id)\` PLUS a \`key\`. The same \`database_id\` value can exist in users_meta pointing at different parent tables - e.g. \`database_id=123\` might refer to rows in \`users_data\`, \`list_seo\`, \`data_posts\`, and \`subscription_types\` simultaneously, all unrelated records that happen to share the same numeric ID. Even low IDs like \`1\` routinely return hundreds of cross-table rows.
 
@@ -1900,7 +1901,7 @@ BD stores every field verbatim - wrappers, escapes, AND your reasoning scaffoldi
 
 No XML conventions, no HTML-entity encoding, no function-call wrappers.
 
-**If your final string starts with \`<parameter\` or \`<invoke\` or contains \`</parameter>\` at the end - strip those before sending; that's YOUR scaffolding, not content.**`,
+**Self-check before every HTML-field write - if your final string starts with \`<![CDATA[\`, \`<parameter\`, or \`<invoke\`, or ends with \`]]>\`, \`</parameter>\`, or entity-escaped HTML (\`&lt;\`/\`&gt;\` in place of real \`<\`/\`>\`), strip those before sending. That's wrapper/scaffolding, not content - BD stores it verbatim and it renders as literal visible text on the live page.**`,
         ``,
         `Write-time params ECHO on reads. Fields like \`profession_name\`, \`services\`, \`credit_action\`, \`credit_amount\`, \`member_tag_action\`, \`member_tags\`, \`create_new_categories\`, \`auto_image_import\` appear on read responses when they were set on a recent write - they are NOT canonical state, just residual input from the last write. Canonical state lives elsewhere: \`profession_id\` + \`profession_schema\` (top category), \`services_schema\` (sub-categories), \`credit_balance\` (current balance as dollar-formatted string like \`"$35.00"\`), \`tags\` array (current tags). Don't build logic that reads these echo fields as truth.`,
         ``,

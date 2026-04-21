@@ -46,6 +46,22 @@ Confirms BD's `post_max_size=100M` + MCP forwarding layer handle 4k-line widgets
 
 Live-tested `updateUser` with `quote="Emoji test: 😀🚀❤️ / BMP: ✓★— / end"`. All three 4-byte emoji (U+1F600, U+1F680, U+2764 U+FE0F) plus BMP symbols stored byte-exact. No stripping, substitution, or entity-escape. No "no emoji" rule added to instructions — emoji work as of the test date on user-data tables.
 
+### Hardened — CDATA / wrapper self-check on HTML-field writes
+
+Existing rule banned `<![CDATA[...]]>` wrappers but agents kept wrapping. Added an explicit self-check instruction mirroring the existing `<parameter>` / `<invoke>` self-strip rule: if the final string starts with `<![CDATA[`, `<parameter`, or `<invoke>`, or ends with `]]>`, `</parameter>`, or entity-escaped HTML (`&lt;`/`&gt;`), strip before sending. Live symptom that triggered this: an `about_me` value saved as `"<![CDATA[<h3>Spotlight...</h3>..."` — rendered with literal `<![CDATA[` on the public page.
+
+### Hardened — image sourcing priority (subject's site > Pexels > banned)
+
+Replaced the single-paragraph "Pexels preferred" rule with an explicit 3-tier priority:
+
+1. User-supplied URL
+2. **The subject's own website** (for writes about a named real entity — Juilliard, Harvard, a specific business)
+3. Pexels stock (fallback, only for generic/topic writes)
+
+Named ban on Wikimedia / Wikipedia image URLs (`upload.wikimedia.org`, `commons.wikimedia.org`, `*.wikipedia.org/wiki/File:*`, `/thumb/` variants) — they enforce hotlink protection and serve error placeholders on live BD pages despite working in a browser. Live symptom that triggered this: agent used `https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/The_Juilliard_School_at_Lincoln_Center.jpg/1024px-...` for a Juilliard spotlight; Wikimedia returned a Foundation error image instead of the photo.
+
+Also applied the sourcing rule to non-hero image fields (member `logo`/`profile_photo`/`cover_photo`, post `post_image`) — prior text was hero-only.
+
 ## [6.24.1] - 2026-04-21
 
 ### Fixed — MembershipPlans lean-shape was inverted; now a proper keep-list
