@@ -1361,7 +1361,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "Date the user signed up. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators — e.g. `20260419143022` for 2026-04-19 14:30:22). Auto-filled by BD on create — omit unless backfilling a legacy signup date during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260419143022`). Auto-filled by BD on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1534,7 +1534,7 @@
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Date/time of the user's last login. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators). Auto-maintained by BD on each login — omit unless backfilling historical login data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` (14-digit, no separators). Auto-maintained by BD on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -1644,7 +1644,7 @@
                   },
                   "services": {
                     "type": "string",
-                    "description": "Sub-categories for this member. Format: `category=>service1,service2` OR `service1,service2` (top category defaults to the member's current `profession_id`). Supports sub-sub-categories via `Parent=>Child` (e.g. `Honda=>2022,Honda=>2023,Toyota`). Unknown names are silently ignored unless `create_new_categories=1` is also set. WARNING: changing `profession_id` in the same call WIPES all existing sub-category links — re-send the full `services` list to preserve them."
+                    "description": "Sub-categories for this member. Formats: `category=>service1,service2` OR `service1,service2` (top category defaults to member's current `profession_id`). Supports sub-sub-categories via `Parent=>Child` (e.g. `Honda=>2022,Honda=>2023,Toyota`).\n\nUnknown names silently ignored unless `create_new_categories=1` is also set (on update — create auto-creates always).\n\n**WARNING:** changing `profession_id` in the same call WIPES all existing sub-category links. Re-send the full `services` list to preserve them."
                   },
                   "auto_geocode": {
                     "type": "string",
@@ -1685,7 +1685,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "Date the user signed up. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators — e.g. `20260419143022` for 2026-04-19 14:30:22). Auto-filled by BD on create — omit unless backfilling a legacy signup date during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` (14-digit, no separators — e.g. `20260419143022`). Auto-filled by BD on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1838,11 +1838,11 @@
                       0,
                       1
                     ],
-                    "description": "Set to `1` to enable auto-creation of unknown category/service names during this `updateUser` call. Without this flag, unknown names in `services` or `profession_name` are silently skipped. Has no effect on `createUser` (which always auto-creates). Auto-created sub-categories go under the member's current top-level category with `master_id=0`; deeper nesting requires a separate `createSubCategory` call."
+                    "description": "Set `1` to auto-create unknown category/service names on `updateUser`. Without it, unknown names in `services`/`profession_name` are silently skipped. **Has no effect on `createUser`** (which always auto-creates, hardcoded).\n\nAuto-created sub-categories go under the member's current top-level category with `master_id=0`; deeper nesting requires a separate `createSubCategory` call."
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Date/time of the user's last login. Format: `YYYYMMDDHHmmss` (14-digit timestamp, no separators). Auto-maintained by BD on each login — omit unless backfilling historical login data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` (14-digit, no separators). Auto-maintained by BD on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -2753,7 +2753,7 @@
                   "send_lead_email_notification": {
                     "type": "integer",
                     "enum": [0, 1],
-                    "description": "Set to 1 to fire lead notification emails on create. Default is 0 — API-created leads are silent. With `auto_match=1` or `users_to_match` populated, the matched-member notification email fires. Without a match step, only the admin notification fires (if configured). For matched-member notifications you MUST combine this flag with a matching trigger (`auto_match=1` and/or `users_to_match`)."
+                    "description": "Set `1` to fire lead notification emails on create. Default `0` — API-created leads are silent.\n\n- With `auto_match=1` or `users_to_match` populated → matched-member notification fires (if this flag = `1`)\n- Without a match step → only admin notification fires (if configured)\n\n**For matched-member notifications:** combine this flag with a matching trigger (`auto_match=1` and/or `users_to_match`) — neither alone is sufficient."
                   },
                   "auto_match": {
                     "type": "integer",
@@ -4401,11 +4401,11 @@
                   },
                   "category_header": {
                     "type": "string",
-                    "description": "**CODE FIELD — search results HEADER** (HTML/CSS/JS/iframe/PHP supported; widget-equivalent trust level — no input sanitization applied). Renders ABOVE the member-search results loop on the public page. Supports PHP variables (e.g. `<?php echo $user_data['full_name']; ?>`) and BD text labels `%%%text_label%%%`. **Master-fallback on read + all-or-nothing save on write** — see post-type-write-rules in tool description."
+                    "description": "**CODE FIELD — search results HEADER** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust; no input sanitization). Renders ABOVE the member-search results loop. Supports PHP variables (`<?php echo $user_data['full_name']; ?>`) and `%%%text_label%%%` tokens.\n\nPart of the search-results code group — master-fallback on read + all-or-nothing save (see `updatePostType`)."
                   },
                   "search_results_div": {
                     "type": "string",
-                    "description": "**CODE FIELD — search results LOOP** (HTML/CSS/JS/iframe/PHP supported; widget-equivalent trust level — no input sanitization applied). Renders ONCE PER matching member in the results list. Supports PHP variables and `%%%text_label%%%` tokens. **Part of the search-results code group** with `category_header` + `category_footer` — see all-or-nothing save rule in tool description."
+                    "description": "**CODE FIELD — search results LOOP** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust; no input sanitization). Renders ONCE PER matching member in the results list. Supports PHP variables and `%%%text_label%%%` tokens.\n\nPart of the search-results code group (`category_header` + `search_results_div` + `category_footer`) — master-fallback on read + all-or-nothing save (see `updatePostType`)."
                   },
                   "category_footer": {
                     "type": "string",
@@ -4417,7 +4417,7 @@
                   },
                   "profile_results_layout": {
                     "type": "string",
-                    "description": "**CODE FIELD — profile/detail page BODY** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). The main detail-page template — BD's equivalent of a WordPress `single.php`. Name is misleading: this is the DETAIL page for a single record, not a search-results layout. For Member Listings, this drives the member profile page. **Part of the profile code group** with `profile_header` + `profile_footer` — see all-or-nothing save rule."
+                    "description": "**CODE FIELD — profile/detail page BODY** (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). Main detail-page template — BD's equivalent of WordPress `single.php`. **Misleading name** — NOT search-results layout; this is the DETAIL page for a single record.\n\nFor Member Listings, this drives the member profile page. **Part of the profile code group** with `profile_header` + `profile_footer` — all-or-nothing save rule applies (send all three together when editing any of them)."
                   },
                   "profile_footer": {
                     "type": "string",
@@ -5346,7 +5346,7 @@
                   "form_url": {
                     "type": "string",
                     "default": "/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form",
-                    "description": "Save Action URL — advanced setting that overrides the default `action=` attribute on the rendered HTML form. **Required exact value for every form an agent creates:** `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form`. This is the BD Save Form widget endpoint; without it, the submit wiring breaks. Do NOT decode the `%20` characters — BD needs the URL-encoded form verbatim."
+                    "description": "Save Action URL — overrides default `action=` on the rendered form. **Required exact value for every form an agent creates:** `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form`.\n\nThis is the BD Save Form widget endpoint; without it, submit wiring breaks. Do NOT decode the `%20` — BD needs the URL-encoded form verbatim."
                   },
                   "table_index": {
                     "type": "string",
@@ -5356,7 +5356,7 @@
                   "form_action_div": {
                     "type": "string",
                     "default": "#main-content",
-                    "description": "Target element ID (CSS selector including the `#`) that gets replaced in the DOM when the form submits. **Required when `form_action_type=widget` (Display Success Pop-Up Message); ignored otherwise.** Default canonical value: `#main-content`. Must include the leading `#`. Tells BD which part of the rendered page to swap out on successful submit — without it, the success pop-up has no target and the user sees nothing happen."
+                    "description": "Target element ID (CSS selector including `#`) swapped in the DOM on form submit. **Required when `form_action_type=widget`** (Success Pop-Up); ignored otherwise. Default: `#main-content`. Must include leading `#`. Without it, the success pop-up has no target and user sees nothing happen."
                   }
                 }
               }
@@ -5884,7 +5884,7 @@
                   "subscription_type": {
                     "type": "string",
                     "default": "member",
-                    "description": "Subscription type — internal role identifier, distinct from `profile_type`. Default `\"member\"` (applied automatically when omitted). Valid values are NOT publicly documented by BD. **Omit this field on create unless a BD staff member or admin UI has given you an authoritative value.** If you are choosing the plan's monetization model (paid/free/claim-listing), that's `profile_type`, not this field."
+                    "description": "Internal role identifier — distinct from `profile_type`. Default `\"member\"` (applied when omitted). Valid values NOT publicly documented by BD.\n\n**Omit on create** unless BD staff or admin UI gave you an authoritative value. For plan monetization model (paid/free/claim-listing) use `profile_type`, NOT this field."
                   },
                   "profile_type": {
                     "type": "string",
@@ -7364,7 +7364,7 @@
                   },
                   "database": {
                     "type": "string",
-                    "description": "REQUIRED — parent table name this meta row is attached to (e.g. `list_seo`, `users_data`, `subscription_types`). MUST match the `database` value stored on the row being updated. This is a hard safety rule — the same `meta_id` verification plus `(database, database_id)` scoping prevents cross-table metadata corruption since the same `database_id` number can exist across multiple parent tables."
+                    "description": "**REQUIRED** — parent table name this meta row attaches to (e.g. `list_seo`, `users_data`, `subscription_types`, `data_posts`). MUST match the `database` value stored on the row being updated.\n\nHard safety rule: the same `database_id` number can exist across multiple parent tables. Scoping with `(database, database_id)` together prevents cross-table metadata corruption. See top-level users_meta compound-identity rule."
                   },
                   "database_id": {
                     "type": "integer",
@@ -8821,7 +8821,7 @@
                       0,
                       1
                     ],
-                    "description": "**Apply NoIndex, NoFollow** — 1 = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. NOT a contact-form toggle (despite the field name — BD repurposed this column)."
+                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a contact-form toggle** despite the field name — BD repurposed this column."
                   },
                   "form_name": {
                     "type": "string",
@@ -8893,7 +8893,7 @@
                   },
                   "updated_by": {
                     "type": "string",
-                    "description": "Label shown in admin-UI \"Updated By\" column on the page record. Free-form string (e.g. `\"API\"`, `\"AI Agent\"`, an admin username). Recommended on create/update for audit traceability so admins can tell which edits came from the API vs. the UI."
+                    "description": "Admin-UI \"Updated By\" column label. Free-form string (e.g. `\"API\"`, `\"AI Agent\"`, admin username). Recommended on create/update for audit traceability — tells admins which edits came from API vs. UI."
                   },
                   "custom_html_placement": {
                     "type": "string",
@@ -8939,7 +8939,7 @@
                   "hero_column_width": {
                     "type": "string",
                     "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
-                    "description": "Width of the hero text-content column, expressed as a Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more padding on the sides of the text block."
+                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
@@ -9182,7 +9182,7 @@
                       0,
                       1
                     ],
-                    "description": "**Apply NoIndex, NoFollow** — 1 = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. NOT a contact-form toggle (despite the field name — BD repurposed this column)."
+                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a contact-form toggle** despite the field name — BD repurposed this column."
                   },
                   "form_name": {
                     "type": "string",
@@ -9254,7 +9254,7 @@
                   },
                   "updated_by": {
                     "type": "string",
-                    "description": "Label shown in admin-UI \"Updated By\" column on the page record. Free-form string (e.g. `\"API\"`, `\"AI Agent\"`, an admin username). Recommended on create/update for audit traceability so admins can tell which edits came from the API vs. the UI."
+                    "description": "Admin-UI \"Updated By\" column label. Free-form string (e.g. `\"API\"`, `\"AI Agent\"`, admin username). Recommended on create/update for audit traceability — tells admins which edits came from API vs. UI."
                   },
                   "custom_html_placement": {
                     "type": "string",
@@ -9300,7 +9300,7 @@
                   "hero_column_width": {
                     "type": "string",
                     "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
-                    "description": "Width of the hero text-content column, expressed as a Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more padding on the sides of the text block."
+                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
