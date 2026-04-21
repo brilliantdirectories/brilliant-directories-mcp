@@ -1168,7 +1168,7 @@
         ],
         "responses": {
           "200": {
-            "description": "API key is valid",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1190,7 +1190,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Field definitions",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1235,7 +1235,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated user list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1266,7 +1266,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1547,7 +1547,7 @@
         },
         "responses": {
           "200": {
-            "description": "User created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1855,7 +1855,7 @@
         },
         "responses": {
           "200": {
-            "description": "User updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1901,7 +1901,7 @@
         },
         "responses": {
           "200": {
-            "description": "User deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1983,7 +1983,7 @@
         },
         "responses": {
           "200": {
-            "description": "Search results",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2028,7 +2028,7 @@
         },
         "responses": {
           "200": {
-            "description": "Credentials valid",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2067,7 +2067,7 @@
         },
         "responses": {
           "200": {
-            "description": "Transaction list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2107,7 +2107,7 @@
         },
         "responses": {
           "200": {
-            "description": "Subscription list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2146,7 +2146,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated review list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2178,7 +2178,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Review record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2255,7 +2255,7 @@
         },
         "responses": {
           "200": {
-            "description": "Review created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2320,7 +2320,7 @@
         },
         "responses": {
           "200": {
-            "description": "Review updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2360,7 +2360,7 @@
         },
         "responses": {
           "200": {
-            "description": "Review deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2406,7 +2406,7 @@
         },
         "responses": {
           "200": {
-            "description": "Search results",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2442,7 +2442,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated click list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2474,7 +2474,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Click record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2539,7 +2539,7 @@
         },
         "responses": {
           "200": {
-            "description": "Click recorded",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2588,7 +2588,7 @@
         },
         "responses": {
           "200": {
-            "description": "Click updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2628,7 +2628,7 @@
         },
         "responses": {
           "200": {
-            "description": "Click deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2664,7 +2664,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated lead list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2696,7 +2696,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Lead record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2771,7 +2771,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2812,7 +2812,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead matched",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2870,7 +2870,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2910,7 +2910,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2940,7 +2940,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated lead match list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -2972,7 +2972,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Lead match record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3077,7 +3077,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead match created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3133,7 +3133,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead match updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3173,7 +3173,7 @@
         },
         "responses": {
           "200": {
-            "description": "Lead match deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3209,7 +3209,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated post list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3241,7 +3241,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Post record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3275,7 +3275,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Field definitions",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3427,7 +3427,7 @@
         },
         "responses": {
           "200": {
-            "description": "Post created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3556,7 +3556,7 @@
         },
         "responses": {
           "200": {
-            "description": "Post updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3596,7 +3596,7 @@
         },
         "responses": {
           "200": {
-            "description": "Post deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3648,7 +3648,7 @@
         },
         "responses": {
           "200": {
-            "description": "Search results",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3684,7 +3684,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated album group list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3716,7 +3716,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Album group record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3748,7 +3748,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Field definitions",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3832,7 +3832,7 @@
         },
         "responses": {
           "200": {
-            "description": "Album group created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3899,7 +3899,7 @@
         },
         "responses": {
           "200": {
-            "description": "Album group updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3939,7 +3939,7 @@
         },
         "responses": {
           "200": {
-            "description": "Album group deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -3978,7 +3978,7 @@
         },
         "responses": {
           "200": {
-            "description": "Search results",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4014,7 +4014,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated photo list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4046,7 +4046,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Photo record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4103,7 +4103,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4149,7 +4149,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4189,7 +4189,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4225,7 +4225,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated post type list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4257,7 +4257,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Post type record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4297,7 +4297,7 @@
         },
         "responses": {
           "200": {
-            "description": "Custom field definitions",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4438,7 +4438,7 @@
         },
         "responses": {
           "200": {
-            "description": "Post type updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4478,7 +4478,7 @@
         },
         "responses": {
           "200": {
-            "description": "Post type deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4508,7 +4508,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated unsubscribe list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4540,7 +4540,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Unsubscribe record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4590,7 +4590,7 @@
         },
         "responses": {
           "200": {
-            "description": "Email unsubscribed",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4637,7 +4637,7 @@
         },
         "responses": {
           "200": {
-            "description": "Record updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4678,7 +4678,7 @@
         },
         "responses": {
           "200": {
-            "description": "Record deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4707,7 +4707,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated widget list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4739,7 +4739,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Widget record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4798,7 +4798,7 @@
         },
         "responses": {
           "200": {
-            "description": "Widget created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4845,7 +4845,7 @@
         },
         "responses": {
           "200": {
-            "description": "Widget updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4885,7 +4885,7 @@
         },
         "responses": {
           "200": {
-            "description": "Widget deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4927,7 +4927,7 @@
         },
         "responses": {
           "200": {
-            "description": "Rendered widget HTML",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -4971,7 +4971,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated email template list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5003,7 +5003,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Email template record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5096,7 +5096,7 @@
         },
         "responses": {
           "200": {
-            "description": "Template created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5155,7 +5155,7 @@
         },
         "responses": {
           "200": {
-            "description": "Template updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5195,7 +5195,7 @@
         },
         "responses": {
           "200": {
-            "description": "Template deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5225,7 +5225,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated form list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5257,7 +5257,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Form record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5365,7 +5365,7 @@
         },
         "responses": {
           "200": {
-            "description": "Form created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5434,7 +5434,7 @@
         },
         "responses": {
           "200": {
-            "description": "Form updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5474,7 +5474,7 @@
         },
         "responses": {
           "200": {
-            "description": "Form deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5504,7 +5504,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated form field list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5536,7 +5536,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Form field record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5655,7 +5655,7 @@
         },
         "responses": {
           "200": {
-            "description": "Field created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5745,7 +5745,7 @@
         },
         "responses": {
           "200": {
-            "description": "Field updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5785,7 +5785,7 @@
         },
         "responses": {
           "200": {
-            "description": "Field deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5815,7 +5815,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated plan list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5847,7 +5847,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Plan record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -5933,7 +5933,7 @@
         },
         "responses": {
           "200": {
-            "description": "Plan created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6052,7 +6052,7 @@
         },
         "responses": {
           "200": {
-            "description": "Plan updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6092,7 +6092,7 @@
         },
         "responses": {
           "200": {
-            "description": "Plan deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6122,7 +6122,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated menu list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6154,7 +6154,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Menu record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6227,7 +6227,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6276,7 +6276,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6316,7 +6316,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6346,7 +6346,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated menu item list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6378,7 +6378,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Menu item record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6458,7 +6458,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu item created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6510,7 +6510,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu item updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6550,7 +6550,7 @@
         },
         "responses": {
           "200": {
-            "description": "Menu item deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6580,7 +6580,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated service list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6612,7 +6612,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Service record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6677,7 +6677,7 @@
         },
         "responses": {
           "200": {
-            "description": "Service created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6743,7 +6743,7 @@
         },
         "responses": {
           "200": {
-            "description": "Service updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6783,7 +6783,7 @@
         },
         "responses": {
           "200": {
-            "description": "Service deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6813,7 +6813,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated user service list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6845,7 +6845,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User service record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6903,7 +6903,7 @@
         },
         "responses": {
           "200": {
-            "description": "User service created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6955,7 +6955,7 @@
         },
         "responses": {
           "200": {
-            "description": "User service updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -6995,7 +6995,7 @@
         },
         "responses": {
           "200": {
-            "description": "User service deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7025,7 +7025,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated user photo list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7057,7 +7057,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User photo record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7115,7 +7115,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7163,7 +7163,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7203,7 +7203,7 @@
         },
         "responses": {
           "200": {
-            "description": "Photo deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7233,7 +7233,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated metadata list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7265,7 +7265,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Metadata record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7323,7 +7323,7 @@
         },
         "responses": {
           "200": {
-            "description": "Metadata created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7377,7 +7377,7 @@
         },
         "responses": {
           "200": {
-            "description": "Metadata updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7427,7 +7427,7 @@
         },
         "responses": {
           "200": {
-            "description": "Metadata deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7457,7 +7457,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated tag list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7489,7 +7489,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7538,7 +7538,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7581,7 +7581,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7621,7 +7621,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7651,7 +7651,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated tag group list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7683,7 +7683,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag group record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7731,7 +7731,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag group created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7774,7 +7774,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag group updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7814,7 +7814,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag group deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7844,7 +7844,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated tag type list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7876,7 +7876,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag type record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7906,7 +7906,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated tag relationship list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7938,7 +7938,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag relationship record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -7992,7 +7992,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag relationship created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8035,7 +8035,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag relationship updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8075,7 +8075,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag relationship deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8105,7 +8105,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated smart list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8137,7 +8137,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Smart list record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8202,7 +8202,7 @@
         },
         "responses": {
           "200": {
-            "description": "Smart list created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8254,7 +8254,7 @@
         },
         "responses": {
           "200": {
-            "description": "Smart list updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8294,7 +8294,7 @@
         },
         "responses": {
           "200": {
-            "description": "Smart list deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8326,7 +8326,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated sidebar list (custom only)",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
           }
         }
@@ -8350,7 +8350,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Sidebar record",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8366,7 +8366,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Brand kit (semantic colors + fonts + usage guidance)",
+            "description": "Success",
             "content": { "application/json": { "schema": { "type": "object" } } }
           }
         }
@@ -8391,7 +8391,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated city list",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
           }
         }
@@ -8416,7 +8416,7 @@
         ],
         "responses": {
           "200": {
-            "description": "City record",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8450,7 +8450,7 @@
         },
         "responses": {
           "200": {
-            "description": "City updated",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8475,7 +8475,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated state list",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
           }
         }
@@ -8499,7 +8499,7 @@
         ],
         "responses": {
           "200": {
-            "description": "State record",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8533,7 +8533,7 @@
         },
         "responses": {
           "200": {
-            "description": "State updated",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8558,7 +8558,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated country list",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
           }
         }
@@ -8582,7 +8582,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Country record",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8615,7 +8615,7 @@
         },
         "responses": {
           "200": {
-            "description": "Country updated",
+            "description": "Success",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
           }
         }
@@ -8639,7 +8639,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated page list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -8671,7 +8671,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Page record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9030,7 +9030,7 @@
         },
         "responses": {
           "200": {
-            "description": "Page created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9391,7 +9391,7 @@
         },
         "responses": {
           "200": {
-            "description": "Page updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9432,7 +9432,7 @@
         },
         "responses": {
           "200": {
-            "description": "Page deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9463,7 +9463,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated redirect list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9495,7 +9495,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Redirect record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9555,7 +9555,7 @@
         },
         "responses": {
           "200": {
-            "description": "Redirect created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9615,7 +9615,7 @@
         },
         "responses": {
           "200": {
-            "description": "Redirect updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9656,7 +9656,7 @@
         },
         "responses": {
           "200": {
-            "description": "Redirect deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9679,7 +9679,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Cache refresh triggered",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9741,7 +9741,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated data type list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9773,7 +9773,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Data type record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9832,7 +9832,7 @@
         },
         "responses": {
           "200": {
-            "description": "Data type created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9892,7 +9892,7 @@
         },
         "responses": {
           "200": {
-            "description": "Data type updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9934,7 +9934,7 @@
         },
         "responses": {
           "200": {
-            "description": "Data type deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9963,7 +9963,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated category list",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -9995,7 +9995,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Category record",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -10065,7 +10065,7 @@
         },
         "responses": {
           "200": {
-            "description": "Category created",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -10132,7 +10132,7 @@
         },
         "responses": {
           "200": {
-            "description": "Category updated",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -10173,7 +10173,7 @@
         },
         "responses": {
           "200": {
-            "description": "Category deleted",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
