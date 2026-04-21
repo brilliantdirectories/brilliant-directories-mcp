@@ -6652,7 +6652,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Sub-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
+                    "description": "Short internal taxonomy-row label. **Even if the user says the word description — this is NOT an SEO description.** Not a meta-tag surface, not where Google-ranking copy goes, not the H1 / intro paragraph on the public category search page. Most BD themes do not render this field at all. For ANY SEO task on a category or sub-category — including requests phrased as write a description that ranks / improve SEO / add meta tags / write intro copy for the category page — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). This field accepts only a short internal blurb, not SEO prose."
                   },
                   "filename": {
                     "type": "string"
@@ -6715,7 +6715,7 @@
                   },
                   "desc": {
                     "type": "string",
-                    "description": "Short internal description stored on the taxonomy row. NOT the SEO copy rendered on the Sub-Category search-results page — most BD themes do not output this. For H1/intro paragraph/meta tags on the category's public search page, create a WebPage with `seo_type=profile_search_results` and the matching slug (see `createWebPage`). Do not dump long SEO prose here; it ends up in a dead field."
+                    "description": "Short internal taxonomy-row label. **Even if the user says the word description — this is NOT an SEO description.** Not a meta-tag surface, not where Google-ranking copy goes, not the H1 / intro paragraph on the public category search page. Most BD themes do not render this field at all. For ANY SEO task on a category or sub-category — including requests phrased as write a description that ranks / improve SEO / add meta tags / write intro copy for the category page — create a WebPage with `seo_type=profile_search_results` and the matching slug instead (see `createWebPage`). This field accepts only a short internal blurb, not SEO prose."
                   },
                   "profession_id": {
                     "type": "integer"

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.17] - 2026-04-20
+
+### Fixed — Cross-resource audit hardening: category SEO (lexical trap), member SEO, WebPage inline styles
+
+Two subagents read v6.13.16 cold and routed SEO intents. Three drift points surfaced — patched.
+
+**1. Category `desc` field — lexical "description" trap hardened.** Previous wording was correct but didn't warn against the specific phrasing "write a description that ranks on Google" or "improve the category description so it shows up in search results" — phrases that lexically map to `desc`. Rewrote the top-level rule + all 5 `desc` field descriptions to explicitly call out the trap: *"Even if the user says the word description — this is NOT an SEO description. Route by intent, not vocabulary."*
+
+**2. Member profile SEO — new rule.** `updateUser` has no SEO meta fields (no `meta_title`, `meta_desc`, `meta_keywords`). Agents asked "write better SEO for my members" would have stuffed SEO prose into `about_me` or `search_description` — both are body/snippet fields, not `<title>`/`<meta>`. New directive: per-member SEO is site-wide, controlled by the `seo_type=profile` WebPage template with merge tokens (`%%%full_name%%%`), not editable per-user.
+
+**3. WebPage inline styles — directive was contradictory, flipped to single path of truth.** Previous wording said *"Inline style=..." attributes on elements inside `content` are fine for one-off styling"* — but Froala strips inline style on save. Agents shipping inline styles saw them silently dropped. Rewrote: **ALL CSS must go in `content_css`; inline style attributes are NOT supported**, no exceptions including one-offs. Give every element a class, target it from `content_css`. Single path of truth.
+
+Doc-only.
+
 ## [6.13.16] - 2026-04-20
 
 ### Fixed — Category SEO content routes to a WebPage, not `desc`
