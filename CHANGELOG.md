@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.18] - 2026-04-20
+
+### Fixed — Diagrams/charts route to Widget, not SVG in `content`
+
+Agents asked to add diagrams or charts to a WebPage generated `<svg>` inline in `content` — Froala stripped them on save and the page rendered empty. Directive listed Froala-stripped tags (`<script>`, `<style>`, `<form>`, etc.) but omitted `<svg>` and `<canvas>`, so agents didn't know the content would vanish.
+
+Added to the WebPage asset-routing rule: **never put `<svg>` or `<canvas>` in `content`.** Correct path is a custom Widget (`createWidget`) holding the raw SVG or chart JS, embedded in the page via `[widget=Name]` shortcode. Widgets render outside Froala's sanitizer and support arbitrary HTML/SVG/JS. For lightweight visuals (comparison tables, callouts, step-lists), CSS-styled divs/tables targeted from `content_css` render cleanly.
+
+Doc-only.
+
 ## [6.13.17] - 2026-04-20
 
 ### Fixed — Cross-resource audit hardening: category SEO (lexical trap), member SEO, WebPage inline styles
