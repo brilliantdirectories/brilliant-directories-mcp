@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.20] - 2026-04-20
+
+### Fixed — `revision_timestamp` must be set on every update (BD does NOT auto-populate)
+
+Agents were updating widgets, forms, email templates, and categories without passing `revision_timestamp`, leaving stale timestamps on records. This breaks cache invalidation, "recently updated" sorts, and admin audit trails. Documented the behavior is identical to the existing `list_seo.date_updated` rule — BD's API does not auto-set the timestamp on UPDATE; the agent must do it.
+
+Added a universal rule to the top-level `instructions` directive:
+
+> On every `update*` call for resources with `revision_timestamp` (widgets, forms, email templates, top categories, sub-categories, post types, membership plans, users_meta), include `revision_timestamp=<current time>` in the format `YYYY-MM-DD HH:mm:ss` (e.g. `2026-04-20 19:34:51`). Different from `list_seo.date_updated` which uses `YYYYMMDDHHmmss` (no separators).
+
+Doc-only.
+
 ## [6.13.19] - 2026-04-20
 
 ### Fixed — `@latest` consistency across install artifacts before public advertising push
