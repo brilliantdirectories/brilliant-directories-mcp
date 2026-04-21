@@ -683,6 +683,79 @@ function applyWebPageLean(body, includeFlags) {
 
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 
+// --- WRITE-RESPONSE LEAN-SHAPING -------------------------------------------
+//
+// BD's create/update endpoints echo the full updated/created record in the
+// response body. That's the same fat shape as a fully-included read — on
+// Users it's ~10KB, on populated Post Types ~30-150KB, on content-heavy
+// WebPages ~10-30KB. Agents don't need any of that to confirm a write
+// landed: primary key + identity fields are enough to say "done, updated
+// Mike Matthews (user_id 165)" or "created page 'About Us' at /about-us".
+//
+// Write responses are ALWAYS lean — no include_* flags to opt into full
+// shape. For full record post-write, agent calls the matching get* (where
+// include flags DO work).
+//
+// Keep-set per write family (confirmed from live-data size probes):
+
+const WRITE_KEEP_SETS = {
+  // Users
+  createUser: ["user_id","first_name","last_name","company","email","filename","active","status"],
+  updateUser: ["user_id","first_name","last_name","company","email","filename","active","status"],
+
+  // Single-image posts
+  createSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image"],
+  updateSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image"],
+
+  // Multi-image posts
+  createMultiImagePost: ["group_id","group_name","group_filename","user_id","group_status","data_id","data_type","system_name","data_name","revision_timestamp"],
+  updateMultiImagePost: ["group_id","group_name","group_filename","user_id","group_status","data_id","data_type","system_name","data_name","revision_timestamp"],
+
+  // Post types
+  createPostType: ["data_id","data_type","system_name","data_name","data_filename","form_name","revision_timestamp"],
+  updatePostType: ["data_id","data_type","system_name","data_name","data_filename","form_name","revision_timestamp"],
+
+  // Top categories
+  createTopCategory: ["profession_id","name","filename","revision_timestamp"],
+  updateTopCategory: ["profession_id","name","filename","revision_timestamp"],
+
+  // Sub categories
+  createSubCategory: ["service_id","name","filename","profession_id","master_id","revision_timestamp"],
+  updateSubCategory: ["service_id","name","filename","profession_id","master_id","revision_timestamp"],
+
+  // Web pages
+  createWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
+  updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
+};
+
+// Apply ONLY to success responses. Errors pass through untouched so the
+// agent sees the full BD error message.
+function applyWriteLean(toolName, body) {
+  const keep = WRITE_KEEP_SETS[toolName];
+  if (!keep) return body;
+  if (!body || body.status !== "success") return body;
+
+  const keepSet = new Set(keep);
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    const out = {};
+    for (const k of keep) {
+      if (k in row) out[k] = row[k];
+    }
+    return out;
+  };
+
+  // BD echoes the record as `message` — sometimes an object, sometimes a
+  // single-row array. Both handled.
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  // Strings (e.g. "record was deleted") pass through unchanged.
+  return body;
+}
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -1315,6 +1388,8 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`include_code=1\` - restores \`content_css\`, \`content_head\`, \`content_footer_html\`. Needed before \`updateWebPage\` edits to CSS/head/footer JS so you have the current value to modify.
 
 **users_meta writes are restricted to \`updateUserMeta\` / \`deleteUserMeta\`.** \`createUserMeta\` is NOT exposed as a tool - BD auto-seeds users_meta rows on every parent-record create (users, WebPages, post types, plans, etc.) for each EAV field the parent supports, so agents never need to manually create. If \`listUserMeta\` returns no row for a key you expected, that parent doesn't support that field - do NOT try to fabricate it.
+
+**Write responses are ALWAYS lean.** Every \`create*\` / \`update*\` across users, posts (single + multi), post types, top + sub categories, and web pages returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object. The \`include_*\` flags do NOT apply to write responses — they only work on \`get*\` / \`list*\` / \`search*\`. If you need the full record after a write, call the matching \`get*\` with whatever \`include_*\` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
 
 Other endpoints (leads, reviews, widgets, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
 
@@ -2025,13 +2100,15 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
 
-      // Apply lean-response shaping per resource family (v6.15 users, v6.16 posts+cats, v6.19 post-types, v6.20 web pages)
+      // Apply lean-response shaping. Reads honor include_* flags; writes
+      // are always lean (create/update echoes trimmed to a small keep-set).
       if (result.body) {
         if (isUserReadTool) result.body = applyUserLean(result.body, includeFlags);
         else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags);
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
+        else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }
 
       // Surface rate-limit errors with actionable guidance for the agent

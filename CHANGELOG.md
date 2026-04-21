@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.23.0] - 2026-04-21
+
+### Added — ultra-lean write-response shaping across 7 families
+
+BD's `create*` / `update*` endpoints echo the full updated/created record in the response. That echo was the same fat shape as a fully-included read — on Users ~10KB, on populated Post Types 30-150KB, on content-heavy WebPages 10-30KB. Agents don't need any of that to confirm a write landed: primary key + identity fields are enough. Across a 5-member profile-photo import, live measurement showed ~125KB of response body spent where ~2KB would have sufficed.
+
+Write responses are now **always lean**. Every `create*` / `update*` across users, posts (single + multi), post types, top + sub categories, and web pages returns a minimal keep-set: PK + identity (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object.
+
+**`include_*` flags do NOT apply to write responses** — they only work on `get*` / `list*` / `search*`. If a caller needs the full record after a write, they call the matching `get*` with whatever `include_*` flags they actually want. The write echo is explicitly for "confirm and describe what changed" — not for full-record retrieval.
+
+**Keep-sets per family:**
+
+- **Users:** `user_id`, `first_name`, `last_name`, `company`, `email`, `filename`, `active`, `status`
+- **Single-image posts:** `post_id`, `post_title`, `post_filename`, `post_type`, `user_id`, `post_status`, `data_id`, `data_type`, `system_name`, `data_name`, `post_image`
+- **Multi-image posts:** `group_id`, `group_name`, `group_filename`, `user_id`, `group_status`, `data_id`, `data_type`, `system_name`, `data_name`, `revision_timestamp`
+- **Post types:** `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name`, `revision_timestamp`
+- **Top categories:** `profession_id`, `name`, `filename`, `revision_timestamp`
+- **Sub categories:** `service_id`, `name`, `filename`, `profession_id`, `master_id`, `revision_timestamp`
+- **Web pages:** `seo_id`, `seo_type`, `master_id`, `filename`, `nickname`, `title`, `meta_desc`, `h1`, `h2`, `revision_timestamp`
+
+### Not touched
+
+- **Read tools** (`get*` / `list*` / `search*`): unchanged. Existing lean-by-default + `include_*` opt-ins continue to work identically.
+- **Error responses** (`{status:"error", message:"..."}`): passed through unchanged. Agents see BD's full error text including any actionable diagnostic.
+- **Delete responses**: already minimal (`"record was deleted"` string). Not reshaped.
+- **Tool surface**: unchanged (173 tools, identical names/schemas/enums/requireds). No breaking changes.
+
+### Live-measured size impact (sample records on launch60031)
+
+| Family | Before (full echo) | After (lean echo) | Savings |
+|---|---:|---:|---:|
+| Users | ~9,600 B | ~235 B | ~97% |
+| Single-image posts | ~6,400 B | ~400 B | ~94% |
+| Multi-image posts | ~7,700 B | ~400 B | ~95% |
+| Post types (populated) | 30-150 KB | ~250 B | ~99% |
+| Top categories | ~585 B | ~130 B | ~78% |
+| Sub categories | ~330 B | ~180 B | ~45% (scales on populated rows) |
+| Web pages (populated) | 10-30 KB | ~430 B | ~86-99% |
+
+On a realistic bulk workflow (e.g. importing 50 members with profile images), this alone reclaims ~500 KB of context that was silently wasted on the write-echo path.
+
 ## [6.22.2] - 2026-04-21
 
 ### Changed — README polish
