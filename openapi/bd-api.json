@@ -68,6 +68,60 @@
           "type": "string"
         }
       },
+      "include_password": {
+        "name": "include_password",
+        "in": "query",
+        "description": "Opt in to return bcrypt `password` hash. Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_subscription": {
+        "name": "include_subscription",
+        "in": "query",
+        "description": "Opt in to return full `subscription_schema` (60+ plan fields). Default: `subscription_id` only.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_clicks": {
+        "name": "include_clicks",
+        "in": "query",
+        "description": "Opt in to return `user_clicks_schema.clicks` array. Default: `total_clicks` count only.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_photos": {
+        "name": "include_photos",
+        "in": "query",
+        "description": "Opt in to return `photos_schema` array. Default: `total_photos` count only (`image_main_file` URL always returned).",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_transactions": {
+        "name": "include_transactions",
+        "in": "query",
+        "description": "Opt in to return full `transactions` invoice array. Default stripped (`revenue` rollup always returned).",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_profession": {
+        "name": "include_profession",
+        "in": "query",
+        "description": "Opt in to return `profession_schema` (category metadata). Default: `profession_id` only.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_tags": {
+        "name": "include_tags",
+        "in": "query",
+        "description": "Opt in to return `tags` array. Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_services": {
+        "name": "include_services",
+        "in": "query",
+        "description": "Opt in to return `services_schema` sub-category array. Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
+      "include_seo_hidden": {
+        "name": "include_seo_hidden",
+        "in": "query",
+        "description": "Opt in to return SEO meta fields (`seo_page_*_hidden`, `seo_social_*_hidden`, `search_description`). Default stripped.",
+        "schema": { "type": "boolean", "default": false }
+      },
       "property_value": {
         "name": "property_value",
         "in": "query",
@@ -1206,7 +1260,7 @@
       "get": {
         "operationId": "listUsers",
         "summary": "List members/users",
-        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.\n\n**Use when:** enumerating members for reports, CSV exports, bulk status updates, analytics, or pagination through the full member base. Also used for lookups by field - pass `property=email` + `property_value=<email>` to find a single user by email. For keyword/text search use `searchUsers`; for a single user by known `user_id` use `getUser`.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`; `order_type`: `ASC`, `DESC`.\n\n**Filter-property rule - use ACTUAL field names:** `property` must reference a real column on `users_data` or a valid custom user field. If you don't know what's filterable, call `getUserFields` first - it returns the authoritative list for this site (includes custom fields). BD returns misleading errors like `\"user not found\"` when `property` names a nonexistent field - that is a BAD FILTER, not a 404 on the endpoint. Do not invent properties like `user_group` (not a real column).\n\n**Filtering by TOP CATEGORY (profession):** the filter column is `profession_id` (integer), not a category name string. If the caller gives you a category name, chain: (1) `listTopCategories` -> find the row whose `name` matches; (2) grab its `profession_id`; (3) call `listUsers` with `property=profession_id&property_value=<id>`. Same principle for any taxonomy filter - resolve names to IDs first via `listSubCategories`, `listMembershipPlans`, etc. For sub-category filtering on users, the authoritative approach is `listMemberSubCategoryLinks` filtered by `service_id` -> collect `user_id`s -> fetch those users. (There is also a `service` CSV column on user records but exact-match filtering on it requires the complete CSV value and LIKE syntax support is not guaranteed - prefer the link-table route.)\n\n**Filtering by `users_meta` (custom/meta fields):** multi-value meta filtering IS supported via the array syntax - e.g. `property[]=<meta_key>&property_value[]=foo&property[]=<meta_key>&property_value[]=bar&property_operator[]=OR&property_logic[]==`. Use this for OR-across-meta-values lookups (e.g. members whose custom field equals any of N options).\n\n**Payment-method field in response:** every user record includes `card_info`. When no card is on file it is the literal boolean `false` (BD's convention - same as `tags: false`, `transactions: false`, etc.). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Check `card_info && card_info.last4` (truthy-guard) - NOT `card_info.last4` directly, since `false.last4` throws. This is the authoritative signal for \"does this member have a valid payment method on file\" - do not infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**See also:** `getUser` (single record by ID), `searchUsers` (keyword search), `getUserFields` (list filterable fields).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
+        "description": "Get a paginated list of all members. Supports filtering by any user field and sorting.\n\n**Lean by default (v6.15.0):** each row strips `subscription_schema`, `user_clicks_schema.clicks`, `photos_schema`, `transactions`, `profession_schema`, `tags`, `services_schema`, `password`, and SEO-hidden meta. Lean row keeps core columns + `revenue` rollup + summary counts (`total_clicks`, `total_photos`) + `image_main_file`. Opt back in per call with the `include_*` flags.\n\n**Use when:** enumerating members for reports, CSV exports, bulk status updates, analytics, or pagination through the full member base. Also used for lookups by field - pass `property=email` + `property_value=<email>` to find a single user by email. For keyword/text search use `searchUsers`; for a single user by known `user_id` use `getUser`.\n\n**Pagination:** cursor-based. Pass `limit` (default 25, max 100) and `page` token from the previous response's `next_page`. Do not assume integer offsets.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`; `order_type`: `ASC`, `DESC`.\n\n**Filter-property rule - use ACTUAL field names:** `property` must reference a real column on `users_data` or a valid custom user field. If you don't know what's filterable, call `getUserFields` first - it returns the authoritative list for this site (includes custom fields). BD returns misleading errors like `\"user not found\"` when `property` names a nonexistent field - that is a BAD FILTER, not a 404 on the endpoint. Do not invent properties like `user_group` (not a real column).\n\n**Filtering by TOP CATEGORY (profession):** the filter column is `profession_id` (integer), not a category name string. If the caller gives you a category name, chain: (1) `listTopCategories` -> find the row whose `name` matches; (2) grab its `profession_id`; (3) call `listUsers` with `property=profession_id&property_value=<id>`. Same principle for any taxonomy filter - resolve names to IDs first via `listSubCategories`, `listMembershipPlans`, etc. For sub-category filtering on users, the authoritative approach is `listMemberSubCategoryLinks` filtered by `service_id` -> collect `user_id`s -> fetch those users. (There is also a `service` CSV column on user records but exact-match filtering on it requires the complete CSV value and LIKE syntax support is not guaranteed - prefer the link-table route.)\n\n**Filtering by `users_meta` (custom/meta fields):** multi-value meta filtering IS supported via the array syntax - e.g. `property[]=<meta_key>&property_value[]=foo&property[]=<meta_key>&property_value[]=bar&property_operator[]=OR&property_logic[]==`. Use this for OR-across-meta-values lookups (e.g. members whose custom field equals any of N options).\n\n**Payment-method field in response:** every user record includes `card_info`. When no card is on file it is the literal boolean `false` (BD's convention - same as `tags: false`, `transactions: false`, etc.). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Check `card_info && card_info.last4` (truthy-guard) - NOT `card_info.last4` directly, since `false.last4` throws. This is the authoritative signal for \"does this member have a valid payment method on file\" - do not infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**See also:** `getUser` (single record by ID), `searchUsers` (keyword search), `getUserFields` (list filterable fields).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
         "tags": [
           "Users"
         ],
@@ -1231,7 +1285,16 @@
           },
           {
             "$ref": "#/components/parameters/order_type"
-          }
+          },
+          { "$ref": "#/components/parameters/include_password" },
+          { "$ref": "#/components/parameters/include_subscription" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" },
+          { "$ref": "#/components/parameters/include_transactions" },
+          { "$ref": "#/components/parameters/include_profession" },
+          { "$ref": "#/components/parameters/include_tags" },
+          { "$ref": "#/components/parameters/include_services" },
+          { "$ref": "#/components/parameters/include_seo_hidden" }
         ],
         "responses": {
           "200": {
@@ -1262,7 +1325,16 @@
             "schema": {
               "type": "integer"
             }
-          }
+          },
+          { "$ref": "#/components/parameters/include_password" },
+          { "$ref": "#/components/parameters/include_subscription" },
+          { "$ref": "#/components/parameters/include_clicks" },
+          { "$ref": "#/components/parameters/include_photos" },
+          { "$ref": "#/components/parameters/include_transactions" },
+          { "$ref": "#/components/parameters/include_profession" },
+          { "$ref": "#/components/parameters/include_tags" },
+          { "$ref": "#/components/parameters/include_services" },
+          { "$ref": "#/components/parameters/include_seo_hidden" }
         ],
         "responses": {
           "200": {
@@ -1276,7 +1348,7 @@
             }
           }
         },
-        "description": "Fetch a single user record. Read-only.\n\n**Use when:** you already have the `user_id` (from `listUsers`, `searchUsers`, a prior create, or a webhook payload) and need the full member record. Cheaper than `listUsers` + filter. For lookups by email or other field, use `listUsers` with `property`/`property_value`.\n\n**Required:** `user_id`.\n\n**See also:** `listUsers` (enumerate many), `searchUsers` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n**Payment method on file:** the response includes a `card_info` field. When no card is stored it is the literal boolean `false` (BD convention). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Use `card_info && card_info.last4` to safely check - `card_info.last4` would throw on the `false` case. This is the authoritative signal for \"does this member have a payment method\" - don't infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim. **Note:** `filename` is regenerated by BD when member inputs that influence the slug change (category, city, etc.). The value you see NOW is current-as-of-this-read. If you call `updateUser` afterward, re-fetch before using the filename in URL-referencing content (blog posts, emails, redirects).\n\n"
+        "description": "Fetch a single user record. Read-only.\n\n**Lean by default (v6.15.0):** response strips the same heavy nested buckets as `listUsers` (see its lean note). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** you already have the `user_id` (from `listUsers`, `searchUsers`, a prior create, or a webhook payload) and need the full member record. Cheaper than `listUsers` + filter. For lookups by email or other field, use `listUsers` with `property`/`property_value`.\n\n**Required:** `user_id`.\n\n**See also:** `listUsers` (enumerate many), `searchUsers` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n**Payment method on file:** the response includes a `card_info` field. When no card is stored it is the literal boolean `false` (BD convention). When a card IS stored, it's an object with fields like `last4`, `brand`, `name`. Use `card_info && card_info.last4` to safely check - `card_info.last4` would throw on the `false` case. This is the authoritative signal for \"does this member have a payment method\" - don't infer from `subscription_id` alone. BD clears `card_info` back to `false` when the member removes their card; it does not go stale silently.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim. **Note:** `filename` is regenerated by BD when member inputs that influence the slug change (category, city, etc.). The value you see NOW is current-as-of-this-read. If you call `updateUser` afterward, re-fetch before using the filename in URL-referencing content (blog posts, emails, redirects).\n\n"
       }
     },
     "/api/v2/user/create": {
@@ -1918,7 +1990,7 @@
       "post": {
         "operationId": "searchUsers",
         "summary": "Search members/users",
-        "description": "Full-text search across members with category, location, and sorting options.\n\n**Use when:** the user has a keyword / partial name / location / category and wants matching members. This is the full-text search backend that powers the public site's member-search page. For an exact-field lookup (by email, by user_id, by phone) use `listUsers` + `property`/`property_value` instead - it's faster and more precise.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`.\n\n**Parameter interactions:**\n\n- `q` - keyword (matches first name, last name, company, about, search_description)\n\n- `pid` (category ID), `tid` (sub-category/service ID), `ttid` (sub-sub-category) - taxonomy filters, use IDs from `listTopCategories` / `listSubCategories`\n\n- `address` + `dynamic=1` - proximity/geographic filtering\n\n- `output_type=html` returns server-rendered HTML; `array` (default) returns structured JSON\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
+        "description": "Full-text search across members with category, location, and sorting options.\n\n**Lean by default (v6.15.0):** rows strip the same heavy nested buckets as `listUsers`. Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** the user has a keyword / partial name / location / category and wants matching members. This is the full-text search backend that powers the public site's member-search page. For an exact-field lookup (by email, by user_id, by phone) use `listUsers` + `property`/`property_value` instead - it's faster and more precise.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Enums:** `sort`: `reviews`, `name ASC`, `name DESC`, `last_name_asc`, `last_name_desc`.\n\n**Parameter interactions:**\n\n- `q` - keyword (matches first name, last name, company, about, search_description)\n\n- `pid` (category ID), `tid` (sub-category/service ID), `ttid` (sub-sub-category) - taxonomy filters, use IDs from `listTopCategories` / `listSubCategories`\n\n- `address` + `dynamic=1` - proximity/geographic filtering\n\n- `output_type=html` returns server-rendered HTML; `array` (default) returns structured JSON\n\n**See also:** `getUser` (single record by ID), `listUsers` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n**Profile URL:** every user record has a `filename` field. To get the full public profile URL, concatenate: `<site-domain>/<user.filename>`. The `filename` is the complete relative path (e.g., `united-states/monterey-park/doctor/harrison-hasanuddin-d-o`) - DO NOT prepend `/business/`, `/profile/`, `/member/`, or any other segment. BD's router resolves `filename` verbatim.\n\n",
         "tags": [
           "Users"
         ],
@@ -1975,7 +2047,16 @@
                       "array",
                       "html"
                     ]
-                  }
+                  },
+                  "include_password": { "type": "boolean", "description": "Opt in to return bcrypt `password` hash." },
+                  "include_subscription": { "type": "boolean", "description": "Opt in to return full `subscription_schema`." },
+                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
+                  "include_photos": { "type": "boolean", "description": "Opt in to return `photos_schema` array." },
+                  "include_transactions": { "type": "boolean", "description": "Opt in to return full `transactions` array." },
+                  "include_profession": { "type": "boolean", "description": "Opt in to return `profession_schema`." },
+                  "include_tags": { "type": "boolean", "description": "Opt in to return `tags` array." },
+                  "include_services": { "type": "boolean", "description": "Opt in to return `services_schema` array." },
+                  "include_seo_hidden": { "type": "boolean", "description": "Opt in to return SEO-hidden meta fields." }
                 }
               }
             }

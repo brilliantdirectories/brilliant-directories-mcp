@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.15.0] - 2026-04-21
+
+### Added — Lean-by-default user-read responses with opt-in `include_*` flags
+
+`listUsers` / `getUser` / `searchUsers` now strip heavy nested buckets by default and let agents opt back in per-call via 9 `include_*` flags. Per-row size drops from ~8KB (light) / 25-75KB (heavy active members with full click and transaction history) to ~2KB / ~3KB. On a `limit=25` list call that's roughly 200-750 KB → ~50 KB.
+
+**Always returned (unchanged core data):** all top-level identity / profile / address / social columns, `user_id`, `userid`, `token`, `cookie`, `profession_id`, `subscription_id`, `revenue` rollup, `image_main_file`, `filename_hidden`, computed display fields (`full_name`, `status`, `user_location`), and two new summary numbers (`total_clicks`, `total_photos`).
+
+**Stripped unless opted-in:**
+
+- `include_password=1` - bcrypt `password` hash
+- `include_subscription=1` - full `subscription_schema` (60+ plan fields)
+- `include_clicks=1` - `user_clicks_schema.clicks` array (count stays via `total_clicks`)
+- `include_photos=1` - `photos_schema` array (count stays via `total_photos`, main photo URL stays via `image_main_file`)
+- `include_transactions=1` - full invoice history array (`revenue` rollup stays)
+- `include_profession=1` - `profession_schema` category metadata (`profession_id` stays)
+- `include_tags=1` - `tags` array
+- `include_services=1` - `services_schema` sub-categories array (BD's `list_services` table is the sub-categories table)
+- `include_seo_hidden=1` - SEO meta bundle: `seo_page_title_hidden`, `seo_page_description_hidden`, `seo_page_keywords_hidden`, `seo_social_page_title_hidden`, `seo_social_page_description_hidden`, `search_description`
+
+**Stripped always (debug/form-flow residue, no legit agent use):** `save`, `form`, `formname`, `sized`, `faction`, `result`.
+
+### What this does NOT change
+
+- BD API behavior, tool surface, operationIds, required fields, enum values, cross-client compatibility, per-call latency.
+- `updateUser` / `createUser` and all other user-adjacent tools - only the 3 user-read endpoints get the lean shaping.
+- Agents that explicitly need any of the stripped fields can still get them by setting the matching flag.
+
+### Implementation
+
+- `applyUserLean(body, includeFlags)` helper in `mcp/index.js` runs between the BD response and the agent return. ~60 lines of shaping code, no regex, no string munging - pure property deletion on the decoded JSON.
+- 9 `include_*` boolean params added as shared OpenAPI components and referenced from `listUsers`, `getUser` (as query params) and `searchUsers` (as body fields).
+- The dispatcher strips `include_*` from outgoing args before calling BD, so BD never sees these MCP-only params.
+- Top-level instructions block replaces the old "Row weight is heavy" paragraph with a concise lean-defaults + opt-in flag list (zero repeated prose; same token budget as before for the paragraph itself).
+
+### Expected session impact
+
+- Typical `listUsers limit=25` agent call: ~750 KB → ~50 KB response. Frees ~175K tokens of tool-result budget per call.
+- An agent doing "audit 100 members" via lean `listUsers` pages: ~3 MB → ~200 KB of cumulative response traffic.
+- No agent loses capability - the data is still reachable, just opt-in.
+
+### Future phases (not in 6.15.0)
+
+- Extend the same lean-by-default + `include_*` pattern to posts, leads, reviews, and other list/get endpoints that currently dump full rows. Same helper, same pattern, different resource-specific bucket maps.
+- Response trimming for `updateUser` response echoes if those also return fat rows.
+
 ## [6.14.0] - 2026-04-21
 
 ### Changed — Token-efficiency pass across instructions, operations, and field descriptions

@@ -292,6 +292,108 @@ function resolveRef(spec, ref) {
 }
 
 // ---------------------------------------------------------------------------
+// Lean-response shaper (v6.15.0)
+//
+// User-read endpoints (listUsers / getUser / searchUsers) return ~8KB per row
+// by default. Most agent tasks need ~5% of that. We strip heavy nested buckets
+// and debug residue by default, and let agents opt-in via include_* flags.
+//
+// STRIP ALWAYS: save, form, formname, sized, faction, result (debug leakage).
+// HOLD BACK unless include_<name>=1:
+//   password, subscription_schema, photos_schema, transactions,
+//   profession_schema, tags, services_schema
+// HOLD BACK user_clicks_schema.clicks (replace with total_clicks: N).
+// SEO bundle (hold back unless include_seo_hidden=1):
+//   seo_page_title_hidden, seo_page_description_hidden, seo_page_keywords_hidden,
+//   seo_social_page_title_hidden, seo_social_page_description_hidden, search_description
+// ---------------------------------------------------------------------------
+
+const USER_LEAN_INCLUDE_FLAGS = [
+  "include_password",
+  "include_subscription",
+  "include_clicks",
+  "include_photos",
+  "include_transactions",
+  "include_profession",
+  "include_tags",
+  "include_services",
+  "include_seo_hidden",
+];
+
+const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", "result"];
+
+const USER_LEAN_SEO_BUNDLE = [
+  "seo_page_title_hidden",
+  "seo_page_description_hidden",
+  "seo_page_keywords_hidden",
+  "seo_social_page_title_hidden",
+  "seo_social_page_description_hidden",
+  "search_description",
+];
+
+function leanUserRow(row, include) {
+  if (!row || typeof row !== "object") return row;
+  for (const k of USER_LEAN_ALWAYS_STRIP) delete row[k];
+  if (!include.password) delete row.password;
+  if (!include.subscription) delete row.subscription_schema;
+  if (!include.photos) delete row.photos_schema;
+  if (!include.transactions) delete row.transactions;
+  if (!include.profession) delete row.profession_schema;
+  if (!include.tags) delete row.tags;
+  if (!include.services) delete row.services_schema;
+  if (!include.clicks) {
+    const total =
+      row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
+        ? row.user_clicks_schema.total_clicks
+        : 0;
+    row.total_clicks = total;
+    delete row.user_clicks_schema;
+  }
+  if (row.photos_schema === undefined) {
+    // Preserve photo count summary even when array was stripped
+    const totalPhotos = Array.isArray(row._original_photos_schema)
+      ? row._original_photos_schema.length
+      : 0;
+    // (total_photos computed below when we still have the original - see applyUserLean)
+  }
+  if (!include.seo_hidden) {
+    for (const k of USER_LEAN_SEO_BUNDLE) delete row[k];
+  }
+  return row;
+}
+
+function applyUserLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    password: !!includeFlags.include_password,
+    subscription: !!includeFlags.include_subscription,
+    clicks: !!includeFlags.include_clicks,
+    photos: !!includeFlags.include_photos,
+    transactions: !!includeFlags.include_transactions,
+    profession: !!includeFlags.include_profession,
+    tags: !!includeFlags.include_tags,
+    services: !!includeFlags.include_services,
+    seo_hidden: !!includeFlags.include_seo_hidden,
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    // Compute total_photos before stripping photos_schema
+    const totalPhotos = Array.isArray(row.photos_schema) ? row.photos_schema.length : 0;
+    leanUserRow(row, include);
+    if (!include.photos) row.total_photos = totalPhotos;
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
+
+// ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
 
@@ -884,11 +986,19 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`per_page\` is silently ignored.
 - When \`page\` is sent, \`limit\` is IGNORED (size is baked into the token). To change page size, start over with \`limit=N\` and no \`page\`.
 
-**Row weight is heavy** - each \`listUsers\` row is ~7-8KB (subscription_schema, photos_schema, tags, clicks, full HTML \`about_me\`, transactions, revenue). \`limit=10\` ~= 80KB per call. Budget context:
+**Row weight** - \`listUsers\` / \`getUser\` / \`searchUsers\` are lean by default (~2KB/row). Core columns + \`revenue\` + \`image_main_file\` + \`filename_hidden\` + summary counts (\`total_clicks\`, \`total_photos\`) are always returned. Heavy nested buckets are stripped and must be opted back in per-call via the \`include_*\` flags on those 3 tools:
 
-- \`limit=5\` for enumerate-then-collect tasks where you only need \`user_id\` + one or two fields.
-- \`limit=10\` only when you need full records.
-- \`limit=100\` will exceed Claude's tool-result token cap on most resources.
+- \`include_password=1\` - bcrypt hash
+- \`include_subscription=1\` - full plan object (\`subscription_id\` is always returned)
+- \`include_clicks=1\` - click history array
+- \`include_photos=1\` - photo array (\`image_main_file\` URL is always returned)
+- \`include_transactions=1\` - invoice array
+- \`include_profession=1\` - category metadata (\`profession_id\` is always returned)
+- \`include_tags=1\` - member tags array
+- \`include_services=1\` - services / sub-categories array (BD's \`list_services\` table = sub-categories)
+- \`include_seo_hidden=1\` - SEO meta bundle (page title / desc / keywords / social variants / search_description)
+
+Only opt in when the task actually needs that nested data. Other endpoints (posts, leads, reviews, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
 
 **Count-only idiom - use this for any "how many X" question:** call \`list*\` with \`limit=1\` and read \`total\` from the envelope. One tiny call, no records enumerated.
 
@@ -1490,6 +1600,19 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
     }
 
     try {
+      // Extract v6.15.0 lean-response include flags (user-read tools only); these are
+      // MCP-wrapper params, not BD API params - never forward to BD.
+      const includeFlags = {};
+      const isUserReadTool = USER_READ_TOOLS.has(name);
+      if (isUserReadTool) {
+        for (const flag of USER_LEAN_INCLUDE_FLAGS) {
+          if (args && flag in args) {
+            includeFlags[flag] = args[flag];
+            delete args[flag];
+          }
+        }
+      }
+
       // Build URL path with path params substituted
       let urlPath = toolDef.path;
       const queryParams = {};
@@ -1511,6 +1634,11 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
       }
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
+
+      // v6.15.0: apply lean-response shaping for user-read endpoints
+      if (isUserReadTool && result.body) {
+        result.body = applyUserLean(result.body, includeFlags);
+      }
 
       // Surface rate-limit errors with actionable guidance for the agent
       if (result.status === 429) {
