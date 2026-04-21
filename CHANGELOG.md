@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.18.2] - 2026-04-21
+
+### Fixed — v6.18.0 and v6.18.1 never actually published to npm
+
+The release workflow verifies `mcp/package.json` version matches the git tag before publishing. v6.18.0 and v6.18.1 both bumped `plugin.json`, `server.json`, and `mcp/package-lock.json` but missed `mcp/package.json` itself — so the workflow hit the version-mismatch check at line 53 of `.github/workflows/release.yml` and exited without publishing either release. npm continued serving v6.17.0 throughout.
+
+v6.18.2 bumps all 4 version-stamp files correctly and ships the accumulated v6.18.0 + v6.18.1 users_meta safety-guard work (identical code to what v6.18.1 intended to ship):
+
+- Hard pre-flight guard on `deleteUserMeta`, `updateUserMeta`, `createUserMeta` — refuses the call at the MCP wrapper if any required compound-identity field (meta_id for update/delete, database, database_id) is missing, before BD receives the request.
+- Safe handling of absent `arguments` (no TypeError).
+- Rejects `meta_id=0` / `database_id=0` (BD AUTO_INCREMENT starts at 1).
+- Case-insensitive tool name match.
+
+### Lesson learned
+
+Release workflow's version-match check is working correctly — it DID block the broken publishes. Good safety. Adding `mcp/package.json` to the version-bump checklist for future releases.
+
 ## [6.18.1] - 2026-04-21
 
 ### Fixed — users_meta safety guard hardening (subagent-audit findings)
