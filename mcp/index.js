@@ -685,17 +685,25 @@ const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 
 // --- MEMBERSHIP PLANS ------------------------------------------------------
 //
-// listMembershipPlans returns ~5-6KB per plan row. Most agent tasks just need
-// the plan IDs + names + pricing to pick one when creating a member. Full
-// config (display toggles, photo/style/service limits, sidebars, form names,
-// email templates, upgrade chains, etc.) is rarely needed and bloats reads.
+// BD's subscription_types table has ~170 columns. Most agent tasks just need
+// the plan IDs + names + pricing to pick one when creating a member. We use
+// a KEEP-LIST (not a strip-list) — everything not in the keep-set is dropped.
+// Anything new BD adds to the table in the future continues to be stripped
+// automatically.
 
 const PLAN_LEAN_INCLUDE_FLAGS = [
   "include_plan_config",
   "include_plan_display_flags",
 ];
 
-// Stripped by default, restored with include_plan_config=1
+// Always kept — the 9 core fields for picking a plan.
+const PLAN_ALWAYS_KEEP = [
+  "subscription_id", "subscription_name", "subscription_type", "profile_type",
+  "monthly_amount", "yearly_amount", "initial_amount", "lead_price", "searchable",
+];
+
+// Restored with include_plan_config=1 — activation, limits, sidebars, forms,
+// email templates, upgrade chain, payment/display/index settings.
 const PLAN_CONFIG_FIELDS = [
   "sub_active", "search_priority", "auto_activate", "status_after_upgrade",
   "upgradable_membership", "search_membership_permissions",
@@ -710,17 +718,11 @@ const PLAN_CONFIG_FIELDS = [
   "index_rule", "nofollow_links",
 ];
 
-// Stripped by default, restored with include_plan_display_flags=1
+// Restored with include_plan_display_flags=1 — profile-visibility toggles.
 const PLAN_DISPLAY_FLAG_FIELDS = [
   "show_about", "show_experience", "show_education", "show_background",
   "show_affiliations", "show_publications", "show_awards", "show_slogan",
   "show_sofware", "show_phone", "seal_link", "website_link", "social_link",
-];
-
-// Always stripped — admin-form residue and internal duplicates
-const PLAN_LEAN_ALWAYS_STRIP = [
-  "form", "save", "save_", "method", "form_security_token",
-  "myid", "result", "id", "noheader", "rr8",
 ];
 
 function applyPlanLean(body, includeFlags) {
@@ -729,12 +731,18 @@ function applyPlanLean(body, includeFlags) {
     config: !!includeFlags.include_plan_config,
     display: !!includeFlags.include_plan_display_flags,
   };
+  // Build the allowed-keys set per this request
+  const allow = new Set(PLAN_ALWAYS_KEEP);
+  if (include.config) for (const k of PLAN_CONFIG_FIELDS) allow.add(k);
+  if (include.display) for (const k of PLAN_DISPLAY_FLAG_FIELDS) allow.add(k);
+
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
-    stripKeys(row, PLAN_LEAN_ALWAYS_STRIP);
-    if (!include.config) stripKeys(row, PLAN_CONFIG_FIELDS);
-    if (!include.display) stripKeys(row, PLAN_DISPLAY_FLAG_FIELDS);
-    return row;
+    const out = {};
+    for (const k of Object.keys(row)) {
+      if (allow.has(k)) out[k] = row[k];
+    }
+    return out;
   };
   if (Array.isArray(body.message)) {
     body.message = body.message.map(shapeRow);

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.24.1] - 2026-04-21
+
+### Fixed — MembershipPlans lean-shape was inverted; now a proper keep-list
+
+Live audit surfaced that the prior shaper for `listMembershipPlans` / `getMembershipPlan` was a strip-list, not a keep-list. BD's `subscription_types` table has ~170 columns; the prior shaper only stripped the ~50 fields it knew about, letting ~120 fields leak through by default. Measured result: `list limit=5` returned ~27KB instead of the documented ~2.3KB.
+
+Rewrote `applyPlanLean` as a keep-list, matching the pattern used by the write-response shapers. Behavior now matches documentation:
+
+- **Always-kept (9):** `subscription_id`, `subscription_name`, `subscription_type`, `profile_type`, `monthly_amount`, `yearly_amount`, `initial_amount`, `lead_price`, `searchable`
+- **`include_plan_config=1`** restores the 36-field config bundle.
+- **`include_plan_display_flags=1`** restores the 13-field profile-visibility toggle bundle.
+- Everything else is dropped regardless of whether BD knows about it or adds new columns later.
+
+Admin-form residue (`form`, `save`, `save_`, `method`, `form_security_token`, `myid`, `result`, `noheader`, `rr8`, `id`) is no longer explicitly stripped — none of it is in the keep-list, so all of it drops automatically.
+
+**Measured impact on launch60031:** `listMembershipPlans limit=5` drops from ~27KB (168 keys/row) to ~1.8KB (9 keys/row). ~93% reduction, matching the originally-documented target.
+
+### Changed — `refreshSiteCache` now mandatory on CREATE + UPDATE WebPage (not just update)
+
+Prior rule said refresh was only needed for updates. Turns out creates also need it — new pages are cache-gated at the router level, not just the render level. Without a post-create refresh, visitors may not reach the new URL at all, or may reach it but see stale scaffolding.
+
+Three places updated identically: `refreshSiteCache` tool description (flipped the "do NOT use for new pages" line to a "required after every create AND every update" line), `createWebPage` description (now opens with the required post-step), `updateWebPage` description (same).
+
 ## [6.24.0] - 2026-04-21
 
 ### Added — `getSiteInfo` tool for session grounding
