@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.22.0] - 2026-04-21
+
+### Added — web-scraping permission rule on `createUser` / `updateUser`
+
+Explicit, up-front permission for agents to scrape external listings for directory imports and data enrichment. Rule is scoped to the two operations that consume it (`createUser` and `updateUser` descriptions) — keeps the top-level instructions block lean.
+
+**Image-fetch priority when scraping a listing:**
+
+1. Logo image from the site's header/nav → `logo` field (businesses).
+2. Headshot from Home, About, or Team page → `profile_photo` field (individuals).
+3. Follow the site's social links → profile image there.
+
+Pass the URL with `auto_image_import=1` so BD downloads and rehosts locally (avoids hotlinking).
+
+**Not-found handling:** if no confident match, create/update without an image and report "no confirmed image found." Never substitute a stock photo or guess. Skip an entire record and find an alternate only when the user explicitly required images.
+
 ## [6.21.2] - 2026-04-21
 
 ### Changed — simplify hero gap-fix rule to page-type-scoped, nothing else
