@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.17.0] - 2026-04-21
+
+### Changed — Post-type routing fields now always included on post reads; `include_post_type` flag removed
+
+v6.16.0 stripped the full nested `data_category` post-type config on post reads and made it opt-in via `include_post_type=1`. In practice, agents routing through post responses almost always need a few minimum post-type identity fields (which post type is this? what's its slug? what's the form name?) — the rest of `data_category` (sidebars, code fields, search modules, timestamps, h1/h2, caption_length, etc.) is admin configuration an agent reading a post never needs inline.
+
+v6.17.0 replaces the opt-in with a curated default: post rows now always include these 6 post-type fields at the top level:
+
+- `data_id` (already top-level from BD)
+- `data_type` (already top-level from BD)
+- `system_name` — promoted from nested `data_category`
+- `data_name` — promoted from nested `data_category`
+- `data_filename` — promoted from nested `data_category`
+- `form_name` — promoted from nested `data_category`
+
+The nested `data_category` object is stripped entirely. No opt-in flag. Agents needing full post-type config (sidebars, code fields, search module names, category tabs, h1/h2) call `getPostType` with the `data_id` the lean row already provides.
+
+**Flag removed:** `include_post_type` is gone from the OpenAPI shared components and from all 6 post read endpoints. Agents passing `include_post_type=1` on v6.17.0 will see the flag silently ignored — no error, since the 6 most-useful fields from `data_category` are now default-returned anyway.
+
+### What this does NOT change
+
+- Tool surface, operationIds, required fields, enum values, cross-client compatibility, per-call latency.
+- Post write endpoints: unchanged.
+- Other v6.16.0 flags (`include_content`, `include_post_seo`, `include_author_full`, `include_clicks`, `include_photos`): unchanged and fully functional.
+
+### Impact
+
+- Post rows gain 4 bytes × field-name-length fields (~120 bytes total) but lose the flag-discoverability cost of a config-object that agents rarely need.
+- Agents no longer need a second `getPostType` call just to learn a post's `system_name` or `data_filename` for URL routing.
+- Smaller instruction footprint (one fewer flag to document).
+
 ## [6.16.0] - 2026-04-21
 
 ### Added — Lean-by-default extended to posts + categories, `include_about` added on users

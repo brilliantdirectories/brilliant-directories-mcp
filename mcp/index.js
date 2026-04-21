@@ -383,11 +383,14 @@ const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
 const POST_LEAN_INCLUDE_FLAGS = [
   "include_content",
   "include_post_seo",
-  "include_post_type",
   "include_author_full",
   "include_clicks",
   "include_photos",
 ];
+
+// Promoted from nested data_category (v6.17.0). data_id + data_type are already
+// top-level on the BD row; we only promote the remaining 4 identity/routing fields.
+const POST_TYPE_SUMMARY_PROMOTE = ["system_name", "data_name", "data_filename", "form_name"];
 
 const POST_LEAN_ALWAYS_STRIP = [
   // Admin-form residue that leaks into post read responses. 100% useless to agents.
@@ -426,7 +429,6 @@ function applyPostLean(body, includeFlags) {
   const include = {
     content: !!includeFlags.include_content,
     post_seo: !!includeFlags.include_post_seo,
-    post_type: !!includeFlags.include_post_type,
     author_full: !!includeFlags.include_author_full,
     clicks: !!includeFlags.include_clicks,
     photos: !!includeFlags.include_photos,
@@ -452,8 +454,18 @@ function applyPostLean(body, includeFlags) {
       }
     }
 
-    // Post-type config: strip full nested object; data_id is already top-level.
-    if (!include.post_type) delete row.data_category;
+    // Post-type: promote 4 identity/routing fields to top level, then drop the full
+    // config object. data_id + data_type are already top-level on the BD row.
+    // Full post-type config (sidebars, code fields, search modules, etc.) is never
+    // returned on post reads - agents needing it call getPostType(data_id) directly.
+    if (row.data_category && typeof row.data_category === "object") {
+      for (const k of POST_TYPE_SUMMARY_PROMOTE) {
+        if (row[k] === undefined && row.data_category[k] !== undefined) {
+          row[k] = row.data_category[k];
+        }
+      }
+      delete row.data_category;
+    }
 
     // Clicks: strip click array, surface total_clicks.
     if (!include.clicks) {
@@ -1162,11 +1174,10 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`include_seo_hidden=1\` - SEO meta bundle
 - \`include_about=1\` - \`about_me\` HTML bio (v6.16.0)
 
-**Posts** (\`listSingleImagePosts\` / \`getSingleImagePost\` / \`searchSingleImagePosts\` / \`listMultiImagePosts\` / \`getMultiImagePost\` / \`searchMultiImagePosts\`, v6.16.0, ~1.5-2KB lean row): core columns + \`author: {...}\` 10-field summary (replaces full \`user\` nested object) + \`total_clicks\` + (Multi only) \`cover_photo_url\` / \`cover_thumbnail_url\` / \`total_photos\`. Flags:
+**Posts** (\`listSingleImagePosts\` / \`getSingleImagePost\` / \`searchSingleImagePosts\` / \`listMultiImagePosts\` / \`getMultiImagePost\` / \`searchMultiImagePosts\`, ~1.5-2KB lean row): core columns + \`author: {...}\` 10-field summary (replaces full \`user\` nested object) + \`total_clicks\` + (Multi only) \`cover_photo_url\` / \`cover_thumbnail_url\` / \`total_photos\`. Post rows always include \`data_id\`, \`data_type\`, \`system_name\`, \`data_name\`, \`data_filename\`, \`form_name\` for post-type routing. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call \`getPostType\` with \`data_id\` if you need it. Flags:
 
 - \`include_content=1\` - HTML body (\`post_content\` on Single, \`group_desc\` on Multi)
 - \`include_post_seo=1\` - \`post_meta_title\` / \`post_meta_description\` / \`post_meta_keywords\` (Single only)
-- \`include_post_type=1\` - full \`data_category\` post-type config (\`data_id\` always kept)
 - \`include_author_full=1\` - restores full \`user\` nested object (password, token, all fields); replaces curated \`author\` summary
 - \`include_clicks=1\` - click history array
 - \`include_photos=1\` - full \`users_portfolio\` photo array (Multi only; Single has single \`post_image\` field always kept)

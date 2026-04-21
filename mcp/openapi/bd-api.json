@@ -140,12 +140,6 @@
         "description": "Opt in to return `post_meta_title`, `post_meta_description`, `post_meta_keywords`. Default stripped.",
         "schema": { "type": "boolean", "default": false }
       },
-      "include_post_type": {
-        "name": "include_post_type",
-        "in": "query",
-        "description": "Opt in to return the full `data_category` post-type config object. Default: `data_id` only.",
-        "schema": { "type": "boolean", "default": false }
-      },
       "include_author_full": {
         "name": "include_author_full",
         "in": "query",
@@ -3320,7 +3314,6 @@
           { "$ref": "#/components/parameters/property_value" },
           { "$ref": "#/components/parameters/include_content" },
           { "$ref": "#/components/parameters/include_post_seo" },
-          { "$ref": "#/components/parameters/include_post_type" },
           { "$ref": "#/components/parameters/include_author_full" },
           { "$ref": "#/components/parameters/include_clicks" },
           { "$ref": "#/components/parameters/include_photos" }
@@ -3337,7 +3330,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of post records. Read-only.\n\n**Lean by default (v6.16.0):** each row strips `post_content` (full HTML body), `post_meta_*` (SEO bundle), the full nested `user` author object, the full nested `data_category` post-type config, `user_clicks_schema.clicks` array, `list_service`, and ~25 admin-form residue fields. Replaces full `user` object with an `author: {...}` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`). Replaces click array with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of post records. Read-only.\n\n**Lean by default (v6.17.0):** each row strips `post_content` (HTML body), `post_meta_*` (SEO bundle), the full nested `user` author object, the full nested `data_category` post-type config, `user_clicks_schema.clicks` array, `list_service`, and ~25 admin-form residue fields. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads; call `getPostType` with `data_id` if you need it. Replaces full `user` with `author: {...}` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`). Replaces click array with `total_clicks: N`. Use `include_*` flags to restore specific nested fields.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/data_posts/get/{post_id}": {
@@ -3358,7 +3351,6 @@
           },
           { "$ref": "#/components/parameters/include_content" },
           { "$ref": "#/components/parameters/include_post_seo" },
-          { "$ref": "#/components/parameters/include_post_type" },
           { "$ref": "#/components/parameters/include_author_full" },
           { "$ref": "#/components/parameters/include_clicks" },
           { "$ref": "#/components/parameters/include_photos" }
@@ -3754,7 +3746,6 @@
                   "limit": { "type": "integer" },
                   "include_content": { "type": "boolean", "description": "Opt in to return `post_content` HTML body." },
                   "include_post_seo": { "type": "boolean", "description": "Opt in to return `post_meta_*` SEO bundle." },
-                  "include_post_type": { "type": "boolean", "description": "Opt in to return full `data_category` post-type config." },
                   "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
                   "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." }
                 }
@@ -3790,7 +3781,6 @@
           { "$ref": "#/components/parameters/property" },
           { "$ref": "#/components/parameters/property_value" },
           { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_post_type" },
           { "$ref": "#/components/parameters/include_author_full" },
           { "$ref": "#/components/parameters/include_clicks" },
           { "$ref": "#/components/parameters/include_photos" }
@@ -3807,7 +3797,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Lean by default (v6.16.0):** each row strips `group_desc` (HTML body, field name differs from Single posts), nested `user` author object, nested `data_category`, `user_clicks_schema.clicks`, and nested `users_portfolio` photo array (keeps `cover_photo_url`, `cover_thumbnail_url`, `total_photos` summary from the first photo). Strips ~25 admin-form residue fields. Replaces `user` with `author: {...}` summary. Replaces clicks with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Lean by default (v6.17.0):** each row strips `group_desc` (HTML body, field name differs from Single posts), nested `user` author object, nested `data_category`, `user_clicks_schema.clicks`, and nested `users_portfolio` photo array (keeps `cover_photo_url`, `cover_thumbnail_url`, `total_photos` summary from the first photo). Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config is NOT returned; call `getPostType` with `data_id` if you need it. Strips ~25 admin-form residue fields. Replaces `user` with `author: {...}` summary. Replaces clicks with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/get/{group_id}": {
@@ -3827,7 +3817,6 @@
             }
           },
           { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_post_type" },
           { "$ref": "#/components/parameters/include_author_full" },
           { "$ref": "#/components/parameters/include_clicks" },
           { "$ref": "#/components/parameters/include_photos" }
@@ -4086,7 +4075,6 @@
                   "q": { "type": "string" },
                   "data_id": { "type": "integer" },
                   "include_content": { "type": "boolean", "description": "Opt in to return `group_desc` HTML body." },
-                  "include_post_type": { "type": "boolean", "description": "Opt in to return full `data_category` post-type config." },
                   "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
                   "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
                   "include_photos": { "type": "boolean", "description": "Opt in to return `users_portfolio` full photo array." }
