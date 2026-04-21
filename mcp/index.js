@@ -175,9 +175,19 @@ function buildTools(spec) {
   const toolMap = {}; // operationId -> { method, path, params, bodyProps }
   const seenIds = new Map(); // operationId -> "METHOD path" for duplicate detection
 
+  // v6.19.0: tools deliberately hidden from the agent surface. BD's endpoint
+  // still exists in openapi/bd-api.json, but we don't register it as a callable
+  // MCP tool. See the matching "DELIBERATELY HIDDEN FROM AGENTS" note in the
+  // spec's createUserMeta summary + v6.19.0 CHANGELOG entry for the full
+  // rationale. tl;dr: BD auto-seeds users_meta on parent create; exposing a
+  // manual create action to AI agents causes orphan rows, duplicates, and
+  // cross-table corruption. Think twice before adding anything here.
+  const HIDDEN_TOOLS = new Set(["createUserMeta"]);
+
   for (const [urlPath, methods] of Object.entries(spec.paths)) {
     for (const [method, op] of Object.entries(methods)) {
       if (!op.operationId) continue;
+      if (HIDDEN_TOOLS.has(op.operationId)) continue;
 
       // Self-defense: duplicate operationIds would silently overwrite each other in toolMap.
       // Fail loudly on startup instead of mysterious "tool not found" errors later.
@@ -565,6 +575,72 @@ const CATEGORY_READ_TOOLS = new Set([
   "listSubCategories",
   "getSubCategory",
 ]);
+
+// --- v6.19.0 POST TYPES (listPostTypes / getPostType) ---------------------
+//
+// Post-type rows are huge - ~3.5KB minimum, 15-30KB when code fields are
+// populated (PHP/HTML template content). Most agent tasks routing through
+// post types only need structural/config fields (sidebars, ordering, etc.),
+// NOT the PHP code templates. Code templates are what updatePostType's
+// all-or-nothing-per-group rule applies to - agents editing post-type code
+// opt in via include_code=1.
+
+const POST_TYPE_LEAN_INCLUDE_FLAGS = [
+  "include_code",
+  "include_post_comment_settings",
+  "include_review_notifications",
+];
+
+const POST_TYPE_LEAN_ALWAYS_STRIP = [
+  // Admin-form residue that leaks into post-type read responses
+  "website_id", "myid", "method", "id", "save", "form", "form_fields_name",
+  "fromcron", "zzz_fake_field", "customize",
+];
+
+const POST_TYPE_CODE_BUNDLE = [
+  "search_results_div",
+  "search_results_layout",
+  "profile_results_layout",
+  "profile_header",
+  "profile_footer",
+  "category_header",
+  "category_footer",
+  "comments_code",
+  "comments_header",
+];
+
+const POST_TYPE_REVIEW_NOTIFICATIONS = [
+  "review_admin_notification_email",
+  "review_member_notification_email",
+  "review_submitter_notification_email",
+  "review_approved_submitter_notification_email",
+  "review_member_pending_notification_email",
+];
+
+function applyPostTypeLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    code: !!includeFlags.include_code,
+    post_comment_settings: !!includeFlags.include_post_comment_settings,
+    review_notifications: !!includeFlags.include_review_notifications,
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    stripKeys(row, POST_TYPE_LEAN_ALWAYS_STRIP);
+    if (!include.code) stripKeys(row, POST_TYPE_CODE_BUNDLE);
+    if (!include.post_comment_settings) delete row.post_comment_settings;
+    if (!include.review_notifications) stripKeys(row, POST_TYPE_REVIEW_NOTIFICATIONS);
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 
 // ---------------------------------------------------------------------------
 // HTTP client
@@ -1172,7 +1248,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`include_tags=1\` - member tags array
 - \`include_services=1\` - sub-categories array (BD's \`list_services\` = sub-categories)
 - \`include_seo_hidden=1\` - SEO meta bundle
-- \`include_about=1\` - \`about_me\` HTML bio (v6.16.0)
+- \`include_about=1\` - \`about_me\` HTML bio
 
 **Posts** (\`listSingleImagePosts\` / \`getSingleImagePost\` / \`searchSingleImagePosts\` / \`listMultiImagePosts\` / \`getMultiImagePost\` / \`searchMultiImagePosts\`, ~1.5-2KB lean row): core columns + \`author: {...}\` 10-field summary (replaces full \`user\` nested object) + \`total_clicks\` + (Multi only) \`cover_photo_url\` / \`cover_thumbnail_url\` / \`total_photos\`. Post rows always include \`data_id\`, \`data_type\`, \`system_name\`, \`data_name\`, \`data_filename\`, \`form_name\` for post-type routing. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call \`getPostType\` with \`data_id\` if you need it. Flags:
 
@@ -1182,7 +1258,15 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.`,
 - \`include_clicks=1\` - click history array
 - \`include_photos=1\` - full \`users_portfolio\` photo array (Multi only; Single has single \`post_image\` field always kept)
 
-**Categories** (\`listTopCategories\` / \`getTopCategory\` / \`listSubCategories\` / \`getSubCategory\`, v6.16.0): hierarchy linkage always returned - \`profession_id\` on top+sub, \`master_id\` on sub (parent sub for sub-sub), \`name\`, \`filename\`. SEO bundle (\`desc\`, \`keywords\`, \`image\`, \`icon\`, \`sort_order\`, \`lead_price\`, \`revision_timestamp\`) stripped unless \`include_category_schema=1\`.
+**Categories** (\`listTopCategories\` / \`getTopCategory\` / \`listSubCategories\` / \`getSubCategory\`): hierarchy linkage always returned - \`profession_id\` on top+sub, \`master_id\` on sub (parent sub for sub-sub), \`name\`, \`filename\`. SEO bundle (\`desc\`, \`keywords\`, \`image\`, \`icon\`, \`sort_order\`, \`lead_price\`, \`revision_timestamp\`) stripped unless \`include_category_schema=1\`.
+
+**Post types** (\`listPostTypes\` / \`getPostType\`): all structural / routing / config fields always returned (data_id, data_type, data_name, system_name, data_filename, form_name, sidebars, display_order, h1/h2, feature_categories, etc.). Strips: 9 PHP/HTML code templates (\`search_results_div\`, \`search_results_layout\`, \`profile_results_layout\`, \`profile_header\`, \`profile_footer\`, \`category_header\`, \`category_footer\`, \`comments_code\`, \`comments_header\`), \`post_comment_settings\` JSON, 5 review-notification email template fields. Flags:
+
+- \`include_code=1\` - restores the 9 code templates (needed before \`updatePostType\` edits to read current template content; also required by the all-or-nothing-per-group save rule so you have all group-mates verbatim).
+- \`include_post_comment_settings=1\` - restores \`post_comment_settings\` JSON.
+- \`include_review_notifications=1\` - restores the 5 review-notification email template fields.
+
+**users_meta writes are restricted to \`updateUserMeta\` / \`deleteUserMeta\`.** \`createUserMeta\` is NOT exposed as a tool - BD auto-seeds users_meta rows on every parent-record create (users, WebPages, post types, plans, etc.) for each EAV field the parent supports, so agents never need to manually create. If \`listUserMeta\` returns no row for a key you expected, that parent doesn't support that field - do NOT try to fabricate it.
 
 Other endpoints (leads, reviews, widgets, etc.) return full rows - budget context with \`limit=5\` for those if you only need a few fields.
 
@@ -1351,7 +1435,7 @@ A single mistake here can cascade-destroy member data, plan metadata, and page s
 - On CREATE: \`createWebPage\` writes ALL fields correctly - direct columns AND users_meta rows are seeded together.
 - On UPDATE: \`updateWebPage\` only writes the direct columns - **users_meta-stored fields are SILENTLY IGNORED** (the write succeeds but the new value doesn't persist, live-verified).
 
-**EAV-backed fields that MUST be updated via \`updateUserMeta\` / \`createUserMeta\`** (not \`updateWebPage\`):
+**EAV-backed fields that MUST be updated via \`updateUserMeta\`** (not \`updateWebPage\`):
 
 \`linked_post_category\`, \`linked_post_type\`, \`disable_preview_screenshot\`, \`disable_css_stylesheets\`, \`hero_content_overlay_opacity\`, \`hero_link_target_blank\`, \`hero_background_image_size\`, \`hero_link_size\`, \`hero_link_color\`, \`hero_content_font_size\`, \`hero_section_content\`, \`hero_column_width\`, \`h2_font_weight\`, \`h1_font_weight\`, \`h2_font_size\`, \`h1_font_size\`, \`hero_link_text\`, \`hero_link_url\`.
 
@@ -1360,8 +1444,8 @@ A single mistake here can cascade-destroy member data, plan metadata, and page s
 **Update workflow for each EAV field:**
 
 1. \`listUserMeta\` with filter \`database=list_seo\`, \`database_id=<seo_id>\`, \`key=<field>\` to find the existing \`meta_id\`.
-2. If found -> \`updateUserMeta(meta_id=..., value=<new value>)\`.
-3. If not found -> \`createUserMeta(database=list_seo, database_id=<seo_id>, key=<field>, value=<new value>)\`.
+2. If found -> \`updateUserMeta(meta_id=..., database=list_seo, database_id=<seo_id>, value=<new value>)\`.
+3. If not found -> the WebPage doesn't have that EAV key provisioned. BD auto-seeds these on \`createWebPage\`; a missing row means the field is unsupported on this site. Confirm the field name; do NOT manually create a row (\`createUserMeta\` is intentionally not exposed as a tool).
 
 **Reads merge automatically:** \`getWebPage\` / \`listWebPages\` return the merged record including users_meta values at the top level. You do NOT need to query UserMeta separately for reads.
 
@@ -1509,7 +1593,6 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 
 - \`createUser\` - email. Pre-check REQUIRED only when \`allow_duplicate_member_emails=1\`; otherwise BD enforces uniqueness itself and the pre-check is redundant
 - \`createTag\` - tag_name within group_tag_id
-- \`createUserMeta\` - (database, database_id, key) triple
 - \`createWebPage\` - filename on list_seo
 - \`createForm\` - form_name
 - \`createEmailTemplate\` - email_name
@@ -1540,7 +1623,6 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 
 **Special-case resources - run the expanded workflow in their tool description BEFORE the standard pre-check:**
 
-- \`createUserMeta\` - list -> update-if-found / create-if-not 3-step workflow (see tool description).
 - \`createRedirect\` - TWO filter-finds required: exact-pair skip + reverse-rule loop prevention (avoid A->B + B->A infinite loops).`,
         ``,
         `**Orphan users_meta rows after a parent-record delete - BD does NOT cascade.** When you delete a parent resource, any users_meta rows attached to it stay as orphans; the agent must clean them up surgically (see users_meta IDENTITY RULE above - applies to all read/update/delete, not just this cleanup - \`(database, database_id)\` is atomic compound identity, and \`database_id\`-alone queries return cross-table noise).
@@ -1792,13 +1874,16 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
       const isUserReadTool = USER_READ_TOOLS.has(name);
       const isPostReadTool = POST_READ_TOOLS.has(name);
       const isCategoryReadTool = CATEGORY_READ_TOOLS.has(name);
+      const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
           ? POST_LEAN_INCLUDE_FLAGS
           : isCategoryReadTool
             ? CATEGORY_LEAN_INCLUDE_FLAGS
-            : null;
+            : isPostTypeReadTool
+              ? POST_TYPE_LEAN_INCLUDE_FLAGS
+              : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -1808,16 +1893,22 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
         }
       }
 
-      // v6.18.0/6.18.1 SAFETY GUARD: users_meta writes must pass compound identity.
+      // SAFETY GUARD: users_meta writes must pass compound identity.
       // Protects against cross-table destruction/corruption - the same `database_id`
       // belongs to UNRELATED rows on different parent tables. Acting on meta_id or
       // database_id alone risks mutating/deleting/corrupting an unrelated table.
       //
-      // v6.18.1 hardening:
-      //   - Case-insensitive tool name match (defense-in-depth)
-      //   - createUserMeta included (same corruption risk as update)
-      //   - Safely handle undefined/non-object args (no TypeError)
-      //   - Reject numeric/string zero for meta_id + database_id (BD AUTO_INCREMENT starts at 1)
+      // createUserMeta is also guarded here as defense-in-depth. The tool is
+      // currently hidden from the agent tool surface (v6.19.0 HIDDEN_TOOLS), so
+      // this branch is dead code today. If it's ever re-exposed, the guard still
+      // fires. Rationale for keeping both layers: removing from HIDDEN_TOOLS should
+      // require a second change to remove the guard too - two steps = two chances
+      // to notice it's a destructive decision.
+      //
+      // Hardening details:
+      //   - Case-insensitive tool name match
+      //   - Safely handles undefined/non-object args (no TypeError)
+      //   - Rejects numeric/string zero for meta_id + database_id (BD AUTO_INCREMENT starts at 1)
       const lname = typeof name === "string" ? name.toLowerCase() : "";
       const isUsersMetaWrite =
         lname === "deleteusermeta" ||
@@ -1853,7 +1944,7 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
           return {
             content: [{
               type: "text",
-              text: `${name} SAFETY GUARD (v6.18.1): users_meta writes require compound identity (${isCreate ? "database + database_id" : "meta_id + database + database_id"}). ${parts.join(". ")}.\n\nWHY: users_meta rows share database_id values across unrelated tables. A numeric database_id may simultaneously be a WebPage's seo_id, a member's user_id, a post's post_id, AND a plan's subscription_id - all rows with the same ID on different tables. Acting without the full compound identity risks destroying (delete) or corrupting (update/create) unrelated resource metadata on the WRONG parent table.\n\nSAFE PATTERN: always pass the full compound identity on every users_meta write. For orphan-cleanup after a parent delete, list by database_id then CLIENT-SIDE filter to rows where database matches the intended parent table, then delete each matching meta_id with all three fields.\n\nSee top-level users_meta IDENTITY RULE.`
+              text: `${name} SAFETY GUARD: users_meta writes require compound identity (${isCreate ? "database + database_id" : "meta_id + database + database_id"}). ${parts.join(". ")}.\n\nWHY: users_meta rows share database_id values across unrelated tables. A numeric database_id may simultaneously be a WebPage's seo_id, a member's user_id, a post's post_id, AND a plan's subscription_id - all rows with the same ID on different tables. Acting without the full compound identity risks destroying (delete) or corrupting (update/create) unrelated resource metadata on the WRONG parent table.\n\nSAFE PATTERN: always pass the full compound identity on every users_meta write. For orphan-cleanup after a parent delete, list by database_id then CLIENT-SIDE filter to rows where database matches the intended parent table, then delete each matching meta_id with all three fields.\n\nSee top-level users_meta IDENTITY RULE.`
             }],
             isError: true,
           };
@@ -1882,11 +1973,12 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
 
-      // Apply lean-response shaping per resource family (v6.15.0 users, v6.16.0 posts + categories)
+      // Apply lean-response shaping per resource family (v6.15 users, v6.16 posts+cats, v6.19 post-types)
       if (result.body) {
         if (isUserReadTool) result.body = applyUserLean(result.body, includeFlags);
         else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags);
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
+        else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
       }
 
       // Surface rate-limit errors with actionable guidance for the agent

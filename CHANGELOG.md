@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.19.0] - 2026-04-21
+
+### Removed — `createUserMeta` hidden from the agent tool surface
+
+BD auto-seeds `users_meta` rows on parent-record create for every EAV field the parent supports. Exposing `createUserMeta` to AI agents invites misuse: writing orphan rows with wrong `database_id`, duplicating auto-seeded rows, or creating rows for keys BD doesn't recognize on that parent table. The tool is now excluded from `tools/list` via a `HIDDEN_TOOLS` set in the tool-registration loop. BD's API still has the endpoint; the MCP wrapper just doesn't register it.
+
+Agent-facing workflow is now: `listUserMeta` -> `updateUserMeta` if a row for that key exists. If no row exists, the parent doesn't support that EAV key on this site. Agents should NOT fabricate the row.
+
+The v6.18.x safety guard on `createUserMeta` is intentionally kept as defense-in-depth. It's dead code today (tool can't be called), but if anyone ever re-exposes it, the compound-identity guard still fires. The two layers (hide at registration + guard at dispatch) are intentional — removing the hide should require a second change to remove the guard too.
+
+Deliberately-hidden note embedded in:
+- `mcp/index.js` near `HIDDEN_TOOLS = new Set(["createUserMeta"])` — explains why and where to read more
+- `openapi/bd-api.json` `createUserMeta` summary field — first thing anyone editing that spec entry sees
+
+Instruction updates:
+- idx 75 (WebPage EAV workaround): removed `createUserMeta` from the 3-step update workflow; step 3 now explains why a missing row means the field isn't provisioned
+- idx 110 (duplicate silent-accept): removed `createUserMeta` from the name-based-resources list; removed the "create-if-not" special-case workflow
+- idx 73 + idx 112 (users_meta identity + orphan cleanup): unchanged — still correctly reference `updateUserMeta` / `deleteUserMeta` only
+- Top-level row-weight paragraph: added sentence explaining agents should only use `updateUserMeta` / `deleteUserMeta`; `createUserMeta` is intentionally not exposed
+
+### Added — `listPostTypes` / `getPostType` lean-by-default
+
+Post-type rows are heavy: ~3.5KB minimum on a minimally-configured post type, 15-30KB on a type with populated PHP/HTML code templates. Most agent tasks that traverse post types (discovering `data_id`, checking routing, finding the right `form_name` to pass to a create call) need only the structural/config fields, not the code templates.
+
+Now stripped by default:
+
+- 9 PHP/HTML code-template fields: `search_results_div`, `search_results_layout`, `profile_results_layout`, `profile_header`, `profile_footer`, `category_header`, `category_footer`, `comments_code`, `comments_header`
+- `post_comment_settings` JSON-string field
+- 5 review-notification email template fields: `review_admin_notification_email`, `review_member_notification_email`, `review_submitter_notification_email`, `review_approved_submitter_notification_email`, `review_member_pending_notification_email`
+
+Strip-always (debug residue, no legit agent use): `website_id`, `myid`, `method`, `id`, `save`, `form`, `form_fields_name`, `fromcron`, `zzz_fake_field`, `customize`.
+
+New opt-in flags on `listPostTypes` + `getPostType`:
+
+- `include_code=1` — restores the 9 code-template fields. Required before `updatePostType` code-edits (the all-or-nothing-per-group save rule needs all group-mates verbatim).
+- `include_post_comment_settings=1` — restores `post_comment_settings` JSON.
+- `include_review_notifications=1` — restores the 5 review-notification email template fields.
+
+Always kept: all structural/routing/config fields (`data_id`, `data_type`, `data_name`, `system_name`, `data_filename`, `form_name`, `data_active`, `display_order`, `profile_display_order`, `category_tab`, `profile_tab`, `category_sidebar`, `profile_sidebar`, `sidebar_search_module`, `category_order_by`, `profile_order_by`, `h1`, `h2`, `per_page`, `profile_per_page`, `caption_length`, `icon`, `feature_categories`, `always_on`, `distance_search`, `search_results`, `footer_content`, `revision_timestamp`, `category_group`, `software_version`, `enable_search_results_map`, `enable_map`, `search_priority_flag`, `enable_price_slider`, `photo_gallery_videos`, `search_results_start_view`, `category_sql`, `post_type`, `post_date`, `comments`, `is_event_feature`, `tablesExists`).
+
+Typical reduction: ~3.5KB → ~1.5KB on minimal post types (~60%); ~15-30KB → ~1.5KB on post types with populated code templates (~90%+).
+
+### Changed — stripped version-number references from agent-visible text
+
+Every `v6.X.Y` reference in tool descriptions, instruction block text, and the users_meta safety-guard error message was removed. These were wasted tokens — the agent doesn't care what version it's on, and keeping version refs in-instruction means every future release either leaves stale numbers behind or needs a sweep. Stripped 168 bytes from `openapi/bd-api.json` alone. Version info stays in CHANGELOG and code comments (neither of which reaches the agent).
+
 ## [6.18.2] - 2026-04-21
 
 ### Fixed — v6.18.0 and v6.18.1 never actually published to npm
