@@ -5934,6 +5934,18 @@
           },
           {
             "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "include_plan_config",
+            "in": "query",
+            "description": "Opt in to restore plan config fields: `sub_active`, `search_priority`, `auto_activate`, `status_after_upgrade`, `upgradable_membership`, `search_membership_permissions`, `photo_limit`, `style_limit`, `service_limit`, `location_limit`, all form/sidebar/email-template fields, `profile_layout`, `menu_name`, `data_settings`, `payment_default`, `hide_specialties`, `email_member`, `login_redirect`, `page_header`, `page_footer`, `display_ads`, `receive_messages`, `index_rule`, `nofollow_links`. Default stripped.",
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "include_plan_display_flags",
+            "in": "query",
+            "description": "Opt in to restore profile-visibility toggles: `show_about`, `show_experience`, `show_education`, `show_background`, `show_affiliations`, `show_publications`, `show_awards`, `show_slogan`, `show_sofware`, `show_phone`, `seal_link`, `website_link`, `social_link`. Default stripped.",
+            "schema": { "type": "boolean", "default": false }
           }
         ],
         "responses": {
@@ -5948,7 +5960,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of membershipplan records. Read-only.\n\n**Use when:** discovering `subscription_id` values to use when creating members. Essential prerequisite for `createUser` - every member needs a valid `subscription_id`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMembershipPlan` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of membership-plan records. Read-only.\n\n**Use when:** discovering `subscription_id` values to use when creating members. Essential prerequisite for `createUser` - every member needs a valid `subscription_id`.\n\n**Lean-by-default:** always-kept = `subscription_id`, `subscription_name`, `subscription_type`, `profile_type`, `monthly_amount`, `yearly_amount`, `initial_amount`, `lead_price`, `searchable`. Heavy config (~40 fields) + display-visibility toggles (~13 fields) are stripped. Most 'pick a plan' workflows don't need them. Flags:\n\n- `include_plan_config=1` - restores config bundle (active/searchable toggles, limits, forms, sidebars, email templates, upgrade chain, payment defaults, etc.).\n- `include_plan_display_flags=1` - restores `show_*` profile-visibility toggles.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule.\n\n**See also:** `getMembershipPlan` (single by ID).\n\n**Returns:** `{ status: \"success\", total, ..., message: [...records] }`."
       }
     },
     "/api/v2/subscription_types/get/{subscription_id}": {
@@ -5966,6 +5978,18 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "include_plan_config",
+            "in": "query",
+            "description": "Opt in to restore plan config fields (limits, sidebars, forms, email templates, upgrade chain, display/payment settings). Default stripped.",
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "include_plan_display_flags",
+            "in": "query",
+            "description": "Opt in to restore profile-visibility toggles (`show_about`, `show_experience`, `show_phone`, `seal_link`, `website_link`, `social_link`, etc.). Default stripped.",
+            "schema": { "type": "boolean", "default": false }
           }
         ],
         "responses": {
@@ -5980,7 +6004,7 @@
             }
           }
         },
-        "description": "Fetch a single membershipplan record. Read-only.\n\n**Use when:** fetching one plan's full config (pricing, features). Most sites have 2-10 plans; listing is usually cheap enough.\n\n**Required:** `subscription_id`.\n\n**See also:** `listMembershipPlans` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single membership-plan record. Read-only.\n\n**Use when:** fetching one plan's config. Same lean-by-default as `listMembershipPlans`.\n\n**Required:** `subscription_id`.\n\n**Lean shape:** always-kept = `subscription_id`, `subscription_name`, `subscription_type`, `profile_type`, `monthly_amount`, `yearly_amount`, `initial_amount`, `lead_price`, `searchable`. Opt in to restore:\n\n- `include_plan_config=1` - config bundle (limits, sidebars, forms, email templates, upgrade chain, payment defaults).\n- `include_plan_display_flags=1` - `show_*` profile-visibility toggles.\n\n**See also:** `listMembershipPlans` (enumerate).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }`."
       }
     },
     "/api/v2/subscription_types/create": {
@@ -8468,6 +8492,22 @@
             "required": true,
             "schema": { "type": "integer" }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v2/site_info/get": {
+      "get": {
+        "operationId": "getSiteInfo",
+        "summary": "Get site-level identity, locale, currency, and brand-image URLs",
+        "description": "Returns the site's own identity and locale context — what kind of directory this is, who it serves, the formatting conventions to respect, and the URLs of branding assets. Read-only, no params. **Call this once on the first BD task of a conversation and cache for the session; the values rarely change mid-conversation.**\n\n**Response shape:** `{ status: \"success\", message: { website_name, website_phone, full_url, profession, industry, primary_country, language, timezone, date_format, distance_format, website_currency, currency_prefix, currency_suffix, currency_format, currency_decimal_divider, currency_thousand_divider, brand_images_relative: {...}, brand_images_absolute: {...} } }`.\n\n**Field semantics to know:**\n\n- `profession` = SITE-LEVEL setting describing the archetype of member this directory lists (e.g. `\"Doctor\"`, `\"Personal Trainer\"`). **NOT** related to a member's `profession_id` (that's a foreign key into the per-member `list_professions` taxonomy).\n\n- `industry` = SITE-LEVEL setting describing the market/vertical the site serves (e.g. `\"Healthcare\"`, `\"Fitness\"`). Site metadata, not a member attribute.\n\n- `full_url` = the canonical site URL with `https://` and no trailing slash. Use this when composing public profile URLs (`<full_url>/<user.filename>`, `<full_url>/<seo_id filename>`).\n\n- `timezone` / `date_format` / `distance_format` / `website_currency` + the `currency_*` formatting bits = locale context for how to present data back to the user (dates, distances, money). Respect these when formatting.\n\n- `brand_images_relative` and `brand_images_absolute` = parallel objects with 8 keys each (`website_logo`, `website_mascot`, `website_background`, `favicon`, `default_profile_image`, `default_logo_image`, `verified_member_image`, `watermark`). Relative = path-only (e.g. `/images/logo.webp`); absolute = full https URL. Use absolute URLs when embedding in emails / external content; relative when embedding on the site itself.\n\n- `default_profile_image` on a member read signals \"no real photo\" — compare `image_main_file` to this URL to detect placeholder state.\n\n**Why agents should call this early:** the grounding it provides (site purpose, member archetype, locale) shapes every subsequent decision — what 'add a member' means, what categories are relevant, how to format dates and money, what the profile-placeholder image looks like, which brand assets to use in designs.\n\n_Auth: `X-Api-Key`. Rate limit: standard 100 req/60s. Cache for the session._",
+        "tags": [
+          "Website Settings"
         ],
         "responses": {
           "200": {

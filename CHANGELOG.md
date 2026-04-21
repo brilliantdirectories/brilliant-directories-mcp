@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.24.0] - 2026-04-21
+
+### Added — `getSiteInfo` tool for session grounding
+
+Wraps the new BD endpoint `/api/v2/site_info/get`. Read-only, no params, ~1KB response. Returns the site's identity + locale context + branding-asset URLs in one call: `website_name`, `website_phone`, `full_url`, `profession`, `industry`, `primary_country`, `language`, `timezone`, `date_format`, `distance_format`, `website_currency`, currency-formatting fields, and `brand_images_relative` + `brand_images_absolute` objects (8 asset slots each — logo, mascot, background, favicon, default_profile_image, default_logo_image, verified_member_image, watermark).
+
+**Site-level `profession` and `industry` are NOT a member's `profession_id`.** They describe the archetype of member the directory lists and the market it serves — site settings, not per-member taxonomy. Directive makes this explicit to prevent conflation.
+
+**Session-grounding directive** added to the top-level instructions block: agents should call `getSiteInfo` once on the first BD task of a conversation and cache for the session. `default_profile_image` from the response is the signal for detecting placeholder member photos.
+
+### Added — lean-by-default on `listMembershipPlans` / `getMembershipPlan`
+
+Plans had ~5-6KB per row with ~60 fields of mostly display toggles, photo/style/service limits, form names, sidebar slots, email-template references, upgrade chains, and admin-form residue. Most agents just need the plan IDs + names + pricing to pick one when creating a member.
+
+**Always-kept (9):** `subscription_id`, `subscription_name`, `subscription_type`, `profile_type`, `monthly_amount`, `yearly_amount`, `initial_amount`, `lead_price`, `searchable`
+
+**Stripped by default, opt-in flags (2):**
+
+- `include_plan_config=1` — restores config bundle: active/searchable toggles, limits, forms, sidebars, email templates, upgrade chain, payment defaults, page headers/footers, display ads, index/follow rules, etc.
+- `include_plan_display_flags=1` — restores profile-visibility toggles (`show_about`, `show_experience`, `show_education`, `show_background`, `show_affiliations`, `show_publications`, `show_awards`, `show_slogan`, `show_sofware`, `show_phone`, `seal_link`, `website_link`, `social_link`).
+
+Also always-stripped: admin-form residue (`form`, `save`, `save_`, `method`, `form_security_token`, `myid`, `result`, `noheader`, etc.).
+
+### Fixed — `include_profession` / `include_services` doc truth
+
+Live probe confirmed `profession_schema: false` / `services_schema: false` on reads is not a bug — it's BD's honest signal for "FK doesn't resolve to a real record" (stale pointer, deleted category, or zero-value). Verified: user with `profession_id=1` returns `false` because only profession_ids `3` and `8` exist on that site; user with `profession_id=8` returns the full schema object. Doc updated to describe the resolution semantics honestly.
+
+### Behavior parity
+
+Same shape + dispatcher pattern as all prior lean-shapers (Users, Posts, Categories, Post Types, Web Pages). Write-response lean-shaping (from prior release) unchanged. Tool count: +1 (new `getSiteInfo`). Zero breaking changes.
+
 ## [6.23.0] - 2026-04-21
 
 ### Added — ultra-lean write-response shaping across 7 families

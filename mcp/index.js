@@ -683,6 +683,69 @@ function applyWebPageLean(body, includeFlags) {
 
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 
+// --- MEMBERSHIP PLANS ------------------------------------------------------
+//
+// listMembershipPlans returns ~5-6KB per plan row. Most agent tasks just need
+// the plan IDs + names + pricing to pick one when creating a member. Full
+// config (display toggles, photo/style/service limits, sidebars, form names,
+// email templates, upgrade chains, etc.) is rarely needed and bloats reads.
+
+const PLAN_LEAN_INCLUDE_FLAGS = [
+  "include_plan_config",
+  "include_plan_display_flags",
+];
+
+// Stripped by default, restored with include_plan_config=1
+const PLAN_CONFIG_FIELDS = [
+  "sub_active", "search_priority", "auto_activate", "status_after_upgrade",
+  "upgradable_membership", "search_membership_permissions",
+  "photo_limit", "style_limit", "service_limit", "location_limit",
+  "about_form", "listing_details_form", "contact_details_form",
+  "signup_sidebar", "profile_sidebar", "signup_email_template",
+  "upgrade_email_template", "signup_promotion_widget", "profile_layout",
+  "menu_name", "data_settings", "data_settings_read", "location_settings",
+  "category_badge", "profile_badge", "subscription_filename",
+  "payment_default", "hide_specialties", "email_member", "login_redirect",
+  "page_header", "page_footer", "display_ads", "receive_messages",
+  "index_rule", "nofollow_links",
+];
+
+// Stripped by default, restored with include_plan_display_flags=1
+const PLAN_DISPLAY_FLAG_FIELDS = [
+  "show_about", "show_experience", "show_education", "show_background",
+  "show_affiliations", "show_publications", "show_awards", "show_slogan",
+  "show_sofware", "show_phone", "seal_link", "website_link", "social_link",
+];
+
+// Always stripped — admin-form residue and internal duplicates
+const PLAN_LEAN_ALWAYS_STRIP = [
+  "form", "save", "save_", "method", "form_security_token",
+  "myid", "result", "id", "noheader", "rr8",
+];
+
+function applyPlanLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    config: !!includeFlags.include_plan_config,
+    display: !!includeFlags.include_plan_display_flags,
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    stripKeys(row, PLAN_LEAN_ALWAYS_STRIP);
+    if (!include.config) stripKeys(row, PLAN_CONFIG_FIELDS);
+    if (!include.display) stripKeys(row, PLAN_DISPLAY_FLAG_FIELDS);
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
+
 // --- WRITE-RESPONSE LEAN-SHAPING -------------------------------------------
 //
 // BD's create/update endpoints echo the full updated/created record in the
@@ -1503,6 +1566,8 @@ NEVER fake full-bleed with \`margin: 0 -9999px; padding: 0 9999px\` or negative 
 
 **Admin Froala editor gotcha:** editor applies \`content_css\` but does NOT run \`content_footer_html\` JS. Hide-by-default CSS (scroll reveals, tab panels, accordion collapse, modals, non-active slider slides) will permanently hide content in the editor. Gate such rules behind a \`.js-ready\` class on a page-scoped wrapper (\`.my-page.js-ready .reveal { opacity:0 }\` NOT \`.my-page .reveal { opacity:0 }\`), and have \`content_footer_html\` JS add that class as its FIRST line: \`document.querySelector('.my-page')?.classList.add('js-ready');\`. Live site: class added, CSS activates. Admin: class never added, content stays visible/editable.`,
         ``,
+        `**Site grounding - call \`getSiteInfo\` once on the first BD task of a conversation and cache for the session.** Tiny payload (~1KB) that tells you what kind of directory this is: \`website_name\`, \`full_url\` (use for composing public URLs), \`profession\` (SITE-level target member archetype — NOT a member's \`profession_id\`), \`industry\` (site's market vertical), locale (\`timezone\`, \`date_format\`, \`distance_format\`), currency fields, and \`brand_images_relative\`/\`brand_images_absolute\` URLs (8 slots each — logo, mascot, background, favicon, default_profile_image, default_logo_image, verified_member_image, watermark). Use \`default_profile_image\` to detect placeholder photos (if a member's \`image_main_file\` matches it, there's no real photo). \`profession\` and \`industry\` are site settings — NEVER conflate with per-member \`profession_id\` taxonomy.`,
+        ``,
         `Brand kit - call \`getBrandKit\` ONCE at the start of any design-related task (building a widget, WebPage, post template, email, hero banner - anything where colors or fonts are chosen) so your output visually matches the site's brand. Returns a compact semantic palette (body / primary / dark / muted / success / warm / alert accents, card surface) plus body + heading Google Fonts, with inline \`usage_guidance\` explaining which role each color plays and tint rules. Cache the result for the rest of the session - the brand kit rarely changes within one conversation. **Derive hover/tinted/gradient colors from the returned palette values - never introduce unrelated hues.** The returned \`body.font\` and \`heading_font\` are already globally loaded on the site; do NOT redeclare them in \`content_css\` unless deliberately switching to a different family (and then \`@import\` the new Google Font in the same CSS).`,
         ``,
         `**Hero section readability safe-defaults. Apply on TRANSITION only** - when an agent is turning the hero ON (setting \`enable_hero_section\` from \`0\`/unset to \`1\` or \`2\`, either on \`createWebPage\` with hero enabled or on \`updateWebPage\` that flips the toggle) AND the user hasn't explicitly set the color/overlay/padding values.
@@ -2000,6 +2065,7 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
       const isCategoryReadTool = CATEGORY_READ_TOOLS.has(name);
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
+      const isPlanReadTool = PLAN_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
@@ -2010,7 +2076,9 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
               ? POST_TYPE_LEAN_INCLUDE_FLAGS
               : isWebPageReadTool
                 ? WEB_PAGE_LEAN_INCLUDE_FLAGS
-                : null;
+                : isPlanReadTool
+                  ? PLAN_LEAN_INCLUDE_FLAGS
+                  : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -2108,6 +2176,7 @@ No XML conventions, no HTML-entity encoding, no function-call wrappers.
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
+        else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }
 
