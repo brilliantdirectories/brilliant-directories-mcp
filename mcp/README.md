@@ -8,20 +8,22 @@ Give any AI agent full access to your Brilliant Directories site with one API ke
 
 Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
-## Before you start — 3 things you need
+## ⚠️ REQUIREMENTS — Before you start
 
 1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
-2. **Your BD API key (with the right permissions).** BD Admin → **Developer Hub** → **Generate API Key** → copy it.
-
-   > ⚠️ **Enable advanced endpoint permissions, or the AI hits 403s on most writes.** Fresh keys have only baseline endpoints enabled.
-   >
-   > Developer Hub → find your key → **Actions** → **Permissions** → **Advanced Endpoints** tab → **ALL ON** → **Save Permissions**.
-   >
-   > Skip this and the agent works for basic member read/write but fails on pages, forms, menus, tags, templates, reviews, leads, etc.
-3. **Your BD site URL.** Include `https://`, no trailing slash.
+2. **Your BD site URL.** Include `https://`, no trailing slash.
    - ✅ `https://mysite.com`
    - ❌ `mysite.com` (missing `https://`)
    - ❌ `https://mysite.com/` (trailing slash)
+3. **Your BD API key.** BD Admin → **Developer Hub** → **Generate API Key** → copy it. [Full walkthrough: How to Create an API Key](https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
+
+### 🚨 PERMISSIONS — DO NOT SKIP THIS
+
+**Fresh API keys have only baseline endpoints enabled. Without this step, the AI hits `403 Forbidden` on most writes — pages, forms, menus, tags, templates, reviews, leads, etc. all fail.**
+
+**Developer Hub → find your key → Actions dropdown → Permissions → Advanced Endpoints tab → ALL ON → Save Permissions.**
+
+If the agent works for basic member read/write but fails everywhere else, this is why. Come back here and turn them on.
 
 ## Table of Contents
 
@@ -272,7 +274,7 @@ The CLI writes the same JSON to `~/.claude.json` for you — same end result as 
 >
 > | OpenAI surface | Works with the full BD MCP? |
 > |---|---|
-> | ChatGPT web (`chatgpt.com`) | ❌ No — Custom GPT Actions cap at **30 operations per GPT**; our MCP has 175 |
+> | ChatGPT web (`chatgpt.com`) | ❌ No — Custom GPT Actions cap at **30 operations per GPT**; our MCP has 100+ |
 > | ChatGPT Desktop app | ❌ No — same 30-op cap (loads the same Custom GPTs) |
 > | Codex Cloud app | ❌ No — uses OpenAI's App Server architecture; MCP support is partial/evolving |
 > | **Codex CLI** (terminal) | ✅ **Yes — full MCP support, no op cap** |
@@ -380,13 +382,13 @@ Scroll to the bottom of the Configure form → click **Create new action**. A ne
   ]
   ```
 - Use YOUR actual BD site URL, no trailing slash. Delete everything else — `description`, `variables`, all of it.
-- Wait a moment after the edit — the red `Could not find a valid URL in 'servers'` error should disappear, and the **Available actions** list populates with ~175 BD tools.
+- Wait a moment after the edit — the red `Could not find a valid URL in 'servers'` error should disappear, and the **Available actions** list populates with 100+ BD tools.
 
 **5. Authentication**
 
 - Click the gear icon in the Authentication section.
 - **Authentication Type:** `API Key`
-- **API Key:** paste your BD API key (from BD Admin → Developer Hub). Make sure Advanced Endpoint permissions are ALL ON — see the [prerequisites](#before-you-start--3-things-you-need).
+- **API Key:** paste your BD API key (from BD Admin → Developer Hub). Make sure Advanced Endpoint permissions are ALL ON — see the [prerequisites](#requirements--before-you-start).
 - **Auth Type:** `Custom` (NOT Basic, NOT Bearer)
 - **Custom Header Name:** `X-Api-Key` (exact case)
 - Click **Save**.
@@ -469,7 +471,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
    | `BD_API_URL` | `https://your-site.com` — include `https://`, no trailing slash |
 
    - API key → BD Admin → **Developer Hub** → **Generate API Key** (BD shows it once; if lost, generate a new one).
-   - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#before-you-start--3-things-you-need).
+   - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#requirements--before-you-start).
 
 4. Click **Install**.
 5. **Fully quit + reopen Cursor** (closing the window isn't enough):
@@ -727,6 +729,8 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Redirects (301) | `/api/v2/redirect_301/` | list, get, create, update, delete |
 | Data Types | `/api/v2/data_types/` | list, get, create, update, delete |
 | Website Settings | `/api/v2/website_settings/` | refreshCache |
+| Site Info | `/api/v2/site_info/` | getSiteInfo |
+| Brand Kit | `/api/v2/website_design_settings/` | getBrandKit |
 
 ## Field Discovery
 

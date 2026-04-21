@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.25.1] - 2026-04-21
+
+### Fixed — `mcp/README.md` out-of-sync with root `README.md`
+
+The npm package ships `mcp/README.md` as its displayed README on npmjs.com. That copy had drifted from the canonical root `README.md`: older "Before you start" heading (no ⚠️), less-prominent permissions callout (no 🚨), and hardcoded tool-counts (violates the "no versions/counts in agent-facing text" rule).
+
+Overwrote `mcp/README.md` with the current root `README.md` so npm users and GitHub visitors see the same content. Going forward both files must stay in lockstep — any edit to one is an edit to the other.
+
 ## [6.25.0] - 2026-04-21
 
 ### Added — widgets now lean-echo on create/update (WRITE_KEEP_SETS)
