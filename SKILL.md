@@ -53,7 +53,7 @@ The user installs the MCP server once; it exposes every BD operation as a tool. 
 
 **If MCP tools are NOT available**, tell the user to run:
 ```bash
-npx brilliant-directories-mcp --setup
+npx brilliant-directories-mcp@latest --setup
 ```
 The wizard asks for their BD site URL and API key, then configures their AI client automatically. After a client restart, the tools become available.
 
@@ -237,7 +237,7 @@ Key rules:
 If the user needs to set up the MCP server:
 
 ```bash
-npx brilliant-directories-mcp --setup
+npx brilliant-directories-mcp@latest --setup
 ```
 
 Answer 2 questions (site URL, API key), pick their AI client, restart, done.

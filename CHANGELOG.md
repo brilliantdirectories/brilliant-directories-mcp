@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.19] - 2026-04-20
+
+### Fixed — `@latest` consistency across install artifacts before public advertising push
+
+Pre-advertising audit found 3 shipped artifacts with bare `brilliant-directories-mcp` (no `@latest`) — users cloning or importing these would pin to whatever version was cached on their machine, missing future directive updates:
+
+- `.mcp.json` (repo-level config template that Cursor Directory reads) — `args` now `["-y", "brilliant-directories-mcp@latest"]`
+- `SKILL.md` line 56 and line 240 — both setup-wizard snippets bumped to `@latest`
+
+All READMEs (root + mcp/) were already `@latest` everywhere. Bare references in help text, URLs, metadata, and `npm install -g` "don't do this" examples are intentional — only install/config contexts need `@latest` for auto-update guarantees.
+
+Doc-only.
+
 ## [6.13.18] - 2026-04-20
 
 ### Fixed — Diagrams/charts route to Widget, not SVG in `content`
