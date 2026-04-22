@@ -24,7 +24,7 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ### Two ways to connect — pick one
 
-- **🚀 Easy (recommended, no install):** point your AI client at `https://mcp.brilliantdirectories.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
+- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://mcp.brilliantdirectories.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
 - **🛠️ Advanced (requires Node.js install):** run the MCP as a `npx` child process on your own machine. Same tool surface, same instructions, same safety guards. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
 
 Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
@@ -156,7 +156,7 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 
 Select all (`Cmd+A` / `Ctrl+A`), delete, paste **one of these** (Easy is recommended):
 
-**🚀 Easy (recommended — no Node.js needed):**
+**🚀 Easy (recommended — no Node.js install required):**
 
 ```json
 {
@@ -380,7 +380,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 4. In the Cascade panel on the right of your window, click the **MCPs icon** (top-right of the panel) → **Configure**. This opens the MCP config file.
 5. Paste **one of these** (Easy is recommended):
 
-**🚀 Easy (recommended — no Node.js needed):**
+**🚀 Easy (recommended — no Node.js install required):**
 
 ```json
 {
@@ -428,7 +428,7 @@ Replace `ENTER_API_KEY` and the URL. Save.
 4. Click **Configure MCP Servers** — opens the Cline MCP config file in VS Code.
 5. Paste **one of these** (Easy is recommended):
 
-**🚀 Easy (recommended — no Node.js needed):**
+**🚀 Easy (recommended — no Node.js install required):**
 
 ```json
 {
