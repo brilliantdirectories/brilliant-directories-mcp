@@ -87,7 +87,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 }
 ```
 
-Replace `ENTER_API_KEY` and `https://your-site.com`. Save. Fully quit and reopen the AI app. Done.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save. Fully quit and reopen the AI app. Done.
 
 Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
@@ -122,7 +122,7 @@ Each platform has **two options**:
 }
 ```
 
-Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
 
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
 
@@ -293,7 +293,7 @@ Close and reopen your terminal so PATH updates. Verify with `claude --version`.
 claude mcp add bd-api -- npx brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
-Replace `ENTER_API_KEY` and `https://your-site.com` with your values. Verify with `claude mcp list` — `bd-api` should appear. Close and reopen Claude Code.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Verify with `claude mcp list` — `bd-api` should appear. Close and reopen Claude Code.
 
 > **Credentials live in that one command.**
 >
@@ -627,7 +627,7 @@ Use one of these paths instead:
 
 ### curl / Any HTTP Client
 
-Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` and `https://your-site.com` with real values.
+Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
 
 ```bash
 # Verify your API key
@@ -680,7 +680,7 @@ Once set up, you get new MCP versions automatically the next time you fully quit
 
 ## Troubleshooting
 
-**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` and `https://your-site.com` with real values:
+**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL:
 ```bash
 npx brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
