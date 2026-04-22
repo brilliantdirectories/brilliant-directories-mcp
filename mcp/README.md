@@ -92,7 +92,7 @@ Each platform has **two options**:
 - **🚀 Remote config block** — points at our hosted MCP at `https://mcp.brilliantdirectories.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
 - **🛠️ Local config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
 
-**Both give the full ~173-tool surface, same instructions, same lean shapers, same safety guards.** Pick whichever suits you.
+**Both give the full ~173-tool surface, same instructions, same lean shapers, same safety guards.**
 
 ### 🚀 Remote config block (recommended)
 
@@ -110,7 +110,9 @@ Each platform has **two options**:
 }
 ```
 
-Replace `ENTER_API_KEY` and `https://your-site.com` with your values. The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
+Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
+
+The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
 
 ### 🛠️ Local config block (Advanced)
 
