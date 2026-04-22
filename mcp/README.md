@@ -15,6 +15,9 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
    - ❌ `mysite.com` (missing `https://`)
    - ❌ `https://mysite.com/` (trailing slash)
 2. **Your BD API key.** BD Admin → **Developer Hub** → **Generate API Key** → copy it. [Full walkthrough: How to Create an API Key](https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
+
+> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at [anthropics/claude-code issue #51874](https://github.com/anthropics/claude-code/issues/51874). **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, try the Remote path below — it skips the `npx` subprocess spawn and the latency that triggers it.
+
 3. **Node.js — only for the "Local install" path** (see below). Not needed for the Remote path. If you need it, one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click, Next through the prompts).
 
 ### Two ways to connect — pick one
