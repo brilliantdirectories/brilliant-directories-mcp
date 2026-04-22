@@ -154,7 +154,7 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 
 > ⚠️ **Do NOT use Settings → Connectors** (that's the OAuth UI — our MCP uses header auth, not OAuth).
 >
-> Go to **Settings → Developer → Edit Config** instead — works for both Easy and Advanced paths.
+> ✅ Go to **Settings → Developer → Edit Config** instead — works for both Easy and Advanced paths.
 >
 > **After initial connection, fully quit and reopen the app after editing the config.**
 >
