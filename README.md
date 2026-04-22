@@ -522,9 +522,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
    - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#requirements--before-you-start).
 
 4. Click **Install**.
-5. **Fully quit + reopen Cursor** (closing the window isn't enough):
-   - **Windows:** system tray (bottom-right, may be under `^`) → right-click Cursor → **Quit**.
-   - **Mac:** `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**.
+5. **Fully quit + reopen Cursor** — closing the window isn't enough. On Windows: system tray (bottom-right, may be under `^`) → right-click Cursor → **Quit**. On Mac: `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**.
 6. Tools appear in **Settings → Tools & MCP**.
 
 > **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-81245`, `brilliant-directories-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"* or *"copy these 3 email templates from brilliant-directories-60031 to brilliant-directories-81245"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
