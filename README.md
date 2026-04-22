@@ -16,11 +16,11 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
    - ❌ `https://mysite.com/` (trailing slash)
 2. **Your BD API key.**
    BD Admin → **Developer Hub** → **Generate API Key** → copy it.
-   [Full walkthrough: How to Create an API Key](https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
+   <a href="https://support.brilliantdirectories.com/support/solutions/articles/12000088768" target="_blank" rel="noopener noreferrer">Full walkthrough: How to Create an API Key</a>.
 
-> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at [anthropics/claude-code issue #51874](https://github.com/anthropics/claude-code/issues/51874). **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, try the Easy path below — it skips the `npx` subprocess spawn and the latency that triggers it.
+> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, try the Easy path below — it skips the `npx` subprocess spawn and the latency that triggers it.
 
-3. **Node.js — only for the Advanced path** (see below). Not needed for the Easy path. If you need it, one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click, Next through the prompts).
+3. **Node.js — only for the Advanced path** (see below). Not needed for the Easy path. If you need it, one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick the "LTS" version, double-click, Next through the prompts).
 
 ### Two ways to connect — pick one
 
@@ -250,7 +250,7 @@ Merge — don't overwrite. Two rules:
 
 Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
-> **Paste your final file into [jsonlint.com](https://jsonlint.com) before restarting.** Missing commas silently break the MCP — a validator flags them instantly.
+> **Paste your final file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a> before restarting.** Missing commas silently break the MCP — a validator flags them instantly.
 
 ---
 
@@ -258,7 +258,7 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
    That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
+> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -276,7 +276,7 @@ Claude Code has no MCP GUI — install via terminal. Works in:
 
 **Prerequisites (Claude Code is Advanced-path only — requires Node.js):**
 
-1. **Node.js** — one-time install from [nodejs.org](https://nodejs.org) (pick "LTS", double-click, Next through the prompts). Claude Code is itself an npm package, and the BD MCP launches via `npx`, so Node.js is required for both halves. Verify in a fresh terminal with `node --version` (should print `v18.x` or higher) and `npm --version`.
+1. **Node.js** — one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick "LTS", double-click, Next through the prompts). Claude Code is itself an npm package, and the BD MCP launches via `npx`, so Node.js is required for both halves. Verify in a fresh terminal with `node --version` (should print `v18.x` or higher) and `npm --version`.
 
 2. **The `claude` CLI:**
 
@@ -502,7 +502,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 
 **Cursor Directory one-click install for the Advanced path (no terminal, no file editing):**
 
-1. **Open** → [cursor.directory/plugins/brilliant-directories](https://cursor.directory/plugins/brilliant-directories)
+1. **Open** → <a href="https://cursor.directory/plugins/brilliant-directories" target="_blank" rel="noopener noreferrer">cursor.directory/plugins/brilliant-directories</a>
 2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
 3. Cursor shows an **"Install MCP Server?"** prompt with most fields pre-filled. Two things you need to change:
 
@@ -578,7 +578,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 
 ### n8n
 
-**⚠️ n8n's MCP Client Tool has known compatibility issues** as of early 2026 — it struggles to connect to MCP servers that implement the current Streamable HTTP spec (including ours). The issue is tracked on n8n's side; our Worker is spec-conformant per [MCP Inspector](https://github.com/modelcontextprotocol/inspector). Until n8n patches their client, use one of these proven-working paths instead:
+**⚠️ n8n's MCP Client Tool has known compatibility issues** as of early 2026 — it struggles to connect to MCP servers that implement the current Streamable HTTP spec (including ours). The issue is tracked on n8n's side; our Worker is spec-conformant per <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a>. Until n8n patches their client, use one of these proven-working paths instead:
 
 **✅ Option A — HTTP Request node + OpenAPI import (works today, recommended):**
 
@@ -704,7 +704,7 @@ Logs every API request and response to stderr (your API key is automatically red
   - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
   - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
   - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
-- **`npx: command not found`** — Node.js isn't installed. Install from [nodejs.org](https://nodejs.org) (pick LTS).
+- **`npx: command not found`** — Node.js isn't installed. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick LTS).
 
 ---
 
