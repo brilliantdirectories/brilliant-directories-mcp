@@ -203,7 +203,7 @@ Paste one of these into the file (Easy is recommended):
 }
 ```
 
-Replace `ENTER_API_KEY` and the URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
 #### Scenario B — file already has content (preferences, Google connectors, other MCP servers)
 
@@ -244,7 +244,7 @@ Merge — don't overwrite. Two rules:
 }
 ```
 
-Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` and the URL. Save.
+Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
 > **Paste your final file into [jsonlint.com](https://jsonlint.com) before restarting.** Missing commas silently break the MCP — a validator flags them instantly.
 
@@ -375,7 +375,7 @@ command = "npx"
 args = ["-y", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
 ```
 
-Replace `ENTER_API_KEY` and the URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
 **3. Run `codex`.** Ask it *"list my first 5 members on my BD site"* — tools invoke, data comes back.
 
@@ -427,7 +427,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 }
 ```
 
-Replace `ENTER_API_KEY` and the URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
 6. **Fully quit and reopen Windsurf** (`Cmd+Q` on Mac; on Windows right-click in the taskbar or system tray → Quit).
 
@@ -475,7 +475,7 @@ Replace `ENTER_API_KEY` and the URL. Save.
 }
 ```
 
-Replace `ENTER_API_KEY` and the URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
 6. Back in the MCP Servers panel, confirm `bd-api` appears — toggle it **on** if not already.
 7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
@@ -534,7 +534,7 @@ Replace `ENTER_API_KEY` and the URL. Save.
    - Or: Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open MCP Settings`
 3. In the sidebar, click **Tools & MCP**.
 4. Click **New MCP Server**.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL with your values.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
 6. Click **Save**.
 7. **Fully quit and reopen Cursor.** `Cmd+Q` on Mac, or right-click Cursor in the Windows system tray → Quit. Closing the window isn't enough.
 
@@ -551,7 +551,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 3. Type `~/.cursor` → Enter.
    - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
 4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 6. **Fully quit Cursor** (`Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**). Red-dot close doesn't quit.
 
 #### Windows
@@ -561,7 +561,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
    - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
 3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
    - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
-4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 5. **Fully quit Cursor** — right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If not in tray, window X is enough.
 
 </details>
