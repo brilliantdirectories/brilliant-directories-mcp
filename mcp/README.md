@@ -159,12 +159,15 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 **Steps (no terminal):**
 
 1. Open Claude Desktop.
-2. Menu bar → **Settings → Developer tab → Edit Config**. This opens `claude_desktop_config.json` in TextEdit (Mac) or Notepad (Windows).
+2. Menu bar → **Settings → Developer tab → Edit Config**.
+   This opens `claude_desktop_config.json` in TextEdit (Mac) or Notepad (Windows).
 3. Pick your scenario:
 
 #### Scenario A — file is empty `{}` or has no `mcpServers` entry
 
-Select all (`Cmd+A` / `Ctrl+A`), delete, paste **one of these** (Easy is recommended):
+Select all (`Cmd+A` / `Ctrl+A`) and delete.
+
+Paste one of these into the file (Easy is recommended):
 
 **🚀 Easy (recommended — no Node.js install required):**
 
