@@ -252,11 +252,8 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 
 ---
 
-4. **Fully quit Claude Desktop:**
-   - **Mac:** `Cmd+Q`, or menu bar → **Claude** → **Quit Claude**. Red-dot close doesn't quit.
-   - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If it's not there, Task Manager (`Ctrl+Shift+Esc`) → `Claude` → right-click → **End task**.
-5. **Reopen Claude. Start a new chat.**
-6. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
+4. **Fully quit and reopen Claude Desktop.** Start a new chat.
+5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
    That's your tool count. Click to see BD tools listed.
 
 > **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
