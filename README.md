@@ -586,6 +586,7 @@ We've verified our server is spec-compliant via two independent tests:
 2. **Our own handshake harness** drives the full legacy-SSE two-endpoint protocol (GET /sse → endpoint frame → POST /messages → response pushed back through the held stream) and completes in ~350ms with all 173 tools.
 
 But n8n's MCP Client Tool node has documented upstream bugs that prevent it from connecting to any external MCP server today:
+- <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">n8n-io/n8n#28924</a> — our upstream report with reproduction harness + MCP Inspector verification
 - <a href="https://github.com/n8n-io/n8n/issues/19835" target="_blank" rel="noopener noreferrer">n8n-io/n8n#19835</a> — `Cannot read properties of undefined (reading 'inputType')` regression in v1.112.0
 - <a href="https://github.com/n8n-io/n8n/issues/14539" target="_blank" rel="noopener noreferrer">n8n-io/n8n#14539</a> — `Could not connect to your MCP server` (closed as "not planned")
 - Community reports of 1-second failures where no HTTP request ever leaves n8n's process
