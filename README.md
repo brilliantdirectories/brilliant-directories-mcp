@@ -87,7 +87,9 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save. Fully quit and reopen the AI app. Done.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
+
+Save. Fully quit and reopen the AI app. Done.
 
 Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
