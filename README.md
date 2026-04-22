@@ -359,7 +359,9 @@ OpenAI's MCP support is narrow. The honest landscape:
 | Codex Cloud app | ❌ No — partial/evolving MCP support |
 | **Codex CLI** (terminal) | ✅ **Yes — full MCP** |
 
-For full BD automation in the OpenAI ecosystem, use **Codex CLI**. For GUI alternatives, use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap.
+For full BD automation in the OpenAI ecosystem, use **Codex CLI**.
+
+For GUI alternatives, use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap.
 
 #### Codex CLI setup (the only supported OpenAI path)
 
