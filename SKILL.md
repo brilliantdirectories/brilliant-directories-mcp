@@ -51,11 +51,16 @@ This skill works with any AI agent. Two integration paths — use whichever the 
 
 The user installs the MCP server once; it exposes every BD operation as a tool. To check if it's active, look at your available tools for names like `verifyApiKey`, `listUsers`, `createUser`, `listWebPages`, etc.
 
-**If MCP tools are NOT available**, tell the user to run:
-```bash
-npx brilliant-directories-mcp@latest --setup
-```
-The wizard asks for their BD site URL and API key, then configures their AI client automatically. After a client restart, the tools become available.
+**Two install options** — both give the full tool surface + same agent directives:
+
+1. **Remote (no Node.js install):** add an MCP server to the AI client's config pointing at `https://mcp.brilliantdirectories.com` with two headers — `X-Api-Key` (user's BD API key) and `X-BD-Site-URL` (user's BD site URL). This hits our hosted Cloudflare Worker; the user does nothing on their machine beyond editing the config file.
+2. **Local (runs as a child process on the user's machine, needs Node.js):** run the setup wizard:
+   ```bash
+   npx brilliant-directories-mcp@latest --setup
+   ```
+   The wizard asks for their BD site URL and API key, then configures their AI client automatically. After a client restart, the tools become available.
+
+Both paths are documented in detail in the README's "Setup by Platform" section. Remote is the faster recommendation for non-technical users; Local is useful when the user wants the MCP on their own infrastructure.
 
 **Getting an API key:** BD Admin > Developer Hub > Generate API Key (full walkthrough: https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
 

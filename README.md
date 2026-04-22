@@ -10,12 +10,19 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ## ⚠️ REQUIREMENTS — Before you start
 
-1. **Node.js installed.** MCP runs on Node — it's a one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click the installer, click Next through the prompts). 60 seconds.
-2. **Your BD site URL.** Include `https://`, no trailing slash.
+1. **Your BD site URL.** Include `https://`, no trailing slash.
    - ✅ `https://mysite.com`
    - ❌ `mysite.com` (missing `https://`)
    - ❌ `https://mysite.com/` (trailing slash)
-3. **Your BD API key.** BD Admin → **Developer Hub** → **Generate API Key** → copy it. [Full walkthrough: How to Create an API Key](https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
+2. **Your BD API key.** BD Admin → **Developer Hub** → **Generate API Key** → copy it. [Full walkthrough: How to Create an API Key](https://support.brilliantdirectories.com/support/solutions/articles/12000088768).
+3. **Node.js — only for the "Local install" path** (see below). Not needed for the Remote path. If you need it, one-time install from [nodejs.org](https://nodejs.org) (pick the "LTS" version, double-click, Next through the prompts).
+
+### Two ways to connect — pick one
+
+- **🚀 Remote (easiest, no install):** point your AI client at `https://mcp.brilliantdirectories.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
+- **🛠️ Local (Advanced):** run the MCP as a `npx` child process on your own machine. Needs Node.js. Same tool surface, same instructions. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
+
+Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
 
 ### 🚨 PERMISSIONS — DO NOT SKIP THIS
 
@@ -47,33 +54,27 @@ If the agent works for basic member read/write but fails everywhere else, this i
 
 ## 30-Second Quickstart (try this first)
 
-> **You do NOT need to install anything manually first.** `npx` (the command below) auto-downloads the MCP the first time it runs. Ignore any advice to run `npm install -g brilliant-directories-mcp` — that's only for developers building a CLI. Normal users just run the one command below.
+**🚀 Remote path — no install needed.** In your AI client's MCP config (Claude Desktop, Cursor, etc.), add this entry:
 
-Run our one-command wizard in a **terminal** (a text-only app for running commands).
-
-**Open a terminal:**
-- **Mac:** `Cmd+Space` → type `Terminal` → Enter.
-- **Windows:** Windows key → type `PowerShell` → Enter.
-- **Linux:** `Ctrl+Alt+T`.
-
-**Paste this, press Enter:**
-
-```bash
-npx brilliant-directories-mcp@latest --setup
+```json
+{
+  "mcpServers": {
+    "brilliant-directories": {
+      "url": "https://mcp.brilliantdirectories.com",
+      "headers": {
+        "X-Api-Key": "ENTER_API_KEY",
+        "X-BD-Site-URL": "https://your-site.com"
+      }
+    }
+  }
+}
 ```
 
-> **Paste shortcut:** `Cmd+V` (Mac). `Ctrl+Shift+V` or right-click (Windows/Linux).
-
-The wizard asks for your URL + API key, tests the connection, asks which AI app you use, and writes its config.
-
-**Then fully quit and reopen the AI app** (not just close the window):
-- **Mac:** `Cmd+Q`, or menu bar → app name → **Quit**.
-- **Windows:** right-click the app in the system tray (bottom-right by the clock; may be under `^`) → **Quit**.
-- **Linux:** `Ctrl+Q`, or File → Quit.
+Replace `ENTER_API_KEY` and `https://your-site.com`. Save. Fully quit and reopen the AI app. Done.
 
 Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
-If the wizard errors or tools still don't show up after restart, use the per-platform steps below — same outcome, done by hand.
+Prefer the local install (runs on your own machine, needs Node.js)? Skip to [Setup by Platform](#setup-by-platform) → each platform has both paths.
 
 ---
 
@@ -81,9 +82,34 @@ If the wizard errors or tools still don't show up after restart, use the per-pla
 
 <a id="the-config-block"></a>
 
-Every method below uses **the config block** — keep it handy. Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
+Each platform has **two options**:
 
-> **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version from the npm registry on every agent launch, instead of reusing whatever it cached previously. We ship frequent doc/safety/directive updates — pinning `@latest` means your AI agent always has the freshest guardrails without you having to remember to update. Keep the `@latest` in your config.
+- **🚀 Remote config block** — points at our hosted MCP at `https://mcp.brilliantdirectories.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
+- **🛠️ Local config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
+
+**Both give the full ~173-tool surface, same instructions, same lean shapers, same safety guards.** Pick whichever suits you.
+
+### 🚀 Remote config block (recommended)
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "url": "https://mcp.brilliantdirectories.com",
+      "headers": {
+        "X-Api-Key": "ENTER_API_KEY",
+        "X-BD-Site-URL": "https://your-site.com"
+      }
+    }
+  }
+}
+```
+
+Replace `ENTER_API_KEY` and `https://your-site.com` with your values. The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
+
+### 🛠️ Local config block (Advanced)
+
+> **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version on every agent launch. We ship frequent updates; pinning `@latest` keeps your agent on the freshest guardrails.
 
 ```json
 {
@@ -105,7 +131,7 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
 
 ### Claude Desktop
 
-> ⚠️ **Skip Settings → Connectors.** That's for remote MCP servers (public URLs like `https://mcp.stripe.com`). Ours runs locally via `npx`. Use **Settings → Developer → Edit Config** instead.
+> ⚠️ **Skip Settings → Connectors** (the OAuth UI). Our MCP uses header auth, not OAuth. Use **Settings → Developer → Edit Config** instead — works for both Remote and Local paths.
 >
 > ⚠️ **New chat isn't enough — fully quit and reopen the app** after editing the config. Claude loads MCP servers only at app launch.
 > - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. Closing the window isn't enough.
@@ -119,7 +145,25 @@ Every method below uses **the config block** — keep it handy. Replace `ENTER_A
 
 #### Scenario A — file is empty `{}` or has no `mcpServers` entry
 
-Select all (`Cmd+A` / `Ctrl+A`), delete, paste:
+Select all (`Cmd+A` / `Ctrl+A`), delete, paste **one of these** (Remote is recommended):
+
+**🚀 Remote (no Node.js needed):**
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "url": "https://mcp.brilliantdirectories.com",
+      "headers": {
+        "X-Api-Key": "ENTER_API_KEY",
+        "X-BD-Site-URL": "https://your-site.com"
+      }
+    }
+  }
+}
+```
+
+**🛠️ Local (runs on your machine, needs Node.js):**
 
 ```json
 {
@@ -190,7 +234,7 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 5. **Reopen Claude. Start a new chat.**
 6. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**. That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → Local MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash, Node.js not installed.
+> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash. For the Local path also: Node.js not installed. For the Remote path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -451,7 +495,13 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 ### Cursor
 
-**Easiest method — Cursor Directory one-click install (no terminal, no file editing):**
+> **Fastest path (no install, 30 seconds):** open Cursor Settings → **MCP** (or **Model Context Protocol**) → **Add new MCP server** → paste the [Remote config block](#setup-by-platform) with your API key + site URL. Fully quit + reopen. Tools appear in the chat.
+>
+> Or edit `~/.cursor/mcp.json` directly and paste the block. Either way works.
+>
+> Prefer the local install? Keep reading — the Cursor Directory installer below sets up the Local path (runs as an npx child process).
+
+**Cursor Directory one-click install for the Local path (no terminal, no file editing):**
 
 1. **Open** → [cursor.directory/plugins/brilliant-directories](https://cursor.directory/plugins/brilliant-directories)
 2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
@@ -531,21 +581,29 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 
 ### n8n
 
-**Option A — Import OpenAPI spec (recommended):**
+**⚠️ n8n's MCP Client Tool has known compatibility issues** as of early 2026 — it struggles to connect to MCP servers that implement the current Streamable HTTP spec (including ours). The issue is tracked on n8n's side; our Worker is spec-conformant per [MCP Inspector](https://github.com/modelcontextprotocol/inspector). Until n8n patches their client, use one of these proven-working paths instead:
 
-Import the spec URL as a custom API definition:
+**✅ Option A — HTTP Request node + OpenAPI import (works today, recommended):**
+
+n8n has native OpenAPI support. Import this spec URL as a custom API:
 ```
 https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
 ```
-n8n will prompt for your BD site URL and API key on import. No file editing required.
+n8n generates nodes for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available, zero MCP protocol involved.
 
-**Option B — Plain HTTP Request node:**
+**✅ Option B — Plain HTTP Request node (works today):**
 
 1. Create a new workflow, add an **HTTP Request** node
 2. Set:
    - Method: `GET`
    - URL: `https://your-site.com/api/v2/user/get`
    - Header: `X-Api-Key: ENTER_API_KEY`
+
+Chain multiple HTTP Request nodes for workflows that touch several BD endpoints.
+
+**🔄 Option C — MCP Client Tool (when n8n fixes it):**
+
+When n8n ships a fix, point the MCP Client Tool at `https://mcp.brilliantdirectories.com` with header auth (`X-Api-Key` + `X-BD-Site-URL`). We'll update this section once the n8n fix is live.
 
 ---
 
