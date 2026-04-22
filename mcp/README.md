@@ -114,7 +114,7 @@ Replace `ENTER_API_KEY` and `https://your-site.com` with your values.
 
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
 
-### 🛠️ Local config block (Advanced)
+### 🛠️ Local config block (Advanced — requires Node.js install)
 
 > **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version on every agent launch. We ship frequent updates; pinning `@latest` keeps your agent on the freshest guardrails.
 
