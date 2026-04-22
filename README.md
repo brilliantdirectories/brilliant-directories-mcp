@@ -31,13 +31,23 @@ Both paths hit the same BD API with your key; they differ only in where the MCP 
 
 ### 🚨 PERMISSIONS — DO NOT SKIP THIS
 
-**API keys start with only baseline endpoints enabled.**
+**New BD API keys ship locked down — only member read/write is enabled by default.**
 
-**Without this step, the AI hits `403 Forbidden` on most writes — pages, forms, menus, tags, templates, reviews, leads, etc. all fail.**
+Every other resource (web pages, forms, menus, tags, email templates, reviews, leads, categories, post types, widgets, etc.) is **opt-in** and lives behind an "Advanced Endpoints" toggle. Until you flip it, the AI will appear to work for member queries, then fail with `403 Forbidden — API key does not have permission for this endpoint` the moment it touches anything else.
 
-**Developer Hub → find your key → Actions dropdown → Permissions → Advanced Endpoints tab → ALL ON → Save Permissions.**
+**This catches almost every first-time user.** If your AI can list members but can't create a page or update a form, stop debugging — it's this.
 
-If the agent works for basic member read/write but fails everywhere else, this is why. Come back here and turn them on.
+**Turn on Advanced Endpoints:**
+
+1. BD Admin → **Developer Hub**
+2. Find your API key in the list → **Actions** dropdown → **Permissions**
+3. Click the **Advanced Endpoints** tab
+4. Toggle everything **ON** (or cherry-pick only the resources you'll use — but ALL ON is the fastest way to stop tripping over this)
+5. Click **Save Permissions**
+
+The change is immediate — no key rotation, no AI restart needed. Re-run the failed request and it'll succeed.
+
+> **Why BD locks it down by default:** least-privilege. A leaked key with baseline-only permissions can only read/write members on your site, not rewrite your whole directory. Once you've decided which endpoints your agent actually needs, you can pare the permissions back down to just those.
 
 ## Table of Contents
 
