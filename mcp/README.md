@@ -578,37 +578,50 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 
 ### n8n
 
-**⚠️ n8n's MCP Client Tool has known compatibility issues** as of early 2026 — it struggles to connect to MCP servers that implement the current Streamable HTTP spec (including ours). The issue is tracked on n8n's side; our Worker is spec-conformant per <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a>. Until n8n patches their client, use one of these proven-working paths instead:
+**Our MCP server is ready for n8n — n8n's MCP Client Tool node isn't ready for us yet.**
 
-**✅ Option A — HTTP Request node + OpenAPI import (works today, recommended):**
+We've verified our server is spec-compliant via two independent tests:
+
+1. **<a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a>** (the official MCP debugging tool) connects to `https://mcp.brilliantdirectories.com/sse` and lists all 173 BD tools.
+2. **Our own handshake harness** drives the full legacy-SSE two-endpoint protocol (GET /sse → endpoint frame → POST /messages → response pushed back through the held stream) and completes in ~350ms with all 173 tools.
+
+But n8n's MCP Client Tool node has documented upstream bugs that prevent it from connecting to any external MCP server today:
+- <a href="https://github.com/n8n-io/n8n/issues/19835" target="_blank" rel="noopener noreferrer">n8n-io/n8n#19835</a> — `Cannot read properties of undefined (reading 'inputType')` regression in v1.112.0
+- <a href="https://github.com/n8n-io/n8n/issues/14539" target="_blank" rel="noopener noreferrer">n8n-io/n8n#14539</a> — `Could not connect to your MCP server` (closed as "not planned")
+- Community reports of 1-second failures where no HTTP request ever leaves n8n's process
+
+**When n8n ships a fix, we're ready.** Our SSE endpoint is live at `https://mcp.brilliantdirectories.com/sse`, Durable-Object-backed for correct session handling, verified by Inspector. No changes needed on our side.
+
+**For today, use one of these proven-working paths — all 173 BD tools, zero MCP protocol involved:**
+
+**✅ Option A — HTTP Request node + OpenAPI import (recommended):**
 
 n8n has native OpenAPI support. Import this spec URL as a custom API:
 ```
 https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
 ```
-n8n generates nodes for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available, zero MCP protocol involved.
+n8n generates nodes for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available.
 
-**✅ Option B — Plain HTTP Request node (works today):**
+**✅ Option B — Plain HTTP Request node:**
 
-1. Create a new workflow, add an **HTTP Request** node
-2. Set:
-   - Method: `GET`
-   - URL: `https://your-site.com/api/v2/user/get`
-   - Header: `X-Api-Key: ENTER_API_KEY`
+1. Add an **HTTP Request** node
+2. Method: `GET` (or `POST` / `PUT` / `DELETE` for writes)
+3. URL: `https://your-site.com/api/v2/user/get` (or any other BD endpoint)
+4. Headers: `X-Api-Key: ENTER_API_KEY`
 
 Chain multiple HTTP Request nodes for workflows that touch several BD endpoints.
 
-**🔄 Option C — MCP Client Tool (partial — use only if n8n's MCP node is fixed for you):**
+**🔄 Option C — MCP Client Tool (for when n8n fixes their client):**
 
-1. Add an **MCP Client Tool** node.
-2. **Server Transport:** `HTTP Streamable` (not SSE).
-3. **MCP Endpoint URL:** `https://mcp.brilliantdirectories.com` — **do not add `/sse`** (the Worker returns 404 on that path).
-4. **Authentication:** `Multiple Headers Auth` — create a credential with:
-   - Header 1: Name `X-Api-Key`, Value *your BD API key*
-   - Header 2: Name `X-BD-Site-URL`, Value `https://your-site.com`
-5. **Tool:** pick from dropdown once tools populate (should show 173 BD operations).
+1. **Server Transport:** `SSE (Deprecated)`
+2. **MCP Endpoint URL:** `https://mcp.brilliantdirectories.com/sse`
+3. **Authentication:** `Multiple Headers Auth`:
+   - `X-Api-Key` = *your BD API key*
+   - `X-BD-Site-URL` = `https://your-site.com`
 
-If the Tool dropdown stays empty or shows errors, that's the upstream n8n bug — fall back to Option A.
+If tools populate in the dropdown, the upstream fix has landed — great. If not, your n8n version still has the client bug — use Option A.
+
+**Want to verify the server is healthy yourself?** Install the official <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> (`npx @modelcontextprotocol/inspector`) and point it at `https://mcp.brilliantdirectories.com/sse`. Inspector is the reference implementation of MCP's client spec — if it works there but not in your n8n node, you've confirmed the bug is n8n-side.
 
 ---
 
