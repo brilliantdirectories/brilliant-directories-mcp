@@ -329,50 +329,30 @@ The CLI writes the same JSON to `~/.claude.json` for you — same end result as 
 
 ### OpenAI (ChatGPT / Codex)
 
-> ⚠️ **OpenAI support is CLI-only for this MCP today.** Here's the honest landscape:
->
-> | OpenAI surface | Works with the full BD MCP? |
-> |---|---|
-> | ChatGPT web (`chatgpt.com`) | ❌ No — Custom GPT Actions cap at **30 operations per GPT**; our MCP has 100+ |
-> | ChatGPT Desktop app | ❌ No — same 30-op cap (loads the same Custom GPTs) |
-> | Codex Cloud app | ❌ No — uses OpenAI's App Server architecture; MCP support is partial/evolving |
-> | **Codex CLI** (terminal) | ✅ **Yes — full MCP support, no op cap** |
->
-> If you want full BD automation through OpenAI: use **Codex CLI**. For Custom GPTs with Actions (narrow-scope use cases where 30 ops is enough), see the fallback section at the bottom.
->
-> Users who want a GUI experience should use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap and no terminal required.
+OpenAI's MCP support is narrow. The honest landscape:
 
-#### Codex CLI setup (recommended OpenAI path)
+| OpenAI surface | Supported? |
+|---|---|
+| ChatGPT web / desktop / mobile | ❌ No — no MCP support; Custom GPT Actions cap at 30 ops (our MCP has 170+) |
+| Codex Cloud app | ❌ No — partial/evolving MCP support |
+| **Codex CLI** (terminal) | ✅ **Yes — full MCP** |
 
-Codex CLI is OpenAI's terminal-based agent, similar to Claude Code. It supports local stdio MCP servers natively.
+For full BD automation in the OpenAI ecosystem, use **Codex CLI**. For GUI alternatives, use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap.
 
-**1. Install Codex CLI** (requires Node 18+ which you already have from the quickstart prereqs):
+#### Codex CLI setup (the only supported OpenAI path)
+
+Requires Node 18+ and a ChatGPT Plus/Pro/Team/Enterprise account for sign-in.
+
+**1. Install + sign in:**
 
 ```bash
 npm install -g @openai/codex
-```
-
-**2. Verify install:**
-
-```bash
-codex --version
-```
-
-**3. Sign in** (opens a browser to link your ChatGPT account — requires ChatGPT Plus, Pro, Team, or Enterprise):
-
-```bash
 codex
 ```
 
-Follow the sign-in prompt on first run. After sign-in, exit with `Ctrl+C` — we're going to add BD before using it.
+Follow the browser sign-in prompt on first run. `Ctrl+C` to exit after sign-in.
 
-**4. Edit the Codex config** to add BD MCP. Codex CLI uses **TOML format** (not JSON like Claude Desktop / Cursor).
-
-Config file path:
-- **Mac/Linux:** `~/.codex/config.toml`
-- **Windows:** `%USERPROFILE%\.codex\config.toml`
-
-Open it in any text editor. If the file doesn't exist yet, create it. Add this block:
+**2. Edit config** at `~/.codex/config.toml` (Mac/Linux) or `%USERPROFILE%\.codex\config.toml` (Windows). Codex uses **TOML, not JSON**:
 
 ```toml
 [mcp_servers.bd-api]
@@ -380,106 +360,9 @@ command = "npx"
 args = ["-y", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` and the URL. Save.
 
-**5. Start Codex:**
-
-```bash
-codex
-```
-
-Ask it *"list my first 5 members on my BD site"*. It'll invoke the BD MCP tools and return data.
-
-> **`.toml` vs `.json` gotcha** — Codex CLI uses TOML syntax (square brackets for sections, `key = value` pairs, quoted strings). Don't paste a JSON config into `config.toml` — it won't parse. The block above is already in TOML format; copy it verbatim.
-
----
-
-#### Fallback: ChatGPT Custom GPT with Actions (narrow scope only)
-
-If you're already in ChatGPT Plus/Team/Enterprise and want a browser-based GPT for a small slice of BD functionality (30 ops or fewer), you can build a Custom GPT with our OpenAPI spec. Our spec is **well over 30 operations**, so this path **requires manually trimming the OpenAPI spec down to ≤30 operations before importing** — advanced JSON editing, not covered here. For full integration, use Codex CLI above.
-
-> ⚠️ **Different setup from every other AI app.** ChatGPT doesn't support local MCP servers. You build a **Custom GPT with Actions** that calls our REST API directly using our OpenAPI spec. **Requires ChatGPT Plus, Team, or Enterprise** (Custom GPTs aren't on the free tier).
->
-> 🔒 **CRITICAL: always set the GPT to `Only me` at the final sharing step.** Your BD API key gets embedded in the Action. `Anyone with the link` lets anyone you share the URL with invoke your BD API on your site — create members, delete pages, anything. `GPT Store` publishes it to the world. **Never pick either for a GPT with a real BD key.**
-
-**1. Create the GPT**
-
-- Go to **chatgpt.com** → click your profile → **My GPTs** → **+ Create a GPT** (exact path varies by ChatGPT version; look for a `+ Create` button, usually top-right).
-- A two-tab editor opens. Click the **Configure** tab.
-
-**2. Basic info (top of the Configure form)**
-
-- **Name:** anything (e.g. `BD Assistant`).
-- **Description:** one-liner (e.g. `Manages my Brilliant Directories site`).
-- **Instructions:** optional. Leave blank, or add a behavior note like `Use the BD Actions to manage members, pages, forms, and posts. Ask before any destructive change.`
-- **Conversation starters / Knowledge / Upload files / Capabilities:** skip all. None are needed.
-
-**3. Add the Action** (this is where the BD integration lives)
-
-Scroll to the bottom of the Configure form → click **Create new action**. A new sub-form opens with `Authentication` / `Schema` / `Privacy policy` fields.
-
-**4. Schema — paste + hand-edit (cannot use "Import from URL")**
-
-⚠️ ChatGPT Actions rejects the `{bd_site_url}` template variable in our spec with the error `Could not find a valid URL in 'servers'`. You MUST paste the spec directly and hand-edit the servers block — Import from URL won't work.
-
-- Open [the raw OpenAPI spec](https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json) in your browser. `Ctrl+A` → `Ctrl+C` to copy everything.
-- In ChatGPT, paste into the **Schema** text box.
-- Near the top of the pasted JSON, find the `"servers"` block. It looks like:
-  ```json
-  "servers": [
-    {
-      "url": "{bd_site_url}",
-      "description": "Your Brilliant Directories website",
-      "variables": { "bd_site_url": { "default": "https://your-site.com", "description": "..." } }
-    }
-  ]
-  ```
-- Replace the ENTIRE block with a hard-coded URL to your BD site:
-  ```json
-  "servers": [
-    { "url": "https://your-site.com" }
-  ]
-  ```
-- Use YOUR actual BD site URL, no trailing slash. Delete everything else — `description`, `variables`, all of it.
-- Wait a moment after the edit — the red `Could not find a valid URL in 'servers'` error should disappear, and the **Available actions** list populates with 100+ BD tools.
-
-**5. Authentication**
-
-- Click the gear icon in the Authentication section.
-- **Authentication Type:** `API Key`
-- **API Key:** paste your BD API key (from BD Admin → Developer Hub). Make sure Advanced Endpoint permissions are ALL ON — see the [prerequisites](#requirements--before-you-start).
-- **Auth Type:** `Custom` (NOT Basic, NOT Bearer)
-- **Custom Header Name:** `X-Api-Key` (exact case)
-- Click **Save**.
-
-**6. Privacy policy**
-
-Required field — ChatGPT won't let you save the Action without a URL. For a private `Only me` GPT, use:
-
-```
-https://brilliantdirectories.com/privacy-policy
-```
-
-**7. Back out + save the GPT**
-
-- Click back-arrow or **Save** at the top of the Action sub-form to return to the main Configure screen.
-- Click **Create** in the top-right.
-
-**8. Sharing — `Only me` only** 🔒
-
-A `Share GPT` dialog opens with three options:
-
-- ✅ **`Only me`** — private to your account. **Pick this.**
-- ❌ `Anyone with the link` — anyone with the URL can invoke BD API calls on your site using your embedded key.
-- ❌ `GPT Store` — publishes to the public ChatGPT store.
-
-Click **`Only me`** → **Save**.
-
-**9. Test**
-
-Open the GPT from your `My GPTs` list. Ask *"list my first 5 members"*. First Action call prompts for permission — click **Allow**. You should see BD data come back.
-
-> **What won't work:** the default ChatGPT assistant (no Actions support), ChatGPT free tier (no Custom GPTs), ChatGPT mobile apps (can't add Actions), or any ChatGPT use case that requires the MCP protocol specifically. For those, use Claude Desktop / Claude Code / Cursor / Windsurf / Cline / VS Code instead.
+**3. Run `codex`.** Ask it *"list my first 5 members on my BD site"* — tools invoke, data comes back.
 
 ---
 
@@ -487,11 +370,50 @@ Open the GPT from your `My GPTs` list. Ask *"list my first 5 members"*. First Ac
 
 Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
+> ⚠️ **Windsurf uses `serverUrl` (not `url`) for remote MCP servers.** The Easy config block below reflects that.
+
 1. Open Windsurf.
 2. Open settings: click **Windsurf - Settings** at the bottom-right of the window, OR Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open Windsurf Settings`.
 3. In settings, find the **Cascade** section → **Model Context Protocol (MCP)** → enable it.
 4. In the Cascade panel on the right of your window, click the **MCPs icon** (top-right of the panel) → **Configure**. This opens the MCP config file.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+5. Paste **one of these** (Easy is recommended):
+
+**🚀 Easy (recommended — no Node.js needed):**
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "serverUrl": "https://mcp.brilliantdirectories.com",
+      "headers": {
+        "X-Api-Key": "ENTER_API_KEY",
+        "X-BD-Site-URL": "https://your-site.com"
+      }
+    }
+  }
+}
+```
+
+**🛠️ Advanced (runs on your machine, needs Node.js):**
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "brilliant-directories-mcp@latest",
+        "--api-key", "ENTER_API_KEY",
+        "--url", "https://your-site.com"
+      ]
+    }
+  }
+}
+```
+
+Replace `ENTER_API_KEY` and the URL. Save.
+
 6. **Fully quit and reopen Windsurf** (`Cmd+Q` on Mac; on Windows right-click in the taskbar or system tray → Quit).
 
 ---
@@ -502,7 +424,44 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 2. Click the **Cline icon** in the VS Code sidebar to open the Cline panel.
 3. In Cline's top nav, click the **MCP Servers icon**.
 4. Click **Configure MCP Servers** — opens the Cline MCP config file in VS Code.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` and the URL. Save.
+5. Paste **one of these** (Easy is recommended):
+
+**🚀 Easy (recommended — no Node.js needed):**
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "url": "https://mcp.brilliantdirectories.com",
+      "headers": {
+        "X-Api-Key": "ENTER_API_KEY",
+        "X-BD-Site-URL": "https://your-site.com"
+      }
+    }
+  }
+}
+```
+
+**🛠️ Advanced (runs on your machine, needs Node.js):**
+
+```json
+{
+  "mcpServers": {
+    "bd-api": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "brilliant-directories-mcp@latest",
+        "--api-key", "ENTER_API_KEY",
+        "--url", "https://your-site.com"
+      ]
+    }
+  }
+}
+```
+
+Replace `ENTER_API_KEY` and the URL. Save.
+
 6. Back in the MCP Servers panel, confirm `bd-api` appears — toggle it **on** if not already.
 7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
 
