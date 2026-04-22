@@ -56,9 +56,18 @@ jobs:
           fi
           echo "Version match: $PKG_VERSION"
 
-      - name: Publish to npm
+      - name: Publish to npm (idempotent — skip if version already published)
         working-directory: mcp
-        run: npm publish --provenance --access public
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          # `npm view <pkg>@<version> version` prints the version if it exists,
+          # exits non-zero + empty otherwise. Capture both cases safely.
+          PUBLISHED=$(npm view "brilliant-directories-mcp@${VERSION}" version 2>/dev/null || echo "")
+          if [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "brilliant-directories-mcp@${VERSION} is already published to npm — skipping npm publish, continuing to MCP Registry sync."
+          else
+            npm publish --provenance --access public
+          fi
 
       # ---------------------------------------------------------------------
       # Step 2 — Sync server.json + publish to MCP Registry (via GitHub OIDC)
