@@ -254,7 +254,8 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
    - **Mac:** `Cmd+Q`, or menu bar → **Claude** → **Quit Claude**. Red-dot close doesn't quit.
    - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If it's not there, Task Manager (`Ctrl+Shift+Esc`) → `Claude` → right-click → **End task**.
 5. **Reopen Claude. Start a new chat.**
-6. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**. That's your tool count. Click to see BD tools listed.
+6. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
+   That's your tool count. Click to see BD tools listed.
 
 > **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through [jsonlint.com](https://jsonlint.com)), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
 
@@ -272,13 +273,19 @@ Claude Code has no MCP GUI — install via terminal. Works in:
 - **PowerShell** (Windows)
 - **Cursor / VS Code's built-in terminal** — open with ``Ctrl+` `` (Win/Linux), ``Cmd+` `` (Mac), or **View → Terminal**
 
-**Prerequisite:** the `claude` CLI must be installed:
+**Prerequisites (Claude Code is Advanced-path only — requires Node.js):**
+
+1. **Node.js** — one-time install from [nodejs.org](https://nodejs.org) (pick "LTS", double-click, Next through the prompts). Claude Code is itself an npm package, and the BD MCP launches via `npx`, so Node.js is required for both halves. Verify in a fresh terminal with `node --version` (should print `v18.x` or higher) and `npm --version`.
+
+2. **The `claude` CLI:**
 
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
 
 Close and reopen your terminal so PATH updates. Verify with `claude --version`.
+
+> **No Easy path for Claude Code yet.** Claude Code's MCP registration currently requires the CLI, which requires Node.js. If you want zero-install, use Claude Desktop / Cursor / Windsurf / Cline with the Easy path instead — same BD tools, same instructions.
 
 **Install BD MCP:**
 
