@@ -138,7 +138,7 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 
 ### Claude Desktop
 
-> ⚠️ **Skip Settings → Connectors** (the OAuth UI). Our MCP uses header auth, not OAuth. Use **Settings → Developer → Edit Config** instead — works for both Remote and Local paths.
+> ⚠️ **Do NOT use Settings → Connectors** (that's the OAuth UI — our MCP uses header auth, not OAuth). Go to **Settings → Developer → Edit Config** instead — works for both Remote and Local paths.
 >
 > ⚠️ **New chat isn't enough — fully quit and reopen the app** after editing the config. Claude loads MCP servers only at app launch.
 > - **Windows:** right-click Claude in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. Closing the window isn't enough.
