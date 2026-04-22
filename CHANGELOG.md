@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.27.0] - 2026-04-22
+
+### Changed — agent instructions extracted to a shared file (source of truth)
+
+The ~67KB top-level `instructions` array was inlined into `mcp/index.js` as a 700-line template-literal block. It's now extracted to `openapi/mcp-instructions.md` — a plain markdown-ish text file — and both transports read from it:
+
+- **npm package** (`mcp/index.js`) reads it at module load via `fs.readFileSync(path.join(__dirname, "openapi", "mcp-instructions.md"))`.
+- **Cloudflare Worker** (Universal HTTP MCP server at `mcp.brilliantdirectories.com`) fetches it at runtime via `https://raw.githubusercontent.com/.../main/openapi/mcp-instructions.md` with a 5-min TTL cache and stale-fallback on GitHub hiccups.
+
+**Why:** the Worker previously had NO instructions — just the tool catalog. Remote-MCP clients (Cursor remote, Claude Desktop remote, MCP Inspector) got tool descriptions but missed the cross-cutting directives (users_meta safety, lean-by-default, operator reference, image sourcing priority, CDATA self-strip, etc). This change gives both transports the full corpus. Edit the markdown file once, ship to both.
+
+**Byte-identical verified:** the extracted file produces the exact same string the old inline array did. Zero behavior change for existing stdio clients. Regression script: `scripts/verify-instructions-match.js`.
+
+Two new helper scripts in `scripts/`:
+- `extract-instructions.js` — one-shot extraction (already run; idempotent)
+- `swap-instructions.js` — one-shot refactor (already run; idempotent)
+- `verify-instructions-match.js` — regression gate, re-runnable
+
+`mcp/index.js` went from 2,325 → 1,621 lines. The shipped npm tarball size is unchanged (instructions just moved, not added).
+
+### Added — Universal HTTP MCP Worker now serves `instructions` via `initialize`
+
+The Cloudflare Worker at `https://mcp.brilliantdirectories.com` now populates the `instructions` field in its MCP `initialize` response with the shared-file content. MCP-aware clients (Claude Desktop, Cursor, MCP Inspector) load these as session directives. Clients that don't honor `instructions` still work — they get tool descriptions only (same as before this release).
+
 ## [6.26.0] - 2026-04-21
 
 ### Added — confirmed filter operators now documented in instruction block
