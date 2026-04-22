@@ -575,17 +575,29 @@ n8n generates nodes for every BD operation automatically. Prompts for your BD si
 
 Chain multiple HTTP Request nodes for workflows that touch several BD endpoints.
 
-**🔄 Option C — MCP Client Tool (when n8n fixes it):**
+**🔄 Option C — MCP Client Tool (partial — use only if n8n's MCP node is fixed for you):**
 
-When n8n ships a fix, point the MCP Client Tool at `https://mcp.brilliantdirectories.com` with header auth (`X-Api-Key` + `X-BD-Site-URL`). We'll update this section once the n8n fix is live.
+1. Add an **MCP Client Tool** node.
+2. **Server Transport:** `HTTP Streamable` (not SSE).
+3. **MCP Endpoint URL:** `https://mcp.brilliantdirectories.com` — **do not add `/sse`** (the Worker returns 404 on that path).
+4. **Authentication:** `Multiple Headers Auth` — create a credential with:
+   - Header 1: Name `X-Api-Key`, Value *your BD API key*
+   - Header 2: Name `X-BD-Site-URL`, Value `https://your-site.com`
+5. **Tool:** pick from dropdown once tools populate (should show 173 BD operations).
+
+If the Tool dropdown stays empty or shows errors, that's the upstream n8n bug — fall back to Option A.
 
 ---
 
 ### Make / Zapier
 
-**Make:** Create a custom app using the OpenAPI spec, or use HTTP module with `X-Api-Key` header.
+**Make:** Create a custom app using the OpenAPI spec, or use the HTTP module with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*`.
 
-**Zapier:** If you already have the BD Zapier app, it uses the same underlying API. For new endpoints, use Webhooks by Zapier with the `X-Api-Key` header.
+**Zapier:** The "MCP Client by Zapier" app only supports OAuth / Bearer Token — it has no custom-headers field, so it cannot authenticate against our Worker.
+
+Use one of these paths instead:
+- **BD's existing Zapier app** (if it covers what you need) — same underlying API, same API key.
+- **Webhooks by Zapier** against `https://your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com`. This hits BD's REST API directly and skips MCP entirely — all 173 operations reachable.
 
 ---
 
@@ -675,13 +687,40 @@ Logs every API request and response to stderr (your API key is automatically red
 
 ## Authentication
 
-All requests require the `X-Api-Key` header:
+Two credentials, sent as HTTP headers on every request. No OAuth, no Bearer tokens, no signing.
 
-```
-X-Api-Key: your-api-key-here
-```
+| Header | Value | Required | Notes |
+|---|---|---|---|
+| `X-Api-Key` | your BD API key | Yes | Admin → *Developer Tools → API Keys*. Permissions are scoped per key — you choose which endpoints it can reach. |
+| `X-BD-Site-URL` | `https://your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Accepts the URL with or without `https://` — the Worker normalizes it. Not needed for the npx/Advanced path (already in the `--url` flag). |
 
-API keys are scoped by permission — you control which endpoints each key can access.
+### Universal MCP Client Reference
+
+Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four questions. Use this table to fill any of them in.
+
+| Field the client asks for | What to enter |
+|---|---|
+| **MCP Server URL** / Endpoint URL / Remote Server URL | `https://mcp.brilliantdirectories.com` (no `/sse`, no trailing path) |
+| **Transport** | `Streamable HTTP` (also called "HTTP Streamable"). **NOT** SSE. **NOT** WebSocket. |
+| **Custom / Multiple Headers** | Two entries: `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com` |
+| **OAuth** | Off / No / disabled — we don't use OAuth |
+| **Bearer Token** | Leave empty — we don't use Bearer auth |
+
+### MCP Client Compatibility
+
+| Client | Remote HTTP MCP | Status | Notes |
+|---|---|---|---|
+| **Claude Desktop** (v0.8+) | ✅ | Works | Settings → Developer → Edit Config. See [Claude Desktop setup](#claude-desktop). |
+| **Cursor** | ✅ | Works | Settings → MCP → Add Server. See [Cursor setup](#cursor). |
+| **Claude Code CLI** | ✅ | Works | `claude mcp add --transport http ...`. See [Claude Code setup](#claude-code-cli). |
+| **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
+| **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline). |
+| **n8n MCP Client node** | ⚠️ | Broken upstream | n8n's MCP Client has bugs against spec-compliant servers. Use **HTTP Request node + OpenAPI import** instead (works today, 173 tools). See [n8n setup](#n8n). |
+| **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
+| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [ChatGPT section](#chatgpt). |
+| **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
+
+> **Why Zapier doesn't work and how to know if a client will:** the blocker is always "can this client send custom HTTP headers to an MCP server?" If the UI shows a **Custom Headers** / **Multiple Headers** / **HTTP Headers** field — you're good, plug in our two headers. If the UI only offers OAuth or Bearer Token — that client cannot reach our Worker today. We evaluate OAuth/Bearer support on request.
 
 ## Rate Limits
 
