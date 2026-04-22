@@ -29,7 +29,9 @@ Both paths hit the same BD API with your key; they differ only in where the MCP 
 
 ### 🚨 PERMISSIONS — DO NOT SKIP THIS
 
-**Fresh API keys have only baseline endpoints enabled. Without this step, the AI hits `403 Forbidden` on most writes — pages, forms, menus, tags, templates, reviews, leads, etc. all fail.**
+**API keys start with only baseline endpoints enabled.**
+
+**Without this step, the AI hits `403 Forbidden` on most writes — pages, forms, menus, tags, templates, reviews, leads, etc. all fail.**
 
 **Developer Hub → find your key → Actions dropdown → Permissions → Advanced Endpoints tab → ALL ON → Save Permissions.**
 
