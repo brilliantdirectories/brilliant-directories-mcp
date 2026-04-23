@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.8] - 2026-04-23
+
+### Added — multi-image album workflow hardening
+
+Rewrote `createMultiImagePost` / `updateMultiImagePost` / `updateMultiImagePostPhoto` / `deleteMultiImagePost` / `createMultiImagePostPhoto` tool descriptions and added a new "Multi-image albums — one-shot rule" paragraph to `mcp-instructions.md`. Captures three behaviors verified via live BD API testing:
+
+- **`updateMultiImagePost` accepts undocumented `post_image` + `auto_image_import=1`** — APPENDS new photo rows to an existing album (does not replace). This is the correct fix path when a create-time import silently fails; no need to delete and recreate the whole album. `post_image` property explicitly added to the `updateMultiImagePost` schema.
+- **`createMultiImagePostPhoto` does NOT import externals**, and the parent's `auto_image_import` does NOT cascade to child creates. Child endpoint is only suitable for URLs already hosted on the BD site.
+- **`updateMultiImagePostPhoto` cannot re-import** a failed image — it only writes `title`/`order`.
+
+### Added — post-create verification rule
+
+Every `post_image` write (create or update append) needs follow-up `listMultiImagePostPhotos` verification. Success = non-empty `file` + `image_imported=2`; silent-failure = empty `file` + `image_imported=0`. Fix path: `deleteMultiImagePostPhoto` the bad row, then `updateMultiImagePost` to append a replacement.
+
+**Critical clarification (caught via Cursor field-test):** verify via `listMultiImagePostPhotos`, NOT via `getMultiImagePost.post_image`. The parent's `post_image` field is a transient write-through, not a mirror of child rows — checking it will produce false-negative conclusions about whether the append worked.
+
+### Added — LANDSCAPE orientation hardened on feature images
+
+`post_image` field descriptions on `createSingleImagePost`, `updateSingleImagePost`, `createMultiImagePost`, and `updateMultiImagePost` now lead with "**LANDSCAPE required** (not portrait)". Corpus image URL rule updated to scope landscape-only to feature/hero contexts (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) and carve out square for `profile_photo` / `logo`.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.7] - 2026-04-23
 
 ### Changed — inline Froala body image variant `?w=1280` → `?w=700`
