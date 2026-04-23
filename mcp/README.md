@@ -8,6 +8,8 @@ Give any AI agent full access to your Brilliant Directories site with one API ke
 
 Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
+This guide walks you through connecting your AI of choice (Claude, Cursor, etc.) to your BD site. Pick your AI app below, paste two things, restart. Most setups take under 5 minutes.
+
 ## ⚠️ REQUIREMENTS — Before you start
 
 1. **Your BD site URL.** Include `https://`, no trailing slash.
@@ -26,7 +28,7 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 **New BD API keys ship locked down — only member read/write is enabled by default.**
 
-Every other resource (web pages, forms, menus, tags, email templates, reviews, leads, categories, post types, widgets, etc.) is **opt-in** and lives behind an "Advanced Endpoints" toggle. Until you flip it, the AI will appear to work for member queries, then fail with `403 Forbidden — API key does not have permission for this endpoint` the moment it touches anything else.
+Every other resource (web pages, forms, menus, tags, email templates, reviews, leads, categories, post types, widgets, etc.) is **opt-in** and lives behind an "Advanced Endpoints" toggle. Until you flip it, the AI will appear to work for member queries, then fail with `403 API Key does not have permission to access this endpoint` the moment it touches anything else.
 
 **This catches almost every first-time user.** If your AI can list members but can't create a page or update a form, stop debugging — it's this.
 
@@ -43,13 +45,6 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 > **Want to stop the AI from deleting anything?** Uncheck every `delete` action under Advanced Endpoints. The AI will still be able to read, create, and update — but any `delete*` tool call will return 403 instead of wiping data. Good baseline for production sites where the AI shouldn't be trusted with destructive operations.
 
 > **Why BD locks it down by default:** least-privilege. A leaked key with baseline-only permissions can only read/write members on your site, not rewrite your whole directory. Once you've decided which endpoints your agent actually needs, you can pare the permissions back down to just those.
-
-### Two ways to connect — pick one
-
-- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://brilliantmcp.com` with two headers. Works with Claude Desktop, Claude Code, Cursor, Windsurf, Cline, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
-- **🛠️ Advanced (requires Node.js install):** run the MCP as a `npx` child process on your own machine. Same tool surface, same instructions, same safety guards. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
-
-Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
 
 ## Table of Contents
 
@@ -240,12 +235,17 @@ Merge — don't overwrite. Two rules:
 
 Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
-> **Paste your final file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a> before restarting.** Missing commas silently break the MCP — a validator flags them instantly.
+> **Paste your final file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a> before restarting to ensure correct formatting.**
+>
+> Missing commas silently break the MCP — a validator flags them instantly.
 
 ---
 
 4. **Fully quit and reopen Claude Desktop.** Start a new chat.
+
+   > **"Fully quit" means more than closing the window.** On Windows: right-click the Claude icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Claude** → **Quit Claude**. Then relaunch.
 5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
+
    That's your tool count. Click to see BD tools listed.
 
 > **No hammer?** **Settings → Developer → MCP servers** shows `brilliant-directories` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `brilliantmcp.com` (unlikely — it's HTTPS to a Cloudflare edge).
@@ -292,10 +292,10 @@ No `npx` child process, no BD MCP install on your machine. Claude Code hits our 
 #### 🛠️ Advanced path — BD MCP runs as an `npx` child process on your machine
 
 ```bash
-claude mcp add brilliant-directories -- npx brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
-Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code.
+Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code. The `-y` flag auto-accepts the first-time npx install prompt so the spawn doesn't hang.
 
 > **Credentials live in that one command.**
 >
@@ -341,7 +341,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
    ```
 
 3. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file.**
-4. **Fully quit and reopen Cursor** so the Claude extension picks up the new config (closing the window isn't enough — right-click the Cursor icon in the Windows system tray → Quit, or `Cmd+Q` on Mac).
+4. **Fully quit and reopen Cursor** so the Claude extension picks up the new config.
 5. Chat with Claude and ask "what tools do you have?" — you should see `brilliant-directories` tools listed.
 
 > **Cursor's Tools & MCP panel will stay empty — that's expected.** Claude's extension uses `~/.claude.json`, which is a separate host from the one Cursor's panel shows. That panel only reflects `~/.cursor/mcp.json`. If you want BD tools in BOTH surfaces, do the [Cursor section](#cursor) install too.
@@ -447,7 +447,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
-6. **Fully quit and reopen Windsurf** (`Cmd+Q` on Mac; on Windows right-click in the taskbar or system tray → Quit).
+6. **Fully quit and reopen Windsurf.**
 
 ---
 
@@ -531,7 +531,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
    - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#requirements--before-you-start).
 
 4. Click **Install**.
-5. **Fully quit + reopen Cursor** — closing the window isn't enough. On Windows: system tray (bottom-right, may be under `^`) → right-click Cursor → **Quit**. On Mac: `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**.
+5. **Fully quit and reopen Cursor.**
 6. Tools appear in **Settings → Tools & MCP**.
 
 > **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-81245`, `brilliant-directories-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"* or *"copy these 3 email templates from brilliant-directories-60031 to brilliant-directories-81245"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
@@ -552,7 +552,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 4. Click **New MCP Server**.
 5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
 6. Click **Save**.
-7. **Fully quit and reopen Cursor.** `Cmd+Q` on Mac, or right-click Cursor in the Windows system tray → Quit. Closing the window isn't enough.
+7. **Fully quit and reopen Cursor.**
 
 ### Alternative B — Edit the config file directly
 
@@ -568,7 +568,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
    - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
 4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
 5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
-6. **Fully quit Cursor** (`Cmd+Q`, or menu bar → **Cursor** → **Quit Cursor**). Red-dot close doesn't quit.
+6. **Fully quit and reopen Cursor.**
 
 #### Windows
 
@@ -578,7 +578,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
    - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
 4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
-5. **Fully quit Cursor** — right-click Cursor in the system tray (bottom-right, near the clock; may be under `^`) → **Quit**. If not in tray, window X is enough.
+5. **Fully quit and reopen Cursor.**
 
 </details>
 
@@ -646,9 +646,9 @@ curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
   -d "email=new@example.com&password=secret123&subscription_id=1&first_name=Jane&last_name=Doe" \
   https://your-site.com/api/v2/user/create
 
-# Search members
+# Search members (spaces in values need URL-encoding as + or %20)
 curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
-  -d "q=dentist&address=Los Angeles&limit=10" \
+  -d "q=dentist&address=Los+Angeles&limit=10" \
   https://your-site.com/api/v2/user/search
 
 # Update a member
@@ -777,22 +777,7 @@ Response includes: `total`, `current_page`, `total_pages`, `next_page`, `prev_pa
 
 ## Filtering
 
-All list endpoints support filtering:
-
-```
-GET /api/v2/user/get?property=city&property_value=Los Angeles&property_operator==
-```
-
-Multiple filters:
-```
-GET /api/v2/user/get?property[]=city&property_value[]=Los Angeles&property[]=state_code&property_value[]=CA
-```
-
-**Supported operators (verified working):** `=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `not_in`, `LIKE` (with or without `%` wildcards).
-
-**Confirmed broken (do NOT use — BD returns HTTP 400 or silently drops the filter):** `between`, `is_null`, `is_not_null`, empty-string `=""`.
-
-For range queries, combine `>=` and `<=` as two filter conditions (see [Multiple filters](#filtering) above). For "empty field" queries, paginate the resource and filter client-side.
+All list endpoints support filtering. Your AI handles the syntax — just ask naturally ("members in Los Angeles added this month", "pages with `sale` in the title", etc.). If you need to filter via direct HTTP (curl, Postman, Zapier webhooks, etc.), the filter params are `property`, `property_value`, and `property_operator`, repeatable as `property[]` arrays for multi-condition queries. Full operator reference lives in the MCP tool descriptions + SKILL.md.
 
 ## Sorting
 
@@ -804,7 +789,7 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 
 | Resource | Base Path | Operations |
 |----------|-----------|------------|
-| Users/Members | `/api/v2/user/` | list, get, create, update, delete, search, login, transactions, subscriptions |
+| Users/Members | `/api/v2/user/` | list, get, create, update, delete, search, login, transactions, subscriptions, fields |
 | Reviews | `/api/v2/users_reviews/` | list, get, create, update, delete, search |
 | Clicks | `/api/v2/users_clicks/` | list, get, create, update, delete |
 | Leads | `/api/v2/leads/` | list, get, create, match, update, delete |
@@ -820,7 +805,7 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | User Metadata | `/api/v2/users_meta/` | list, get, create, update, delete |
 | Tags | `/api/v2/tags/` | list, get, create, update, delete |
 | Tag Groups | `/api/v2/tag_groups/` | list, get, create, update, delete |
-| Tag Types | `/api/v2/tag_types/` | list, get, create, update, delete |
+| Tag Types | `/api/v2/tag_types/` | list, get |
 | Tag Relationships | `/api/v2/rel_tags/` | list, get, create, update, delete |
 | Widgets | `/api/v2/data_widgets/` | list, get, create, update, delete, render |
 | Email Templates | `/api/v2/email_templates/` | list, get, create, update, delete |
@@ -834,7 +819,7 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Web Pages (SEO/static) | `/api/v2/list_seo/` | listWebPages, getWebPage, createWebPage, updateWebPage, deleteWebPage |
 | Redirects (301) | `/api/v2/redirect_301/` | list, get, create, update, delete |
 | Data Types | `/api/v2/data_types/` | list, get, create, update, delete |
-| Website Settings | `/api/v2/website_settings/` | refreshCache |
+| Website Settings | `/api/v2/website_settings/` | refreshSiteCache |
 | Site Info | `/api/v2/site_info/` | getSiteInfo |
 | Brand Kit | `/api/v2/website_design_settings/` | getBrandKit |
 

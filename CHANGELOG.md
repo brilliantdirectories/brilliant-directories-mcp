@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.36.0] - 2026-04-23
+
+### Docs — targeted README factual + UX polish
+
+Follow-up pass after 2-agent README audit (cold customer UX lens + technical accuracy lens).
+
+**Factual fixes:**
+- **Tag Types row corrected** — claimed `list, get, create, update, delete` but BD only exposes `listTagTypes` + `getTagType`. Now `list, get` only so users don't try non-existent endpoints.
+- **Users row gained `fields`** — `getUserFields` was missing from the resource table row, inconsistent with the Single-Image/Multi-Image rows that do list `*Fields` operations.
+- **`refreshCache` → `refreshSiteCache`** in Website Settings row (real operationId).
+- **403 error literal aligned** — README had three different wordings of the same error. Standardized on `403 API Key does not have permission to access this endpoint` (verified against `mcp-instructions.md`, which is what BD actually returns).
+- **`-y` flag added** to the Claude Code Advanced `npx` call — without it, the `npx` spawn can prompt on first install and hang the MCP startup.
+- **curl example URL-encoding fixed** — `address=Los Angeles` → `address=Los+Angeles` (was sending literal space; BD would 400 or silently truncate).
+
+**UX fixes:**
+- **Opener sentence added** — "This guide walks you through connecting your AI of choice... Most setups take under 5 minutes." Gives a non-technical reader a bridge between the feature-list and the ⚠️ REQUIREMENTS callout.
+- **Windows Quit instructions inlined** at Claude Desktop Step 4 — the "fully quit = system-tray right-click Quit" guidance was buried 500+ lines deep in Troubleshooting; now surfaces where non-technical Windows users actually need it.
+- **Filter operators section simplified** — removed the user-facing operator table (`=`, `!=`, `>=` etc.). 95% of users ask the AI naturally and never type these URLs by hand; operators are now documented only in SKILL.md + the MCP tool descriptions (the surfaces AI agents actually read). One-line README blurb points curl/Postman/Zapier users at those sources.
+
+### Added — crawler blocks on Worker
+
+The `brilliantmcp.com` endpoint is machine-to-machine (MCP protocol), not a website meant to be indexed. Added two belt-and-suspenders crawler blocks:
+
+1. **`X-Robots-Tag: noindex, nofollow, noarchive, nosnippet`** on every response (added to `SECURITY_HEADERS`). Tells Google, Bing, GPTBot, ClaudeBot, Perplexity crawlers, archive.org, etc. to skip the domain entirely. Zero effect on MCP clients (they don't evaluate this header).
+2. **`GET /robots.txt`** serving `User-agent: *\nDisallow: /\n`. Crawlers check this before any URL; same goal, different mechanism.
+
+Does NOT affect Claude Desktop / Cursor / n8n / MCP Inspector etc. at runtime — they speak MCP, they don't crawl, they never read robots.txt. Purely prevents the info-JSON at `GET /` from surfacing in web search results or LLM training data.
+
+### Docs — VISION.md full refresh
+
+- **Full-tree diagram rewritten** to include `brilliant-directories-mcp-hosted/` (was completely missing — cold-AI audit #4 caught it), `scripts/` folder with all 4 scripts, `openapi/mcp-instructions.md` corpus file, `chatGPT-Config/` re-flagged as RETIRED.
+- **ChatGPT Custom GPT proxy section rewritten** — was self-contradicting (claimed routes retired AND that they "continue to work"). Now coherent single source: fully retired 2026-04-23, folder kept for archaeological reference only.
+- **Current-state header bumped** `v6.34.0, Worker v3.0.4` → `v6.36.0, Worker v3.0.5`.
+- **Key Files table** fixed stale "On hold" label on chatGPT-Config → "RETIRED" (matches tree + memory).
+- **Release-checklist item updated** — stale "update tool count" line (violated our own no-counts rule) replaced with bump-version-stamps + update-tree-diagram + don't-record-counts guidance.
+
+### Docs — publish protocol strengthened
+
+- **Ownership matrix** gained a new row: "Update VISION.md tree diagram if files added/renamed/deleted" (Claude's responsibility).
+- **Step 1 footer** now documents the exact triggers for a tree update (file added / renamed / deleted / role changed) and cites the past failure (cold-AI audit #4 found `-hosted/` folder missing from tree) so future agents don't repeat.
+
+### Worker
+
+`SERVER_INFO.version` bumped `3.0.4` → `3.0.5` per patch-level policy (observable behavior additions: new response header, new `/robots.txt` handler). No client-facing behavior change.
+
 ## [6.35.0] - 2026-04-23
 
 ### Docs — comprehensive README polish pass
