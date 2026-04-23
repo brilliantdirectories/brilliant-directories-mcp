@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.14] - 2026-04-23
+
+### Fixed — `post_filename` missing from `updateSingleImagePost` schema
+
+Real spec bug caught by Cursor field test: the slug rule in the corpus assumed `post_filename` was writable on `updateSingleImagePost`, but the field was never actually added to the OpenAPI schema properties. MCP clients silently dropped the field before forwarding to BD — calls returned `success` but the slug stayed frozen.
+
+Added `post_filename` to `updateSingleImagePost` request schema properties (positioned after `post_title` for logical grouping). Matches what `updateMultiImagePost.group_filename` has had since v6.38.10. Description points to the corpus URL slug rule for when to suggest a slug+redirect.
+
+### Internal
+
+- Docs+schema change. Worker picks up on next raw-GitHub cache TTL (~5 min). MCP clients need to reconnect to get the new tool schema.
+
 ## [6.38.13] - 2026-04-23
 
 ### Added — Public URL composition global rule

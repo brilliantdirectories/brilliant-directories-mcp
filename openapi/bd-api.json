@@ -3619,6 +3619,10 @@
                   "post_title": {
                     "type": "string"
                   },
+                  "post_filename": {
+                    "type": "string",
+                    "description": "Public URL slug path (e.g. `blog/my-post-slug`). Writable — BD does NOT regenerate the slug when `post_title` changes. See corpus URL slug rule for when to suggest a slug update + redirect."
+                  },
                   "post_content": {
                     "type": "string",
                     "description": "Post body HTML. Froala body field — see post-body formatting rule (structure, `fr-dib fr-fil`/`fr-fir` float + inline `width: 350px`, landscape Pexels images)."
@@ -4014,6 +4018,10 @@
                   },
                   "group_name": {
                     "type": "string"
+                  },
+                  "group_filename": {
+                    "type": "string",
+                    "description": "Public URL path for the album (e.g. `photo-albums/my-slug`). Writable independently of `group_name`; pair URL changes with `createRedirect` from the old path."
                   },
                   "group_desc": {
                     "type": "string",
