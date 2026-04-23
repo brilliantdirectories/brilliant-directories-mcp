@@ -10,7 +10,7 @@
 //   which means we'd silently let fields slip through (agent sees bloat,
 //   or EAV fields silently drop, or write-echo omits new identifiers).
 //
-// Run from gh-mirror2/ root:
+// Run from bd-cursor-config/brilliant-directories-mcp/ (repo root):
 //   node scripts/schema-drift-check.js
 //
 // Exit codes:
@@ -57,7 +57,7 @@
 // But the BD-specific business logic (lean shapers, write-echo keep sets,
 // EAV routing) is hand-maintained in two files:
 //   - bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts
-//   - gh-mirror2/mcp/index.js
+//   - bd-cursor-config/brilliant-directories-mcp/mcp/index.js
 //
 // Both files list explicit field names. When BD adds a new field to (say)
 // `users_data`, both files need updating — or the new field silently

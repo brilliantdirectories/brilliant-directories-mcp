@@ -71,9 +71,9 @@
  * ops that don't benefit from applyPostLean. Named here for completeness.
  *
  * When drift is found, fix in THREE files then re-run the drift check:
- *   1. This file (`gh-mirror2/mcp/index.js`)
+ *   1. This file (`bd-cursor-config/brilliant-directories-mcp/mcp/index.js`)
  *   2. `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` (Worker)
- *   3. `gh-mirror2/scripts/schema-drift-check.js` (script's own baseline)
+ *   3. `bd-cursor-config/brilliant-directories-mcp/scripts/schema-drift-check.js` (script's own baseline)
  *
  * Note: npm package has NO EAV routing (that's Worker-only — BD's
  * `users_meta` field-name → storage-row routing for WebPage hero fields).
