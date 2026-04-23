@@ -75,10 +75,9 @@
  *   2. `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` (Worker)
  *   3. `bd-cursor-config/brilliant-directories-mcp/scripts/schema-drift-check.js` (script's own baseline)
  *
- * Note: npm package has NO EAV routing (that's Worker-only — BD's
- * `users_meta` field-name → storage-row routing for WebPage hero fields).
- * If you see `EAV_ROUTES` in drift-check output, that's Worker-only; no
- * action needed here.
+ * Note: EAV routing for `updateWebPage` lives on BOTH transports (npm + Worker).
+ * When BD gains a new hero/EAV field on `list_seo`, add it to `EAV_ROUTES`
+ * in both `mcp/index.js` and the Worker's `src/index.ts` + the drift script.
  * =============================================================================
  */
 
@@ -1064,6 +1063,106 @@ const AUTO_REFRESH_SCOPE = {
   updatePostType: "",
 };
 
+// EAV split-storage routing (mirror of Worker's EAV_ROUTES). BD stores ~27
+// `list_seo` fields in `users_meta` with `database=list_seo`; `updateWebPage`
+// on the parent silently drops them. We peel EAV fields off before the parent
+// update, then upsert each via users_meta (update existing, create if missing).
+// The upsert covers the "add hero to a page originally created without hero"
+// flow — BD only auto-seeds hero rows on create-with-hero, not later updates.
+// Only enumerated eavFields reach this code path, so typo'd keys can't
+// pollute users_meta (they flow to the parent update and BD drops them).
+const EAV_ROUTES = {
+  updateWebPage: {
+    eavDatabase: "list_seo",
+    parentPK: "seo_id",
+    eavFields: new Set([
+      "hero_section_content", "hero_image",
+      "hero_link_url", "hero_link_text", "hero_link_color", "hero_link_size", "hero_link_target_blank",
+      "hero_content_font_size", "hero_content_font_color",
+      "hero_content_overlay_opacity", "hero_content_overlay_color",
+      "hero_column_width", "hero_alignment",
+      "hero_top_padding", "hero_bottom_padding",
+      "hero_background_image_size",
+      "hero_hide_banner_ad",
+      "h1_font_size", "h2_font_size",
+      "h1_font_weight", "h2_font_weight",
+      "h1_font_color", "h2_font_color",
+      "linked_post_type", "linked_post_category",
+      "disable_css_stylesheets", "disable_preview_screenshot",
+    ]),
+  },
+};
+
+function splitEavParams(operation, params) {
+  const route = EAV_ROUTES[operation];
+  if (!route) return { direct: params, eav: {}, route: null };
+  const direct = {};
+  const eav = {};
+  for (const [k, v] of Object.entries(params || {})) {
+    if (route.eavFields.has(k)) eav[k] = v;
+    else direct[k] = v;
+  }
+  return { direct, eav, route };
+}
+
+async function writeEavFields(config, route, parentId, eavParams) {
+  const results = [];
+  for (const [key, value] of Object.entries(eavParams)) {
+    let metaId = null;
+    try {
+      const listResult = await makeRequest(
+        config,
+        "GET",
+        "/api/v2/users_meta/get",
+        { property: "key", property_value: key, property_operator: "=", limit: 100 },
+        null
+      );
+      const listBody = listResult && listResult.body;
+      const rows = listBody && Array.isArray(listBody.message) ? listBody.message : [];
+      const matches = rows.filter(
+        (row) =>
+          row &&
+          String(row.database) === String(route.eavDatabase) &&
+          String(row.database_id) === String(parentId)
+      );
+      if (matches.length > 0 && matches[0].meta_id) metaId = matches[0].meta_id;
+    } catch {
+      results.push({ key, action: "updated", status: "error", message: "EAV lookup failed" });
+      continue;
+    }
+    if (!metaId) {
+      try {
+        const createResult = await makeRequest(
+          config,
+          "POST",
+          "/api/v2/users_meta/create",
+          null,
+          { database: route.eavDatabase, database_id: parentId, key, value: String(value) }
+        );
+        const ok = createResult && createResult.status >= 200 && createResult.status < 300;
+        results.push({ key, action: "created", status: ok ? "success" : "error", http: createResult && createResult.status });
+      } catch {
+        results.push({ key, action: "created", status: "error", message: "EAV create failed" });
+      }
+      continue;
+    }
+    try {
+      const updateResult = await makeRequest(
+        config,
+        "PUT",
+        "/api/v2/users_meta/update",
+        null,
+        { meta_id: metaId, value: String(value), database: route.eavDatabase, database_id: parentId }
+      );
+      const ok = updateResult && updateResult.status >= 200 && updateResult.status < 300;
+      results.push({ key, action: "updated", status: ok ? "success" : "error", http: updateResult && updateResult.status });
+    } catch {
+      results.push({ key, action: "updated", status: "error", message: "EAV update failed" });
+    }
+  }
+  return results;
+}
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -1797,6 +1896,11 @@ async function main() {
         }
       }
 
+      // EAV split: peel hero/EAV fields off updateWebPage args before the
+      // parent update. Flushed via users_meta after the parent succeeds.
+      const { direct: eavDirect, eav: eavQueued, route: eavRoute } = splitEavParams(name, args || {});
+      if (eavRoute) args = eavDirect;
+
       for (const [key, val] of Object.entries(args || {})) {
         // Check if this is a path parameter (appears in URL template)
         if (urlPath.includes(`{${key}}`)) {
@@ -1822,6 +1926,27 @@ async function main() {
       }
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
+
+      // EAV follow-up: parent update succeeded AND we had EAV fields queued.
+      // Resolve parent PK (agent always supplies it on updateWebPage) and
+      // flush each queued EAV field via users_meta upsert.
+      if (
+        eavRoute &&
+        Object.keys(eavQueued).length > 0 &&
+        result.body &&
+        typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const parentId =
+          (eavDirect[eavRoute.parentPK] !== undefined ? eavDirect[eavRoute.parentPK] : undefined) ||
+          (result.body.message && typeof result.body.message === "object"
+            ? result.body.message[eavRoute.parentPK]
+            : undefined);
+        if (parentId) {
+          const eavResults = await writeEavFields(config, eavRoute, parentId, eavQueued);
+          result.body.eav_results = eavResults;
+        }
+      }
 
       // Apply lean-response shaping. Reads honor include_* flags; writes
       // are always lean (create/update echoes trimmed to a small keep-set).

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.1] - 2026-04-23
+
+### Fixed — EAV upsert parity between transports + hero safe-default
+
+**EAV upsert now works on npm (was Worker-only).** `mcp/index.js` gained the `EAV_ROUTES` / `splitEavParams` / `writeEavFields` helpers that already shipped on the Worker in v3.1.1. `updateWebPage` with hero fields on a page originally created without hero now correctly creates the missing `users_meta` rows instead of silently dropping them. Both transports behave identically for this workflow now.
+
+**`hero_column_width="8"` added to the hero safe-defaults** list in `createWebPage`, `updateWebPage`, and `mcp-instructions.md`. Matches BD admin-UI default (70% text-column width).
+
+### Internal
+
+- Stale "npm has no EAV routing" comment in `mcp/index.js` header updated to reflect parity.
+
 ## [6.38.0] - 2026-04-23
 
 ### Added — auto cache refresh expanded to Widgets + PostTypes
