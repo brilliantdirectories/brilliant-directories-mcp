@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.7] - 2026-04-23
+
+### Changed — inline Froala body image variant `?w=1280` → `?w=700`
+
+Matches 2x the 350px display width for retina sharpness without oversampling. ~3x smaller file than the previous `?w=1280` (~80KB vs ~250KB per inline image) with no visible quality loss.
+
+Docs-only; Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.6] - 2026-04-23
 
 ### Fixed — image URL rule split + Froala image classes

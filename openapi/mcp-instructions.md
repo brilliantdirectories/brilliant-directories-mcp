@@ -421,7 +421,7 @@ Applies to BOTH `content` and `profile_search_results` page types.
 
 **Image URL rule (all image fields, all contexts):**
 - **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`) — bare URL, no `?` query string (BD's filename generator breaks on it).
-- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; use Pexels medium variant `?w=1280` for page-load weight.
+- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness).
 - **All fields:** landscape or square only (never portrait), `.jpg` or `.png` only.
 
 **Banned image sources** (never use, period):
