@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.13] - 2026-04-23
+
+### Added — Public URL composition global rule
+
+Observed drift (Cursor test round 3): agent correctly read `post_filename` path from the record but hallucinated the site origin (`dash.strategicdirectoryprofits.com` — a domain that never appeared anywhere in the conversation). The rule to call `getSiteInfo` was present in the Site grounding paragraph but passive and easy to skip in mid-flow.
+
+Added a short standalone utility rule right after Site grounding:
+
+> **Public URL composition.** Always `{getSiteInfo.full_url}/{path_field}` where `path_field` is `post_filename` / `group_filename` / `filename` from the record. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
+
+Applies to every public URL the agent reports (posts, albums, member profiles, WebPages, categories). Hallucination-trap phrasing is deliberate: if the agent catches itself about to write a literal domain that didn't come from a cached `full_url`, stop and re-call.
+
+### Changed — Pexels search URL clarification
+
+Further disambiguated the Pexels orientation filter rule: dropped the "or API param" phrasing that sent agents hunting for `PEXELS_API_KEY` env vars. Now explicit that the filter belongs on the **public search page** (`pexels.com/search/...`) with no API key or auth required.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.12] - 2026-04-23
 
 ### Changed — corpus disambiguations (orientation filter + slug verify)
