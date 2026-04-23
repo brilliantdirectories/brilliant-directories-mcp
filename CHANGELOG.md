@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.33.0] - 2026-04-23
+
+### Fixed — MAINTENANCE HYGIENE header in `mcp/index.js` named fictional constants
+
+The header block listed `USER_KEEP / POST_KEEP / CATEGORY_KEEP / POSTTYPE_KEEP / WEBPAGE_KEEP / PLAN_KEEP` as medium-risk mirrors — but none of those identifiers exist in the file. Real names are `USER_LEAN_ALWAYS_STRIP`, `USER_LEAN_SEO_BUNDLE`, `PLAN_ALWAYS_KEEP`, `PLAN_CONFIG_FIELDS`, `PLAN_DISPLAY_FLAG_FIELDS`, `POST_TYPE_CODE_BUNDLE`, `WEB_PAGE_CODE_BUNDLE`, `CATEGORY_SCHEMA_BUNDLE`, etc. A cold-AI maintainer searching for `USER_KEEP` found nothing. Now lists every real constant by its actual name, grouped by family. Same header also incorrectly listed `POST_READ_EXCLUSIONS` as a local mirror — that constant only exists in `scripts/schema-drift-check.js`. Corrected with a cross-reference note.
+
+### Fixed — `BD_API_KEY_REGEX` comments contradicted its actual regex
+
+Regex uses `/i` flag (case-insensitive), but two separate comment locations in `src/index.ts` said "32 lowercase hex chars". Aligned the comments to "32 hex characters (case-insensitive; BD issues lowercase)" — the regex is defensive for copy-paste case-normalization; BD's server lookup is also case-insensitive.
+
+### Added — `SLOTS_WITH_DEFAULTS` now called out as a known drift-risk
+
+The `getBrandKit` synthetic tool hand-maintains 20 `custom_N` slots with default values (`mcp/index.js`). This is a fourth mirror tier alongside the documented lean keep-lists and `WRITE_KEEP_SETS` — but drift-check does NOT currently validate it. If BD adds a new `custom_209` for a brand color or font, `getBrandKit` silently won't expose it. Known gap documented in MAINTENANCE HYGIENE tier table; no automated check added this release (would require spec-agnostic scan of `website_design_settings`).
+
+### Added — `HIDDEN_TOOLS` expansion policy (Worker)
+
+When another tool needs hiding, cold-AI maintainer now has an explicit 5-step checklist: add to Set, mirror in npm, reference drift-check's CHECK 1, add CHANGELOG entry with one-line reason, remove public README/SKILL references if present.
+
+### Added — `SECURITY_HEADERS` scope clarification
+
+Previously comment said "every public endpoint." Corrected: the HSTS / nosniff / Referrer-Policy headers ARE wrapped on GET /, OPTIONS, 401 auth errors, 404 not-found — but NOT on `agents/mcp` SDK-dispatched transport responses (serveSSE / serve). Zero practical impact because MCP clients don't evaluate these headers, but the comment was overstating coverage.
+
+### Added — lean-shaper mutation contract documented
+
+`applyWriteLean` (and the 6 applyXxxLean read shapers) mutate `body` in place AND return the same reference. The tool-call pipeline relies on mutation and discards the return value. Noted explicitly so a future maintainer doesn't "clean up" by making them return fresh objects (which would silently break the pipeline).
+
+### Added — `jsonSchemaToZodShape` default-to-string footgun noted
+
+Any unknown `type:` value in the OpenAPI spec (e.g. `"object"`, typos, nested schemas without a top-level type) silently becomes `z.string()`. If a future spec author adds a nested object schema, agents will pass real objects and Zod will reject with a cryptic "expected string" error. Documented with the fix recipe (add `case "object":` branch) inline.
+
+### Added — `parentPK` fallback rationale in EAV write path
+
+The tool-call handler resolves parent PK via `args[pk] || bdBody.message[pk]`. For the only EAV route today (updateWebPage), the first branch always hits. The fallback is future-proofing for `createWebPage` — when the agent doesn't know the new PK, BD assigns it and we'd read it from the create response. Documented so future maintainers don't delete as dead code.
+
+### Added — SSE session-ID trust model articulated
+
+Skipping auth on `POST /sse/message` was previously documented only as "auth was validated at GET /sse; don't change this or n8n breaks." Now includes the full trust model: cryptographically-random 64-char hex sessionId + TLS + short-lived + no cold-start persistence = hijack-via-stolen-sessionId is a non-threat. Explicit guidance on when this would need to change.
+
+### Added — `eav_results` response contract documented (Worker)
+
+`writeEavFields` returns an array of per-field result objects that the handler attaches as `bdBody.eav_results`. This field is NOT in the OpenAPI spec and has no TypeScript type. Full JSDoc contract (shape of each result, how agents should inspect, when the field is missing) added above `writeEavFields`.
+
+### Added — `zod: ^3.25.76` caret-range rationale (asymmetry with agents)
+
+Previous comments singled out `agents: ^0.1.0` as a caret-range risk without explaining why zod's caret was OK. Documented: zod 3.x is stable (semver-stable semantics despite pre-1.0 name), agents is explicitly 0.x pre-1.0 (ships breaking changes in minors), `@modelcontextprotocol/sdk` is exact-pinned by our policy despite being stable.
+
+### Added — `applyCategoryLean` pattern divergence note (npm)
+
+`applyCategoryLean` uses an early-return all-or-nothing pattern instead of the multi-axis include-object pattern in applyUserLean / applyPostLean / applyPlanLean. Documented why: categories have only ONE optional bundle, so early-return is simpler + equivalent. Note covers the refactor trigger ("if category_* include flags multiply, migrate to include-object pattern").
+
+### Added — `show_sofware` typo warning mirrored in drift-check
+
+v6.32.0 CHANGELOG claimed the "BD column-name typo, don't fix" warning was added to both `mcp/index.js` and `scripts/schema-drift-check.js`. It was only in the former (the drift-check mirror was lost when dead `*_KNOWN_FIELDS` sets were deleted). Added a standalone comment in the drift-check script so the CHANGELOG's earlier claim is now true.
+
+### Removed — version-number markers in code comments
+
+Stripped `// v6.15.0`, `// v6.16.0`, `// v6.17.0`, `// v6.19.0`, `// v6.20.0` markers from section headers and inline comments in `mcp/index.js`. These violated the `feedback_no_versions_in_agent_text.md` rule (version strings go in CHANGELOG only). Where a version reference was load-bearing, replaced with "search CHANGELOG.md for X" or the referenced concept name. Worker's single v6.32.0 reference kept because it documents a deferral decision (appropriate context).
+
+### Worker
+
+`SERVER_INFO.version` bumped from `3.0.2` → `3.0.3` per the patch-level policy (observable behavior addition: new comments on existing paths). Worker code behavior unchanged except for the enhanced security-headers comment; stale-fallback logging, TTL, init-retry all from v6.32.0 unchanged.
+
 ## [6.32.0] - 2026-04-23
 
 ### Fixed — Worker bug: `_initPromise` now clears on failure

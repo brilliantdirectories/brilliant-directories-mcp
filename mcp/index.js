@@ -32,26 +32,43 @@
  * Drift-risk tiers (same tiers documented in the Worker header):
  *
  *   🔴 HIGH risk — BD adds fields routinely; silent-drop on miss.
- *     - WRITE_KEEP_SETS (write-echo keep-lists; a missing field means the
- *       echoed response drops it even though the write succeeded)
+ *     - WRITE_KEEP_SETS — write-echo keep-lists; a missing field means the
+ *       echoed response drops it even though the write succeeded.
  *
  *   🟡 MEDIUM risk — spec additions to resource families change lean-default
  *     shape; customers' include_* opt-ins depend on these lists being
  *     complete.
- *     - USER_KEEP / POST_KEEP / CATEGORY_KEEP / POSTTYPE_KEEP / WEBPAGE_KEEP
- *       / PLAN_KEEP (per-family lean keep-lists)
- *     - PLAN_CONFIG_FIELDS / PLAN_LEAN_INCLUDE_FLAGS
- *     - POST_READ_EXCLUSIONS (metadata/photo sub-record ops the lean
- *       shaper should NOT touch — handled via drift-check's explicit list)
- *     - AUTHOR_SUMMARY_FIELDS (the fields author-summary injection returns
- *       on post reads; fewer fields = fewer follow-up getUser round-trips)
+ *     - USER_LEAN_ALWAYS_STRIP, USER_LEAN_SEO_BUNDLE, USER_LEAN_INCLUDE_FLAGS
+ *     - POST_LEAN_ALWAYS_STRIP, POST_LEAN_SEO_BUNDLE, POST_LEAN_INCLUDE_FLAGS,
+ *       POST_TYPE_SUMMARY_PROMOTE
+ *     - CATEGORY_SCHEMA_BUNDLE, CATEGORY_LEAN_INCLUDE_FLAGS
+ *     - POST_TYPE_LEAN_ALWAYS_STRIP, POST_TYPE_CODE_BUNDLE,
+ *       POST_TYPE_REVIEW_NOTIFICATIONS, POST_TYPE_LEAN_INCLUDE_FLAGS
+ *     - WEB_PAGE_CODE_BUNDLE, WEB_PAGE_LEAN_INCLUDE_FLAGS
+ *     - PLAN_ALWAYS_KEEP, PLAN_CONFIG_FIELDS, PLAN_DISPLAY_FLAG_FIELDS,
+ *       PLAN_LEAN_INCLUDE_FLAGS
+ *     - AUTHOR_SUMMARY_FIELDS — fields the author-summary injection returns
+ *       on post reads; fewer fields = fewer follow-up getUser round-trips.
+ *     - SLOTS_WITH_DEFAULTS (inside getBrandKit handler) — 20 custom_N slots
+ *       + default values; a fourth hidden mirror the drift-check script does
+ *       NOT currently validate. If BD adds a new custom_N slot for a brand
+ *       color or font, getBrandKit silently won't expose it until this map
+ *       is updated. Known gap; no automated check today.
  *
  *   🟢 LOW risk — rarely changes; guards against accidents.
- *     - HIDDEN_TOOLS (tools deliberately NOT surfaced to agents —
- *       e.g. createUserMeta is hidden because it expects a raw custom_N slot
- *       and agents can't safely pick one)
- *     - PACKAGE_VERSION (tracks package.json — never drifts if released
- *       through the publish protocol)
+ *     - HIDDEN_TOOLS — tools deliberately NOT surfaced to agents (currently
+ *       only `createUserMeta`, hidden because it expects a raw custom_N slot
+ *       and agents can't safely pick one). Expansion policy: if another tool
+ *       needs hiding, add it here AND update drift-check's mirror (which
+ *       counts hidden entries), AND bump `mcp/README.md` + `SKILL.md` if
+ *       the hidden surface is agent-visible anywhere. Keep CHANGELOG entry
+ *       brief: "HIDDEN_TOOLS += toolX (reason)".
+ *     - PACKAGE_VERSION — tracks package.json; never drifts if released
+ *       through the publish protocol.
+ *
+ * POST_READ_EXCLUSIONS lives ONLY in `scripts/schema-drift-check.js` (not
+ * in this file). The drift check uses it to skip metadata/photo sub-record
+ * ops that don't benefit from applyPostLean. Named here for completeness.
  *
  * When drift is found, fix in THREE files then re-run the drift check:
  *   1. This file (`gh-mirror2/mcp/index.js`)
@@ -258,13 +275,14 @@ function buildTools(spec) {
   const toolMap = {}; // operationId -> { method, path, params, bodyProps }
   const seenIds = new Map(); // operationId -> "METHOD path" for duplicate detection
 
-  // v6.19.0: tools deliberately hidden from the agent surface. BD's endpoint
+  // Tools deliberately hidden from the agent surface. BD's endpoint
   // still exists in openapi/bd-api.json, but we don't register it as a callable
   // MCP tool. See the matching "DELIBERATELY HIDDEN FROM AGENTS" note in the
-  // spec's createUserMeta summary + v6.19.0 CHANGELOG entry for the full
-  // rationale. tl;dr: BD auto-seeds users_meta on parent create; exposing a
-  // manual create action to AI agents causes orphan rows, duplicates, and
-  // cross-table corruption. Think twice before adding anything here.
+  // spec's createUserMeta summary (search CHANGELOG.md for "HIDDEN_TOOLS"
+  // for the full rationale). tl;dr: BD auto-seeds users_meta on parent
+  // create; exposing a manual create action to AI agents causes orphan
+  // rows, duplicates, and cross-table corruption. Think twice before
+  // adding anything here.
   const HIDDEN_TOOLS = new Set(["createUserMeta"]);
 
   for (const [urlPath, methods] of Object.entries(spec.paths)) {
@@ -402,7 +420,7 @@ function stripKeys(row, keys) {
   for (const k of keys) delete row[k];
 }
 
-// --- v6.15.0 USERS (listUsers / getUser / searchUsers) --------------------
+// --- USERS (listUsers / getUser / searchUsers) ----------------------------
 
 const USER_LEAN_INCLUDE_FLAGS = [
   "include_password",
@@ -414,7 +432,7 @@ const USER_LEAN_INCLUDE_FLAGS = [
   "include_tags",
   "include_services",
   "include_seo_hidden",
-  "include_about", // v6.16.0
+  "include_about",
 ];
 
 const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", "result"];
@@ -476,7 +494,7 @@ function applyUserLean(body, includeFlags) {
 
 const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
 
-// --- v6.16.0 POSTS (list/get/search SingleImagePost + MultiImagePost) -----
+// --- POSTS (list/get/search SingleImagePost + MultiImagePost) -------------
 
 const POST_LEAN_INCLUDE_FLAGS = [
   "include_content",
@@ -486,7 +504,7 @@ const POST_LEAN_INCLUDE_FLAGS = [
   "include_photos",
 ];
 
-// Promoted from nested data_category (v6.17.0). data_id + data_type are already
+// Promoted from nested data_category. data_id + data_type are already
 // top-level on the BD row; we only promote the remaining 4 identity/routing fields.
 const POST_TYPE_SUMMARY_PROMOTE = ["system_name", "data_name", "data_filename", "form_name"];
 
@@ -634,7 +652,7 @@ const POST_READ_TOOLS = new Set([
   "searchMultiImagePosts",
 ]);
 
-// --- v6.16.0 CATEGORIES (top + sub) ---------------------------------------
+// --- CATEGORIES (top + sub) -----------------------------------------------
 //
 // Categories are lean-by-default. Hierarchy linkage fields (profession_id on
 // top+sub; master_id on sub for sub-sub parent) are ALWAYS returned so agents
@@ -655,6 +673,12 @@ const CATEGORY_SCHEMA_BUNDLE = [
   "tablesExists",
 ];
 
+// NOTE: pattern here differs from User/Post/Plan shapers. Those use an
+// `include` object to selectively KEEP/STRIP subsets per flag (multi-axis
+// opt-in). Categories only have ONE optional bundle (the schema fields),
+// so the all-or-nothing early-return is simpler and equivalent. If future
+// category include_* flags are added (e.g. include_category_meta), this
+// should be refactored to the include-object pattern like applyUserLean.
 function applyCategoryLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   if (includeFlags.include_category_schema) return body;
@@ -678,7 +702,7 @@ const CATEGORY_READ_TOOLS = new Set([
   "getSubCategory",
 ]);
 
-// --- v6.19.0 POST TYPES (listPostTypes / getPostType) ---------------------
+// --- POST TYPES (listPostTypes / getPostType) -----------------------------
 //
 // Post-type rows are huge - ~3.5KB minimum, 15-30KB when code fields are
 // populated (PHP/HTML template content). Most agent tasks routing through
@@ -744,7 +768,7 @@ function applyPostTypeLean(body, includeFlags) {
 
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 
-// --- v6.20.0 WEB PAGES (list/get list_seo) --------------------------------
+// --- WEB PAGES (list/get list_seo) ----------------------------------------
 //
 // Page rows carry heavy asset fields: `content` (body HTML), `content_css`,
 // `content_head`, `content_footer_html`. On sites with big pages this trivially
@@ -1565,7 +1589,7 @@ async function main() {
       // database_id alone risks mutating/deleting/corrupting an unrelated table.
       //
       // createUserMeta is also guarded here as defense-in-depth. The tool is
-      // currently hidden from the agent tool surface (v6.19.0 HIDDEN_TOOLS), so
+      // currently hidden from the agent tool surface (see HIDDEN_TOOLS), so
       // this branch is dead code today. If it's ever re-exposed, the guard still
       // fires. Rationale for keeping both layers: removing from HIDDEN_TOOLS should
       // require a second change to remove the guard too - two steps = two chances

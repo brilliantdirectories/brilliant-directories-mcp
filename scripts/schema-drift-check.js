@@ -117,6 +117,13 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 
+// BD column-name note — if any future CHECK validates PLAN membership
+// display flags, be aware `show_sofware` (missing "t") is spelled that way
+// deliberately. Matches BD's actual DB column name. BD shipped the typo
+// years ago and has never migrated. Do NOT "fix" this if you see it in
+// spec fields; the real column won't resolve if corrected. Same warning
+// lives in `mcp/index.js` near `PLAN_DISPLAY_FLAG_FIELDS`.
+
 // (Removed 2026-04-23: the per-family `*_KNOWN_FIELDS` aggregator sets
 // and their source constants — USER_LEAN_*, POST_LEAN_*, POST_TYPE_*,
 // WEB_PAGE_*, PLAN_*, CATEGORY_SCHEMA_BUNDLE. They defined the "expected
