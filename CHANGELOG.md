@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.9] - 2026-04-23
+
+### Added — rename does NOT update URL slug (both single-image + multi-image)
+
+Verified via live BD API testing: `post_title` rename on `updateSingleImagePost` does NOT regenerate `post_filename` (the URL slug); `group_name` rename on `updateMultiImagePost` does NOT regenerate `group_filename`. Both stay on the original slug after rename — only `updateUser` regenerates `filename` when category/city inputs change.
+
+Added surgical warnings to both `updateMultiImagePost` and `updateSingleImagePost` tool descriptions: "Report `post_filename` / `group_filename` from the record when giving the user a URL — do not compose it from the new title." Prevents agents from reporting stale-slug URLs to users.
+
+### Added — schema-drift recovery hint (corpus)
+
+Added one sentence to the Multi-image albums corpus paragraph: if `updateMultiImagePost` append returns success but no new child row appears within ~10s, the MCP client is likely on a stale tool schema missing `post_image` — reconnect the client. Field is supported server-side. Caught via Cursor field test where IDE cached pre-v6.38.8 tool list.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.8] - 2026-04-23
 
 ### Added — multi-image album workflow hardening
