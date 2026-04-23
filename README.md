@@ -594,7 +594,7 @@ Save the node. Click the **Tool** dropdown — should populate with 173 tools. P
 
 > **Why "SSE (Deprecated)" and not "HTTP Streamable"?** The MCP spec deprecated legacy SSE in favor of Streamable HTTP. n8n's SSE client works today against our server; n8n's Streamable HTTP client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed. Our server supports BOTH transports — when n8n fixes their Streamable HTTP client, customers can optionally switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed on our side.
 
-> **Why `brilliantmcp.com` and not `mcp.brilliantdirectories.com`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. The legacy URL still works for Claude Desktop / Cursor / Inspector but isn't recommended for n8n.
+> **Why `brilliantmcp.com`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. It's the single canonical URL for the hosted MCP endpoint.
 
 **Don't want MCP? Alternative paths for n8n:**
 

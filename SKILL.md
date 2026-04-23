@@ -53,7 +53,7 @@ The user installs the MCP server once; it exposes every BD operation as a tool. 
 
 **Two install options** — both give the full tool surface + same agent directives:
 
-1. **Remote (no Node.js install):** add an MCP server to the AI client's config pointing at `https://mcp.brilliantdirectories.com` with two headers — `X-Api-Key` (user's BD API key) and `X-BD-Site-URL` (user's BD site URL). This hits our hosted Cloudflare Worker; the user does nothing on their machine beyond editing the config file.
+1. **Remote (no Node.js install):** add an MCP server to the AI client's config pointing at `https://brilliantmcp.com` with two headers — `X-Api-Key` (user's BD API key) and `X-BD-Site-URL` (user's BD site URL). This hits our hosted Cloudflare Worker; the user does nothing on their machine beyond editing the config file.
 2. **Local (runs as a child process on the user's machine, needs Node.js):** run the setup wizard:
    ```bash
    npx brilliant-directories-mcp@latest --setup

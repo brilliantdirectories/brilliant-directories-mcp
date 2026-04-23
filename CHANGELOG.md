@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.30.0] - 2026-04-23
+
+### Changed — `mcp.brilliantdirectories.com` legacy URL retired
+
+The legacy custom-domain binding `mcp.brilliantdirectories.com` was unbound from the Worker. That URL no longer resolves (`getaddrinfo ENOTFOUND`). The single canonical URL for the hosted BD MCP endpoint is now `https://brilliantmcp.com`.
+
+**What this means for customers:** if you have an existing AI-client config pointing at `mcp.brilliantdirectories.com`, update the URL to `brilliantmcp.com`. Everything else (headers, tools, behavior) is unchanged — just swap the hostname.
+
+**Why retire instead of fork the URL to both:** the `brilliantdirectories.com` parent zone has security rules (Bot Fight Mode, geo-blocks) that protected the marketing site but silently rejected n8n's handshake. Keeping both URLs alive would mean permanently maintaining a "this one works for some clients, not others" split. `brilliantmcp.com` works for 100% of MCP clients (Claude Desktop, Cursor, Claude Code, MCP Inspector, n8n) — one URL, one answer.
+
+### Docs — `README.md`, `mcp/README.md`, `SKILL.md` updated
+
+All public-facing setup docs now point exclusively at `https://brilliantmcp.com`. The "why a dedicated domain" callout simplified: it's no longer "primary vs legacy fallback" framing — it's "the single canonical URL, here's why we use a dedicated zone."
+
 ## [6.29.0] - 2026-04-22
 
 ### Added — schema-drift detector script
