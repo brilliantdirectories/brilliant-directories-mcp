@@ -1024,10 +1024,18 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
   return new Promise((resolve, reject) => {
     const fullUrl = new URL(urlPath, config.apiUrl);
 
-    // Add query params
+    // Add query params. Arrays expand as repeated keys — BD's multi-condition
+    // filter wants `property[]=X&property[]=Y` (via callers passing `key="property[]"`
+    // with an array value), which URLSearchParams produces correctly via append().
     if (queryParams) {
       for (const [key, val] of Object.entries(queryParams)) {
-        if (val !== undefined && val !== null && val !== "") {
+        if (val === undefined || val === null || val === "") continue;
+        if (Array.isArray(val)) {
+          for (const item of val) {
+            if (item === undefined || item === null || item === "") continue;
+            fullUrl.searchParams.append(key, String(item));
+          }
+        } else {
           fullUrl.searchParams.set(key, String(val));
         }
       }
@@ -1686,10 +1694,60 @@ async function main() {
         }
       }
 
+      // SAFETY GUARD (parallel to Worker's validateUsersMetaRead): listUserMeta
+      // queries must include at least 2 of (database, database_id, key), counting
+      // both first-class params and `property`/`property_value`-encoded equivalents.
+      // Single-filter queries return cross-table noise (same numeric database_id
+      // belongs to unrelated rows on different parent tables). getUserMeta is
+      // exempt — `meta_id` in the path already provides identity.
+      if (name === "listUserMeta") {
+        const a = (args && typeof args === "object") ? args : {};
+        const hit = new Set();
+        for (const f of ["database", "database_id", "key"]) {
+          if (a[f] !== undefined && a[f] !== null && String(a[f]).trim() !== "") hit.add(f);
+        }
+        if (typeof a.property === "string" && ["database", "database_id", "key"].includes(a.property) &&
+            a.property_value !== undefined && String(a.property_value).trim() !== "") {
+          hit.add(a.property);
+        }
+        if (hit.size < 2) {
+          return {
+            content: [{
+              type: "text",
+              text: `listUserMeta SAFETY GUARD: queries must include at least 2 of: database, database_id, key. You sent: ${hit.size === 0 ? "none" : [...hit].join(", ")}. WHY: one alone returns cross-table noise (same numeric database_id belongs to unrelated rows on different parent tables). Targeted pairs: (database + database_id) = all EAV fields for one parent; (database + key) = one field across parents; (database_id + key) = almost always one row.`
+            }],
+            isError: true,
+          };
+        }
+      }
+
       // Build URL path with path params substituted
       let urlPath = toolDef.path;
       const queryParams = {};
       const bodyParams = {};
+
+      // listUserMeta/getUserMeta first-class filter translation.
+      // Agents pass database/database_id/key as friendly top-level params (the
+      // tool schema exposes them explicitly). BD's REST API only honors these
+      // as multi-condition filters via property[]/property_value[]/property_operator[]
+      // array syntax — plain ?database=X is silently ignored and returns
+      // cross-table noise. Translate here before building the query.
+      const isUsersMetaRead = name === "listUserMeta" || name === "getUserMeta";
+      let metaFilterPairs = null;
+      if (isUsersMetaRead && args) {
+        const workingArgs = { ...args };
+        const pairs = [];
+        for (const k of ["database", "database_id", "key"]) {
+          if (workingArgs[k] !== undefined && workingArgs[k] !== null && workingArgs[k] !== "") {
+            pairs.push([k, workingArgs[k]]);
+            delete workingArgs[k];
+          }
+        }
+        if (pairs.length > 0) {
+          metaFilterPairs = pairs;
+          args = workingArgs;
+        }
+      }
 
       for (const [key, val] of Object.entries(args || {})) {
         // Check if this is a path parameter (appears in URL template)
@@ -1704,6 +1762,15 @@ async function main() {
           // or a body param not in the spec - send as body
           bodyParams[key] = val;
         }
+      }
+
+      // Apply the translated users_meta filter pairs as array-syntax
+      // query params. Done after the normal loop so the arrays are
+      // definitive (no collision with any pre-existing property[]).
+      if (metaFilterPairs) {
+        queryParams["property[]"] = metaFilterPairs.map(([k]) => k);
+        queryParams["property_value[]"] = metaFilterPairs.map(([, v]) => v);
+        queryParams["property_operator[]"] = metaFilterPairs.map(() => "=");
       }
 
       const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);

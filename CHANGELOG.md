@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.37.1] - 2026-04-23
+
+### Fixed — users_meta filter reads were effectively broken
+
+`listUserMeta` and `getUserMeta` now expose `database`, `database_id`, and `key` as first-class query parameters. Previously the tool schema only offered a generic `property`/`property_value` pair, which collided with the Worker's safety guard (requires 2 of 3 conditions on every read) — every call returned a guard error. Equally bad: even if a caller got past the schema via direct REST, plain `?database=list_seo` was silently ignored by BD (which only honors multi-condition filters via `property[]`/`property_value[]`/`property_operator[]` array syntax) — so "valid" lookups were returning cross-table noise.
+
+**What changed:**
+- Tool schema: three new query params on both endpoints.
+- Runtime translation: both transports (npm `mcp/index.js` + Worker `src/index.ts`) now convert the friendly params into BD's array-syntax filter before forwarding. Plus, the query-string builders correctly expand array values with `.append()` instead of comma-joining via `.set()`.
+- Safety guard in the Worker already accepted these first-class fields (it just couldn't see them because they weren't in the schema). No guard changes needed.
+
+**Impact for agents:**
+```
+listUserMeta(database="list_seo", database_id=167)   →  all EAV rows for WebPage 167
+listUserMeta(database="users_data", key="hero_bio")  →  that field across all members
+getUserMeta(meta_id=123, database="list_seo", database_id=167)  →  triple-verified read
+```
+
+The existing `property`/`property_value` flow still works as a fallback. **Don't mix the two styles in a single call** — pick one per call so filter resolution stays unambiguous.
+
+### Internal
+
+- npm `makeRequest` and Worker `callTool` both now handle array-valued query params correctly (`.append()` per item).
+
 ## [6.37.0] - 2026-04-23
 
 ### Added — Reviews lean shaper + list/search tool clarity

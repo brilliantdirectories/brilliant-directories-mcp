@@ -7396,6 +7396,30 @@
           },
           {
             "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "database",
+            "in": "query",
+            "description": "Parent table filter (e.g. `list_seo`, `users_data`, `data_posts`). First-class shortcut - the MCP wrapper translates it into BD's multi-condition filter syntax. Pair with `database_id` to target all EAV rows for one parent record, or with `key` to find one field across parents. The safety guard requires 2 of `(database, database_id, key)` on every query.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "database_id",
+            "in": "query",
+            "description": "Parent record primary key filter. Pair with `database` (required - same `database_id` can exist on multiple parent tables) to target one parent's EAV rows, or with `key` to find one specific field. The safety guard rejects queries that send this alone.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "EAV key/field-name filter (e.g. `hero_content_overlay_opacity`, `search_membership_permissions`). Pair with `database` (scope to one parent table) or with `database_id` (one specific row). The safety guard rejects this alone.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -7410,7 +7434,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of users_meta records (EAV key/value table). Read-only.\n\n**Use when:** enumerating metadata rows (key/value pairs) attached to a parent record in any BD table.\n\n**IDENTITY RULE - `(database, database_id)` is ONE atomic compound identity, not two independent fields.** The same numeric `database_id` routinely points at UNRELATED rows on different parent tables - any integer ID can exist as a PK on multiple parent tables simultaneously. A `database_id=<n>`-only query will return a MIX of rows from every parent table where that integer happens to be a PK (even low IDs like `1` return hundreds of rows spanning 2+ parent tables). **Always pair `database=<parent_table>` WITH `database_id=<id>` whenever reading, writing, updating, or deleting users_meta.** Until the server honors multi-condition array-syntax filters, the supported workflow is: list by `database_id`, then **CLIENT-SIDE filter to rows where `database` equals the intended parent table BEFORE acting on any `meta_id`**. Never act on a `database_id`-alone result - misidentifying a row can silently corrupt or destroy unrelated resource metadata on another table.\n\n**Commonly-seen `database` values (BD may accept other table names with users_meta rows - prefer these for known resources; if the user names an unfamiliar table, GET first to verify it actually has meta rows before writing):** `users_data`, `deleted_users_data`, `data_posts`, `list_seo`, `subscription_types`, `list_professions`, `list_services`, `rel_services`, `tags`, `tag_groups`, `rel_tags`, `leads`, `lead_matches`, `forms`, `form_fields`, `users_reviews`, `menus`, `menu_items`, `data_widgets`, `email_templates`, `301_redirects`, `data_categories`, `smart_lists`, `users_clicks`, `unsubscribe_list`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability. Useful filters: `database`, `database_id`, `key`.\n\n**See also:** `getUserMeta` (single record by ID), `updateUserMeta`, `deleteUserMeta`.\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record includes `meta_id`, `database`, `database_id`, `key`, `value`, `date_added`, `revision_timestamp`.\n\n**Note on duplicates:** BD does NOT enforce a uniqueness constraint on `(database, database_id, key)` - the same field can have multiple rows (observed live). Read-layer merge uses last-write-wins, but stored data can bloat. When updating, consider patching ALL matching rows, or deleting duplicates first.\n\n"
+        "description": "Paginated enumeration of users_meta records (EAV key/value table). Read-only.\n\n**Use when:** enumerating metadata rows (key/value pairs) attached to a parent record in any BD table.\n\n**IDENTITY RULE - `(database, database_id)` is ONE atomic compound identity, not two independent fields.** The same numeric `database_id` routinely points at UNRELATED rows on different parent tables - any integer ID can exist as a PK on multiple parent tables simultaneously. A `database_id=<n>`-only query will return a MIX of rows from every parent table where that integer happens to be a PK (even low IDs like `1` return hundreds of rows spanning 2+ parent tables). **Always pair `database=<parent_table>` WITH `database_id=<id>` whenever reading, writing, updating, or deleting users_meta.** Pass `database`, `database_id`, and `key` as first-class query params; the MCP wrapper translates them into BD's multi-condition filter syntax so server-side scoping IS accurate — no client-side post-filter needed. The safety guard requires at least 2 of `(database, database_id, key)` on every read; single-filter queries are rejected. **Do NOT mix first-class filters with the generic `property`/`property_value` style in the same call** — pick one style. Never act on a partial-identity result - misidentifying a row can silently corrupt or destroy unrelated resource metadata on another table.\n\n**Commonly-seen `database` values (BD may accept other table names with users_meta rows - prefer these for known resources; if the user names an unfamiliar table, GET first to verify it actually has meta rows before writing):** `users_data`, `deleted_users_data`, `data_posts`, `list_seo`, `subscription_types`, `list_professions`, `list_services`, `rel_services`, `tags`, `tag_groups`, `rel_tags`, `leads`, `lead_matches`, `forms`, `form_fields`, `users_reviews`, `menus`, `menu_items`, `data_widgets`, `email_templates`, `301_redirects`, `data_categories`, `smart_lists`, `users_clicks`, `unsubscribe_list`.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter:** prefer the first-class `database` / `database_id` / `key` params (described above). The generic `property` / `property_value` / `property_operator` + `order_column` / `order_type` flow also works as a fallback and counts toward the 2-of-3 guard when `property` is one of the three target keys — but do not mix the two styles in the same call.\n\n**See also:** `getUserMeta` (single record by ID), `updateUserMeta`, `deleteUserMeta`.\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record includes `meta_id`, `database`, `database_id`, `key`, `value`, `date_added`, `revision_timestamp`.\n\n**Note on duplicates:** BD does NOT enforce a uniqueness constraint on `(database, database_id, key)` - the same field can have multiple rows (observed live). Read-layer merge uses last-write-wins, but stored data can bloat. When updating, consider patching ALL matching rows, or deleting duplicates first.\n\n"
       }
     },
     "/api/v2/users_meta/get/{meta_id}": {
@@ -7428,6 +7452,22 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "database",
+            "in": "query",
+            "description": "OPTIONAL — your expected parent table name (e.g. `list_seo`). Accepted for intent documentation; verification is agent-side (compare `message[0].database` in the response). Recommended on any `getUserMeta` preceding a write to the users_meta table.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "database_id",
+            "in": "query",
+            "description": "OPTIONAL — your expected parent record PK. Same intent-documentation convention as `database`. Agent-side verification: compare `message[0].database_id` before acting on the row.",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -7442,7 +7482,7 @@
             }
           }
         },
-        "description": "Fetch a single usermeta record. Read-only.\n\n**Use when:** fetching one metadata row by `meta_id`.\n\n**Required:** `meta_id`.\n\n**Identity check before downstream writes:** Before using this row's `meta_id` for any subsequent `updateUserMeta`/`deleteUserMeta` call, confirm the response's `database` and `database_id` fields BOTH match the parent record you intend to modify. The same `database_id` can exist across unrelated parent tables (`users_data`, `list_seo`, `subscription_types`, `data_posts`, etc.) - blindly passing a `meta_id` forward without verifying its `(database, database_id)` pair can silently corrupt or destroy data on an unrelated table.\n\n**See also:** `listUserMeta` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single usermeta record. Read-only.\n\n**Use when:** fetching one metadata row by `meta_id`.\n\n**Required:** `meta_id`.\n\n**Identity check before downstream writes:** Before using this row's `meta_id` for any subsequent `updateUserMeta`/`deleteUserMeta` call, confirm the response's `database` and `database_id` fields BOTH match the parent record you intend to modify. The same `database_id` can exist across unrelated parent tables (`users_data`, `list_seo`, `subscription_types`, `data_posts`, etc.) - blindly passing a `meta_id` forward without verifying its `(database, database_id)` pair can silently corrupt or destroy data on an unrelated table. Optional `database` and `database_id` query params are accepted for documentation/intent — the actual verification is agent-side (compare `message[0].database` / `message[0].database_id` to what you expected before acting).\n\n**See also:** `listUserMeta` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/users_meta/create": {
