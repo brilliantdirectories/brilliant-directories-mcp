@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.3] - 2026-04-23
+
+### Added — MembershipPlan URL uniqueness fields
+
+`createMembershipPlan` and `updateMembershipPlan` now accept two optional URL-slug fields:
+
+- **`subscription_filename`** — plan's public search/browse page URL. Must be site-wide unique vs other plans' `subscription_filename`, top categories (`list_professions.filename`), sub-categories (`list_services.filename`), and WebPages (`list_seo.filename`). Pre-check each with a filtered `list*` call before writing.
+- **`custom_checkout_url`** — plan's custom checkout URL. Stored in `users_meta` (`database=subscription_types, key=custom_checkout_url`). Must be unique across all plans' checkout URLs. Pre-check via `listUserMeta(database="subscription_types", key="custom_checkout_url")` + client-filter by value.
+
+Both fields are optional; safe to leave blank. Collisions cause site URL routing conflicts.
+
+### Added — EAV routing extended to `updateMembershipPlan`
+
+`EAV_ROUTES.updateMembershipPlan` maps `custom_checkout_url` → `users_meta(database=subscription_types, database_id=subscription_id)`. Agent just passes the field to `updateMembershipPlan`; wrapper handles the EAV upsert (create if missing, update if exists — same pattern as WebPage hero fields). On CREATE, BD auto-seeds the row (verified live) — no wrapper routing needed there.
+
+### Internal
+
+- `EAV_ROUTES` map entry added in `mcp/index.js`, Worker `src/index.ts`, and `scripts/schema-drift-check.js` (three-file drift rule).
+- Worker `SERVER_INFO` 3.1.2 → 3.1.3.
+
 ## [6.38.2] - 2026-04-23
 
 ### Added — server-side scaffolding sanitizer (belt + suspenders with docs rule)

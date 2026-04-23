@@ -157,6 +157,11 @@ const WRITE_KEEP_SETS = {
 
 // EAV routes
 const EAV_ROUTES = {
+  updateMembershipPlan: {
+    eavDatabase: "subscription_types",
+    parentPK: "subscription_id",
+    eavFields: new Set(["custom_checkout_url"]),
+  },
   updateWebPage: {
     eavDatabase: "list_seo",
     parentPK: "seo_id",

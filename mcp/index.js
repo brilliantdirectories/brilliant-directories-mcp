@@ -1072,6 +1072,11 @@ const AUTO_REFRESH_SCOPE = {
 // Only enumerated eavFields reach this code path, so typo'd keys can't
 // pollute users_meta (they flow to the parent update and BD drops them).
 const EAV_ROUTES = {
+  updateMembershipPlan: {
+    eavDatabase: "subscription_types",
+    parentPK: "subscription_id",
+    eavFields: new Set(["custom_checkout_url"]),
+  },
   updateWebPage: {
     eavDatabase: "list_seo",
     parentPK: "seo_id",
