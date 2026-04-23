@@ -6097,11 +6097,11 @@
                   },
                   "subscription_filename": {
                     "type": "string",
-                    "description": "Optional URL slug for this plan's public search/browse page. Must be site-wide unique across: other plans' `subscription_filename`, top categories (`list_professions.filename`), sub-categories (`list_services.filename`), and WebPages (`list_seo.filename`). Duplicates cause URL routing conflicts. Pre-check with 4 exact-match filtered `list*` calls (`listMembershipPlans`, `listTopCategories`, `listSubCategories`, `listWebPages` — each with `property=<filename-field>&property_value=<proposed>&property_operator==`). Any hit = taken; pick a different slug. Safe to leave blank."
+                    "description": "Optional URL slug for this plan's public page. Must be site-wide unique — duplicates cause URL routing conflicts. Pre-check with 4 filtered `list*` calls (each `property_value=<proposed>&property_operator==`): `listMembershipPlans`+`subscription_filename`, `listTopCategories`+`filename`, `listSubCategories`+`filename`, `listWebPages`+`filename`. Any hit = taken. Safe to leave blank."
                   },
                   "custom_checkout_url": {
                     "type": "string",
-                    "description": "Optional custom checkout URL path for this plan. Stored in `users_meta` (`database=subscription_types, key=custom_checkout_url`). Must be unique across all plans' checkout URLs — duplicates cause checkout routing conflicts. Pre-check: `listUserMeta(database=\"subscription_types\", key=\"custom_checkout_url\")` then client-filter for any row whose `value` equals your proposed URL. Any hit on a DIFFERENT `database_id` = taken; pick another. Safe to leave blank."
+                    "description": "Optional custom checkout URL for this plan. Stored in `users_meta` (`database=subscription_types`, `key=custom_checkout_url`); BD auto-seeds on create. Must be unique across all plans. Pre-check: `listUserMeta(database=\"subscription_types\", key=\"custom_checkout_url\")` then client-filter for any row whose `value` matches yours. Any hit = taken. Safe to leave blank."
                   }
                 }
               }
@@ -6224,11 +6224,11 @@
                   },
                   "subscription_filename": {
                     "type": "string",
-                    "description": "Optional URL slug for this plan's public search/browse page. Must be site-wide unique across: other plans' `subscription_filename` (excluding this plan), top categories (`list_professions.filename`), sub-categories (`list_services.filename`), and WebPages (`list_seo.filename`). Duplicates cause URL routing conflicts. Pre-check with 4 exact-match filtered `list*` calls (`listMembershipPlans`, `listTopCategories`, `listSubCategories`, `listWebPages` — each with `property=<filename-field>&property_value=<proposed>&property_operator==`); on `listMembershipPlans` ignore any hit whose `subscription_id` equals this plan. Any OTHER hit = taken; pick a different slug. Safe to leave blank."
+                    "description": "Optional URL slug for this plan's public page. Must be site-wide unique — duplicates cause URL routing conflicts. Pre-check with 4 filtered `list*` calls (each `property_value=<proposed>&property_operator==`): `listMembershipPlans`+`subscription_filename` (ignore hits on this plan's own `subscription_id`), `listTopCategories`+`filename`, `listSubCategories`+`filename`, `listWebPages`+`filename`. Any OTHER hit = taken. Safe to leave blank."
                   },
                   "custom_checkout_url": {
                     "type": "string",
-                    "description": "Optional custom checkout URL path for this plan. Stored in `users_meta` (`database=subscription_types, key=custom_checkout_url`); the MCP wrapper routes this field via EAV upsert on update. Must be unique across all plans' checkout URLs — duplicates cause checkout routing conflicts. Pre-check: `listUserMeta(database=\"subscription_types\", key=\"custom_checkout_url\")` then client-filter for any row whose `value` equals your proposed URL. Ignore any hit where `database_id` equals this plan's `subscription_id`. Any OTHER hit = taken; pick another. Safe to leave blank."
+                    "description": "Optional custom checkout URL for this plan. Stored in `users_meta` (`database=subscription_types`, `key=custom_checkout_url`); MCP wrapper handles EAV upsert on update. Must be unique across all plans. Pre-check: `listUserMeta(database=\"subscription_types\", key=\"custom_checkout_url\")` then client-filter for any row whose `value` matches yours; ignore the row where `database_id` equals this plan's `subscription_id`. Any OTHER hit = taken. Safe to leave blank."
                   }
                 }
               }

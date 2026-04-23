@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.4] - 2026-04-23
+
+### Added — lean write-echo for MembershipPlan
+
+`createMembershipPlan` and `updateMembershipPlan` now trim BD's ~170-field `subscription_types` response down to 4 identity/classification fields: `subscription_id`, `subscription_name`, `subscription_type`, `profile_type`. Matches the lean-echo pattern already shipped for User / Post / WebPage / Widget / Category / PostType.
+
+### Changed — MembershipPlan URL field descriptions tightened
+
+`subscription_filename` and `custom_checkout_url` param descriptions on both create/update rewritten from ~500-chars each to ~400/450-chars — same uniqueness rule, less prose.
+
+### Internal
+
+- `WRITE_KEEP_SETS` gained `createMembershipPlan` + `updateMembershipPlan` entries in all 3 drift-locked files (`mcp/index.js`, `src/index.ts`, `schema-drift-check.js`).
+- Worker `SERVER_INFO` 3.1.3 → 3.1.4.
+
 ## [6.38.3] - 2026-04-23
 
 ### Added — MembershipPlan URL uniqueness fields

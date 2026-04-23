@@ -976,6 +976,8 @@ const WRITE_KEEP_SETS = {
   // echo only identity + classification + timestamps + shortcode.
   createWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
   updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
+  createMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
+  updateMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the
