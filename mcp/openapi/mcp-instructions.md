@@ -388,7 +388,7 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 
 **Admin Froala editor gotcha:** editor applies `content_css` but does NOT run `content_footer_html` JS. Hide-by-default CSS (scroll reveals, tab panels, accordion collapse, modals, non-active slider slides) will permanently hide content in the editor. Gate such rules behind a `.js-ready` class on a page-scoped wrapper (`.my-page.js-ready .reveal { opacity:0 }` NOT `.my-page .reveal { opacity:0 }`), and have `content_footer_html` JS add that class as its FIRST line: `document.querySelector('.my-page')?.classList.add('js-ready');`. Live site: class added, CSS activates. Admin: class never added, content stays visible/editable.
 
-**Post-body formatting (`post_content`, `group_desc`).** Structure: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>`. Image float: `class="fr-dib fr-fil"` (left) or `class="fr-dib fr-fir"` (right) + inline `style="width: 350px;"` on the `<img>` (Froala keeps inline `style` on body-field images, unlike WebPage `content`). Landscape or square images only — never portrait. Pexels for stock; sourcing hierarchy same as hero images above. On `createSingleImagePost`, default to a Pexels landscape `post_image` + `auto_image_import=1` unless the user opts out; on update, don't overwrite an existing image the user didn't mention. `about_me`: same structure rule; skip images unless the user explicitly asks.
+**Post-body formatting (`post_content`, `group_desc`).** Structure: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>`. Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Image URLs per the image rule below. On `createSingleImagePost`, default to a Pexels `post_image` + `auto_image_import=1` unless the user opts out; on update, don't overwrite an existing image the user didn't mention. `about_me`: same structure rule; skip images unless the user explicitly asks.
 
 **Site grounding - call `getSiteInfo` once on the first BD task of a conversation and cache for the session.** Tiny payload (~1KB) that tells you what kind of directory this is: `website_name`, `full_url` (use for composing public URLs), `profession` (SITE-level target member archetype — NOT a member's `profession_id`), `industry` (site's market vertical), locale (`timezone`, `date_format`, `distance_format`), currency fields, and `brand_images_relative`/`brand_images_absolute` URLs (8 slots each — logo, mascot, background, favicon, default_profile_image, default_logo_image, verified_member_image, watermark). Use `default_profile_image` to detect placeholder photos (if a member's `image_main_file` matches it, there's no real photo). `profession` and `industry` are site settings — NEVER conflate with per-member `profession_id` taxonomy.
 
@@ -417,7 +417,12 @@ Applies to BOTH `content` and `profile_search_results` page types.
 
 1. **User-supplied URL** - if given, use that.
 2. **The SUBJECT's own website** - if the write is about a named real entity (business, school, person, product, institution), the subject's own domain is the correct source. Visit the site, pick a relevant image, use its direct URL. Brand-accurate, no hotlink protection, no stock-photo "obvious AI slop" feel. Example: spotlight on Juilliard -> grab from `juilliard.edu`, NOT Pexels "music student" stock.
-3. **Pexels stock (fallback)** - only when the write is generic (category landing page about "doctors in LA" with no specific doctor in focus; hero on a topic page). URL pattern: `https://images.pexels.com/photos/<ID>/pexels-photo-<ID>.jpeg?auto=compress&cs=tinysrgb&w=1800`. Use "large" size, NOT "original" (often 5000+px).
+3. **Pexels stock (fallback)** - only when the write is generic (category landing page about "doctors in LA" with no specific doctor in focus; hero on a topic page).
+
+**Image URL rule (all image fields, all contexts):**
+- **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`) — bare URL, no `?` query string (BD's filename generator breaks on it).
+- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; use Pexels medium variant `?w=1280` for page-load weight.
+- **All fields:** landscape or square only (never portrait), `.jpg` or `.png` only.
 
 **Banned image sources** (never use, period):
 

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.6] - 2026-04-23
+
+### Fixed — image URL rule split + Froala image classes
+
+One canonical image-URL rule in `mcp-instructions.md`, three bullets:
+- **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`) — bare URL, no `?` query string (BD's filename generator breaks on it — verified live on post 58 where query string produced literal `pphoto-58.jpeg?auto=compress...` filename and 404'd).
+- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels medium variant `?w=1280` for page-load weight.
+- **All fields:** landscape or square only; `.jpg` or `.png` only.
+
+Froala float classes now include `img-rounded`: `fr-dib fr-fil img-rounded` (left) / `fr-dib fr-fir img-rounded` (right).
+
+Scrubbed stale `?auto=compress&cs=tinysrgb&w=1800` references from `createWebPage` + `updateWebPage` hero-image bullets — they now point at the canonical rule.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.5] - 2026-04-23
 
 ### Added — Froala post-body formatting rule (`post_content`, `group_desc`)
