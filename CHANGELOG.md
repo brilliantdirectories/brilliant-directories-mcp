@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.1] - 2026-04-23
+
+### Maintenance — internal docs aligned with single-spec-location (follow-up to v6.40.0)
+
+Post-v6.40.0 sub-agent audit (4 parallel scans across npm-package, scripts, Worker, VISION, CLAUDE.md, and `.claude/settings.json`) surfaced residual stale language in:
+
+- `brilliant-directories-mcp-VISION.md` — "sync duplicate files" Step 2 block, byte-identical `mcp/openapi/*` pair references, checklist items telling a maintainer to `cp openapi/ → mcp/openapi/`. All rewritten to reflect the single canonical location.
+- Publish-protocol memory — ownership-matrix row and path references updated from `openapi/*` → `mcp/openapi/*`.
+
+No user-facing change. No tool schema change. Purely internal-doc hygiene to eliminate the last drift-language pockets.
+
+### Internal
+
+- Docs-only. Worker picks up nothing (no spec/instructions change). Tarball README has no diff.
+
 ## [6.40.0] - 2026-04-23
 
 ### Changed — OpenAPI spec and instructions consolidated to a single canonical location
