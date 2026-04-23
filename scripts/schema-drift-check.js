@@ -117,95 +117,15 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 
-// User shaper constants
-const USER_LEAN_ALWAYS_STRIP = new Set(["save", "form", "formname", "sized", "faction", "result"]);
-const USER_LEAN_SEO_BUNDLE = new Set([
-  "seo_page_title_hidden", "seo_page_description_hidden", "seo_page_keywords_hidden",
-  "seo_social_page_title_hidden", "seo_social_page_description_hidden", "search_description",
-]);
-// These fields are conditionally kept (behind include_* flags) or promoted
-// (like total_clicks / total_photos). Collect them so the "unknown" checker
-// doesn't flag them as drift.
-const USER_KNOWN_FIELDS = new Set([
-  ...USER_LEAN_ALWAYS_STRIP, ...USER_LEAN_SEO_BUNDLE,
-  "password", "subscription_schema", "photos_schema", "transactions",
-  "profession_schema", "tags", "services_schema", "user_clicks_schema",
-  "about_me", "total_clicks", "total_photos",
-]);
-
-// Post shaper constants
-const POST_LEAN_ALWAYS_STRIP = new Set([
-  "form", "au_location", "noheader", "id", "save", "website_id", "form_name",
-  "myid", "method", "au_link", "au_limit", "au_main_info", "au_comesf",
-  "au_header", "au_hint", "au_length", "au_module", "au_photo", "au_selector",
-  "au_ttlimit", "auHeaderTitle", "sized", "subaction", "formname",
-  "logged_user", "form_security_token", "auto_image_import",
-]);
-const POST_LEAN_SEO_BUNDLE = new Set(["post_meta_title", "post_meta_description", "post_meta_keywords"]);
-const POST_HTML_BODY_FIELDS = new Set(["post_content", "group_desc"]);
-const POST_KNOWN_FIELDS = new Set([
-  ...POST_LEAN_ALWAYS_STRIP, ...POST_LEAN_SEO_BUNDLE, ...POST_HTML_BODY_FIELDS,
-  "user", "author", "data_category", "user_clicks_schema", "total_clicks",
-  "list_service", "users_portfolio", "cover_photo_url", "cover_thumbnail_url",
-  "total_photos", "system_name", "data_name", "data_filename", "form_name",
-]);
-
-// Category shaper
-const CATEGORY_SCHEMA_BUNDLE = new Set([
-  "desc", "keywords", "image", "icon", "sort_order",
-  "lead_price", "revision_timestamp", "tablesExists",
-]);
-
-// PostType shaper
-const POST_TYPE_LEAN_ALWAYS_STRIP = new Set([
-  "website_id", "myid", "method", "id", "save", "form", "form_fields_name",
-  "fromcron", "zzz_fake_field", "customize",
-]);
-const POST_TYPE_CODE_BUNDLE = new Set([
-  "search_results_div", "search_results_layout", "profile_results_layout",
-  "profile_header", "profile_footer", "category_header", "category_footer",
-  "comments_code", "comments_header",
-]);
-const POST_TYPE_REVIEW_NOTIFICATIONS = new Set([
-  "review_admin_notification_email", "review_member_notification_email",
-  "review_submitter_notification_email", "review_approved_submitter_notification_email",
-  "review_member_pending_notification_email",
-]);
-const POST_TYPE_KNOWN_FIELDS = new Set([
-  ...POST_TYPE_LEAN_ALWAYS_STRIP, ...POST_TYPE_CODE_BUNDLE, ...POST_TYPE_REVIEW_NOTIFICATIONS,
-  "post_comment_settings",
-]);
-
-// WebPage shaper
-const WEB_PAGE_CODE_BUNDLE = new Set(["content_css", "content_head", "content_footer_html"]);
-const WEB_PAGE_KNOWN_FIELDS = new Set([...WEB_PAGE_CODE_BUNDLE, "content"]);
-
-// Plan shaper
-const PLAN_ALWAYS_KEEP = new Set([
-  "subscription_id", "subscription_name", "subscription_type", "profile_type",
-  "monthly_amount", "yearly_amount", "initial_amount", "lead_price", "searchable",
-]);
-const PLAN_CONFIG_FIELDS = new Set([
-  "sub_active", "search_priority", "auto_activate", "status_after_upgrade",
-  "upgradable_membership", "search_membership_permissions",
-  "photo_limit", "style_limit", "service_limit", "location_limit",
-  "about_form", "listing_details_form", "contact_details_form",
-  "signup_sidebar", "profile_sidebar", "signup_email_template",
-  "upgrade_email_template", "signup_promotion_widget", "profile_layout",
-  "menu_name", "data_settings", "data_settings_read", "location_settings",
-  "category_badge", "profile_badge", "subscription_filename",
-  "payment_default", "hide_specialties", "email_member", "login_redirect",
-  "page_header", "page_footer", "display_ads", "receive_messages",
-  "index_rule", "nofollow_links",
-]);
-const PLAN_DISPLAY_FLAG_FIELDS = new Set([
-  "show_about", "show_experience", "show_education", "show_background",
-  "show_affiliations", "show_publications", "show_awards", "show_slogan",
-  "show_sofware", "show_phone", "seal_link", "website_link", "social_link",
-]);
-const PLAN_KNOWN_FIELDS = new Set([
-  ...PLAN_ALWAYS_KEEP, ...PLAN_CONFIG_FIELDS, ...PLAN_DISPLAY_FLAG_FIELDS,
-]);
+// (Removed 2026-04-23: the per-family `*_KNOWN_FIELDS` aggregator sets
+// and their source constants — USER_LEAN_*, POST_LEAN_*, POST_TYPE_*,
+// WEB_PAGE_*, PLAN_*, CATEGORY_SCHEMA_BUNDLE. They defined the "expected
+// response fields" envelope per family but were never consumed by any
+// CHECK in this script. A cold-AI audit flagged them as dead code. The
+// intent was a CHECK 9 "unknown field in spec response" validator that
+// never shipped; if that check is ever built, re-introduce the sets
+// INSIDE the new check so they're only added when consumed. Don't
+// resurrect them speculatively.)
 
 // Write-response lean echo
 const WRITE_KEEP_SETS = {
@@ -411,7 +331,17 @@ for (const [toolName, keepFields] of Object.entries(WRITE_KEEP_SETS)) {
   // we're dropping from echoes.
   const candidateAdds = bodyProps.filter((f) => {
     if (keepFields.includes(f)) return false;
-    // Only flag likely-identifiers + status fields (heuristic)
+    // Only flag likely-identifiers + status fields (heuristic).
+    // Known gaps — this regex will NOT flag:
+    //   - Non-_id identifiers (`filename`, `slug`, `email`) → add manually
+    //     if the agent needs them echoed on write success.
+    //   - Aliased FKs (`profession_id` was caught; `profession_name` wouldn't
+    //     be). Keep-sets should include both human + numeric identifiers
+    //     when BD accepts either.
+    //   - Timestamps other than `revision_timestamp` (`date_created`,
+    //     `date_updated`) → deliberately unflagged; agents rarely need them.
+    // This check is deliberately conservative — false-positive warnings
+    // cost review cycles; false-negatives only cost a field in one echo.
     return /(_id$|^status$|^active$|^revision_timestamp$)/.test(f);
   });
   if (candidateAdds.length > 0) {
@@ -468,8 +398,8 @@ console.log("    5. Deploy Worker (npx wrangler deploy) + publish npm");
 console.log("");
 console.log("  If a warning is a false positive (e.g., a BD field that's");
 console.log("  intentionally exposed without shaping), document WHY in a");
-console.log("  comment where the constant lives, then add the field to");
-console.log("  the `*_KNOWN_FIELDS` set in this script so future runs stay quiet.");
+console.log("  comment where the constant lives. For EAV pattern false-");
+console.log("  positives specifically, add the field to EAV_PATTERN_EXCLUSIONS.");
 console.log("====================================================================");
 
 process.exit(errors.length > 0 ? 1 : 0);

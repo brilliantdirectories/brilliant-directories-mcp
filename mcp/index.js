@@ -79,7 +79,14 @@ const http = require("http");
 const readline = require("readline");
 const { URL } = require("url");
 
-// Read package version once at startup (keeps User-Agent + server init in sync with package.json)
+// Read package version once at startup (keeps User-Agent + server init in sync
+// with package.json). If package.json is somehow unreadable (malformed tarball,
+// filesystem permission issue), fall back to the literal string "unknown".
+// This is deliberate — hard-failing at startup would be worse (the MCP server
+// can still serve all 173 tools without a valid version string). The "unknown"
+// value shows up in the User-Agent sent to BD and in the serverInfo echoed
+// on initialize; BD treats both as informational only. If you see "unknown"
+// in logs, check the npm tarball's package.json is intact.
 const PACKAGE_VERSION = (() => {
   try {
     return require("./package.json").version;
@@ -91,9 +98,10 @@ const PACKAGE_VERSION = (() => {
 // Load the MCP instructions block from the shared file. Single source of
 // truth: the same file is fetched by the Cloudflare Worker at runtime, so any
 // polish to agent directives ships to BOTH transports on the next deploy.
-// If the file is missing (developer checkout without the openapi/ subtree),
-// fall back to empty string — the Worker still functions, agents just lose
-// the cross-cutting directives.
+// If the file is missing (developer checkout without the openapi/ subtree,
+// or a malformed npm tarball), fall back to empty string — this npm package
+// still functions, agents just lose the cross-cutting directives block in
+// the initialize response. Tool definitions still work normally.
 const INSTRUCTIONS = (() => {
   try {
     return fs.readFileSync(
@@ -105,7 +113,13 @@ const INSTRUCTIONS = (() => {
   }
 })();
 
-// Track in-flight HTTP requests so SIGTERM/SIGINT can drain cleanly
+// Track in-flight HTTP requests so SIGTERM/SIGINT can drain cleanly.
+// Thread-safety note: this is a plain Set mutated from the single Node.js
+// event loop. No locking needed because this package runs as a stdio child
+// process on the user's machine — single-threaded by design. If someone
+// ever wraps this in `worker_threads` to serve multiple MCP clients from
+// one process, replace with a concurrent structure (or accept the race in
+// the drain count; the destroy loop still works).
 const IN_FLIGHT_REQUESTS = new Set();
 
 // ---------------------------------------------------------------------------
@@ -807,6 +821,10 @@ const PLAN_CONFIG_FIELDS = [
 ];
 
 // Restored with include_plan_display_flags=1 — profile-visibility toggles.
+// NOTE: `show_sofware` is spelled with the missing "t" on purpose — it
+// matches BD's actual DB column name. Do NOT "fix" this typo; the field
+// won't resolve if you correct it. BD shipped the typo years ago and has
+// never migrated the column.
 const PLAN_DISPLAY_FLAG_FIELDS = [
   "show_about", "show_experience", "show_education", "show_background",
   "show_affiliations", "show_publications", "show_awards", "show_slogan",
@@ -897,6 +915,15 @@ const WRITE_KEEP_SETS = {
 
 // Apply ONLY to success responses. Errors pass through untouched so the
 // agent sees the full BD error message.
+//
+// Known limitation: this shaper handles the two shapes BD actually returns
+// on write success — `{status, data: {...record}}` and `{status, data: [row,
+// row, ...]}`. It does NOT recurse into deeply nested shapes like
+// `{status, message: {created: {...}}}`. If BD ever returns that, the keep
+// filter would match zero fields at the top level and the shaper would
+// return an empty object — agent would see a confusing "success but no
+// fields" echo. Hasn't been observed in any write endpoint; revisit if it
+// appears.
 function applyWriteLean(toolName, body) {
   const keep = WRITE_KEEP_SETS[toolName];
   if (!keep) return body;
@@ -1212,6 +1239,14 @@ async function runSetup(cliConfig) {
   const entry = buildMcpServerEntry(apiKey, apiUrl);
   const serverName = "brilliant-directories";
 
+  // Map from `--client` flag value → { key, label }.
+  // `print` and `other` both resolve to key "other" (same setup-generation
+  // code path — we don't know how to auto-configure their IDE, so we just
+  // print the snippet). The distinct labels are UX clarity: `--client=print`
+  // was chosen by a user who wants *just* the snippet and will paste it
+  // themselves; `--client=other` is the catch-all for IDEs we haven't
+  // specifically added support for. Both print the same thing under the
+  // hood; only the label in the banner differs. Not a bug.
   const CLIENT_MAP = {
     cursor:          { key: "cursor",         label: "Cursor" },
     "claude-desktop":{ key: "claude-desktop", label: "Claude Desktop" },

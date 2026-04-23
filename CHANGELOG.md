@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.32.0] - 2026-04-23
+
+### Fixed — Worker bug: `_initPromise` now clears on failure
+
+If `_doInit()` rejects (e.g. GitHub raw is temporarily unreachable AND there's no stale cache to fall back on), the rejected promise previously stayed cached in `_initPromise` for the lifetime of that Durable Object isolate — every subsequent request on the same DO would re-await the same rejection, creating a silently-wedged session. Now wrapped in `.catch()` that clears `_initPromise` and re-throws, so transient GitHub outages self-heal on the next request. Worker `SERVER_INFO.version` bumped to 3.0.2.
+
+### Fixed — silent stale-fallback in `loadSpec` / `loadInstructions` (Worker)
+
+When GitHub returns non-2xx, the Worker quietly served cached spec/instructions with zero log output, giving maintainers no signal during a "spec edits aren't propagating" debug session. Now emits `console.warn("[loadSpec] stale-fallback: ...")` with HTTP status + cache age. Shows up in Cloudflare Dashboard Logs for real-time debugging.
+
+### Fixed — `loadInstructions` now has TTL (Worker)
+
+Previously cached indefinitely, which contradicted the documented "5 min propagation" story for spec edits. Now uses `SPEC_CACHE_TTL_MS` + stale-fallback, symmetric with `loadSpec`. Instruction-corpus edits (`openapi/mcp-instructions.md`) will now propagate within 5 min on next DO init trigger, matching the spec.
+
+### Fixed — npm package: `INSTRUCTIONS` fallback comment was copy-pasted from Worker
+
+Said "the Worker still functions" in the fallback-to-empty-string branch. Corrected to "this npm package still functions" — tool definitions still work if `openapi/mcp-instructions.md` is missing from the tarball, only the agent-directives block is lost.
+
+### Added — OBSERVABILITY section in Worker header
+
+New in-file section explaining where `console.log`/`console.warn` output goes (Cloudflare Workers Logs tab + `wrangler tail`), log retention (~3 days on free plan), what's logged deliberately (boot telemetry, per-call abuse visibility, stale-fallback signals), and what's deliberately NOT logged (request bodies, API keys, BD response payloads). Gives cold-AI maintainers a clear mental model of the observability surface.
+
+### Added — inline bump policies + scope notes in Worker
+
+- `SERVER_INFO.version`: inline MAJOR/MINOR/PATCH policy (added last release, expanded this release).
+- `EAV_ROUTES`: scope note — only `updateWebPage` has EAV today; other write ops handle EAV transparently BD-side; don't speculatively add new routes.
+- `WRITE_KEEP_SETS`: "intentionally incomplete" note — don't add speculatively; observe BD's actual response first.
+- `compatibility_date` in `wrangler.toml`: when-to-bump guidance (never opportunistically; only on Cloudflare deprecation announcement or SDK requirement).
+- `workers_dev = true` in `wrangler.toml`: explicit "publicly reachable, NOT covered by WAF rate-limit rule" security note.
+- Zod integer/number laxness (Worker `jsonSchemaToZodShape`): documented the `25.5` edge case.
+- `server.tool()` deprecation hint: expanded comment on why migration to `server.registerTool()` is deferred (hint-level, options-object signature adds ~173 lines of boilerplate, SDK is pinned so the hint is frozen).
+
+### Added — inline comments for magic/named constants (npm + drift)
+
+- `PACKAGE_VERSION` "unknown" fallback rationale (npm `index.js`).
+- `IN_FLIGHT_REQUESTS` single-threaded assumption (npm `index.js`).
+- `SENSITIVE_KEYS` debug-only scope, already clear but bolded (npm `index.js`).
+- `AUTHOR_SUMMARY_FIELDS` per-field rationale (already in place, confirmed adequate).
+- `custom_208` null-fallback for heading font in `getBrandKit` (already in place).
+- `CLIENT_MAP` `print` vs `other` distinction (same key, different label — UX intent).
+- `show_sofware` BD DB-column-name typo: "don't fix this" warning in both `index.js` and `schema-drift-check.js`.
+- Drift CHECK 7 heuristic's known false-negative patterns documented inline.
+- `applyWriteLean` nested-response-shape limitation documented.
+
+### Removed — dead `*_KNOWN_FIELDS` sets in `schema-drift-check.js`
+
+Five aggregator sets (`USER_KNOWN_FIELDS`, `POST_KNOWN_FIELDS`, `POST_TYPE_KNOWN_FIELDS`, `WEB_PAGE_KNOWN_FIELDS`, `PLAN_KNOWN_FIELDS`) were defined but never consumed by any CHECK in the drift script. A cold-AI audit flagged them — the original intent was a CHECK 9 "unknown field in spec response" validator that never shipped. Removed along with the 8 source constants they aggregated and the misleading console.log epilogue that told users to add false-positive fields to the now-deleted sets. ~100 lines of dead code gone. Drift check still exits 0 clean.
+
+### Added — MAINTENANCE HYGIENE header in `mcp/index.js`
+
+Previously v6.30.0's CHANGELOG claimed this section was added to both the Worker and npm. It was only in the Worker. v6.31.0 actually landed it in npm. This release confirms the claim.
+
+### Docs — VISION.md + memory consistency pass
+
+- VISION §"Current state" header updated from v6.27.0 to v6.32.0 / v3.0.1 (since-updated to v3.0.2 this release).
+- All 3 URLs (primary / backup / retired) now listed explicitly in VISION §"Universal HTTP MCP server" so operators reading VISION alone can find the workers.dev backup URL.
+- `x-bd-domain` vs `X-BD-Site-URL` header-name warning promoted from inline comment to its own bullet with both required headers bolded and the wrong typo explicitly called out with ❌.
+- `SERVER_INFO.version` bump policy cross-referenced from `project_mcp_do_architecture.md` memory with a full table (don't just tell the operator to go read a code comment).
+- TRAP 2 memory entry updated to document the v6.32.0 clear-on-failure fix.
+
 ## [6.31.0] - 2026-04-23
 
 ### Added — MAINTENANCE HYGIENE header section in `mcp/index.js`
