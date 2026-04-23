@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.29.0] - 2026-04-22
+
+### Added — schema-drift detector script
+
+New `scripts/schema-drift-check.js` — a production-quality drift detector that compares `openapi/bd-api.json` against the hardcoded constants mirrored inside `mcp/index.js` (npm) and `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` (Worker). Runs in ~1 second, exits 0 on clean, 1 on drift, 2 on script error. Eight distinct checks:
+
+- `HIDDEN_TOOLS` — every entry exists as an operation in the spec
+- Family membership — per-family lean keep-sets only list real operations
+- `WRITE_KEEP_SETS` — every entry exists in the spec
+- EAV route existence — `EAV_ROUTES` entries exist in the spec
+- Unregistered read tools — spec has a `listX`/`getX` op but no lean-shaper registered
+- EAV drift — `users_meta` field names matching `hero_*` / `h[12]_*` / `disable_*` / `linked_*` patterns that aren't routed via EAV
+- Body-property identifier existence — `WRITE_KEEP_SETS` keys resolve to real request-body identifiers
+- Tool count sanity — spec has ~173 tools as expected
+
+First run on 2026-04-22 found three real drifts, all fixed in this release.
+
+### Fixed — `WRITE_KEEP_SETS` drift (Worker + npm)
+
+- Removed `createPostType` entry — that tool was deleted from the spec in a prior release; the stale key was a no-op but triggered the drift check.
+- Added `subscription_id` + `profession_id` to the User write-echo keep-set. Without these, create/update User responses were echoing old values on membership-plan / category transitions, which callers relied on to confirm the write persisted.
+
+### Fixed — `EAV_ROUTES` drift (Worker)
+
+Added nine `users_meta` hero fields that BD shipped to the spec but the Worker's EAV routing table had missed. Without routing, writes to these fields went into the wrong storage path and silently dropped on read.
+
+### Maintenance — drift-risk tiers documented in code
+
+`src/index.ts` (Worker) and `mcp/index.js` (npm) now include a "MAINTENANCE HYGIENE" header section labelling every hardcoded constant by drift-risk tier (🔴 HIGH / 🟡 MEDIUM / 🟢 LOW). Pairs with `scripts/schema-drift-check.js` so a cold AI or dev-team member can see what to re-check when the spec evolves.
+
+### Changed — public README URL: `brilliantmcp.com` is primary
+
+References across `README.md` and `mcp/README.md` updated from `mcp.brilliantdirectories.com` to `brilliantmcp.com`. The primary remote-MCP URL is now `https://brilliantmcp.com` — a dedicated clean zone without the Bot Fight Mode / geo-blocks that protect the main `brilliantdirectories.com` zone. Legacy URL `mcp.brilliantdirectories.com` remains bound as a fallback so existing customer configs don't break. n8n specifically required the clean-zone URL to connect; other clients work against either.
+
 ## [6.27.0] - 2026-04-22
 
 ### Changed — agent instructions extracted to a shared file (source of truth)

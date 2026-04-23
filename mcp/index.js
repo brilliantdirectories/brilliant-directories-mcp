@@ -788,8 +788,8 @@ const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 
 const WRITE_KEEP_SETS = {
   // Users
-  createUser: ["user_id","first_name","last_name","company","email","filename","active","status"],
-  updateUser: ["user_id","first_name","last_name","company","email","filename","active","status"],
+  createUser: ["user_id","first_name","last_name","company","email","filename","active","status","subscription_id","profession_id"],
+  updateUser: ["user_id","first_name","last_name","company","email","filename","active","status","subscription_id","profession_id"],
 
   // Single-image posts
   createSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image"],
@@ -800,7 +800,8 @@ const WRITE_KEEP_SETS = {
   updateMultiImagePost: ["group_id","group_name","group_filename","user_id","group_status","data_id","data_type","system_name","data_name","revision_timestamp"],
 
   // Post types
-  createPostType: ["data_id","data_type","system_name","data_name","data_filename","form_name","revision_timestamp"],
+  // Note: `createPostType` is NOT in the spec (post types are created via
+  // the admin UI, not the API). Only update/delete are exposed.
   updatePostType: ["data_id","data_type","system_name","data_name","data_filename","form_name","revision_timestamp"],
 
   // Top categories

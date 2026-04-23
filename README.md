@@ -24,7 +24,7 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
 
 ### Two ways to connect — pick one
 
-- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://mcp.brilliantdirectories.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
+- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://brilliantmcp.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
 - **🛠️ Advanced (requires Node.js install):** run the MCP as a `npx` child process on your own machine. Same tool surface, same instructions, same safety guards. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
 
 Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
@@ -77,7 +77,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 {
   "mcpServers": {
     "brilliant-directories": {
-      "url": "https://mcp.brilliantdirectories.com",
+      "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
         "X-BD-Site-URL": "https://your-site.com"
@@ -103,7 +103,7 @@ Prefer the local install (runs on your own machine, needs Node.js)? Skip to [Set
 
 Each platform has **two options**:
 
-- **🚀 Easy config block** — points at our hosted MCP at `https://mcp.brilliantdirectories.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
+- **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
 - **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
 
 **Both give the full ~173-tool surface, same instructions, same lean shapers, same safety guards.**
@@ -114,7 +114,7 @@ Each platform has **two options**:
 {
   "mcpServers": {
     "bd-api": {
-      "url": "https://mcp.brilliantdirectories.com",
+      "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
         "X-BD-Site-URL": "https://your-site.com"
@@ -179,7 +179,7 @@ Paste one of these into the file (Easy is recommended):
 {
   "mcpServers": {
     "bd-api": {
-      "url": "https://mcp.brilliantdirectories.com",
+      "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
         "X-BD-Site-URL": "https://your-site.com"
@@ -258,7 +258,7 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
    That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `mcp.brilliantdirectories.com` (unlikely — it's HTTPS to a Cloudflare edge).
+> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `brilliantmcp.com` (unlikely — it's HTTPS to a Cloudflare edge).
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -409,7 +409,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 {
   "mcpServers": {
     "bd-api": {
-      "serverUrl": "https://mcp.brilliantdirectories.com",
+      "serverUrl": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
         "X-BD-Site-URL": "https://your-site.com"
@@ -457,7 +457,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 {
   "mcpServers": {
     "bd-api": {
-      "url": "https://mcp.brilliantdirectories.com",
+      "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
         "X-BD-Site-URL": "https://your-site.com"
@@ -578,51 +578,35 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 
 ### n8n
 
-**Our MCP server is ready for n8n — n8n's MCP Client Tool node isn't ready for us yet.**
+**✅ MCP Client Tool works — use the SSE transport + our dedicated URL.**
 
-We've verified our server is spec-compliant via two independent tests:
+n8n's built-in **MCP Client Tool** node connects to our server and loads all 173 BD tools. Configure like this:
 
-1. **<a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a>** (the official MCP debugging tool) connects to `https://mcp.brilliantdirectories.com/sse` and lists all 173 BD tools.
-2. **Our own handshake harness** drives the full legacy-SSE two-endpoint protocol (GET /sse → endpoint frame → POST /messages → response pushed back through the held stream) and completes in ~350ms with all 173 tools.
+| Field | Value |
+|---|---|
+| **Server Transport** | `Server Sent Events (Deprecated)` |
+| **MCP Endpoint URL** | `https://brilliantmcp.com/sse` |
+| **Authentication** | `Multiple Headers Auth` |
+| **Header 1** | Name: `X-Api-Key` · Value: *your 32-char hex BD API key* |
+| **Header 2** | Name: `X-BD-Site-URL` · Value: `https://your-site.com` |
 
-But n8n's MCP Client Tool node has documented upstream bugs that prevent it from connecting to any external MCP server today:
-- <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">n8n-io/n8n#28924</a> — our upstream report with reproduction harness + MCP Inspector verification
-- <a href="https://github.com/n8n-io/n8n/issues/19835" target="_blank" rel="noopener noreferrer">n8n-io/n8n#19835</a> — `Cannot read properties of undefined (reading 'inputType')` regression in v1.112.0
-- <a href="https://github.com/n8n-io/n8n/issues/14539" target="_blank" rel="noopener noreferrer">n8n-io/n8n#14539</a> — `Could not connect to your MCP server` (closed as "not planned")
-- Community reports of 1-second failures where no HTTP request ever leaves n8n's process
+Save the node. Click the **Tool** dropdown — should populate with 173 tools. Pick any tool, click Execute.
 
-**When n8n ships a fix, we're ready.** Our SSE endpoint is live at `https://mcp.brilliantdirectories.com/sse`, Durable-Object-backed for correct session handling, verified by Inspector. No changes needed on our side.
+> **Why "SSE (Deprecated)" and not "HTTP Streamable"?** The MCP spec deprecated legacy SSE in favor of Streamable HTTP. n8n's SSE client works today against our server; n8n's Streamable HTTP client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed. Our server supports BOTH transports — when n8n fixes their Streamable HTTP client, customers can optionally switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed on our side.
 
-**For today, use one of these proven-working paths — all 173 BD tools, zero MCP protocol involved:**
+> **Why `brilliantmcp.com` and not `mcp.brilliantdirectories.com`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. The legacy URL still works for Claude Desktop / Cursor / Inspector but isn't recommended for n8n.
 
-**✅ Option A — HTTP Request node + OpenAPI import (recommended):**
+**Don't want MCP? Alternative paths for n8n:**
 
-n8n has native OpenAPI support. Import this spec URL as a custom API:
+**✅ HTTP Request node + OpenAPI import** — n8n has native OpenAPI support. Import this spec URL as a custom API:
 ```
 https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
 ```
-n8n generates nodes for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available.
+n8n generates a node for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available, zero MCP protocol involved.
 
-**✅ Option B — Plain HTTP Request node:**
+**✅ Plain HTTP Request node** — point a single HTTP Request node at `https://your-site.com/api/v2/user/get` with header `X-Api-Key: ENTER_API_KEY`. Chain multiple nodes for workflows touching several BD endpoints. Simplest possible setup.
 
-1. Add an **HTTP Request** node
-2. Method: `GET` (or `POST` / `PUT` / `DELETE` for writes)
-3. URL: `https://your-site.com/api/v2/user/get` (or any other BD endpoint)
-4. Headers: `X-Api-Key: ENTER_API_KEY`
-
-Chain multiple HTTP Request nodes for workflows that touch several BD endpoints.
-
-**🔄 Option C — MCP Client Tool (for when n8n fixes their client):**
-
-1. **Server Transport:** `SSE (Deprecated)`
-2. **MCP Endpoint URL:** `https://mcp.brilliantdirectories.com/sse`
-3. **Authentication:** `Multiple Headers Auth`:
-   - `X-Api-Key` = *your BD API key*
-   - `X-BD-Site-URL` = `https://your-site.com`
-
-If tools populate in the dropdown, the upstream fix has landed — great. If not, your n8n version still has the client bug — use Option A.
-
-**Want to verify the server is healthy yourself?** Install the official <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> (`npx @modelcontextprotocol/inspector`) and point it at `https://mcp.brilliantdirectories.com/sse`. Inspector is the reference implementation of MCP's client spec — if it works there but not in your n8n node, you've confirmed the bug is n8n-side.
+**Want to verify the server is healthy yourself?** Install the official <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> (`npx @modelcontextprotocol/inspector`) and point it at `https://brilliantmcp.com/sse`. Inspector is the reference implementation of MCP's client spec.
 
 ---
 
@@ -737,7 +721,7 @@ Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four 
 
 | Field the client asks for | What to enter |
 |---|---|
-| **MCP Server URL** / Endpoint URL / Remote Server URL | `https://mcp.brilliantdirectories.com` (no `/sse`, no trailing path) |
+| **MCP Server URL** / Endpoint URL / Remote Server URL | `https://brilliantmcp.com` (no `/sse`, no trailing path) |
 | **Transport** | `Streamable HTTP` (also called "HTTP Streamable"). **NOT** SSE. **NOT** WebSocket. |
 | **Custom / Multiple Headers** | Two entries: `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com` |
 | **OAuth** | Off / No / disabled — we don't use OAuth |
