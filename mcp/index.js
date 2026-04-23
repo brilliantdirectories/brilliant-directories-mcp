@@ -1016,6 +1016,44 @@ function applyWriteLean(toolName, body) {
   return body;
 }
 
+// Auto-refresh cache after WebPage writes. BD's page renderer is cache-gated —
+// new/updated pages don't appear publicly (or render stale) until
+// `/website_settings/refreshCache` fires. Agents skip the post-step often, so
+// we do it server-side after every successful createWebPage / updateWebPage.
+//
+// Lenient failure mode: we never fail the parent create/update response.
+// If refresh fails, we annotate auto_cache_refreshed=false and include the
+// error detail, so the agent sees it and can retry manually. The record
+// is already written; the cache is just a quality-of-life post-step.
+//
+// Scope: `scope=web_pages`. Invalidates the page-render cache, which covers
+// both `list_seo` parent rows and their users_meta hero-EAV children (BD
+// rebuilds page cache reading both tables; there is no separate users_meta
+// scope).
+//
+// Timing: ~5s against BD. Each tool call is independent, so bulk workflows
+// pay the cost per-call but don't cumulatively time out.
+async function autoRefreshCache(config) {
+  try {
+    const result = await makeRequest(
+      config,
+      "POST",
+      "/api/v2/website_settings/refreshCache",
+      null,
+      { scope: "web_pages" }
+    );
+    const body = result && result.body;
+    if (body && typeof body === "object" && body.status === "success") {
+      return { ok: true };
+    }
+    return { ok: false, message: (body && body.message) || `HTTP ${result && result.status}` };
+  } catch (e) {
+    return { ok: false, message: e && e.message ? String(e.message) : "network error" };
+  }
+}
+
+const WEBPAGE_AUTO_REFRESH_OPS = new Set(["createWebPage", "updateWebPage"]);
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -1786,6 +1824,21 @@ async function main() {
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
+      }
+
+      // Auto-refresh site cache after successful WebPage create/update.
+      // Lenient: annotation-only on failure; never fails the parent response.
+      if (
+        WEBPAGE_AUTO_REFRESH_OPS.has(name) &&
+        result.body &&
+        typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const refresh = await autoRefreshCache(config);
+        result.body.auto_cache_refreshed = refresh.ok;
+        if (!refresh.ok) {
+          result.body.auto_cache_refresh_error = refresh.message;
+        }
       }
 
       // Surface rate-limit errors with actionable guidance for the agent

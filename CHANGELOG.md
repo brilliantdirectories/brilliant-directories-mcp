@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.37.2] - 2026-04-23
+
+### Added — automatic cache refresh on WebPage writes
+
+`createWebPage` and `updateWebPage` now auto-fire `refreshCache(scope=web_pages)` server-side on success. Agents no longer need to remember the post-step; the cache flush happens before the tool response returns. Response bodies gained two new fields:
+
+- `auto_cache_refreshed: true|false` — whether the automatic refresh succeeded
+- `auto_cache_refresh_error` (only when `false`) — the failure reason
+
+**Lenient failure mode:** a refresh failure does NOT fail the parent create/update. The record was written; the cache flush is best-effort. On `false`, the agent can retry `refreshSiteCache` manually.
+
+**Performance:** adds ~5s to every WebPage write (that's the cost of BD's cache flush). Single writes now take ~6s total instead of ~1s. Bulk workflows pay the cost per-call but don't cumulatively time out (each tool call is its own Worker invocation with its own 25s budget).
+
+**Timeout protection:** Worker path wraps the refresh in an AbortController with a 15s timeout so a rare BD hang can't kill the whole Worker invocation. Timeout → `auto_cache_refreshed: false, auto_cache_refresh_error: "refresh timed out after 15s"`. npm path uses `makeRequest`'s existing 30s timeout.
+
+### Changed — documentation
+
+- `createWebPage` + `updateWebPage` tool descriptions replaced the "Required post-step: call `refreshSiteCache`" warning with the new "automatic" messaging and documented the new response fields.
+- `mcp-instructions.md` cache-refresh section reorganized: `createWebPage`/`updateWebPage` listed under "automatic", `updatePostType` listed under "REQUIRED manual call", others under "recommended manual call". Removed the stale "refresh is optional for direct-column WebPage updates" sentence.
+
+### Internal
+
+- New `autoRefreshCache()` helper on both transports (parallel implementations).
+- Worker `SERVER_INFO.version` bumped 3.0.7 → 3.0.8.
+
 ## [6.37.1] - 2026-04-23
 
 ### Fixed — users_meta filter reads were effectively broken

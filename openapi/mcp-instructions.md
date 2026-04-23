@@ -411,7 +411,7 @@ Applies to BOTH `content` and `profile_search_results` page types.
 
 **Hero gap-fix CSS rule - `seo_type=content` ONLY.** When a `content` page has hero enabled, BD inserts a ~40px white clearfix spacer between the hero and the first content section. Add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css` to close the gap. **Never add this rule on any other `seo_type`** - on `profile_search_results` / `data_category` / etc., the clearfix provides necessary spacing before the live search-results block; hiding it makes results butt-join the hero. Rule is page-type-scoped, period.
 
-**Cache refresh required on hero create/update:** after ANY `createWebPage` / `updateWebPage` that touches `enable_hero_section` or any `hero_*` / `h1_font_*` / `h2_font_*` field, call `refreshSiteCache` immediately - hero changes are cached and won't reflect publicly until refreshed.
+**Cache refresh is automatic on `createWebPage` / `updateWebPage`.** Both tools server-side fire `refreshCache(scope=web_pages)` on success (including hero/EAV-field writes) and return `auto_cache_refreshed: true` in the response. No manual call needed. If the response shows `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.
 
 **Image sourcing - priority order.** When the user asks for or implies an image (hero banner, member `logo`/`profile_photo`/`cover_photo`, post `post_image`, anywhere) without supplying a URL, follow this order:
 
@@ -514,7 +514,7 @@ Before create, check existence: `listWebPages property=filename property_value=<
 - `menu_layout=3` (Left Slim)
 - `date_updated=<current YYYYMMDDHHmmss timestamp>` - BD does NOT auto-populate; always set to now on every write
 - `updated_by` (optional audit label like "AI Agent" or "API")
-- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply the readability safe-defaults per the hero rule: `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. Call `refreshSiteCache` after the write - hero is cache-gated. User can opt out with `enable_hero_section=0` if they prefer a plain page.
+- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply the readability safe-defaults per the hero rule: `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
 
 **Auto-generate SEO meta for the specific location+category combo** using human names (not slugs) with natural "[city] [category]" / "in [location]" phrasing:
 
@@ -676,21 +676,11 @@ Tools NOT listed (tags, taxonomy links, sub-categories, smart lists, clicks, uns
 
 Enum silent-accept (applies across resources). BD's API does NOT strictly validate most integer-enum fields - it accepts values outside the documented set and stores them verbatim, with undefined render behavior. Examples: `user.active=99`, `review.review_status=1` (doc says invalid), `lead.lead_status=3` (doc says value 3 doesn't exist) - all three stored silently. **Always pass only values from the documented enum set in each field's description.** If a user asks for a non-documented value, ask them to pick from the documented set - don't pass through.
 
-**Cache refresh after layout-affecting writes (beyond hero).** After writes that change site layout/rendering, call `refreshSiteCache` so public pages reflect the change.
+**Cache refresh after layout-affecting writes.** Some writes are cached; public pages won't reflect the change until `refreshSiteCache` runs.
 
-**REQUIRED after:**
-
-1. Hero create/update on WebPages (see earlier rule).
-2. Every successful `updatePostType` - post-type edits are cached (code fields AND settings) and will not reflect publicly without a refresh.
-
-**Also recommended** (safe no-op if unnecessary - BD's cache handling is conservative):
-
-- `createMenu` / `updateMenu` / `createMenuItem` / `updateMenuItem` - navigation changes.
-- `createWidget` / `updateWidget` - widget markup/logic changes.
-- `updateMembershipPlan` - plan display attrs on public signup pages.
-- `createTopCategory` / `updateTopCategory` / `createSubCategory` / `updateSubCategory` - taxonomy affects directory navigation.
-
-Direct-column WebPage updates (`title`, `content`, `meta_desc`, etc.) typically reflect immediately in the read API - refresh is optional for those. Running `refreshSiteCache` more often than necessary is harmless.
+- **Automatic (no action needed):** `createWebPage` / `updateWebPage` — both tools auto-fire `refreshCache(scope=web_pages)` on success. Response includes `auto_cache_refreshed: true`.
+- **REQUIRED manual call after:** every successful `updatePostType` — post-type edits are cached (code fields AND settings) and will not reflect publicly without `refreshSiteCache`.
+- **Recommended manual call after** (safe no-op if unnecessary): `createMenu` / `updateMenu` / `createMenuItem` / `updateMenuItem` (navigation), `createWidget` / `updateWidget` (markup/logic), `updateMembershipPlan` (public signup pages), `createTopCategory` / `updateTopCategory` / `createSubCategory` / `updateSubCategory` (directory navigation).
 
 **Never wrap ANY field value in `<![CDATA[...]]>`, never entity-escape HTML as `&lt;` / `&gt;`, and never include tool-call scaffolding tags from your reasoning process in the field value** (e.g. `<parameter name="content">...</parameter>`, `<invoke>`, `<function_calls>`, OpenAI-style `{"function": {...}}` wrappers, or any other runtime-specific function-call markup).
 
