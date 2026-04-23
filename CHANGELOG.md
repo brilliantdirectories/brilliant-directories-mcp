@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.5] - 2026-04-23
+
+### Added — Froala post-body formatting rule (`post_content`, `group_desc`)
+
+New corpus rule in `mcp-instructions.md` covering image-heavy post body writes:
+- Structure discipline: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>` by default.
+- Froala image floats: `class="fr-dib fr-fil"` (left) / `fr-dib fr-fir` (right) with inline `style="width: 350px;"` on the `<img>`. Froala keeps inline `style` on body-field images (unlike WebPage `content`).
+- Image orientation: landscape or square only; never portrait.
+- Source: Pexels for stock — same sourcing hierarchy as hero images.
+- `createSingleImagePost` default: Pexels landscape `post_image` + `auto_image_import=1` unless user opts out. Update is best-effort — don't overwrite an existing image the user didn't mention.
+- `about_me` (User): same structure rule; skip images unless the user explicitly asks.
+
+### Changed — field descriptions for 7 Froala body/image fields
+
+Short pointers added/fixed on `createSingleImagePost.post_content`, `createSingleImagePost.post_image`, `updateSingleImagePost.post_content`, `createMultiImagePost.group_desc`, `updateMultiImagePost.group_desc`, `createUser.about_me`, `updateUser.about_me`. Three of these previously had the copy-paste stub "Description of the tag group. HTML allowed." — now accurate + point at the corpus rule.
+
+### Internal
+
+- Docs-only; no code change. Worker picks up the new corpus automatically via its 5-min raw-GitHub cache TTL (no redeploy). npm users get it on next `@latest` install.
+
 ## [6.38.4] - 2026-04-23
 
 ### Added — lean write-echo for MembershipPlan

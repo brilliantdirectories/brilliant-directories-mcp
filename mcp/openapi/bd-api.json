@@ -1548,7 +1548,7 @@
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "Long description of the member/user. Renders on their public profile page. HTML allowed (per universal safe-HTML rule)."
+                    "description": "Long description of the member/user. Renders on their public profile. Froala body field — use `<p>`/`<h2>`/`<h3>`/`<ul>`/`<ol>` structure; skip images unless user asks. HTML allowed (per universal safe-HTML rule)."
                   },
                   "quote": {
                     "type": "string",
@@ -1856,7 +1856,7 @@
                   },
                   "about_me": {
                     "type": "string",
-                    "description": "Long description of the member/user. Renders on their public profile page. HTML allowed (per universal safe-HTML rule)."
+                    "description": "Long description of the member/user. Renders on their public profile. Froala body field — use `<p>`/`<h2>`/`<h3>`/`<ul>`/`<ol>` structure; skip images unless user asks. HTML allowed (per universal safe-HTML rule)."
                   },
                   "quote": {
                     "type": "string",
@@ -3482,7 +3482,7 @@
                   },
                   "post_content": {
                     "type": "string",
-                    "description": "Main HTML body of the post. HTML allowed (per universal safe-HTML rule). Supports `[widget=Name]` shortcodes and `%%%template_tokens%%%`."
+                    "description": "Main HTML body of the post. Froala body field — see post-body formatting rule (structure, `fr-dib fr-fil`/`fr-fir` float + inline `width: 350px`, landscape Pexels images). HTML allowed; supports `[widget=Name]` shortcodes and `%%%template_tokens%%%`."
                   },
                   "post_status": {
                     "type": "integer",
@@ -3497,7 +3497,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Feature image URL for the post. External URLs are supported natively; pair with `auto_image_import=1` to fetch and store locally."
+                    "description": "Feature image URL for the post. On `createSingleImagePost`, include by default: a Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request). Never portrait/vertical. External URLs supported natively."
                   },
                   "post_category": {
                     "type": "string",
@@ -3621,7 +3621,7 @@
                   },
                   "post_content": {
                     "type": "string",
-                    "description": "Description of the tag group. HTML allowed."
+                    "description": "Post body HTML. Froala body field — see post-body formatting rule (structure, `fr-dib fr-fil`/`fr-fir` float + inline `width: 350px`, landscape Pexels images)."
                   },
                   "post_status": {
                     "type": "integer",
@@ -3955,7 +3955,7 @@
                   },
                   "group_desc": {
                     "type": "string",
-                    "description": "Description of the tag group. HTML allowed."
+                    "description": "Album description HTML. Froala body field — see post-body formatting rule (structure, `fr-dib fr-fil`/`fr-fir` float + inline `width: 350px`, landscape Pexels images)."
                   },
                   "group_status": {
                     "type": "integer",
@@ -4017,7 +4017,7 @@
                   },
                   "group_desc": {
                     "type": "string",
-                    "description": "Description of the tag group. HTML allowed."
+                    "description": "Album description HTML. Froala body field — see post-body formatting rule (structure, `fr-dib fr-fil`/`fr-fir` float + inline `width: 350px`, landscape Pexels images)."
                   },
                   "group_status": {
                     "type": "integer",
