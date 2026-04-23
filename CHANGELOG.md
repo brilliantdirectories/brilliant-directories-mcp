@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.31.0] - 2026-04-23
+
+### Added — MAINTENANCE HYGIENE header section in `mcp/index.js`
+
+Previously the v6.30.0 CHANGELOG claimed this section existed in both the Worker and the npm package, but it was only in the Worker. Now actually added to `mcp/index.js` too, with the same HIGH / MEDIUM / LOW drift-risk tier table and the three-file-fix-list pointer. This gives cold-AI maintainers the same orientation when they land in the npm package as when they land in the Worker.
+
+### Fixed — `schema-drift-check.js` EAV false-positive guard
+
+The EAV-drift check (CHECK 6) scans `updateWebPage` request-body properties for `hero_*` / `h[12]_*` / `disable_*` / `linked_*` names that aren't in `eavFields`. Some fields matching the pattern are stored directly on `list_seo` (not EAV-routed) — those were causing false-positive warnings. Added a `EAV_PATTERN_EXCLUSIONS` opt-out set with `disable_css_stylesheets` as the first entry. Documented how to add more when BD ships a new non-EAV field that matches the pattern.
+
+### Removed — dead `findUnregisteredReadTools` call in drift check
+
+The post-read check was restructured to a manual inline scan (so it could express `POST_READ_EXCLUSIONS`) but left a no-op generic-helper call behind. Removed and replaced with a comment explaining why there's no generic helper call here.
+
+### Maintenance — doc comments on magic constants
+
+Based on a cold-AI audit that found several "why this value?" gaps, added rationale comments to constants in both the Worker and npm package. Covers: `SPEC_CACHE_TTL_MS` (5 min rationale + extracted `SPEC_EDGE_CACHE_TTL_S` derived constant to prevent memory/edge cache drift), the 25s outbound fetch timeout, `limit: 100` in `writeEavFields`, npm `makeRequest` 30s timeout (matches BD's `max_execution_time`), 5s shutdown drain, `SENSITIVE_KEYS` redaction scope, `AUTHOR_SUMMARY_FIELDS` per-field rationale, `custom_208` heading-font fallback, the `buildTools` skip-list, `compatibility_date = "2025-03-10"`, `nodejs_compat` flag, `new_sqlite_classes` (McpAgent SDK requirement), and `agents: ^0.1.0` caret-range pinning discipline.
+
+### Added — inline EAV-field addition checklist + `SERVER_INFO.version` bump policy (Worker)
+
+Two inline doc blocks in `src/index.ts`:
+- Above `EAV_ROUTES`: 5-step checklist for "BD added a new hero_* field to updateWebPage, what do I do?" — drift-check, fix in 2 places, re-verify, ship, false-positive exception path.
+- Above `SERVER_INFO`: MAJOR / MINOR / PATCH bump policy + reminder that it's deliberately NOT synced to npm SemVer.
+
 ## [6.30.0] - 2026-04-23
 
 ### Changed — `mcp.brilliantdirectories.com` legacy URL retired

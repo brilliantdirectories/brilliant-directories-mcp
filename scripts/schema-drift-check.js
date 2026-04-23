@@ -361,24 +361,38 @@ const postReadCandidates = Object.keys(OPS).filter((opId) =>
 if (postReadCandidates.length > 0) {
   warn(`POST_READ_TOOLS: ${postReadCandidates.length} matching read op(s) in spec NOT registered. Review: ${postReadCandidates.join(", ")}`);
 }
-// Keep the USER check using the generic helper
-findUnregisteredReadTools("POST_READ_TOOLS_GENERIC_SKIPPED",
-  [/^never-matches$/],  // disabled — we do this check manually above
-  POST_READ_TOOLS);
+// (The generic `findUnregisteredReadTools` helper works well for User-family
+// reads but can't express POST_READ_EXCLUSIONS — that's why we do the POST
+// scan inline above. Don't re-add a helper call here; it would either duplicate
+// the inline scan or fire with no-op patterns.)
 
 // CHECK 6: EAV drift — scan updateWebPage's request-body properties for
 // hero_*/h[12]_*/disable_*/linked_* fields NOT currently in eavFields.
 // These are the naming conventions we've observed BD uses for EAV-stored
 // fields on list_seo.
+//
+// False-positive hazard: some `disable_*` / `linked_*` fields are stored
+// directly on list_seo (not EAV-routed), so they match the pattern but
+// should NOT be warned about. Known exclusions go below — add here when a
+// new non-EAV field happens to match the pattern. This is an explicit
+// opt-out instead of tightening the regex, because BD's naming isn't
+// disciplined enough to rely on regex alone.
+const EAV_PATTERN_EXCLUSIONS = new Set([
+  // Non-EAV fields that happen to match /^disable_/ — stored on list_seo row directly.
+  "disable_css_stylesheets",
+  // Add more as BD ships fields that match the pattern but aren't EAV-routed.
+]);
 const updateWebPageProps = getRequestBodyProperties("updateWebPage");
 if (updateWebPageProps) {
   const EAV_NAME_PATTERNS = [/^hero_/, /^h[12]_(font|weight)/, /^disable_/, /^linked_/];
   const knownEav = EAV_ROUTES.updateWebPage.eavFields;
   const candidates = updateWebPageProps.filter((name) =>
-    EAV_NAME_PATTERNS.some((re) => re.test(name)) && !knownEav.has(name)
+    EAV_NAME_PATTERNS.some((re) => re.test(name)) &&
+    !knownEav.has(name) &&
+    !EAV_PATTERN_EXCLUSIONS.has(name)
   );
   if (candidates.length > 0) {
-    warn(`EAV_ROUTES.updateWebPage.eavFields: ${candidates.length} hero-pattern field(s) in spec NOT in eavFields. Agent's updateWebPage call would silently drop these: ${candidates.join(", ")}`);
+    warn(`EAV_ROUTES.updateWebPage.eavFields: ${candidates.length} hero-pattern field(s) in spec NOT in eavFields. Agent's updateWebPage call would silently drop these: ${candidates.join(", ")}. If any of these are stored directly on list_seo (not EAV), add to EAV_PATTERN_EXCLUSIONS above.`);
   }
 }
 

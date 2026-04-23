@@ -1,16 +1,68 @@
 #!/usr/bin/env node
 
 /**
- * Brilliant Directories MCP Server
+ * Brilliant Directories MCP Server (npm package — stdio transport)
  *
- * Exposes all BD API v2 endpoints as MCP tools.
- * Reads the OpenAPI spec and auto-generates tool definitions.
+ * Exposes all BD API v2 endpoints as MCP tools. Reads the OpenAPI spec and
+ * auto-generates tool definitions. Runs as a child process launched by the
+ * user's MCP-capable AI client (Claude Desktop / Cursor / Claude Code).
  *
  * Usage:
  *   brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
  *
  * Or via env vars:
  *   BD_API_KEY=YOUR_KEY BD_API_URL=https://your-site.com brilliant-directories-mcp
+ *
+ * =============================================================================
+ * MAINTENANCE HYGIENE — hardcoded constants that mirror the OpenAPI spec
+ * =============================================================================
+ *
+ * This file contains hardcoded constants that must stay in sync with the
+ * OpenAPI spec at `openapi/bd-api.json`. The Worker (`src/index.ts` in
+ * `bd-cursor-config/brilliant-directories-mcp-hosted/`) has the same
+ * constants. When the spec gains a new field, adds/removes a tool, or renames
+ * an operation, these mirrors can silently drift — runtime behavior goes
+ * wrong quietly (lean shapers strip a real field, write-echo loses a value,
+ * etc.) rather than throwing.
+ *
+ * Detection: `node scripts/schema-drift-check.js` (runs in ~1 second; exits
+ * 0 clean / 1 drift / 2 script error). See `feedback_publish_protocol.md`
+ * Step 0 — mandatory pre-publish check.
+ *
+ * Drift-risk tiers (same tiers documented in the Worker header):
+ *
+ *   🔴 HIGH risk — BD adds fields routinely; silent-drop on miss.
+ *     - WRITE_KEEP_SETS (write-echo keep-lists; a missing field means the
+ *       echoed response drops it even though the write succeeded)
+ *
+ *   🟡 MEDIUM risk — spec additions to resource families change lean-default
+ *     shape; customers' include_* opt-ins depend on these lists being
+ *     complete.
+ *     - USER_KEEP / POST_KEEP / CATEGORY_KEEP / POSTTYPE_KEEP / WEBPAGE_KEEP
+ *       / PLAN_KEEP (per-family lean keep-lists)
+ *     - PLAN_CONFIG_FIELDS / PLAN_LEAN_INCLUDE_FLAGS
+ *     - POST_READ_EXCLUSIONS (metadata/photo sub-record ops the lean
+ *       shaper should NOT touch — handled via drift-check's explicit list)
+ *     - AUTHOR_SUMMARY_FIELDS (the fields author-summary injection returns
+ *       on post reads; fewer fields = fewer follow-up getUser round-trips)
+ *
+ *   🟢 LOW risk — rarely changes; guards against accidents.
+ *     - HIDDEN_TOOLS (tools deliberately NOT surfaced to agents —
+ *       e.g. createUserMeta is hidden because it expects a raw custom_N slot
+ *       and agents can't safely pick one)
+ *     - PACKAGE_VERSION (tracks package.json — never drifts if released
+ *       through the publish protocol)
+ *
+ * When drift is found, fix in THREE files then re-run the drift check:
+ *   1. This file (`gh-mirror2/mcp/index.js`)
+ *   2. `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` (Worker)
+ *   3. `gh-mirror2/scripts/schema-drift-check.js` (script's own baseline)
+ *
+ * Note: npm package has NO EAV routing (that's Worker-only — BD's
+ * `users_meta` field-name → storage-row routing for WebPage hero fields).
+ * If you see `EAV_ROUTES` in drift-check output, that's Worker-only; no
+ * action needed here.
+ * =============================================================================
  */
 
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
@@ -234,7 +286,12 @@ function buildTools(spec) {
             if (p.description) properties[p.name].description = p.description;
             required.push(p.name);
           } else if (p.in === "query" && !["limit", "page", "property", "property_value", "property_operator", "order_column", "order_type"].includes(p.name)) {
-            // Non-standard query params (like form_name)
+            // Non-standard query params (like form_name).
+            // The skip-list above is BD's standard pagination/filter param
+            // set. We skip them here because they're re-added with richer
+            // descriptions by the `method === "get"` block further down
+            // (the `hasLimit` branch). Adding them here would double-register
+            // with the spec's terse descriptions overriding our richer ones.
             properties[p.name] = p.schema || { type: "string" };
             if (p.description) properties[p.name].description = p.description;
             if (p.required) required.push(p.name);
@@ -438,6 +495,20 @@ const POST_LEAN_SEO_BUNDLE = [
 // Single: post_content. Multi: group_desc.
 const POST_HTML_BODY_FIELDS = ["post_content", "group_desc"];
 
+// Fields returned in the inlined `_author` object on post reads (when
+// include_author=1). Goal: give the agent enough to display an author card
+// (name, company, contact, avatar, plan, active-status) without a follow-up
+// getUser round-trip. Kept deliberately minimal — anything beyond these 10
+// fields is available via an explicit getUser call.
+//
+// Rationale per field:
+//   user_id             — primary key for any follow-up user ops
+//   first_name/last_name — display name
+//   company             — optional company line on author cards
+//   email/phone_number  — contact shown on paid-tier directories
+//   filename/image_main_file — avatar (BD serves two size variants)
+//   subscription_id     — to badge the author's membership tier
+//   active              — to suppress cards for deactivated authors
 const AUTHOR_SUMMARY_FIELDS = [
   "user_id",
   "first_name",
@@ -899,7 +970,10 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
     if (config.debug) {
       // Redact API key from logged headers
       const safeHeaders = { ...options.headers, "X-Api-Key": "***REDACTED***" };
-      // Redact sensitive body keys
+      // Redact sensitive body keys — debug mode only. Production requests
+      // are NEVER logged (the `if (config.debug)` guard above). This list
+      // exists so `--debug` output doesn't accidentally dump credentials
+      // into stderr / log files during local troubleshooting.
       const SENSITIVE_KEYS = new Set(["password", "passwd", "pwd", "token", "api_key", "apikey", "cookie", "secret", "auth"]);
       const safeBody = bodyStr
         ? bodyStr.split("&").map((pair) => {
@@ -937,6 +1011,9 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
       if (config.debug) console.error(`[debug] ✗ ${method} ${fullUrl.href} - ${err.message}`);
       reject(err);
     });
+    // 30s matches BD's PHP `max_execution_time` (see CLAUDE.md server config).
+    // Any BD API response will either arrive or the server-side will have
+    // already killed the script — longer timeouts would just leak sockets.
     req.setTimeout(30000, () => {
       req.destroy();
       reject(new Error("Request timed out after 30s"));
@@ -1288,7 +1365,12 @@ async function main() {
         custom_74:  "rgb(242,243,245)",
         custom_75:  "rgb(24,46,69)",
         custom_134: "rgb(24,46,69)",
-        custom_208: null,  // falls back to custom_3 below if still empty
+        // custom_208 = heading_font (optional override). null means "if the
+        // site hasn't set a distinct heading font, fall back to custom_3 (the
+        // body font)" — the fallback is applied in the getBrandKit response
+        // construction below at `heading_font: pick("custom_208", ...)`.
+        // Most sites leave heading + body the same, so null is the common case.
+        custom_208: null,
       };
       try {
         const slots = Object.keys(SLOTS_WITH_DEFAULTS);
@@ -1592,6 +1674,10 @@ async function main() {
     const inflight = IN_FLIGHT_REQUESTS.size;
     if (inflight > 0) {
       console.error(`[${signal}] Draining ${inflight} in-flight request(s)...`);
+      // 5000ms drain window on SIGTERM/SIGINT. Enough for most BD calls to
+      // complete cleanly (BD median response is <500ms). Hard abort after
+      // 5s so the user's MCP client doesn't hang waiting for us to exit.
+      // Matches the grace period most init systems give before SIGKILL.
       const drainTimeout = setTimeout(() => {
         console.error(`[${signal}] Drain timeout - aborting ${IN_FLIGHT_REQUESTS.size} remaining.`);
         for (const req of IN_FLIGHT_REQUESTS) req.destroy();
