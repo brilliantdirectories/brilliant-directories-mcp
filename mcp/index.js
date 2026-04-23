@@ -884,6 +884,48 @@ function applyPlanLean(body, includeFlags) {
 
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 
+// --- REVIEWS (list/get/searchReviews) -------------------------------------
+//
+// Reviews have 9 flat scalar fields — no nested buckets to strip. The one
+// unbounded field is `review_description` (no BD-side length cap); at
+// `limit=100` a moderation-queue enumeration can balloon into megabytes of
+// free-text. Lean default truncates the body to `REVIEW_BODY_PREVIEW_LEN`
+// chars + "…"; `include_full_text=1` restores the full text. When truncation
+// fires, the row is tagged `review_description_truncated: true` so the agent
+// knows to re-fetch via `getReview` with the flag if it needs the full body.
+
+const REVIEW_LEAN_INCLUDE_FLAGS = ["include_full_text"];
+
+const REVIEW_BODY_PREVIEW_LEN = 500;
+
+function applyReviewLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const includeFull = !!includeFlags.include_full_text;
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (includeFull) {
+      row.review_description_truncated = false;
+      return row;
+    }
+    const desc = row.review_description;
+    if (typeof desc === "string" && desc.length > REVIEW_BODY_PREVIEW_LEN) {
+      row.review_description = desc.slice(0, REVIEW_BODY_PREVIEW_LEN) + "…";
+      row.review_description_truncated = true;
+    } else {
+      row.review_description_truncated = false;
+    }
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
+
 // --- WRITE-RESPONSE LEAN-SHAPING -------------------------------------------
 //
 // BD's create/update endpoints echo the full updated/created record in the
@@ -1561,6 +1603,7 @@ async function main() {
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
       const isPlanReadTool = PLAN_READ_TOOLS.has(name);
+      const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
@@ -1573,7 +1616,9 @@ async function main() {
                 ? WEB_PAGE_LEAN_INCLUDE_FLAGS
                 : isPlanReadTool
                   ? PLAN_LEAN_INCLUDE_FLAGS
-                  : null;
+                  : isReviewReadTool
+                    ? REVIEW_LEAN_INCLUDE_FLAGS
+                    : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -1672,6 +1717,7 @@ async function main() {
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
+        else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }
 

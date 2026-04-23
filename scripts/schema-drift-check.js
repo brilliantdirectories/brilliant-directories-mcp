@@ -25,7 +25,7 @@
 // What gets checked
 // -----------------------------------------------------------------------------
 //
-// For each lean-shaper family (User, Post, Category, PostType, WebPage, Plan):
+// For each lean-shaper family (User, Post, Category, PostType, WebPage, Plan, Review):
 //   Compare the spec's fields on the read-operation responses vs. our
 //   ALWAYS_STRIP, SEO_BUNDLE, CODE_BUNDLE, ALWAYS_KEEP, CONFIG_FIELDS,
 //   DISPLAY_FLAG_FIELDS constants. Any spec field not in ANY of our
@@ -116,6 +116,7 @@ const CATEGORY_READ_TOOLS = new Set([
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
+const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
 
 // BD column-name note — if any future CHECK validates PLAN membership
 // display flags, be aware `show_sofware` (missing "t") is spelled that way
@@ -240,6 +241,7 @@ checkFamily("CATEGORY_READ_TOOLS", CATEGORY_READ_TOOLS);
 checkFamily("POST_TYPE_READ_TOOLS", POST_TYPE_READ_TOOLS);
 checkFamily("WEB_PAGE_READ_TOOLS", WEB_PAGE_READ_TOOLS);
 checkFamily("PLAN_READ_TOOLS", PLAN_READ_TOOLS);
+checkFamily("REVIEW_READ_TOOLS", REVIEW_READ_TOOLS);
 checkFamily("USERS_META_WRITES", USERS_META_WRITES);
 checkFamily("USERS_META_FILTER_READS", USERS_META_FILTER_READS);
 

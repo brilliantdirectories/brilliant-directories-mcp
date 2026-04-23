@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.37.0] - 2026-04-23
+
+### Added — Reviews lean shaper + list/search tool clarity
+
+**Reviews lean-by-default (new).** `listReviews`, `getReview`, and `searchReviews` now truncate `review_description` to the first 500 chars + `…` on default responses. Truncated rows are tagged `review_description_truncated: true` so agents can re-fetch with the full text when needed. Opt back in per call with `include_full_text=1`.
+
+- Unbounded `review_description` field can balloon to megabytes at `limit=100` on moderation-queue reads; lean default keeps payloads predictable.
+- Reviews is the 7th lean-shaper family (User / Post / Category / PostType / WebPage / Plan / Review). Uniquely uses a body-truncate pattern rather than keep-list because the record has no nested buckets to drop — just one unbounded text field.
+
+### Changed — list vs search tool descriptions
+
+- **`searchUsers`**: "Use when" rule now names three real call-sites — (1) mirroring the public member-search experience in external apps, (2) SEO coverage audits ("what's publicly findable for this keyword/category/location combo?"), (3) keyword/partial-name lookup. Tightened `output_type=html` bullet to identify it as BD's public-site search-results markup (embed-ready). Contrast with `listUsers` sharpened — `listUsers` is for admin-only filters (join date, subscription status, meta fields) this endpoint doesn't support.
+- **`searchReviews`**: decision rule sharpened against `listReviews` — keyword-in-body vs structured column filtering. Notes that BD matches against the full body server-side even when our lean default truncates the returned preview.
+- **`searchSingleImagePosts` / `searchMultiImagePosts`**: same sharpening pattern; multi-image description now names the actual `data_type=4` post types (photo album, classified, property, product) so agents know which surface is in scope.
+
+### Internal
+
+- `scripts/schema-drift-check.js` gained a `REVIEW_READ_TOOLS` family check; exits 0 on current spec.
+
 ## [6.36.0] - 2026-04-23
 
 ### Docs — targeted README factual + UX polish
