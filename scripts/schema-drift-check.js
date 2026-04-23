@@ -4,7 +4,7 @@
 // =============================================================================
 //
 // Purpose:
-//   Compare openapi/bd-api.json against hardcoded field lists in both MCP
+//   Compare mcp/openapi/bd-api.json against hardcoded field lists in both MCP
 //   deployments (hosted Worker + npm package). Report fields that BD's spec
 //   knows about but our lean-shapers / safety-guards / EAV routers don't —
 //   which means we'd silently let fields slip through (agent sees bloat,
@@ -77,7 +77,7 @@ const path = require("path");
 // Load the spec
 // ---------------------------------------------------------------------------
 
-const SPEC_PATH = path.join(__dirname, "..", "openapi", "bd-api.json");
+const SPEC_PATH = path.join(__dirname, "..", "mcp", "openapi", "bd-api.json");
 let spec;
 try {
   spec = JSON.parse(fs.readFileSync(SPEC_PATH, "utf8"));

@@ -16,7 +16,7 @@ Open an issue at https://github.com/brilliantdirectories/brilliant-directories-m
 
 ## Suggesting new endpoints or fields
 
-The server is generated from [`openapi/bd-api.json`](openapi/bd-api.json). If an endpoint is missing or a field is wrong, open an issue or a PR that updates the OpenAPI spec — the MCP server picks up new tools automatically.
+The server is generated from [`mcp/openapi/bd-api.json`](mcp/openapi/bd-api.json). If an endpoint is missing or a field is wrong, open an issue or a PR that updates the OpenAPI spec — the MCP server picks up new tools automatically.
 
 ## Pull requests
 
@@ -25,7 +25,7 @@ The server is generated from [`openapi/bd-api.json`](openapi/bd-api.json). If an
 3. Update [`CHANGELOG.md`](CHANGELOG.md) under the `[Unreleased]` section
 4. If you touched the OpenAPI spec, validate it:
    ```
-   npx @redocly/cli lint openapi/bd-api.json
+   npx @redocly/cli lint mcp/openapi/bd-api.json
    ```
 5. Open the PR against `main` with a clear description of the problem and the fix
 

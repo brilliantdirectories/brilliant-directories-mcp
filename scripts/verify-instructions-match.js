@@ -1,4 +1,4 @@
-// Regression gate: confirm the extracted openapi/mcp-instructions.md matches
+// Regression gate: confirm the extracted mcp/openapi/mcp-instructions.md matches
 // byte-for-byte what the old inline array in mcp/index.js produced. If they
 // match, the npm package behavior is unchanged post-refactor.
 //
@@ -10,7 +10,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const refactored = fs.readFileSync(
-  path.join(__dirname, "..", "openapi", "mcp-instructions.md"),
+  path.join(__dirname, "..", "mcp", "openapi", "mcp-instructions.md"),
   "utf8"
 );
 

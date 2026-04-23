@@ -18,7 +18,7 @@
  * =============================================================================
  *
  * This file contains hardcoded constants that must stay in sync with the
- * OpenAPI spec at `openapi/bd-api.json`. The Worker (`src/index.ts` in
+ * OpenAPI spec at `mcp/openapi/bd-api.json`. The Worker (`src/index.ts` in
  * `bd-cursor-config/brilliant-directories-mcp-hosted/`) has the same
  * constants. When the spec gains a new field, adds/removes a tool, or renames
  * an operation, these mirrors can silently drift — runtime behavior goes
@@ -245,19 +245,13 @@ Docs: https://github.com/brilliantdirectories/brilliant-directories-mcp`);
 // ---------------------------------------------------------------------------
 
 function loadSpec() {
-  // Try the in-package location first (what npm ships), then fall back to the
-  // monorepo location (repo-root openapi/ sibling of mcp/) for local development.
-  const candidates = [
-    path.join(__dirname, "openapi", "bd-api.json"),
-    path.join(__dirname, "..", "openapi", "bd-api.json"),
-  ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, "utf8"));
-    }
+  // Spec lives at mcp/openapi/bd-api.json — single canonical location for
+  // both npm (reads it from the shipped tarball) and local dev (same path).
+  const specPath = path.join(__dirname, "openapi", "bd-api.json");
+  if (fs.existsSync(specPath)) {
+    return JSON.parse(fs.readFileSync(specPath, "utf8"));
   }
-  console.error(`Error: OpenAPI spec not found. Looked in:`);
-  for (const p of candidates) console.error(`  ${p}`);
+  console.error(`Error: OpenAPI spec not found at ${specPath}`);
   console.error(`This is a packaging bug - please open an issue at https://github.com/brilliantdirectories/brilliant-directories-mcp/issues`);
   process.exit(1);
 }
@@ -275,7 +269,7 @@ function buildTools(spec) {
   const seenIds = new Map(); // operationId -> "METHOD path" for duplicate detection
 
   // Tools deliberately hidden from the agent surface. BD's endpoint
-  // still exists in openapi/bd-api.json, but we don't register it as a callable
+  // still exists in mcp/openapi/bd-api.json, but we don't register it as a callable
   // MCP tool. See the matching "DELIBERATELY HIDDEN FROM AGENTS" note in the
   // spec's createUserMeta summary (search CHANGELOG.md for "HIDDEN_TOOLS"
   // for the full rationale). tl;dr: BD auto-seeds users_meta on parent
@@ -296,7 +290,7 @@ function buildTools(spec) {
         console.error(`Error: duplicate operationId "${op.operationId}" in OpenAPI spec.`);
         console.error(`  First seen at: ${seenIds.get(op.operationId)}`);
         console.error(`  Also found at: ${location}`);
-        console.error(`Each endpoint must have a unique operationId. Fix openapi/bd-api.json.`);
+        console.error(`Each endpoint must have a unique operationId. Fix mcp/openapi/bd-api.json.`);
         process.exit(1);
       }
       seenIds.set(op.operationId, location);

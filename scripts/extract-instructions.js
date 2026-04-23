@@ -10,7 +10,7 @@ const fs = require("fs");
 const path = require("path");
 
 const SRC = path.join(__dirname, "..", "mcp", "index.js");
-const OUT = path.join(__dirname, "..", "openapi", "mcp-instructions.md");
+const OUT = path.join(__dirname, "..", "mcp", "openapi", "mcp-instructions.md");
 
 const src = fs.readFileSync(SRC, "utf8");
 const lines = src.split("\n");

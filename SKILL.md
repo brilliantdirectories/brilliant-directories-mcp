@@ -6,7 +6,7 @@ metadata:
   author: Brilliant Directories
   homepage: https://github.com/brilliantdirectories/brilliant-directories-mcp
   npm: https://www.npmjs.com/package/brilliant-directories-mcp
-  openapi: https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+  openapi: https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/mcp/openapi/bd-api.json
 ---
 
 # Brilliant Directories
@@ -29,7 +29,7 @@ Typical outcome unlocks: "scrape 50 local businesses → create members with log
 ## Ground truth
 
 **The authoritative source for every available operation is the OpenAPI spec:**
-`https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json`
+`https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/mcp/openapi/bd-api.json`
 
 If this skill and the spec disagree, **the spec wins.** Scan the relevant tool description end-to-end before claiming a limit — BD exposes BD-specific capabilities (auto-image-import, auto-category-create, `parent=>child` sub-sub syntax, filename-is-full-path) that don't match typical REST API assumptions.
 
@@ -230,7 +230,7 @@ Key rules:
 
 ## Reference URLs
 
-- **OpenAPI spec (live, authoritative):** https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+- **OpenAPI spec (live, authoritative):** https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/mcp/openapi/bd-api.json
 - **Full endpoint docs (human-readable):** https://github.com/brilliantdirectories/brilliant-directories-mcp/tree/main/docs
 - **npm package (MCP server):** https://www.npmjs.com/package/brilliant-directories-mcp
 - **Issues / bug reports:** https://github.com/brilliantdirectories/brilliant-directories-mcp/issues

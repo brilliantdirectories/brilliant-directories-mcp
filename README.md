@@ -608,7 +608,7 @@ Save the node. Click the **Tool** dropdown — should populate with every BD too
 
 **✅ HTTP Request node + OpenAPI import** — n8n has native OpenAPI support. Import this spec URL as a custom API:
 ```
-https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/mcp/openapi/bd-api.json
 ```
 n8n generates a node for every BD operation automatically. Prompts for your BD site URL and API key on import. Every BD operation available, zero MCP protocol involved.
 
@@ -840,7 +840,7 @@ curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/data_posts/field
 For tools that import specs by URL (ChatGPT Actions, n8n, Postman):
 
 ```
-https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
+https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/mcp/openapi/bd-api.json
 ```
 
 ## Security

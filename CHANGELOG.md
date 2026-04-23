@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.0] - 2026-04-23
+
+### Changed — OpenAPI spec and instructions consolidated to a single canonical location
+
+Eliminated the historical duplicate of the OpenAPI spec and the agent-directives corpus. The canonical path is now `mcp/openapi/bd-api.json` and `mcp/openapi/mcp-instructions.md`. The previous repo-root `openapi/` folder has been deleted.
+
+Both transports read from the same single location:
+- Worker (`brilliantmcp.com`) fetches from `raw.githubusercontent.com/.../main/mcp/openapi/bd-api.json` (URL updated in `src/index.ts`, Worker redeployed).
+- npm package reads from the in-package `mcp/openapi/` path it has always shipped.
+
+Consequences:
+- Step 2 of the publish protocol (byte-identical sync of the spec/instructions pairs) is retired. Only the README still has a mirror because npm's `files` whitelist can't reach the repo-root README.
+- The long-standing drift risk between the two copies (discovered in v6.39.0 to have accumulated ~5 releases of silent drift on the npm side) is now structurally impossible.
+- Scripts (`schema-drift-check.js`, `extract-instructions.js`, `verify-instructions-match.js`) updated to read from the new path.
+- Internal docs (VISION.md, USE-GITHUB-HANDOFF.md, CONTRIBUTING.md, SKILL.md, KNOWN-SERVER-BUGS.md, `.claude/settings.json` allowlist entry) all swept for path references.
+- Public raw-GitHub URLs referenced in README (n8n import example, OpenAPI import instructions) and SKILL.md metadata updated to the new path.
+
+No functional change for end users on any transport. No tool schemas changed. No descriptions changed. Spec + instructions content is byte-identical to v6.39.0.
+
+### Internal
+
+- Worker redeployed with new fetch URL before the old path was deleted; stale-fallback + identical content at both paths guaranteed zero disruption during the transition.
+
 ## [6.39.0] - 2026-04-23
 
 ### Changed — global filter operators rule, verified-live edition
