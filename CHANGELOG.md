@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.2] - 2026-04-23
+
+### Added — server-side scaffolding sanitizer (belt + suspenders with docs rule)
+
+Agents sometimes leak reasoning scaffolding into content-field values — CDATA wrappers, `<parameter>`/`<invoke>`/`<function_calls>` markup, whole-value entity-escaped HTML. BD stores every byte verbatim; leaked scaffolding renders as literal visible text on the live site, breaking layouts (page-wide for `content_css`, site-wide for `widget_style`).
+
+**Both transports now strip these tokens server-side** from an enumerated set of ~23 content-field names before forwarding to BD. Strips ANY occurrence (not just outer wrappers) because the tokens have no legitimate place in BD content. Entity-escape unwraps only when the WHOLE value is entity-escaped (leaves mixed markup alone).
+
+**Sanitized fields:** WebPage `content` / `content_css` / `content_head` / `content_footer_html` / `hero_section_content`; Widget `widget_data` / `widget_style` / `widget_javascript`; PostType 9 code-template fields; User `about_me`; Post `post_content` / `post_caption` / `group_desc`.
+
+### Changed — docs rule tightened
+
+`mcp-instructions.md` scaffolding rule rewritten (~10 lines → 3 lines) with absolute phrasing ("never anywhere, not just wrappers"). `createWebPage` / `updateWebPage` descriptions use a matching one-line pointer. Server-side strip is named in the docs so agents see the belt + suspenders model.
+
+### Internal
+
+- New `stripAgentScaffolding(value)` + `sanitizeScaffoldingInArgs(args)` helpers on both transports.
+- Wired in before EAV split (so EAV-routed content fields like `hero_section_content` flow through sanitization too).
+- 12 unit tests pass in isolation on the npm helper (wrapper strip, entity-unwrap, no-op on plain content, non-sensitive fields untouched).
+- Worker `SERVER_INFO.version` bumped 3.1.1 → 3.1.2.
+
 ## [6.38.1] - 2026-04-23
 
 ### Fixed — EAV upsert parity between transports + hero safe-default

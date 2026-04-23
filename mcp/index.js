@@ -1164,6 +1164,87 @@ async function writeEavFields(config, route, parentId, eavParams) {
 }
 
 // ---------------------------------------------------------------------------
+// Agent-scaffolding sanitizer
+// ---------------------------------------------------------------------------
+//
+// Content fields (HTML / CSS / JS / PHP) are cache-gated and stored verbatim
+// by BD. Agents occasionally leak reasoning scaffolding into values — CDATA
+// wrappers, function-call markup, whole-value entity-escapes — and BD then
+// renders that leakage as literal visible text on the live site, breaking
+// layouts (page-wide for content_css, site-wide for widget_style).
+//
+// Belt + suspenders:
+//   - Docs rule tells agents never to emit these tokens in content fields
+//   - This sanitizer strips them server-side before forwarding to BD
+//
+// Scope: only the enumerated SCAFFOLDING_SENSITIVE_FIELDS Set. Strips ANY
+// occurrence (not just outer wrappers) because these tokens have no legitimate
+// place in BD content and the rule is absolute. Entity-escape unwraps only
+// when the WHOLE value is entity-escaped (no real `<` or `>` present) — to
+// avoid eating entities inside otherwise-valid markup.
+
+const SCAFFOLDING_SENSITIVE_FIELDS = new Set([
+  // WebPage body + assets
+  "content", "content_css", "content_head", "content_footer_html", "hero_section_content",
+  // Widget body + assets
+  "widget_data", "widget_style", "widget_javascript",
+  // PostType code templates (all 9 — widget-equivalent trust)
+  "category_header", "search_results_div", "category_footer",
+  "profile_header", "profile_results_layout", "profile_footer",
+  "search_results_layout", "comments_code", "comments_header",
+  // User long-form HTML
+  "about_me",
+  // Post body fields
+  "post_content", "post_caption", "group_desc",
+]);
+
+// Patterns to strip (substring matches — aggressive, any occurrence).
+// Ordered with closers first so stripping opener doesn't leave orphan closer.
+const SCAFFOLDING_TOKENS = [
+  "<![CDATA[",
+  "]]>",
+  "</function_calls>",
+  "<function_calls>",
+  "</invoke>",
+  "</parameter>",
+];
+// Tag patterns that carry attributes (e.g. `<parameter name="content">`, `<invoke name="tool">`):
+const SCAFFOLDING_TAG_REGEX = /<(?:parameter|invoke)\b[^>]*>/gi;
+
+function stripAgentScaffolding(value) {
+  if (typeof value !== "string" || value.length === 0) return value;
+  let v = value;
+  // Remove literal tokens anywhere.
+  for (const tok of SCAFFOLDING_TOKENS) {
+    if (v.includes(tok)) v = v.split(tok).join("");
+  }
+  // Remove opening <parameter ...> / <invoke ...> tags with any attributes.
+  v = v.replace(SCAFFOLDING_TAG_REGEX, "");
+  // Whole-value entity-escaped HTML: if value contains escaped angle brackets
+  // but NO real ones, unescape. Only the whole-value case — leaves inline
+  // entity-escapes in otherwise-valid markup untouched.
+  if (/&lt;|&gt;/.test(v) && !/[<>]/.test(v)) {
+    v = v
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;|&apos;/g, "'");
+  }
+  return v;
+}
+
+function sanitizeScaffoldingInArgs(args) {
+  if (!args || typeof args !== "object") return args;
+  for (const k of Object.keys(args)) {
+    if (SCAFFOLDING_SENSITIVE_FIELDS.has(k)) {
+      args[k] = stripAgentScaffolding(args[k]);
+    }
+  }
+  return args;
+}
+
+// ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
 
@@ -1895,6 +1976,13 @@ async function main() {
           args = workingArgs;
         }
       }
+
+      // Sanitize agent-scaffolding tokens from content-field values before
+      // they reach BD. Belt-and-suspenders with the docs rule (which tells
+      // agents not to emit them in the first place). Applies to every tool
+      // call — EAV fields below also flow through so hero_section_content
+      // etc. are covered.
+      sanitizeScaffoldingInArgs(args);
 
       // EAV split: peel hero/EAV fields off updateWebPage args before the
       // parent update. Flushed via users_meta after the parent succeeds.

@@ -676,16 +676,11 @@ Enum silent-accept (applies across resources). BD's API does NOT strictly valida
 
 **Cache refresh.** `createWebPage` / `updateWebPage` / `createWidget` / `updateWidget` / `updatePostType` auto-flush cache server-side — response carries `auto_cache_refreshed: true` when the flush succeeded, `false` + `auto_cache_refresh_error` when it didn't. On `false`, retry `refreshSiteCache` once; on `true`, do nothing. For Menus / MembershipPlans / Categories, call `refreshSiteCache` once after a batch of edits so public nav / signup / directory pages reflect the changes.
 
-**Never wrap ANY field value in `<![CDATA[...]]>`, never entity-escape HTML as `&lt;` / `&gt;`, and never include tool-call scaffolding tags from your reasoning process in the field value** (e.g. `<parameter name="content">...</parameter>`, `<invoke>`, `<function_calls>`, OpenAI-style `{"function": {...}}` wrappers, or any other runtime-specific function-call markup).
+**Never include CDATA, scaffolding wrappers, or entity-escaped HTML in any content-field value. Not as wrappers, not inline, not anywhere.** BD stores every byte verbatim — these render as literal visible text on the live site, breaking layouts (page-wide for `content_css`, site-wide for `widget_style`).
 
-BD stores every field verbatim - wrappers, escapes, AND your reasoning scaffolding all get saved as literal visible text on the rendered page.
+Forbidden substrings in HTML / CSS / JS / PHP fields (e.g. WebPage `content` / `content_css` / `content_head` / `content_footer_html` / `hero_section_content`, Widget `widget_data` / `widget_style` / `widget_javascript`, PostType code-template fields, User `about_me`, Post `post_content` / `group_desc`): `<![CDATA[`, `]]>`, `<parameter`, `</parameter>`, `<invoke`, `</invoke>`, `<function_calls>`, `</function_calls>`. Forbidden at whole-value level: entity-escaped HTML (`&lt;div&gt;...` — send `<div>...` instead).
 
-- For HTML-accepting fields (`about_me`, `post_content`, `group_desc`, `widget_data`, `email_body`, WebPage `content` / `content_css` / `content_footer_html` / `content_head`, etc.): pass raw HTML/CSS/JS directly.
-- For plain-text fields: pass plain text.
-
-No XML conventions, no HTML-entity encoding, no function-call wrappers.
-
-**Self-check before every HTML-field write - if your final string starts with `<![CDATA[`, `<parameter`, or `<invoke`, or ends with `]]>`, `</parameter>`, or entity-escaped HTML (`&lt;`/`&gt;` in place of real `<`/`>`), strip those before sending. That's wrapper/scaffolding, not content - BD stores it verbatim and it renders as literal visible text on the live page.**
+These have no legitimate place in BD content. If your reasoning produced one, regenerate the value clean. The MCP server strips these tokens server-side as a safety net, but the rule is yours — do not rely on the net.
 
 Write-time params ECHO on reads. Fields like `profession_name`, `services`, `credit_action`, `credit_amount`, `member_tag_action`, `member_tags`, `create_new_categories`, `auto_image_import` appear on read responses when they were set on a recent write - they are NOT canonical state, just residual input from the last write. Canonical state lives elsewhere: `profession_id` + `profession_schema` (top category), `services_schema` (sub-categories), `credit_balance` (current balance as dollar-formatted string like `"$35.00"`), `tags` array (current tags). Don't build logic that reads these echo fields as truth.
 
