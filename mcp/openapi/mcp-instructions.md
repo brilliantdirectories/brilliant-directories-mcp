@@ -125,11 +125,9 @@ BD system-seeds these on post-type creation; changing any of them breaks renderi
 
 Groups 3 and 4 save independently (no group rule). Neither applies to Member Listings.
 
-**Workflow for any code edit:** GET -> build payload with the changed field + all group-mates from the GET response -> `updatePostType` -> `refreshSiteCache`.
+**Workflow for any code edit:** GET -> build payload with the changed field + all group-mates from the GET response -> `updatePostType`. (Cache flush is automatic post-write.)
 
 **Code-field trust level:** widget-equivalent - arbitrary HTML, CSS, JS, iframes, and PHP are all accepted and evaluated server-side at render. BD text-label tokens (`%%%text_label%%%`) and PHP variables (`<?php echo $user_data['full_name']; ?>`) work in templates. Input sanitization rules (XSS/SQLi patterns) do NOT apply to these fields - anyone with API permission to edit post-type code already has full site code control.
-
-**Always call `refreshSiteCache` after any successful `updatePostType`** (code fields or settings) - post-type edits are cached and won't reflect publicly until refreshed.
 
 **Post-type custom fields discovery.** When creating/updating a post (any `createSingleImagePost` / `updateSingleImagePost` / `createMultiImagePost` / `updateMultiImagePost` call), the record carries BOTH the standard post columns AND per-post-type CUSTOM FIELDS defined by the site admin (dropdowns, text inputs, checkboxes with site-specific valid values). These custom fields are NOT in the OpenAPI schema - they're discovered at runtime.
 
@@ -676,11 +674,7 @@ Tools NOT listed (tags, taxonomy links, sub-categories, smart lists, clicks, uns
 
 Enum silent-accept (applies across resources). BD's API does NOT strictly validate most integer-enum fields - it accepts values outside the documented set and stores them verbatim, with undefined render behavior. Examples: `user.active=99`, `review.review_status=1` (doc says invalid), `lead.lead_status=3` (doc says value 3 doesn't exist) - all three stored silently. **Always pass only values from the documented enum set in each field's description.** If a user asks for a non-documented value, ask them to pick from the documented set - don't pass through.
 
-**Cache refresh after layout-affecting writes.** Some writes are cached; public pages won't reflect the change until `refreshSiteCache` runs.
-
-- **Automatic (no action needed):** `createWebPage` / `updateWebPage` — both tools auto-fire `refreshCache(scope=web_pages)` on success. Response includes `auto_cache_refreshed: true`.
-- **REQUIRED manual call after:** every successful `updatePostType` — post-type edits are cached (code fields AND settings) and will not reflect publicly without `refreshSiteCache`.
-- **Recommended manual call after** (safe no-op if unnecessary): `createMenu` / `updateMenu` / `createMenuItem` / `updateMenuItem` (navigation), `createWidget` / `updateWidget` (markup/logic), `updateMembershipPlan` (public signup pages), `createTopCategory` / `updateTopCategory` / `createSubCategory` / `updateSubCategory` (directory navigation).
+**Cache refresh.** `createWebPage` / `updateWebPage` / `createWidget` / `updateWidget` / `updatePostType` auto-flush cache server-side — response carries `auto_cache_refreshed: true` when the flush succeeded, `false` + `auto_cache_refresh_error` when it didn't. On `false`, retry `refreshSiteCache` once; on `true`, do nothing. For Menus / MembershipPlans / Categories, call `refreshSiteCache` once after a batch of edits so public nav / signup / directory pages reflect the changes.
 
 **Never wrap ANY field value in `<![CDATA[...]]>`, never entity-escape HTML as `&lt;` / `&gt;`, and never include tool-call scaffolding tags from your reasoning process in the field value** (e.g. `<parameter name="content">...</parameter>`, `<invoke>`, `<function_calls>`, OpenAI-style `{"function": {...}}` wrappers, or any other runtime-specific function-call markup).
 

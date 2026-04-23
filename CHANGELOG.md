@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.0] - 2026-04-23
+
+### Added — auto cache refresh expanded to Widgets + PostTypes
+
+Extends the 6.37.2 auto-refresh pattern. After every successful write, these tools now server-side fire `refreshCache` before returning to the agent:
+
+| Tool | Scope |
+|---|---|
+| `createWebPage` / `updateWebPage` | `scope=web_pages` (unchanged from 6.37.2) |
+| `createWidget` / `updateWidget` | `scope=data_widgets` (new) |
+| `updatePostType` | full refresh (new; no targeted scope exists) |
+
+Response shape unchanged — each successful write carries `auto_cache_refreshed: true` (or `false` + `auto_cache_refresh_error` on refresh failure, write still succeeded).
+
+### Changed — agent-facing cache-refresh guidance
+
+`mcp-instructions.md` cache block replaced with a single concise paragraph: names the auto-refresh tool list, explains the `true`/`false` callback contract (`false` → retry `refreshSiteCache` once), and lists the remaining resources that still need a manual refresh after a batch edit (Menus, MembershipPlans, Categories). Stale post-type "always call `refreshSiteCache`" sentences removed.
+
+Tool descriptions for `createWidget`, `updateWidget`, `updatePostType` gained the standard "Cache refresh is automatic" line and updated Returns shape.
+
+### Internal
+
+- `WEBPAGE_AUTO_REFRESH_OPS` Set → `AUTO_REFRESH_SCOPE` map (tool → scope string; empty = full refresh).
+- `autoRefreshCache()` on both transports now takes a `scope` parameter.
+- Worker `SERVER_INFO.version` bumped 3.0.8 → 3.1.0 (minor — new auto-refresh scopes).
+
 ## [6.37.2] - 2026-04-23
 
 ### Added — automatic cache refresh on WebPage writes

@@ -1016,43 +1016,53 @@ function applyWriteLean(toolName, body) {
   return body;
 }
 
-// Auto-refresh cache after WebPage writes. BD's page renderer is cache-gated —
-// new/updated pages don't appear publicly (or render stale) until
-// `/website_settings/refreshCache` fires. Agents skip the post-step often, so
-// we do it server-side after every successful createWebPage / updateWebPage.
+// Auto-refresh cache after cache-gated writes. BD's renderer + widget cache +
+// post-type settings are cache-gated — public surfaces don't reflect writes
+// until `/website_settings/refreshCache` fires. Agents skip the post-step
+// often, so we do it server-side.
 //
-// Lenient failure mode: we never fail the parent create/update response.
-// If refresh fails, we annotate auto_cache_refreshed=false and include the
-// error detail, so the agent sees it and can retry manually. The record
-// is already written; the cache is just a quality-of-life post-step.
+// Scope map (AUTO_REFRESH_SCOPE):
+//   createWebPage / updateWebPage   -> scope=web_pages   (page render cache;
+//                                      also covers list_seo hero-EAV)
+//   createWidget  / updateWidget    -> scope=data_widgets
+//   updatePostType                  -> "" (full refresh; no targeted scope
+//                                      exists for post-type config)
 //
-// Scope: `scope=web_pages`. Invalidates the page-render cache, which covers
-// both `list_seo` parent rows and their users_meta hero-EAV children (BD
-// rebuilds page cache reading both tables; there is no separate users_meta
-// scope).
+// Lenient failure mode: refresh failure does NOT fail the parent write. The
+// record is already saved; we annotate auto_cache_refreshed: false + the
+// error so the agent can retry `refreshSiteCache` manually.
 //
-// Timing: ~5s against BD. Each tool call is independent, so bulk workflows
-// pay the cost per-call but don't cumulatively time out.
-async function autoRefreshCache(config) {
+// Timing: web_pages ~5s, data_widgets ~3.5s, full ~5s. Each tool call is
+// independent; bulk workflows pay the cost per-call but don't cumulatively
+// time out.
+async function autoRefreshCache(config, scope) {
   try {
+    const body = scope ? { scope } : {};
     const result = await makeRequest(
       config,
       "POST",
       "/api/v2/website_settings/refreshCache",
       null,
-      { scope: "web_pages" }
+      body
     );
-    const body = result && result.body;
-    if (body && typeof body === "object" && body.status === "success") {
+    const respBody = result && result.body;
+    if (respBody && typeof respBody === "object" && respBody.status === "success") {
       return { ok: true };
     }
-    return { ok: false, message: (body && body.message) || `HTTP ${result && result.status}` };
+    return { ok: false, message: (respBody && respBody.message) || `HTTP ${result && result.status}` };
   } catch (e) {
     return { ok: false, message: e && e.message ? String(e.message) : "network error" };
   }
 }
 
-const WEBPAGE_AUTO_REFRESH_OPS = new Set(["createWebPage", "updateWebPage"]);
+// Tool -> refresh scope map. "" means full refresh (no scope param).
+const AUTO_REFRESH_SCOPE = {
+  createWebPage: "web_pages",
+  updateWebPage: "web_pages",
+  createWidget: "data_widgets",
+  updateWidget: "data_widgets",
+  updatePostType: "",
+};
 
 // ---------------------------------------------------------------------------
 // HTTP client
@@ -1826,15 +1836,15 @@ async function main() {
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }
 
-      // Auto-refresh site cache after successful WebPage create/update.
+      // Auto-refresh site cache after successful cache-gated writes.
       // Lenient: annotation-only on failure; never fails the parent response.
       if (
-        WEBPAGE_AUTO_REFRESH_OPS.has(name) &&
+        name in AUTO_REFRESH_SCOPE &&
         result.body &&
         typeof result.body === "object" &&
         result.body.status === "success"
       ) {
-        const refresh = await autoRefreshCache(config);
+        const refresh = await autoRefreshCache(config, AUTO_REFRESH_SCOPE[name]);
         result.body.auto_cache_refreshed = refresh.ok;
         if (!refresh.ok) {
           result.body.auto_cache_refresh_error = refresh.message;
