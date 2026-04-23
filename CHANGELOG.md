@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.35.0] - 2026-04-23
+
+### Docs — comprehensive README polish pass
+
+Round of user-driven README fixes + cold-AI audit follow-ups. README-only release (npm tarball updated so `npm view` / package-page readers see the current doc).
+
+**Changes:**
+
+- **🚨 API PERMISSIONS section promoted** above "Two ways to connect" — catches the most common first-user trap ("my AI can list members but can't create a page") before the install path. Added a dedicated tip on unchecking `delete` actions if you want to prevent the AI from destructive operations while keeping read / create / update.
+- **Claude Desktop cosmetic-banner warning moved** from the top-of-README requirements block → the Claude Desktop setup section (where it actually matters). Less noise for users on other platforms.
+- **BD API key requirement** split across three lines (heading, steps, walkthrough link) so the Full-Walkthrough link isn't buried in a single-block sentence.
+- **Merged redundant Quickstart + Setup-by-Platform Easy blocks** — previously the same config block appeared twice with slight variation, now one canonical block at the top of Setup-by-Platform.
+- **Split Claude Desktop menu path** — "Menu bar → Settings → Developer tab → Edit Config" was one cramped line; now three sub-lines with blank spaces for readability.
+- **Standardized server-name everywhere** from mixed `bd-api` / `brilliant-directories` to **`brilliant-directories`** (matches the npm package name and repo name; more obvious for readers scanning their config). 17 call sites updated.
+- **Claude Code Easy path added** — previously the section claimed "No Easy path for Claude Code yet" (outdated). Claude Code CLI fully supports `claude mcp add --transport http <name> <url> --header "X-Key: value"` per the current Anthropic docs. Section now shows both Easy and Advanced paths, same as every other client.
+- **Decluttered the Claude-extension-vs-Cursor-native config table** — was cramming Windows + Mac/Linux paths into one cell with `<br>` tags. Rewrote as two clean subsections with one path per line.
+- **n8n compatibility row corrected** — was ⚠️ "Broken upstream, use HTTP Request instead" but n8n's MCP Client Tool actually works fine via SSE transport against our `/sse` path. Row now ✅ "Works via SSE" with a pointer to the n8n section for exact field values.
+- **Universal MCP Client Reference table** gained an explicit "n8n is the exception — uses SSE + `/sse` path" note so readers don't apply the Streamable HTTP guidance to n8n and hit the upstream bug.
+- **Filter Operators section updated to current reality** — previously said most operators were "in QA and rolling out shortly." They shipped. Now documents what works NOW (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `not_in`, `LIKE`) and what's confirmed broken (`between`, `is_null`, `is_not_null`, empty-string `=""`) with client-side fallback guidance.
+- **Codex CLI plan list corrected** — OpenAI renamed "Team" → "Business" in 2024. Updated to the current list: "Plus / Pro / Business / Edu / Enterprise".
+- **Custom GPT line de-counted** — "Custom GPT Actions cap at 30 ops (our MCP has 170+)" violated the project's "no hardcoded counts in agent-visible text" rule. Replaced "170+" with "many more than 30" (count still drift-proof, point still clear).
+- **UI name drift corrected** — Authentication table said "Admin → Developer Tools → API Keys", contradicting the 7+ other references to "Developer Hub → Generate API Key". Standardized on Developer Hub everywhere.
+- **Broken TOC + Compatibility Table anchors fixed** (late v6.34.0 follow-through verification): `#using-claude-cli-inside-cursor` → `#using-the-claude-extension-inside-cursor`, `#claude-code-cli` → `#claude-code`, `#cline` → `#cline-vs-code-extension`, `#chatgpt` → `#openai-chatgpt--codex`. TOC `#authentication` merge split into 6 individual entries matching the 6 actual headings.
+
 ## [6.34.0] - 2026-04-23
 
 ### Fixed — broken anchor links in README MCP Client Compatibility table

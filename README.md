@@ -15,21 +15,14 @@ Manage **members, posts (single-image and multi-image), leads, reviews, top and 
    - ❌ `mysite.com` (missing `https://`)
    - ❌ `https://mysite.com/` (trailing slash)
 2. **Your BD API key.**
-   BD Admin → **Developer Hub** → **Generate API Key** → copy it.
-   <a href="https://support.brilliantdirectories.com/support/solutions/articles/12000088768" target="_blank" rel="noopener noreferrer">Full walkthrough: How to Create an API Key</a>.
 
-> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, try the Easy path below — it skips the `npx` subprocess spawn and the latency that triggers it.
+   BD Admin → **Developer Hub** → **Generate API Key** → copy it.
+
+   <a href="https://support.brilliantdirectories.com/support/solutions/articles/12000088768" target="_blank" rel="noopener noreferrer">Full walkthrough: How to Create an API Key</a>.
 
 3. **Node.js — only for the Advanced path** (see below). Not needed for the Easy path. If you need it, one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick the "LTS" version, double-click, Next through the prompts).
 
-### Two ways to connect — pick one
-
-- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://brilliantmcp.com` with two headers. Works with Claude Desktop, Cursor, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
-- **🛠️ Advanced (requires Node.js install):** run the MCP as a `npx` child process on your own machine. Same tool surface, same instructions, same safety guards. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
-
-Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
-
-### 🚨 PERMISSIONS — DO NOT SKIP THIS
+### 🚨 API PERMISSIONS — DO NOT SKIP THIS
 
 **New BD API keys ship locked down — only member read/write is enabled by default.**
 
@@ -47,7 +40,16 @@ Every other resource (web pages, forms, menus, tags, email templates, reviews, l
 
 The change is immediate — no key rotation, no AI restart needed. Re-run the failed request and it'll succeed.
 
+> **Want to stop the AI from deleting anything?** Uncheck every `delete` action under Advanced Endpoints. The AI will still be able to read, create, and update — but any `delete*` tool call will return 403 instead of wiping data. Good baseline for production sites where the AI shouldn't be trusted with destructive operations.
+
 > **Why BD locks it down by default:** least-privilege. A leaked key with baseline-only permissions can only read/write members on your site, not rewrite your whole directory. Once you've decided which endpoints your agent actually needs, you can pare the permissions back down to just those.
+
+### Two ways to connect — pick one
+
+- **🚀 Easy (recommended — no Node.js install required):** point your AI client at `https://brilliantmcp.com` with two headers. Works with Claude Desktop, Claude Code, Cursor, Windsurf, Cline, MCP Inspector, and any MCP-capable AI client that honors URL-based MCP servers. **Zero local dependencies.**
+- **🛠️ Advanced (requires Node.js install):** run the MCP as a `npx` child process on your own machine. Same tool surface, same instructions, same safety guards. Useful when you want the MCP to run on your own infrastructure or need offline debug access.
+
+Both paths hit the same BD API with your key; they differ only in where the MCP itself runs (our infrastructure vs yours).
 
 ## Table of Contents
 
@@ -74,9 +76,20 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 - [Available Resources](#available-resources)
 - [Support](#support)
 
-## 30-Second Quickstart (try this first)
+## Setup by Platform
 
-**🚀 Easy path — no install needed.** In your AI client's MCP config (Claude Desktop, Cursor, etc.), add this entry:
+<a id="the-config-block"></a>
+
+Each platform has **two options**:
+
+- **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
+- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
+
+**Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
+
+### 🚀 Easy config block (recommended — 30-second install)
+
+In your AI client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, etc.), add this entry:
 
 ```json
 {
@@ -94,44 +107,11 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 
 Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
 
-Save. Fully quit and reopen the AI app. Done.
-
-Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
-
-Prefer the local install (runs on your own machine, needs Node.js)? Skip to [Setup by Platform](#setup-by-platform) → each platform has both paths.
-
----
-
-## Setup by Platform
-
-<a id="the-config-block"></a>
-
-Each platform has **two options**:
-
-- **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
-- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
-
-**Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
-
-### 🚀 Easy config block (recommended)
-
-```json
-{
-  "mcpServers": {
-    "bd-api": {
-      "url": "https://brilliantmcp.com",
-      "headers": {
-        "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://your-site.com"
-      }
-    }
-  }
-}
-```
-
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
-
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
+
+Save. Fully quit and reopen the AI app. Done. Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
+
+Need a client-specific walkthrough? Jump to your platform's section below.
 
 ### 🛠️ Advanced config block (requires Node.js install)
 
@@ -140,7 +120,7 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "command": "npx",
       "args": [
         "-y",
@@ -157,6 +137,8 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 
 ### Claude Desktop
 
+> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, use the Easy path below — it skips the `npx` subprocess spawn and the latency that triggers it.
+
 > ⚠️ **Do NOT use Settings → Connectors** (that's the OAuth UI — our MCP uses header auth, not OAuth).
 >
 > ✅ Go to **Settings → Developer → Edit Config** instead — works for both Easy and Advanced paths.
@@ -168,7 +150,10 @@ The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker no
 **Steps (no terminal):**
 
 1. Open Claude Desktop.
-2. Menu bar → **Settings → Developer tab → Edit Config**.
+2. Menu bar → **Settings**.
+
+   **Developer tab → Edit Config**.
+
    This opens `claude_desktop_config.json` in TextEdit (Mac) or Notepad (Windows).
 3. Pick your scenario:
 
@@ -183,7 +168,7 @@ Paste one of these into the file (Easy is recommended):
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
@@ -199,7 +184,7 @@ Paste one of these into the file (Easy is recommended):
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "command": "npx",
       "args": [
         "-y",
@@ -240,7 +225,7 @@ Merge — don't overwrite. Two rules:
     "legacyQuickEntryEnabled": false
   },
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "command": "npx",
       "args": [
         "-y",
@@ -263,7 +248,7 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
    That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → MCP servers** shows `bd-api` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `brilliantmcp.com` (unlikely — it's HTTPS to a Cloudflare edge).
+> **No hammer?** **Settings → Developer → MCP servers** shows `brilliant-directories` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `brilliantmcp.com` (unlikely — it's HTTPS to a Cloudflare edge).
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -279,42 +264,60 @@ Claude Code has no MCP GUI — install via terminal. Works in:
 - **PowerShell** (Windows)
 - **Cursor / VS Code's built-in terminal** — open with ``Ctrl+` `` (Win/Linux), ``Cmd+` `` (Mac), or **View → Terminal**
 
-**Prerequisites (Claude Code is Advanced-path only — requires Node.js):**
+**Prerequisites:** the `claude` CLI must be installed (it's itself an npm package, so Node.js is required for the CLI). One-time install:
 
-1. **Node.js** — one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick "LTS", double-click, Next through the prompts). Claude Code is itself an npm package, and the BD MCP launches via `npx`, so Node.js is required for both halves. Verify in a fresh terminal with `node --version` (should print `v18.x` or higher) and `npm --version`.
-
+1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick "LTS", double-click, Next through the prompts). Verify with `node --version` (should print `v18.x` or higher).
 2. **The `claude` CLI:**
 
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+
+   Close and reopen your terminal so PATH updates. Verify with `claude --version`.
+
+Once the CLI is installed, you've got the same two options as every other client:
+
+#### 🚀 Easy path — hosted Worker (no BD MCP subprocess, no additional install)
+
 ```bash
-npm install -g @anthropic-ai/claude-code
+claude mcp add brilliant-directories --transport http https://brilliantmcp.com \
+  --header "X-Api-Key: ENTER_API_KEY" \
+  --header "X-BD-Site-URL: https://your-site.com"
 ```
 
-Close and reopen your terminal so PATH updates. Verify with `claude --version`.
+Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Verify with `claude mcp list` — `brilliant-directories` should appear. Close and reopen Claude Code.
 
-> **No Easy path for Claude Code yet.** Claude Code's MCP registration currently requires the CLI, which requires Node.js. If you want zero-install, use Claude Desktop / Cursor / Windsurf / Cline with the Easy path instead — same BD tools, same instructions.
+No `npx` child process, no BD MCP install on your machine. Claude Code hits our hosted Worker over HTTP.
 
-**Install BD MCP:**
+#### 🛠️ Advanced path — BD MCP runs as an `npx` child process on your machine
 
 ```bash
-claude mcp add bd-api -- npx brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Verify with `claude mcp list` — `bd-api` should appear. Close and reopen Claude Code.
+Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code.
 
 > **Credentials live in that one command.**
 >
-> The `--api-key` and `--url` flags are baked into the MCP server config in your user-level Claude config file — passed automatically to BD on every tool call, no separate step.
+> The header / flag values are baked into the MCP server config in your user-level Claude config file — passed automatically to BD on every tool call, no separate step.
 >
-> To rotate: `claude mcp remove bd-api`, then re-run `claude mcp add` with new values.
+> To rotate: `claude mcp remove brilliant-directories`, then re-run `claude mcp add` with new values.
 
 #### Using the Claude extension inside Cursor
 
 If you chat with Claude inside Cursor (the Anthropic "Claude" extension you install into Cursor from the extension marketplace), that extension has its OWN MCP config — **separate from Cursor's native agent.** Installing in one doesn't install in the other.
 
-| Host | Config file | Where you see its tools |
-|---|---|---|
-| **Claude extension (inside Cursor or Claude Code CLI)** | `C:\Users\<you>\.claude.json` *(Windows)* <br>`~/.claude.json` *(Mac/Linux)* | When you chat with Claude — ask "what tools do you have" or type `/mcp` |
-| **Cursor's native agent** | `C:\Users\<you>\.cursor\mcp.json` *(Windows)* <br>`~/.cursor/mcp.json` *(Mac/Linux)* | Cursor **Settings → Tools & MCP** |
+**Two different MCP configs. Two different places the tools show up.**
+
+**1. Claude extension (inside Cursor or Claude Code CLI)**
+- Config file (Windows): `C:\Users\<you>\.claude.json`
+- Config file (Mac / Linux): `~/.claude.json`
+- Tools appear: when you chat with Claude — ask *"what tools do you have"* or type `/mcp`
+
+**2. Cursor's native agent**
+- Config file (Windows): `C:\Users\<you>\.cursor\mcp.json`
+- Config file (Mac / Linux): `~/.cursor/mcp.json`
+- Tools appear: Cursor **Settings → Tools & MCP**
 
 **Easiest setup — edit the JSON file in Notepad (NO terminal, NO `claude` CLI needed):**
 
@@ -348,7 +351,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 Run this in any terminal (PowerShell, Terminal.app, Cursor's built-in terminal — any works):
 
 ```bash
-claude mcp add bd-api -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
 The CLI writes the same JSON to `~/.claude.json` for you — same end result as editing the file by hand. If `claude` isn't installed (`command not found`), just use the Notepad method above — you don't need the CLI.
@@ -361,7 +364,7 @@ OpenAI's MCP support is narrow. The honest landscape:
 
 | OpenAI surface | Supported? |
 |---|---|
-| ChatGPT web / desktop / mobile | ❌ No — no MCP support; Custom GPT Actions cap at 30 ops (our MCP has 170+) |
+| ChatGPT web / desktop / mobile | ❌ No — no MCP support; Custom GPT Actions cap at 30 ops (BD MCP has many more than 30) |
 | Codex Cloud app | ❌ No — partial/evolving MCP support |
 | **Codex CLI** (terminal) | ✅ **Yes — full MCP** |
 
@@ -371,7 +374,7 @@ For GUI alternatives, use Claude Desktop / Cursor / Windsurf / Cline instead —
 
 #### Codex CLI setup (the only supported OpenAI path)
 
-Requires Node 18+ and a ChatGPT Plus/Pro/Team/Enterprise account for sign-in.
+Requires Node 18+ and a ChatGPT Plus/Pro/Business/Edu/Enterprise account for sign-in.
 
 **1. Install + sign in:**
 
@@ -385,7 +388,7 @@ Follow the browser sign-in prompt on first run. `Ctrl+C` to exit after sign-in.
 **2. Edit config** at `~/.codex/config.toml` (Mac/Linux) or `%USERPROFILE%\.codex\config.toml` (Windows). Codex uses **TOML, not JSON**:
 
 ```toml
-[mcp_servers.bd-api]
+[mcp_servers.brilliant-directories]
 command = "npx"
 args = ["-y", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
 ```
@@ -413,7 +416,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "serverUrl": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
@@ -429,7 +432,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "command": "npx",
       "args": [
         "-y",
@@ -461,7 +464,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
@@ -477,7 +480,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 ```json
 {
   "mcpServers": {
-    "bd-api": {
+    "brilliant-directories": {
       "command": "npx",
       "args": [
         "-y",
@@ -492,7 +495,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 
 Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
 
-6. Back in the MCP Servers panel, confirm `bd-api` appears — toggle it **on** if not already.
+6. Back in the MCP Servers panel, confirm `brilliant-directories` appears — toggle it **on** if not already.
 7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
 
 ---
@@ -717,12 +720,12 @@ Two credentials, sent as HTTP headers on every request. No OAuth, no Bearer toke
 
 | Header | Value | Required | Notes |
 |---|---|---|---|
-| `X-Api-Key` | your BD API key | Yes | Admin → *Developer Tools → API Keys*. Permissions are scoped per key — you choose which endpoints it can reach. |
+| `X-Api-Key` | your BD API key | Yes | Admin → **Developer Hub** → **Generate API Key**. Permissions are scoped per key — you choose which endpoints it can reach. |
 | `X-BD-Site-URL` | `https://your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Accepts the URL with or without `https://` — the Worker normalizes it. Not needed for the npx/Advanced path (already in the `--url` flag). |
 
 ### Universal MCP Client Reference
 
-Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four questions. Use this table to fill any of them in.
+Any generic MCP client (LibreChat, custom agents, etc.) asks the same four questions. Use this table to fill any of them in.
 
 | Field the client asks for | What to enter |
 |---|---|
@@ -731,6 +734,8 @@ Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four 
 | **Custom / Multiple Headers** | Two entries: `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com` |
 | **OAuth** | Off / No / disabled — we don't use OAuth |
 | **Bearer Token** | Leave empty — we don't use Bearer auth |
+
+> **n8n is the exception.** n8n's Streamable HTTP client has upstream bugs, so n8n users must use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse` (with the `/sse` path). See the [n8n section](#n8n) for the exact field values. Our server supports both transports — n8n just happens to need the legacy one today.
 
 ### MCP Client Compatibility
 
@@ -741,7 +746,7 @@ Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four 
 | **Claude Code CLI** | ✅ | Works | `claude mcp add --transport http ...`. See [Claude Code setup](#claude-code). |
 | **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
 | **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
-| **n8n MCP Client node** | ⚠️ | Broken upstream | n8n's MCP Client has bugs against spec-compliant servers. Use **HTTP Request node + OpenAPI import** instead (works today, every BD tool). See [n8n setup](#n8n). |
+| **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
 | **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
 | **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [OpenAI section](#openai-chatgpt--codex). |
 | **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
@@ -783,7 +788,11 @@ Multiple filters:
 GET /api/v2/user/get?property[]=city&property_value[]=Los Angeles&property[]=state_code&property_value[]=CA
 ```
 
-Operators: `=`, `>`, `<`, `>=`, `<=`. Additional operators (`LIKE`, `!=`, `in`, `not_in`, `not_like`, `is_null`, `is_not_null`, `between`) are in QA and rolling out across endpoints shortly. For now, stick with `=` for string match, or enumerate and filter client-side.
+**Supported operators (verified working):** `=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `not_in`, `LIKE` (with or without `%` wildcards).
+
+**Confirmed broken (do NOT use — BD returns HTTP 400 or silently drops the filter):** `between`, `is_null`, `is_not_null`, empty-string `=""`.
+
+For range queries, combine `>=` and `<=` as two filter conditions (see [Multiple filters](#filtering) above). For "empty field" queries, paginate the resource and filter client-side.
 
 ## Sorting
 
@@ -872,8 +881,8 @@ Yes. Add multiple entries under `mcpServers` with different names (e.g. `bd-site
 Each person should generate their own API key (BD Admin → Developer Hub). Keys are per-user so revoking one doesn't break anyone else.
 
 **How do I disconnect / remove the MCP?**
-- Claude Code: `claude mcp remove bd-api`
-- Cursor / Windsurf / Cline: delete the `bd-api` entry from the MCP config JSON file, save, fully quit and reopen the app.
+- Claude Code: `claude mcp remove brilliant-directories`
+- Cursor / Windsurf / Cline: delete the `brilliant-directories` entry from the MCP config JSON file, save, fully quit and reopen the app.
 
 **How do I undo something the AI did?**
 BD's API doesn't have a universal undo. For members, prefer `updateUser active=3` (Canceled) over `deleteUser` — it's reversible. For destructive operations, back up first or test on one record.
