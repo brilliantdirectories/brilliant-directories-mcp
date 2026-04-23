@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.12] - 2026-04-23
+
+### Changed — corpus disambiguations (orientation filter + slug verify)
+
+Two tight wording fixes, no tool schema changes:
+
+- **Pexels orientation filter** now explicit that `?orientation=landscape` belongs on `pexels.com/search/...` (the search page) — NEVER on the final `images.pexels.com/photos/...jpeg` URL sent to BD (imported fields stay bare per bullet 1 of the image URL rule).
+- **Slug rename rule** now requires an explicit post-write verification via `get*`: if BD returns `success` but the slug is unchanged, the MCP client is on a stale tool schema that dropped the field — reconnect the client, don't create a redirect pointing at a 404. (Generalized the stale-schema recovery hint previously scoped to multi-image append.)
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.11] - 2026-04-23
 
 ### Changed — hardened landscape enforcement with actionable Pexels filter guidance
