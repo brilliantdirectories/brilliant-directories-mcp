@@ -293,32 +293,32 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 The error envelope `{status: "error", message: "<X> not found", total: 0}` fires for bad `property` NAME, bad cursor, bad `order_column`, LIKE-with-wildcards (see below), AND legitimate empty results - all indistinguishable; treat as "zero or malformed." Observed `<X>` variants: `user`, `record`, `data_categories`, internal table names.
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths returning structured JSON lists). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition.
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition AND.
 
-**Confirmed working:**
+**Works (verified live across 10 list endpoints):**
 
-- `=` — exact match. Case-insensitive on strings. `property=first_name&property_value=Jason&property_operator==`
-- `!=` — not equal. `property=first_name&property_value=Sample&property_operator=!=`
-- `>=` — greater or equal. `property=user_id&property_value=10&property_operator=>=` (`>`, `<`, `<=` follow same pattern but retest per need)
-- `in` — OR-on-values for ONE field, comma-separated. Unmatched values silently skipped; matched ones return. `property=first_name&property_value=Sample,Michael&property_operator=in`
-- `not_in` — inverse of `in`. `property=post_status&property_value=0,1&property_operator=not_in`
-- `LIKE` — with `%` wildcards or without. `property=first_name&property_value=Samp%&property_operator=LIKE` (without wildcards acts as `=`)
-- **Multi-condition AND via array syntax** — stack ANY combination of the operators above, all AND'd together. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]` form one condition. Mix operators freely — e.g. `first_name LIKE 'Sa%' AND active = 2` becomes `property[]=first_name&property_value[]=Sa%&property_operator[]=LIKE&property[]=active&property_value[]=2&property_operator[]==`. Add a 3rd, 4th, 5th condition with more `[]` trios. URL-encode reserved chars (`%` → `%25`, space → `%20` or `+`) at send time.
-- **Zero-sentinel** on integer foreign keys — `property=profession_id&property_value=0&property_operator==` returns rows with unset FK.
+- `=` — exact match. Case-insensitive on strings.
+- `!=` — not equal. **Use `!=`, NOT `<>` (see broken list).**
+- `>`, `>=` — numeric comparison.
+- `in` / `not_in` — OR-on-values, one field, CSV. `property_value=Sample,Michael&property_operator=in`. Unmatched values silently skipped.
+- `LIKE` / `not_like` — `%` wildcards. URL-encode `%` as `%25`. Without wildcards `LIKE` acts as `=`.
+- `between` — CSV only: `property_value=lo,hi&property_operator=between`. Array-syntax errors.
+- `is_null` / `is_not_null` — **`property_value=` MUST be present as an empty parameter.** `property=logo&property_value=&property_operator=is_null`. Omitting the param silent-drops to unfiltered dataset.
+- **Multi-condition AND** via array syntax. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]`. Mix any working operators freely — e.g. `first_name LIKE 'Sa%' AND active=2 AND user_id BETWEEN 100,200` is one call.
+- **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator==` returns rows with unset FK.
 
-**Not supported (HTTP 400 today) or broken:**
+**Broken server-side — DO NOT USE:**
 
-- `between` — rejected across every resource tested. Use `>=` + `<=` combined via multi-AND if you need a range.
-- `is_null` / `is_not_null` — **silently drops** on some endpoints (returns unfiltered dataset — dangerous). Do not use.
-- `property_value=""` (empty string with `=`) — HTTP 400 today. For finding empty-string fields, paginate and filter client-side.
+- `<`, `<=`, `<>` — silently act as `=` (verified across 10 endpoints). For upper-bound numeric ranges use `between lo,hi`. For inequality use `!=`. **`<>` is especially dangerous: `active <> 3` returns ONLY `active=3` rows, the exact opposite of intent.**
+- Word-form aliases `lt`, `gt`, `lte`, `gte` — silently fall back to `=`. Symbols (`>`, `>=`) are canonical.
 
-**No native OR across different fields.** `in` is OR-on-values for ONE field. For `A=X OR B=Y` across two different fields, make two filtered calls and merge client-side.
+**No native OR across different fields.** `in` is OR within one field's values. For `A=X OR B=Y` across two fields, make two filtered calls and merge client-side.
 
-**`search*` tools (BD's `/{resource}/search`) are a different shape** — keyword-driven (`q=<term>`) with different response format. Use `list*` with filters for structured data queries; use `search*` only when the agent needs BD's keyword-search results view.
+**Architecture:** `property_operator` is honored ONLY on `/get` (list) endpoints. `/search` (POST) silently ignores it (keyword-only via `q=`). `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
 
-**Silent-drop sanity check.** If a filter value is rejected (`is_null`, unknown enum value on a strict field) BD may return the full unfiltered dataset instead of erroring. When a filtered `total` looks suspiciously close to the unfiltered total, double-check against a known subset count.
+**Silent-drop sanity check.** BD returns `status: success` with the FULL unfiltered `total` when a filter is silently dropped (bad operator, unknown column, derived field, `is_null` without the empty `property_value=`, broken operators above). After every filtered call, compare filtered `total` vs. a known unfiltered `total` — if equal, your filter was dropped.
 
-**Finding missing values.** For empty-string fields (no `logo`, `phone_number`, `website`, etc.) `is_null` / `is_not_null` and `property_value=""` are not supported server-side — paginate with `limit=5-10` and filter each page client-side. Exception: integer foreign keys where "unset" is stored as `0` — `property=profession_id&property_value=0&property_operator==` works correctly (returns rows with unset FK).
+**Finding empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL). `is_null` matches only real NULLs; empty strings won't match. For empty-string hunts, paginate with `limit=10` and filter client-side. Exception: integer FKs stored as `0` for unset — use zero-sentinel (above).
 
 **SEO content for a category/sub-category = create a WebPage, NOT update `desc`.** The word "description" is a lexical trap - ignore it; route by INTENT.
 

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.39.0] - 2026-04-23
+
+### Changed — global filter operators rule, verified-live edition
+
+Discovery session hammered 14 operators × 10 list endpoints on a real BD instance. Net result is a rewritten operators section in `mcp-instructions.md` built on live-test truth rather than documentation claims:
+
+**Newly confirmed working** (documented for the first time in the corpus):
+- `not_like` — inverse of `LIKE`, same shape
+- `is_null` / `is_not_null` — with the critical shape requirement `property_value=` must be present as an empty parameter (without it, BD silent-drops to unfiltered dataset)
+- `between` — CSV only (`property_value=lo,hi`); array-syntax errors
+
+**Newly confirmed broken** (documented as DO-NOT-USE):
+- `<`, `<=`, `<>` — all silently act as `=` across every endpoint tested. Workarounds: `between lo,hi` for numeric upper-bound ranges, `!=` instead of `<>`. `<>` specifically inverts intent (`active <> 3` returns ONLY `active=3` rows) — highest severity, flagged to BD dev team.
+- Word-form aliases `lt`, `gt`, `lte`, `gte` — silently fall back to `=`. Symbols (`>`, `>=`) are canonical.
+
+**Newly confirmed architectural facts:**
+- `property_operator` is honored ONLY on `/get` (list) endpoints.
+- `/search` (POST) silently ignores `property`/`property_operator` — keyword-only.
+- `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
+
+Corpus rewrite is surgical: same paragraph slot, clearer shape, no wasted words. Every claim is live-verified. Broken operators are explicitly called out with workarounds so agents never reach for them.
+
+### Added — internal `KNOWN-SERVER-BUGS.md` (gitignored)
+
+Tracks server-side BD bugs the corpus works around so future maintainers know what to revisit when BD team ships fixes. Gitignored from public GitHub. Delete the file entirely once all listed bugs are resolved. Referenced from CLAUDE.md alongside the existing `USE-GITHUB-HANDOFF.md` pattern.
+
+### Internal
+
+- Docs+gitignore change. Worker picks up corpus on next raw-GitHub cache TTL (~5 min). Tool schemas unchanged.
+
 ## [6.38.14] - 2026-04-23
 
 ### Fixed — `post_filename` missing from `updateSingleImagePost` schema

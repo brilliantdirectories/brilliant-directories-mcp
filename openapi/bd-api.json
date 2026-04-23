@@ -4021,7 +4021,7 @@
                   },
                   "group_filename": {
                     "type": "string",
-                    "description": "Public URL path for the album (e.g. `photo-albums/my-slug`). Writable independently of `group_name`; pair URL changes with `createRedirect` from the old path."
+                    "description": "Public URL slug path (e.g. `photo-albums/my-slug`). Writable — BD does NOT regenerate the slug when `group_name` changes. See corpus URL slug rule for when to suggest a slug update + redirect."
                   },
                   "group_desc": {
                     "type": "string",

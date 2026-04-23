@@ -293,32 +293,32 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 The error envelope `{status: "error", message: "<X> not found", total: 0}` fires for bad `property` NAME, bad cursor, bad `order_column`, LIKE-with-wildcards (see below), AND legitimate empty results - all indistinguishable; treat as "zero or malformed." Observed `<X>` variants: `user`, `record`, `data_categories`, internal table names.
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths returning structured JSON lists). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition.
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition AND.
 
-**Confirmed working:**
+**Works (verified live across 10 list endpoints):**
 
-- `=` — exact match. Case-insensitive on strings. `property=first_name&property_value=Jason&property_operator==`
-- `!=` — not equal. `property=first_name&property_value=Sample&property_operator=!=`
-- `>=` — greater or equal. `property=user_id&property_value=10&property_operator=>=` (`>`, `<`, `<=` follow same pattern but retest per need)
-- `in` — OR-on-values for ONE field, comma-separated. Unmatched values silently skipped; matched ones return. `property=first_name&property_value=Sample,Michael&property_operator=in`
-- `not_in` — inverse of `in`. `property=post_status&property_value=0,1&property_operator=not_in`
-- `LIKE` — with `%` wildcards or without. `property=first_name&property_value=Samp%&property_operator=LIKE` (without wildcards acts as `=`)
-- **Multi-condition AND via array syntax** — stack ANY combination of the operators above, all AND'd together. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]` form one condition. Mix operators freely — e.g. `first_name LIKE 'Sa%' AND active = 2` becomes `property[]=first_name&property_value[]=Sa%&property_operator[]=LIKE&property[]=active&property_value[]=2&property_operator[]==`. Add a 3rd, 4th, 5th condition with more `[]` trios. URL-encode reserved chars (`%` → `%25`, space → `%20` or `+`) at send time.
-- **Zero-sentinel** on integer foreign keys — `property=profession_id&property_value=0&property_operator==` returns rows with unset FK.
+- `=` — exact match. Case-insensitive on strings.
+- `!=` — not equal. **Use `!=`, NOT `<>` (see broken list).**
+- `>`, `>=` — numeric comparison.
+- `in` / `not_in` — OR-on-values, one field, CSV. `property_value=Sample,Michael&property_operator=in`. Unmatched values silently skipped.
+- `LIKE` / `not_like` — `%` wildcards. URL-encode `%` as `%25`. Without wildcards `LIKE` acts as `=`.
+- `between` — CSV only: `property_value=lo,hi&property_operator=between`. Array-syntax errors.
+- `is_null` / `is_not_null` — **`property_value=` MUST be present as an empty parameter.** `property=logo&property_value=&property_operator=is_null`. Omitting the param silent-drops to unfiltered dataset.
+- **Multi-condition AND** via array syntax. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]`. Mix any working operators freely — e.g. `first_name LIKE 'Sa%' AND active=2 AND user_id BETWEEN 100,200` is one call.
+- **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator==` returns rows with unset FK.
 
-**Not supported (HTTP 400 today) or broken:**
+**Broken server-side — DO NOT USE:**
 
-- `between` — rejected across every resource tested. Use `>=` + `<=` combined via multi-AND if you need a range.
-- `is_null` / `is_not_null` — **silently drops** on some endpoints (returns unfiltered dataset — dangerous). Do not use.
-- `property_value=""` (empty string with `=`) — HTTP 400 today. For finding empty-string fields, paginate and filter client-side.
+- `<`, `<=`, `<>` — silently act as `=` (verified across 10 endpoints). For upper-bound numeric ranges use `between lo,hi`. For inequality use `!=`. **`<>` is especially dangerous: `active <> 3` returns ONLY `active=3` rows, the exact opposite of intent.**
+- Word-form aliases `lt`, `gt`, `lte`, `gte` — silently fall back to `=`. Symbols (`>`, `>=`) are canonical.
 
-**No native OR across different fields.** `in` is OR-on-values for ONE field. For `A=X OR B=Y` across two different fields, make two filtered calls and merge client-side.
+**No native OR across different fields.** `in` is OR within one field's values. For `A=X OR B=Y` across two fields, make two filtered calls and merge client-side.
 
-**`search*` tools (BD's `/{resource}/search`) are a different shape** — keyword-driven (`q=<term>`) with different response format. Use `list*` with filters for structured data queries; use `search*` only when the agent needs BD's keyword-search results view.
+**Architecture:** `property_operator` is honored ONLY on `/get` (list) endpoints. `/search` (POST) silently ignores it (keyword-only via `q=`). `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
 
-**Silent-drop sanity check.** If a filter value is rejected (`is_null`, unknown enum value on a strict field) BD may return the full unfiltered dataset instead of erroring. When a filtered `total` looks suspiciously close to the unfiltered total, double-check against a known subset count.
+**Silent-drop sanity check.** BD returns `status: success` with the FULL unfiltered `total` when a filter is silently dropped (bad operator, unknown column, derived field, `is_null` without the empty `property_value=`, broken operators above). After every filtered call, compare filtered `total` vs. a known unfiltered `total` — if equal, your filter was dropped.
 
-**Finding missing values.** For empty-string fields (no `logo`, `phone_number`, `website`, etc.) `is_null` / `is_not_null` and `property_value=""` are not supported server-side — paginate with `limit=5-10` and filter each page client-side. Exception: integer foreign keys where "unset" is stored as `0` — `property=profession_id&property_value=0&property_operator==` works correctly (returns rows with unset FK).
+**Finding empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL). `is_null` matches only real NULLs; empty strings won't match. For empty-string hunts, paginate with `limit=10` and filter client-side. Exception: integer FKs stored as `0` for unset — use zero-sentinel (above).
 
 **SEO content for a category/sub-category = create a WebPage, NOT update `desc`.** The word "description" is a lexical trap - ignore it; route by INTENT.
 
@@ -390,7 +390,13 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 
 **Post-body formatting (`post_content`, `group_desc`).** Structure: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>`. Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Image URLs per the image rule below. On `createSingleImagePost`, default to a Pexels `post_image` + `auto_image_import=1` unless the user opts out; on update, don't overwrite an existing image the user didn't mention. `about_me`: same structure rule; skip images unless the user explicitly asks.
 
+**Multi-image albums — one-shot rule.** Import external URLs ONLY via `createMultiImagePost` (new album) or `updateMultiImagePost` (APPENDS to existing) — both take `post_image` CSV + `auto_image_import=1`. `createMultiImagePostPhoto` does NOT import; it records URLs as-is. Verify via `listMultiImagePostPhotos property=group_id&property_value=<group_id>&property_operator==` — NOT via `getMultiImagePost.post_image` (that field is a transient write-through, not a mirror of child rows). Success = non-empty `file` + `image_imported=2`; silent-failure = empty `file` + `image_imported=0`. Fix: `deleteMultiImagePostPhoto` the bad row, then `updateMultiImagePost group_id=<same>&post_image=<replacement>&auto_image_import=1`. Never delete and recreate the whole album. **If an append returns success but no new child row appears within ~10s, the MCP client may be on a stale tool schema that dropped `post_image` from `updateMultiImagePost` — reconnect the client. The field is supported server-side.** Renaming via `group_name` does NOT update `group_filename` (the URL slug) — see URL slug rule below.
+
+**URL slug on rename — posts + albums only.** `post_filename` / `group_filename` are writable; renames don't regenerate them. Slugify the new title and compare to the current slug — if <50% tokens overlap, suggest two follow-ups (do NOT execute without approval): update the slug, and `createRedirect old_filename=<old_slug> new_filename=<new_slug>`. Stay silent on typo fixes or title tweaks that keep the same keywords. Before `createRedirect`, filter `listRedirects property=old_filename&property_value=<old_slug>&property_operator==` — if a row exists, update it instead of creating a second one. (BD blocks `old==new`; don't bother pre-checking.) Always verify the slug actually changed via `get*` after the update — if BD returned `success` but the slug is unchanged, the MCP client is on a stale tool schema that dropped the field; reconnect, don't create a redirect pointing at a 404. Rule excludes WebPage slugs — those are locked to page type.
+
 **Site grounding - call `getSiteInfo` once on the first BD task of a conversation and cache for the session.** Tiny payload (~1KB) that tells you what kind of directory this is: `website_name`, `full_url` (use for composing public URLs), `profession` (SITE-level target member archetype — NOT a member's `profession_id`), `industry` (site's market vertical), locale (`timezone`, `date_format`, `distance_format`), currency fields, and `brand_images_relative`/`brand_images_absolute` URLs (8 slots each — logo, mascot, background, favicon, default_profile_image, default_logo_image, verified_member_image, watermark). Use `default_profile_image` to detect placeholder photos (if a member's `image_main_file` matches it, there's no real photo). `profession` and `industry` are site settings — NEVER conflate with per-member `profession_id` taxonomy.
+
+**Public URL composition.** Always `{getSiteInfo.full_url}/{path_field}` where `path_field` is `post_filename` / `group_filename` / `filename` from the record. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
 
 Brand kit - call `getBrandKit` ONCE at the start of any design-related task (building a widget, WebPage, post template, email, hero banner - anything where colors or fonts are chosen) so your output visually matches the site's brand. Returns a compact semantic palette (body / primary / dark / muted / success / warm / alert accents, card surface) plus body + heading Google Fonts, with inline `usage_guidance` explaining which role each color plays and tint rules. Cache the result for the rest of the session - the brand kit rarely changes within one conversation. **Derive hover/tinted/gradient colors from the returned palette values - never introduce unrelated hues.** The returned `body.font` and `heading_font` are already globally loaded on the site; do NOT redeclare them in `content_css` unless deliberately switching to a different family (and then `@import` the new Google Font in the same CSS).
 
@@ -422,7 +428,8 @@ Applies to BOTH `content` and `profile_search_results` page types.
 **Image URL rule (all image fields, all contexts):**
 - **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`) — bare URL, no `?` query string (BD's filename generator breaks on it).
 - **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness).
-- **All fields:** landscape or square only (never portrait), `.jpg` or `.png` only.
+- **Orientation — LANDSCAPE required for feature/hero images** (`post_image`, `hero_image`, `cover_photo`, multi-image album photos). Not portrait, not square. Square is acceptable only for `profile_photo` / `logo`. **On Pexels, fetch the public search page with `?orientation=landscape` before picking a photo** — e.g. `https://www.pexels.com/search/mountain/?orientation=landscape` (no API key, no auth). That param belongs on the search URL only, NEVER on the final `images.pexels.com/photos/...jpeg` URL you send to BD (imported fields stay bare — see bullet 1). Do not pick from unfiltered thumbnails — they crop to squares and hide portrait-only originals. If unsure about a URL, skip it.
+- **Format:** `.jpg` or `.png` only.
 
 **Banned image sources** (never use, period):
 
