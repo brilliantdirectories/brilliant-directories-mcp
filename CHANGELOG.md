@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.11] - 2026-04-23
+
+### Changed — hardened landscape enforcement with actionable Pexels filter guidance
+
+Second observed Cursor drift: despite "LANDSCAPE required" being stated in 5 places across tool descriptions and corpus, agents still picked portrait feature images because the rule was passive (describes requirement) rather than active (describes how to comply).
+
+Added one actionable sentence to the corpus orientation bullet: "On Pexels, filter your search with `?orientation=landscape` (search URL param or API param). Do not pick from unfiltered thumbnails — thumbnails crop to squares and hide portrait-only originals. If in doubt on a specific URL, skip it and pick another."
+
+Roots the agent's behavior in a concrete step: filter the source at search time, don't trust thumbnails. Tool-description warnings unchanged (already correct; didn't need duplication).
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.10] - 2026-04-23
 
 ### Added — URL slug rename rule (posts + albums)

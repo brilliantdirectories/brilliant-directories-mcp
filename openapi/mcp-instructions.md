@@ -426,7 +426,7 @@ Applies to BOTH `content` and `profile_search_results` page types.
 **Image URL rule (all image fields, all contexts):**
 - **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`) — bare URL, no `?` query string (BD's filename generator breaks on it).
 - **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness).
-- **Orientation — LANDSCAPE required for feature/hero images** (`post_image`, `hero_image`, `cover_photo`, multi-image album photos). Not portrait, not square. Square is acceptable only for `profile_photo` / `logo`.
+- **Orientation — LANDSCAPE required for feature/hero images** (`post_image`, `hero_image`, `cover_photo`, multi-image album photos). Not portrait, not square. Square is acceptable only for `profile_photo` / `logo`. **On Pexels, filter your search with `?orientation=landscape` (search URL param or API param).** Do not pick from unfiltered thumbnails — thumbnails crop to squares and hide portrait-only originals. If in doubt on a specific URL, skip it and pick another.
 - **Format:** `.jpg` or `.png` only.
 
 **Banned image sources** (never use, period):
