@@ -239,12 +239,18 @@ Key rules:
 
 ## Installation recap for the user
 
-If the user needs to set up the MCP server:
+If the user needs to set up the MCP server, two options — **Easy is the recommended path for non-technical users**:
+
+**Easy (no Node.js install):** Add an MCP server to their AI client's config pointing at `https://brilliantmcp.com` with two headers:
+- `X-Api-Key` → their BD API key
+- `X-BD-Site-URL` → their BD site URL
+
+**Advanced (runs locally, needs Node.js):** Setup wizard configures their client automatically.
 
 ```bash
 npx brilliant-directories-mcp@latest --setup
 ```
 
-Answer 2 questions (site URL, API key), pick their AI client, restart, done.
+After either path, restart their AI client — tools become available.
 
 For non-MCP integrations (ChatGPT Actions, n8n, Make, Zapier, Postman, custom agents): import the OpenAPI spec URL directly and authenticate with the `X-Api-Key` header.

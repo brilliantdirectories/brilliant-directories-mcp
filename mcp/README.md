@@ -54,7 +54,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 - [Setup by Platform](#setup-by-platform)
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
-    - [Using Claude CLI inside Cursor](#using-claude-cli-inside-cursor)
+    - [Using Claude extension inside Cursor](#using-the-claude-extension-inside-cursor)
   - [OpenAI (ChatGPT / Codex)](#openai-chatgpt--codex)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
@@ -66,7 +66,12 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 - [Updates are automatic](#updates-are-automatic)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
-- [Authentication, Rate Limits, Pagination, Filtering, Sorting, Resources](#authentication)
+- [Authentication](#authentication)
+- [Rate Limits](#rate-limits)
+- [Pagination](#pagination)
+- [Filtering](#filtering)
+- [Sorting](#sorting)
+- [Available Resources](#available-resources)
 - [Support](#support)
 
 ## 30-Second Quickstart (try this first)
@@ -106,7 +111,7 @@ Each platform has **two options**:
 - **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
 - **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
 
-**Both give the full ~173-tool surface, same instructions, same lean shapers, same safety guards.**
+**Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
 
 ### 🚀 Easy config block (recommended)
 
@@ -580,7 +585,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 
 **✅ MCP Client Tool works — use the SSE transport + our dedicated URL.**
 
-n8n's built-in **MCP Client Tool** node connects to our server and loads all 173 BD tools. Configure like this:
+n8n's built-in **MCP Client Tool** node connects to our server and loads every BD tool. Configure like this:
 
 | Field | Value |
 |---|---|
@@ -590,7 +595,7 @@ n8n's built-in **MCP Client Tool** node connects to our server and loads all 173
 | **Header 1** | Name: `X-Api-Key` · Value: *your 32-char hex BD API key* |
 | **Header 2** | Name: `X-BD-Site-URL` · Value: `https://your-site.com` |
 
-Save the node. Click the **Tool** dropdown — should populate with 173 tools. Pick any tool, click Execute.
+Save the node. Click the **Tool** dropdown — should populate with every BD tool. Pick any tool, click Execute.
 
 > **Why "SSE (Deprecated)" and not "HTTP Streamable"?** The MCP spec deprecated legacy SSE in favor of Streamable HTTP. n8n's SSE client works today against our server; n8n's Streamable HTTP client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed. Our server supports BOTH transports — when n8n fixes their Streamable HTTP client, customers can optionally switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed on our side.
 
@@ -602,7 +607,7 @@ Save the node. Click the **Tool** dropdown — should populate with 173 tools. P
 ```
 https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp/main/openapi/bd-api.json
 ```
-n8n generates a node for every BD operation automatically. Prompts for your BD site URL and API key on import. All 173 BD operations available, zero MCP protocol involved.
+n8n generates a node for every BD operation automatically. Prompts for your BD site URL and API key on import. Every BD operation available, zero MCP protocol involved.
 
 **✅ Plain HTTP Request node** — point a single HTTP Request node at `https://your-site.com/api/v2/user/get` with header `X-Api-Key: ENTER_API_KEY`. Chain multiple nodes for workflows touching several BD endpoints. Simplest possible setup.
 
@@ -618,7 +623,7 @@ n8n generates a node for every BD operation automatically. Prompts for your BD s
 
 Use one of these paths instead:
 - **BD's existing Zapier app** (if it covers what you need) — same underlying API, same API key.
-- **Webhooks by Zapier** against `https://your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com`. This hits BD's REST API directly and skips MCP entirely — all 173 operations reachable.
+- **Webhooks by Zapier** against `https://your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com`. This hits BD's REST API directly and skips MCP entirely — every BD operation reachable.
 
 ---
 
@@ -733,12 +738,12 @@ Any generic MCP client (n8n, LibreChat, custom agents, etc.) asks the same four 
 |---|---|---|---|
 | **Claude Desktop** (v0.8+) | ✅ | Works | Settings → Developer → Edit Config. See [Claude Desktop setup](#claude-desktop). |
 | **Cursor** | ✅ | Works | Settings → MCP → Add Server. See [Cursor setup](#cursor). |
-| **Claude Code CLI** | ✅ | Works | `claude mcp add --transport http ...`. See [Claude Code setup](#claude-code-cli). |
+| **Claude Code CLI** | ✅ | Works | `claude mcp add --transport http ...`. See [Claude Code setup](#claude-code). |
 | **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
-| **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline). |
-| **n8n MCP Client node** | ⚠️ | Broken upstream | n8n's MCP Client has bugs against spec-compliant servers. Use **HTTP Request node + OpenAPI import** instead (works today, 173 tools). See [n8n setup](#n8n). |
+| **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
+| **n8n MCP Client node** | ⚠️ | Broken upstream | n8n's MCP Client has bugs against spec-compliant servers. Use **HTTP Request node + OpenAPI import** instead (works today, every BD tool). See [n8n setup](#n8n). |
 | **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
-| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [ChatGPT section](#chatgpt). |
+| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [OpenAI section](#openai-chatgpt--codex). |
 | **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
 
 > **Why Zapier doesn't work and how to know if a client will:** the blocker is always "can this client send custom HTTP headers to an MCP server?" If the UI shows a **Custom Headers** / **Multiple Headers** / **HTTP Headers** field — you're good, plug in our two headers. If the UI only offers OAuth or Bearer Token — that client cannot reach our Worker today. We evaluate OAuth/Bearer support on request.

@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.34.0] - 2026-04-23
+
+### Fixed — broken anchor links in README MCP Client Compatibility table
+
+Three in-table anchor links pointed at slugs that didn't match actual heading slugs:
+- `#claude-code-cli` → real slug is `#claude-code`
+- `#cline` → real slug is `#cline-vs-code-extension`
+- `#chatgpt` → real slug is `#openai-chatgpt--codex`
+
+Plus the Table of Contents had one broken anchor: `#using-claude-cli-inside-cursor` → real slug `#using-the-claude-extension-inside-cursor` (heading changed from "CLI" to "extension" in a prior release, TOC didn't follow). Fixed all four so every TOC / Compatibility Table link resolves.
+
+### Fixed — TOC entry merged 6 sections into one anchor
+
+TOC had a single entry "Authentication, Rate Limits, Pagination, Filtering, Sorting, Resources" pointing at `#authentication`, but the sections are separately-headered. Split into 6 individual TOC entries, one per section. Also corrected "Resources" → "Available Resources" (the actual heading text).
+
+### Fixed — Worker CORS advertised `authorization` header but Worker ignored it
+
+`access-control-allow-headers` listed `authorization`, but `extractAuth()` only reads `X-Api-Key` + `X-BD-Site-URL`. Browser clients doing a CORS preflight would think Bearer-token auth was available, then get HTTP 401 "Missing X-Api-Key" at request time — confusing debug experience. Removed `authorization` from the allow-list with a comment noting that if Bearer auth is ever added, BOTH the CORS allow-list AND `extractAuth` need to change together.
+
+### Fixed — Worker `toolCount` in GET / info endpoint was hardcoded to `173`
+
+The root info endpoint returned `toolCount: 173` from a hardcoded fallback. This violated the project's "spec is source of truth" principle — if BD added a new endpoint to the spec, the info page would keep saying 173 while the actual tool surface grew. Now derives the count from `buildToolList(spec).length` at request time (honoring `TOOL_ALLOWLIST` + `HIDDEN_TOOLS`), matching exactly what `tools/list` would return. On spec-fetch failure, surfaces `null` instead of a wrong number. Worker `SERVER_INFO.version` bumped to `3.0.4`.
+
+### Fixed — README hardcoded `173 tools` in 6 places
+
+README mentioned "173 tools" / "~173-tool surface" in 6 locations. Violated the same "no counts in agent-visible text" rule documented in VISION. Counts drift every minor release. Replaced with "every BD tool" / "every BD operation" / "the full BD tool surface". Exact count always derivable from `openapi/bd-api.json`.
+
+### Fixed — VISION current-state header + tool-count inconsistency
+
+- Current-state header bumped from `v6.32.0, Worker v3.0.1` to `v6.34.0, Worker v3.0.4` to match the latest shipped release.
+- Three places in VISION said "173 tools" while one said "~174 tools" — even the count itself was inconsistent. Replaced all four with "every operation in `openapi/bd-api.json`" / "every BD tool" phrasings that don't rot.
+
+### Fixed — SKILL.md installation recap deprecated Easy path
+
+The "Installation recap for the user" section led with `npx ... --setup` wizard (Advanced path) as the primary instruction. README has led with Easy (hosted) since v6.30.0; SKILL.md was stale. Rewrote to lead with Easy (hosted Worker + 2 headers), Advanced (setup wizard) as secondary option, keeping both in the recap for completeness.
+
+### Maintenance — date-disambiguation note added to architecture memory
+
+Three separate cold-AI audit passes flagged "2026-04-22 vs 2026-04-23 date drift" — a false positive each time. The two dates refer to different events: everything about the SDK rewrite, domain purchase, and migrations happened on 2026-04-22; the `mcp.brilliantdirectories.com` retirement happened on 2026-04-23. Added an explicit disambiguation block in `project_mcp_do_architecture.md` so future audit passes stop re-flagging this.
+
+### Worker
+
+`SERVER_INFO.version` bumped `3.0.3` → `3.0.4` per the patch-level policy (observable behavior change: `toolCount` now derived from spec instead of hardcoded; CORS `authorization` header removed).
+
 ## [6.33.0] - 2026-04-23
 
 ### Fixed — MAINTENANCE HYGIENE header in `mcp/index.js` named fictional constants
