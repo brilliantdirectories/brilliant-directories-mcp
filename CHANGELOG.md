@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.38.10] - 2026-04-23
+
+### Added — URL slug rename rule (posts + albums)
+
+Verified via live BD API: `post_filename` and `group_filename` ARE writable on update, and the old slug returns 404 after change (no auto-redirect). Added a corpus rule for post/album title renames:
+
+- Slugify the new title and compare to the current slug. If <50% token overlap, suggest two follow-up actions: update the slug to match the new title, and `createRedirect old_filename=<old> new_filename=<new>` to preserve inbound links.
+- Suggest only — never auto-apply. User approves or rejects.
+- Stay silent on typo fixes / title tweaks that keep the same keywords (high token overlap = old slug still reads right).
+- Before `createRedirect`, filter `listRedirects` for an existing row with the same `old_filename`; if one exists, update it instead of creating a duplicate. BD already blocks `old==new`.
+- Rule excludes WebPage slugs — those are locked to page type.
+
+Tool descriptions on `updateSingleImagePost` and `updateMultiImagePost` now pointer-reference the corpus rule (one sentence each, not duplicating the full rule). Net docs-size reduction despite adding the rule.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.38.9] - 2026-04-23
 
 ### Added — rename does NOT update URL slug (both single-image + multi-image)
