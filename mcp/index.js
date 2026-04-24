@@ -1245,6 +1245,60 @@ function sanitizeScaffoldingInArgs(args) {
   return args;
 }
 
+// Image-URL sanitizer — strips `?query` suffixes before forwarding to BD.
+// Real bug 2026-04-23: agent passed `post_image=...jpeg?w=1600` → BD's
+// auto_image_import baked the query into the stored filename → 404 at CDN.
+// Field descriptions now say "bare URL only", but agents drift. This is the
+// runtime belt (docs are the suspenders). Also trims whitespace in CSV lists
+// (multi-image albums) — BD doesn't trim, stray spaces silently fail imports.
+//
+// SCOPED — do not add fields that aren't in BD's auto_image_import / form-urlencoded
+// image-write pipeline. The set below is every field we've confirmed BD processes
+// that way and where a query string either bakes into a filename or gets truncated
+// by urlencoded parsing. Don't add: `facebook_image` (OG/social — hotlinked by FB
+// crawlers, query strings are legitimate for CDN variants), inline image URLs in
+// `post_content`/`group_desc` body HTML (Froala stores verbatim; `?w=700` retina
+// variants are INTENTIONAL on body images), or any non-URL string field. If BD
+// adds a new imported-image field, verify its pipeline behavior with a live test
+// before adding it here — over-sanitizing a hotlinked field silently breaks
+// retina sharpness on customer content.
+//
+// Mirrored byte-for-byte in Worker's `src/index.ts`. Keep in sync.
+const IMAGE_SINGLE_URL_FIELDS = new Set([
+  "post_image",          // single-image posts only; multi handled below
+  "hero_image",
+  "cover_photo",
+  "logo",
+  "profile_photo",
+  "original_image_url",
+]);
+const IMAGE_CSV_URL_TOOLS = new Set(["createMultiImagePost", "updateMultiImagePost"]);
+function sanitizeSingleImageUrl(url) { return url.trim().split("?")[0]; }
+function sanitizeImageUrlsInArgs(toolName, args) {
+  if (!args || typeof args !== "object") return;
+  // Multi-image post_image is CSV — split, strip each, rejoin.
+  if (IMAGE_CSV_URL_TOOLS.has(toolName) && typeof args.post_image === "string") {
+    const orig = args.post_image;
+    const cleaned = orig.split(",").map(sanitizeSingleImageUrl).filter(Boolean).join(",");
+    if (cleaned !== orig) {
+      console.error(`[sanitize] ${toolName}: stripped query-string or whitespace from post_image CSV`);
+      args.post_image = cleaned;
+    }
+    return;
+  }
+  // Everything else: single-URL fields.
+  for (const field of IMAGE_SINGLE_URL_FIELDS) {
+    const v = args[field];
+    if (typeof v === "string" && v.includes("?")) {
+      const cleaned = sanitizeSingleImageUrl(v);
+      if (cleaned !== v) {
+        console.error(`[sanitize] ${toolName}: stripped query-string from ${field}`);
+        args[field] = cleaned;
+      }
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -1984,6 +2038,7 @@ async function main() {
       // call — EAV fields below also flow through so hero_section_content
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
+      sanitizeImageUrlsInArgs(name, args);
 
       // EAV split: peel hero/EAV fields off updateWebPage args before the
       // parent update. Flushed via users_meta after the parent succeeds.

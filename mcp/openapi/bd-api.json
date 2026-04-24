@@ -1624,15 +1624,15 @@
                   },
                   "profile_photo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Profile photo URL (member headshot). **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "logo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile logo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Logo URL (brand/business mark). **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's cover photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
@@ -1932,15 +1932,15 @@
                   },
                   "profile_photo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Profile photo URL (member headshot). **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "logo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's profile logo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Logo URL (brand/business mark). **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "OPTIONAL: Enter the FULL URL of the image filename for the user's cover photo. Image URL must already exists somewhere online in order for this field to work properly. URL should begin with http://"
+                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
@@ -3497,7 +3497,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Feature image URL for the post. **LANDSCAPE required** (not portrait). On `createSingleImagePost`, include by default: a Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request). External URLs supported natively. See corpus image URL rule for format + URL-shape details."
+                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Default: Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request)."
                   },
                   "post_category": {
                     "type": "string",
@@ -3643,7 +3643,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Feature image URL. **LANDSCAPE required** (not portrait). Pair with `auto_image_import=1` to fetch external URLs into site storage."
+                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "post_category": {
                     "type": "string",
@@ -3943,7 +3943,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Comma-separated list of image URLs to import as the album's photos (created at upload time as child `MultiImagePostPhoto` records). **LANDSCAPE required** (not portrait, not square). Pair with `auto_image_import=1` to fetch externals into site storage. After create, verify every URL landed — see this tool's post-create verification section. `createMultiImagePostPhoto` does NOT import externals and cannot patch a failed row."
+                    "description": "Comma-separated list of image URLs to import as the album's photos (created at upload time as child `MultiImagePostPhoto` records). **LANDSCAPE only — never portrait/vertical. Bare URLs — no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings (`?w=1600`, `?auto=compress`) get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage. After create, verify every URL landed — see this tool's post-create verification section. `createMultiImagePostPhoto` does NOT import externals and cannot patch a failed row."
                   },
                   "post_tags": {
                     "type": "string",
@@ -4049,7 +4049,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Comma-separated image URLs — APPENDS new photos (does NOT replace existing). **LANDSCAPE required** (not portrait, not square). Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Comma-separated image URLs — APPENDS new photos (does NOT replace existing). **LANDSCAPE only — never portrait/vertical. Bare URLs — no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   }
                 }
               }
@@ -4246,7 +4246,8 @@
                     "type": "string"
                   },
                   "original_image_url": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image URL for this photo row. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Note: `createMultiImagePostPhoto` does NOT import externals — records the URL as-is. For external URLs that must survive source outages, use `createMultiImagePost`'s bulk `post_image` CSV with `auto_image_import=1` instead."
                   },
                   "status": {
                     "type": "integer",
@@ -9187,7 +9188,7 @@
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) - external URLs work natively on WebPages, no `auto_image_import` needed. Recommended dimensions: 1800 × 600 px."
+                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
                   },
                   "hero_background_image_size": {
                     "type": "string",
@@ -9548,7 +9549,7 @@
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) - external URLs work natively on WebPages, no `auto_image_import` needed. Recommended dimensions: 1800 × 600 px."
+                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
                   },
                   "hero_background_image_size": {
                     "type": "string",

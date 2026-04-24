@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.2] - 2026-04-23
+
+### Fixed — belt-and-suspenders defense against query-string image URLs
+
+Real production bug 2026-04-23: agent called `updateSingleImagePost` with `post_image=https://images.pexels.com/photos/2294363/pexels-photo-2294363.jpeg?w=1600` → BD's `auto_image_import` baked the query string into the stored filename as `pphoto-63.jpeg?w=1600` → 404 at CDN when rendered. Fixed at two layers:
+
+**Layer 1 — hardened field descriptions (docs / suspenders):** Rewrote all 12 image-URL field descriptions with the full rule inline, so agents see it at call time without having to cross-reference the 76KB corpus. Coverage:
+
+- `post_image` (create/updateSingleImagePost, create/updateMultiImagePost) — LANDSCAPE only, never portrait/vertical, bare URL, must end in `.jpg`/`.jpeg`/`.png`/`.webp`, query-string failure mode documented.
+- `hero_image` (create/updateWebPage) — same rule, with correct nuance that WebPage hero hotlinks (no auto_image_import) but BD's form-urlencoded parser truncates query strings on storage.
+- `cover_photo` (create/updateUser) — LANDSCAPE, bare URL, extension list.
+- `profile_photo` + `logo` (create/updateUser) — replaced legacy "URL should begin with http://" prose with bare URL + extension list. Dropped orientation rule (headshots/icons are naturally square-ish — now phrased explicitly to avoid confusion with "vertical").
+
+Also removed "square acceptable" phrasing — field tests showed agents sometimes misread "square" as "vertical" and still picked portrait images. Replaced with imperative "LANDSCAPE only — never portrait/vertical" on feature/hero/cover fields.
+
+**Layer 2 — runtime sanitizer (code / belt):** Added `sanitizeImageUrlsInArgs()` to BOTH transports (Worker `src/index.ts` + npm `mcp/index.js`). Scoped allowlist of 6 single-URL fields (`post_image` on single-image posts, `hero_image`, `cover_photo`, `logo`, `profile_photo`, `original_image_url`) plus `post_image` as CSV for `createMultiImagePost`/`updateMultiImagePost`. Strips everything from `?` onward and trims whitespace per URL (CSV case). Logs a `console.warn`/`console.error` when it strips, so Cloudflare Logs / stdio logs show when an agent drifted.
+
+**Surgical scope verified live:**
+- inline body images in `post_content` preserve their `?w=700` retina variant untouched (Froala stores verbatim)
+- `facebook_image` (OG/social) deliberately NOT sanitized — FB/Twitter/LinkedIn crawlers hotlink that URL verbatim, so CDN variant query strings are legitimate there
+- Full reasoning + "don't add these fields" list captured in inline comments above the sanitizer in both transports, so future maintainers don't over-reach the allowlist and silently break customer content
+
+### Sub-agent audit (12/12 PASS)
+
+Independent review confirmed all 12 field descriptions are drift-proof: bare URL rule explicit, extension list explicit, orientation correct per field type, auto_image_import guidance correct, no softener language ("avoid"/"prefer"/"try to") agents can rationalize around.
+
+### Internal
+
+- Tool schemas unchanged. Only description strings + one new sanitizer function per transport. Worker deployed (Version ID `c0c5f1cb-ac96-462e-8dab-b9ff836b1a45`); picks up description changes on next raw-GitHub cache TTL (~5 min).
+
 ## [6.40.1] - 2026-04-23
 
 ### Maintenance — internal docs aligned with single-spec-location (follow-up to v6.40.0)
