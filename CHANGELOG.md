@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.8] - 2026-04-23
+
+### Fixed — npm package crash "Assignment to constant variable" on listUserMeta / getUserMeta (any tool calling the friendly-param filter translator)
+
+Customer in FB group reported `updateMembershipPlan` and `listUserMeta` both returning `Error calling <tool>: Assignment to constant variable.` Root cause: in `mcp/index.js`, the CallTool handler destructured `const { name, arguments: args } = request.params;` at the top of the handler, then `args = workingArgs;` later on for listUserMeta/getUserMeta friendly-param translation. Reassigning a `const` throws at runtime — but only when the translation branch actually executed (which is why some tools worked and others crashed).
+
+Fixed by declaring `args` with `let` (split from the `name` destructuring). Hosted Worker was not affected — it declares `args` fresh inside the tool callback.
+
+### Internal
+
+- Code fix in `mcp/index.js` only. Worker unchanged. No spec/corpus changes.
+
 ## [6.40.7] - 2026-04-23
 
 ### Changed — hero_content_font_size 16 → 18

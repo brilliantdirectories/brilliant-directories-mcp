@@ -1726,7 +1726,8 @@ async function main() {
 
   // Call tool
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+    const { name } = request.params;
+    let args = request.params.arguments;
 
     // Synthetic tool: getBrandKit - intercept BEFORE the toolMap lookup so the handler
     // is independent of whether the spec entry happens to be registered in toolMap.
