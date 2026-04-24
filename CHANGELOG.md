@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.4] - 2026-04-23
+
+### Changed — hero readability safe-defaults extended (body paragraph + font size)
+
+Screenshot from production showed the hero's subheader body paragraph rendering dark-on-dark (unreadable) because `hero_content_font_color` wasn't in the safe-defaults list — the rule only covered h1/h2. Added two more defaults to the `enable_hero_section` transition rule:
+
+- `hero_content_font_color="rgb(255,255,255)"` — the body-paragraph color under the headline. Default BD value is dark; combined with the black-0.5-opacity overlay we set, it was unreadable.
+- `hero_content_font_size="14"` — explicit BD-default 14px. Without an explicit value, the hero can inherit an oversized or too-tiny size from theme and break the hero's visual balance.
+
+Both rule locations updated (the `Hero section readability safe-defaults` block AND the `createWebPage` auto-hero recipe in the SEO content rule).
+
+`hero_content_font_color` is already in EAV_ROUTES on all three mirrors (Worker, npm, drift-check script) — no drift fix needed, just corpus language to make sure agents set it.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.40.3] - 2026-04-23
 
 ### Changed — LANDSCAPE rule extended to inline body images
