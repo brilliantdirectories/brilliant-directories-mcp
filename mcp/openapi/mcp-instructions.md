@@ -542,7 +542,7 @@ Do NOT auto-set `facebook_image` - needs a user-uploaded asset.
 
 **H1/H2 double-render trap:** if hero enabled AND `content` contains `<h1>`/`<h2>`, both render. Pick one location - not both.
 
-**No max-width wrappers in `content` / `content_css` on profile_search_results pages.** BD's page layout already supplies the outer container; adding `max-width: 960px; margin: auto` (or equivalent) double-constrains and makes SEO copy render as a narrow strip. Let content flow at the natural container width.
+**NEVER set `max-width` or `margin: auto` in `content_css` on any selector.** BD's layout owns width. If a full-width page needs a contained section, use `<div class="container">` in `content` — it's the system global.
 
 Location + Sidebar CRUD are read-only by design in this MCP (create/delete deliberately omitted to prevent collisions with BD's auto-seeding and system layouts).
 

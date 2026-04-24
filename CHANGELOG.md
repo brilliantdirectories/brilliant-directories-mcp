@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.11] - 2026-04-23
+
+### Changed — tighten corpus rule against `max-width` / `margin: auto` in `content_css`
+
+Agents kept injecting custom container classes (e.g. `.tx-container { max-width:1080px; margin:0 auto }`) in `content_css`, double-constraining BD's layout and rendering SEO copy as a narrow strip. Previous rule was escapable by renaming the selector away from `.container`.
+
+Replaced the rule with a closed-ended imperative: never set `max-width` or `margin: auto` in `content_css` on any selector. If a full-width page needs a contained section, use `<div class="container">` in `content` — the system global.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — single-line rule swap. No code changes.
+
 ## [6.40.10] - 2026-04-23
 
 ### Added — runtime enum validation for hero CTA button `hero_link_color` + `hero_link_size`
