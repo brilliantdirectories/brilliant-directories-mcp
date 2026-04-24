@@ -400,9 +400,9 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 
 Brand kit - call `getBrandKit` ONCE at the start of any design-related task (building a widget, WebPage, post template, email, hero banner - anything where colors or fonts are chosen) so your output visually matches the site's brand. Returns a compact semantic palette (body / primary / dark / muted / success / warm / alert accents, card surface) plus body + heading Google Fonts, with inline `usage_guidance` explaining which role each color plays and tint rules. Cache the result for the rest of the session - the brand kit rarely changes within one conversation. **Derive hover/tinted/gradient colors from the returned palette values - never introduce unrelated hues.** The returned `body.font` and `heading_font` are already globally loaded on the site; do NOT redeclare them in `content_css` unless deliberately switching to a different family (and then `@import` the new Google Font in the same CSS).
 
-**Hero section readability safe-defaults. Apply on TRANSITION only** - when an agent is turning the hero ON (setting `enable_hero_section` from `0`/unset to `1` or `2`, either on `createWebPage` with hero enabled or on `updateWebPage` that flips the toggle) AND the user hasn't explicitly set the color/overlay/padding values.
+**Hero section readability safe-defaults — ALL 8 fields MANDATORY on every hero transition.** When turning the hero ON (setting `enable_hero_section` from `0`/unset to `1` or `2`, either on `createWebPage` with hero enabled or on `updateWebPage` flipping the toggle) AND the user hasn't explicitly set a value, you MUST include ALL 8 fields below in the same write call. Not a subset. Not "the typography ones." **All 8.** BD's own field-level defaults (10px small font, dark body text, transparent overlay, near-zero padding) render the hero subheader unreadably against a background image; the 8-value bundle below is BD's canonical recipe for a readable hero and must be treated as atomic.
 
-**Defaults** (ensure white text is readable over whatever background image):
+**The 8 mandatory fields — do not omit any:**
 
 - `h1_font_color="rgb(255,255,255)"`
 - `h2_font_color="rgb(255,255,255)"`
@@ -413,9 +413,11 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 - `hero_top_padding="100"`
 - `hero_bottom_padding="100"`
 
-Applies to BOTH `content` and `profile_search_results` page types.
+Treat these as a single atomic recipe, not a menu. If you're tempted to skip one because "the schema default is fine" or "the user didn't ask for that specifically" — stop. The full 8-field bundle IS the default we want; BD's field-level defaults are not. Applies to BOTH `content` and `profile_search_results` page types and to any future hero-enabled `seo_type`.
 
 **Do NOT re-apply defaults on updates that don't touch `enable_hero_section`.** If the hero is already on and the user is tweaking a single hero field, respect their existing color/overlay/padding values. Only the field(s) they explicitly asked about should change.
+
+**`breadcrumb` — leave empty unless the user explicitly asks for a custom breadcrumb.** Overrides BD's auto-generated trail; auto is correct 99% of the time. Setting it locks the page to a static string that won't update when category/location context changes. Never set, update, or populate this field on your own. On create: omit the arg. On update: don't touch it.
 
 **Hero gap-fix CSS rule - `seo_type=content` ONLY.** When a `content` page has hero enabled, BD inserts a ~40px white clearfix spacer between the hero and the first content section. Add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css` to close the gap. **Never add this rule on any other `seo_type`** - on `profile_search_results` / `data_category` / etc., the clearfix provides necessary spacing before the live search-results block; hiding it makes results butt-join the hero. Rule is page-type-scoped, period.
 
@@ -528,7 +530,7 @@ Before create, check existence: `listWebPages property=filename property_value=<
 - `menu_layout=3` (Left Slim)
 - `date_updated=<current YYYYMMDDHHmmss timestamp>` - BD does NOT auto-populate; always set to now on every write
 - `updated_by` (optional audit label like "AI Agent" or "API")
-- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply the readability safe-defaults per the hero rule: `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_font_color="rgb(255,255,255)"`, `hero_content_font_size="16"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`, `hero_column_width="8"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
+- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply ALL 9 mandatory safe-defaults in the same call (atomic recipe, not a menu — the hero rule above explains why): `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_font_color="rgb(255,255,255)"`, `hero_content_font_size="16"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`, `hero_column_width="8"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
 
 **Auto-generate SEO meta for the specific location+category combo** using human names (not slugs) with natural "[city] [category]" / "in [location]" phrasing:
 

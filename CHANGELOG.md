@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.6] - 2026-04-23
+
+### Changed — hero safe-defaults rule hardened to atomic/mandatory language + breadcrumb guardrail
+
+**Why:** Field-test 2026-04-23 showed Cursor enabling a hero but omitting `hero_content_font_color` and `hero_content_font_size` from its write, even though both were listed in the safe-defaults bullet set. Cursor's self-audit: "I treated them as optional unless you asked for a specific look... oversight on my side for your house standard, not forbidden by the tools." The rule wording let an agent interpret the list as a menu rather than an atomic recipe.
+
+Rewrote the hero readability rule to be explicitly atomic:
+
+- Heading changed from `Hero section readability safe-defaults. Apply on TRANSITION only` to `Hero section readability safe-defaults — ALL 8 fields MANDATORY on every hero transition.`
+- Added a "treat as a single atomic recipe, not a menu" clause with the exact reasoning that the BD field-level defaults are not acceptable fallbacks.
+- Inline auto-hero recipe in the SEO content rule now says `ALL 9 mandatory safe-defaults in the same call (atomic recipe, not a menu)`.
+
+Also added a new rule: `breadcrumb` field must NEVER be set on `createWebPage` / `updateWebPage` unless the user explicitly requests a custom breadcrumb. BD auto-generates from category/location context; setting a static string locks the page to it and desyncs when context changes.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.40.5] - 2026-04-23
 
 ### Changed — hero_content_font_size default 14 → 16
