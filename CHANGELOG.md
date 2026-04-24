@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.5] - 2026-04-23
+
+### Changed — hero_content_font_size default 14 → 16
+
+Bumped the hero body-paragraph safe-default from 14px to 16px. 14px under a hero overlay reads small on most viewport widths; 16px matches the standard browser body-text baseline and gives the subheader paragraph proper visual weight against the hero headline.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.40.4] - 2026-04-23
 
 ### Changed — hero readability safe-defaults extended (body paragraph + font size)
