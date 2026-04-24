@@ -9026,7 +9026,7 @@
                   },
                   "breadcrumb": {
                     "type": "string",
-                    "description": "Breadcrumb label"
+                    "description": "OMIT — do not set unless user explicitly requests it. BD auto-generates the breadcrumb trail; manual override locks it to a static string that breaks when page context changes."
                   },
                   "content": {
                     "type": "string",
@@ -9387,7 +9387,7 @@
                   },
                   "breadcrumb": {
                     "type": "string",
-                    "description": "Breadcrumb label"
+                    "description": "OMIT — do not set unless user explicitly requests it. BD auto-generates the breadcrumb trail; manual override locks it to a static string that breaks when page context changes."
                   },
                   "content": {
                     "type": "string",

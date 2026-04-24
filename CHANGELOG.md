@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.9] - 2026-04-23
+
+### Changed — harden `breadcrumb` field against agent overrides
+
+Agents were writing literal breadcrumb strings (e.g. `"Personal trainers · Seal Beach"`) on `createWebPage` / `updateWebPage` despite the corpus rule telling them not to. Root cause: the field description itself was just `"Breadcrumb label"` — permissive, no guardrail at the moment of composing the value. Corpus-level rules get skimmed and forgotten 400 lines into a page-build workflow; field descriptions are read inline.
+
+Replaced the field description on both `createWebPage.breadcrumb` and `updateWebPage.breadcrumb` with an imperative guardrail: `OMIT — do not set unless user explicitly requests it. BD auto-generates the breadcrumb trail; manual override locks it to a static string that breaks when page context changes.`
+
+Removed the now-redundant corpus rule from `mcp-instructions.md` (single source of truth, reduces bloat).
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — both `breadcrumb` field descriptions updated.
+- `mcp/openapi/mcp-instructions.md` — removed line 420 breadcrumb guardrail (now on the field itself).
+
 ## [6.40.8] - 2026-04-23
 
 ### Fixed — npm package crash "Assignment to constant variable" on listUserMeta / getUserMeta (any tool calling the friendly-param filter translator)
