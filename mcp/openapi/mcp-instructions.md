@@ -407,7 +407,7 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 - `h1_font_color="rgb(255,255,255)"`
 - `h2_font_color="rgb(255,255,255)"`
 - `hero_content_font_color="rgb(255,255,255)"`
-- `hero_content_font_size="16"`
+- `hero_content_font_size="18"`
 - `hero_content_overlay_color="rgb(0,0,0)"`
 - `hero_content_overlay_opacity="0.5"`
 - `hero_top_padding="100"`
@@ -530,7 +530,7 @@ Before create, check existence: `listWebPages property=filename property_value=<
 - `menu_layout=3` (Left Slim)
 - `date_updated=<current YYYYMMDDHHmmss timestamp>` - BD does NOT auto-populate; always set to now on every write
 - `updated_by` (optional audit label like "AI Agent" or "API")
-- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply ALL 9 mandatory safe-defaults in the same call (atomic recipe, not a menu — the hero rule above explains why): `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_font_color="rgb(255,255,255)"`, `hero_content_font_size="16"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`, `hero_column_width="8"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
+- `enable_hero_section=1` + a content-relevant Pexels hero image. Most agents' end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. When you enable the hero as part of this default, apply ALL 9 mandatory safe-defaults in the same call (atomic recipe, not a menu — the hero rule above explains why): `h1_font_color="rgb(255,255,255)"`, `h2_font_color="rgb(255,255,255)"`, `hero_content_font_color="rgb(255,255,255)"`, `hero_content_font_size="18"`, `hero_content_overlay_color="rgb(0,0,0)"`, `hero_content_overlay_opacity="0.5"`, `hero_top_padding="100"`, `hero_bottom_padding="100"`, `hero_column_width="8"`. Source the image per the hero-image-sourcing rule (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
 
 **Auto-generate SEO meta for the specific location+category combo** using human names (not slugs) with natural "[city] [category]" / "in [location]" phrasing:
 

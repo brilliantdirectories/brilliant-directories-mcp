@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.7] - 2026-04-23
+
+### Changed — hero_content_font_size 16 → 18
+
+Bumped the mandatory hero body-paragraph size from 16px to 18px for better subheader readability on hero overlays.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min).
+
 ## [6.40.6] - 2026-04-23
 
 ### Changed — hero safe-defaults rule hardened to atomic/mandatory language + breadcrumb guardrail
