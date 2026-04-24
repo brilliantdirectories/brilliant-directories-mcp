@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.10] - 2026-04-23
+
+### Added — runtime enum validation for hero CTA button `hero_link_color` + `hero_link_size`
+
+Agents were passing hex colors (`#ffffff`) into `hero_link_color` and font-size numbers (`16`) into `hero_link_size`. BD concatenates these verbatim into Bootstrap classes (`btn-#ffffff`, ` 16`) and does NOT validate server-side — so the broken classes render live on the public page. Customer found a hero CTA with `class="bold btn btn-#ffffff 16"` in production.
+
+Added runtime guard `validateHeroEnumsInArgs()` in both npm (`mcp/index.js`) and Worker (`src/index.ts`) that rejects invalid values on `createWebPage` / `updateWebPage` BEFORE the request reaches BD. Clear error naming the allowed set: `primary, info, success, warning, danger, default, secondary` for color and `"" (Normal), btn-lg (Large), btn-xl (Extra Large)` for size.
+
+Also hardened the OpenAPI field descriptions with imperative "MUST be exactly one of..." wording and an explicit note that invalid values produce broken CSS classes (BD does not validate server-side).
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `HERO_LINK_COLOR_VALUES` + `HERO_LINK_SIZE_VALUES` sets, `validateHeroEnumsInArgs` helper, wired into the tool-call pipeline right after `sanitizeImageUrlsInArgs`. Both use `return string | null` pattern matching `validateUsersMetaRead`. Byte-for-byte mirrored.
+- `mcp/openapi/bd-api.json` — `hero_link_color` and `hero_link_size` field descriptions rewritten on both createWebPage + updateWebPage.
+
 ## [6.40.9] - 2026-04-23
 
 ### Changed — harden `breadcrumb` field against agent overrides

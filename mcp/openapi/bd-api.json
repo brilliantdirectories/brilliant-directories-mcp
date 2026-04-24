@@ -9276,12 +9276,12 @@
                   "hero_link_size": {
                     "type": "string",
                     "enum": ["", "btn-lg", "btn-xl"],
-                    "description": "CTA button size. `\"\"` (empty string, default) = Normal, `btn-lg` = Large, `btn-xl` = Extra Large. These are Bootstrap button-size classes applied verbatim."
+                    "description": "CTA button size. MUST be exactly one of: `\"\"` (empty = Normal), `btn-lg` (Large), `btn-xl` (Extra Large). Any other value (e.g. a font-size number like `16`) is stored verbatim and rendered as a broken class — BD does not validate server-side."
                   },
                   "hero_link_color": {
                     "type": "string",
                     "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
-                    "description": "CTA button color variant. Maps to Bootstrap button classes, rendered per the site's theme palette (not literal colors):\n\n- `primary` (default theme color)\n\n- `info` (blue)\n\n- `success` (green)\n\n- `warning` (yellow)\n\n- `danger` (red)\n\n- `default` (neutral gray)\n\n- `secondary` (theme secondary)"
+                    "description": "CTA button color variant — attention level, not literal color. MUST be exactly one of: `primary`, `info`, `success`, `warning`, `danger`, `default`, `secondary`. Any other value (e.g. a hex `#ffffff`) is stored verbatim and rendered as a broken class like `btn-#ffffff` — BD does not validate server-side.\n\nChoose by attention level needed: `primary` (main CTA), `danger` (urgent/can't-miss), `warning` (attention), `success` (positive action), `info` (neutral-blue), `secondary` (theme secondary), `default` (low-emphasis gray). Actual rendered color comes from the site's theme palette."
                   },
                   "linked_post_type": {
                     "type": "string",
@@ -9637,12 +9637,12 @@
                   "hero_link_size": {
                     "type": "string",
                     "enum": ["", "btn-lg", "btn-xl"],
-                    "description": "CTA button size. `\"\"` (empty string, default) = Normal, `btn-lg` = Large, `btn-xl` = Extra Large. These are Bootstrap button-size classes applied verbatim."
+                    "description": "CTA button size. MUST be exactly one of: `\"\"` (empty = Normal), `btn-lg` (Large), `btn-xl` (Extra Large). Any other value (e.g. a font-size number like `16`) is stored verbatim and rendered as a broken class — BD does not validate server-side."
                   },
                   "hero_link_color": {
                     "type": "string",
                     "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
-                    "description": "CTA button color variant. Maps to Bootstrap button classes, rendered per the site's theme palette (not literal colors):\n\n- `primary` (default theme color)\n\n- `info` (blue)\n\n- `success` (green)\n\n- `warning` (yellow)\n\n- `danger` (red)\n\n- `default` (neutral gray)\n\n- `secondary` (theme secondary)"
+                    "description": "CTA button color variant — attention level, not literal color. MUST be exactly one of: `primary`, `info`, `success`, `warning`, `danger`, `default`, `secondary`. Any other value (e.g. a hex `#ffffff`) is stored verbatim and rendered as a broken class like `btn-#ffffff` — BD does not validate server-side.\n\nChoose by attention level needed: `primary` (main CTA), `danger` (urgent/can't-miss), `warning` (attention), `success` (positive action), `info` (neutral-blue), `secondary` (theme secondary), `default` (low-emphasis gray). Actual rendered color comes from the site's theme palette."
                   },
                   "linked_post_type": {
                     "type": "string",

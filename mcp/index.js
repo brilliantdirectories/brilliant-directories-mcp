@@ -1299,6 +1299,30 @@ function sanitizeImageUrlsInArgs(toolName, args) {
   }
 }
 
+// Hero CTA button enum guard — BD concatenates these verbatim into Bootstrap
+// classes (btn-<hero_link_color>, <hero_link_size>) and does not validate
+// server-side. An agent passing `#ffffff` or `16` produces broken CSS classes
+// on the rendered page. Reject invalid values here with a clear error naming
+// the allowed set. Only applies to createWebPage / updateWebPage.
+// Mirrored byte-for-byte in Worker's `src/index.ts`. Keep in sync.
+const HERO_LINK_COLOR_VALUES = new Set(["primary", "info", "success", "warning", "danger", "default", "secondary"]);
+const HERO_LINK_SIZE_VALUES = new Set(["", "btn-lg", "btn-xl"]);
+const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
+function validateHeroEnumsInArgs(toolName, args) {
+  if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
+  if (args.hero_link_color !== undefined && args.hero_link_color !== null && args.hero_link_color !== "") {
+    if (!HERO_LINK_COLOR_VALUES.has(String(args.hero_link_color))) {
+      return `hero_link_color must be one of: primary, info, success, warning, danger, default, secondary (you sent: "${args.hero_link_color}"). Invalid values produce broken CSS classes like btn-${args.hero_link_color} — BD does not validate server-side.`;
+    }
+  }
+  if (args.hero_link_size !== undefined && args.hero_link_size !== null) {
+    if (!HERO_LINK_SIZE_VALUES.has(String(args.hero_link_size))) {
+      return `hero_link_size must be one of: "" (Normal), btn-lg (Large), btn-xl (Extra Large) (you sent: "${args.hero_link_size}"). Invalid values render as a broken class verbatim — BD does not validate server-side.`;
+    }
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
@@ -2040,6 +2064,13 @@ async function main() {
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
       sanitizeImageUrlsInArgs(name, args);
+      const heroEnumErr = validateHeroEnumsInArgs(name, args);
+      if (heroEnumErr) {
+        return {
+          content: [{ type: "text", text: heroEnumErr }],
+          isError: true,
+        };
+      }
 
       // EAV split: peel hero/EAV fields off updateWebPage args before the
       // parent update. Flushed via users_meta after the parent succeeds.
