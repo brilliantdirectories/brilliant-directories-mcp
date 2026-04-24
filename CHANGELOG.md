@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.3] - 2026-04-23
+
+### Changed — LANDSCAPE rule extended to inline body images
+
+Closed a gap in the corpus orientation rule. Previously "LANDSCAPE only" listed only feature/hero/cover images + multi-image album photos — inline `<img>` in `post_content` / `group_desc` body HTML were orientation-unspecified. An agent could rationalize placing a portrait image inside a 350px-wide floated container, which breaks text wrap in the article layout.
+
+Two concise edits to `mcp-instructions.md`:
+- Post-body formatting rule now explicitly says inline body images must be LANDSCAPE.
+- Orientation bullet in the Image URL rule lists inline body images alongside feature/hero/cover/album photos.
+
+Also replaced "Square is acceptable only for profile_photo / logo" with "profile_photo / logo are headshots/icons — orientation rule doesn't apply" to eliminate the "square" wording agents were misreading as "vertical" in field-test outputs.
+
+### Internal
+
+- Docs-only. Worker picks up on next raw-GitHub cache TTL (~5 min) since it fetches corpus live. No Worker redeploy needed.
+
 ## [6.40.2] - 2026-04-23
 
 ### Fixed — belt-and-suspenders defense against query-string image URLs
