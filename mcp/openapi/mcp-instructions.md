@@ -4,6 +4,8 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 
 **Missing tool you'd expect (e.g. `createForm`, `createMenu`, `createWidget`, `listSingleImagePosts`)?** The API key doesn't have that endpoint enabled. Tell the user: *"In BD admin → Developer Hub → your API key → edit Permissions → enable the resource. Works immediately."* Don't work around the gap (e.g. writing to `users_meta` directly).
 
+**Table names ≠ endpoint names in some cases.** BD's `users_data` table is exposed via `/api/v2/user/*` (singular). Use the tool names from your catalog (`getUser`, `listUsers`, etc.); do NOT construct BD URLs by hand from internal table names. The wrapper handles the table-to-endpoint translation for every internal probe; you should never need to.
+
 **Every write goes to a live production site - there is no staging mode, no sandbox, no `?dry_run=1`.** Every create/update/delete takes effect immediately on the real public site. For bulk operations (many records, potentially destructive changes, schema-like edits) confirm intent with the user before executing.
 
 **Destructive actions are LAST RESORT - only when the user explicitly asks OR when no non-destructive path exists.** When a record exists but is wrong - content thin, wrong fields set, missing sections, bad styling - the fix is `update*`, NOT `delete*` then `create*`. Deleting a record BD can't cascade (users_meta orphans after `deleteWebPage`, subscription history after `deleteUser`, member links after `deleteSubCategory`) destroys history (revision timestamps, audit trails, inbound links that 404) and creates cleanup work. Update preserves all of it.

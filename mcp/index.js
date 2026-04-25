@@ -1645,6 +1645,21 @@ const SITE_NAMESPACE_TABLES = [
   { table: "subscription_types", field: "subscription_filename", ownIdField: "subscription_id", label: "membership plan" },
   { table: "users_data",         field: "filename",              ownIdField: "user_id",         label: "member profile" },
 ];
+
+// BD-table → REST-endpoint translation. BD's public REST API exposes some
+// tables under different path segments than the underlying SQL table name.
+// Verified live: `users_data` is `/api/v2/user/*`, NOT `/api/v2/users_data/*`
+// (which 404s). Any helper that builds `/api/v2/<table>/...` URLs MUST
+// translate via this map first. Wrapper-managed; agents never see it.
+//
+// One source of truth — add new mismatches here as BD adds tables/endpoints.
+// Tables NOT in the map default to using their literal name as the endpoint.
+const TABLE_TO_ENDPOINT = {
+  users_data: "user",
+};
+function _tableEndpoint(table) {
+  return TABLE_TO_ENDPOINT[table] || table;
+}
 const SLUG_AUTO_SUFFIX_MAX = 20;
 const SLUG_AUTO_SUFFIX_QUIET_THRESHOLD = 4; // suffixes 1-3 are silent; 4+ surfaces _slug_adjusted
 
@@ -1880,10 +1895,15 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
 /** Look up rows in one BD table whose `field` equals the slug. */
 async function _slugProbeTable(config, table, field, slug, limit) {
   try {
+    // BD-table → REST-endpoint translation (e.g. users_data → user). See
+    // TABLE_TO_ENDPOINT for the source of truth. Without this, the probe
+    // hits a non-existent path, falls into transient-failure handling,
+    // and lets cross-namespace collisions through silently.
+    const endpoint = _tableEndpoint(table);
     const result = await makeRequest(
       config,
       "GET",
-      `/api/v2/${table}/get`,
+      `/api/v2/${endpoint}/get`,
       { property: field, property_value: String(slug), property_operator: "=", limit: limit || 5 },
       null
     );

@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.53] - 2026-04-25
+
+### Fixed — `users_data` filename collision check was silently failing (HIGH)
+
+Claude's round-5 file-tests caught: `createWebPage filename="united-states/dallas/julie-hoang"` succeeded even though `user_id=29`'s public profile lives at exactly that URL. Live-reproduced and root-caused.
+
+**Root cause:** `_slugProbeTable` builds the BD URL as `/api/v2/${table}/get`, where `table` comes from `SITE_NAMESPACE_TABLES`. v6.40.42 added `users_data` to that table list, but BD's REST API exposes the `users_data` table at `/api/v2/user/*` (singular), NOT `/api/v2/users_data/*` (which 404s). Same shape as the v6.40.46 FK-guard fix — different code path. Probe got 404, fell into the "transient failure" branch, allowed the write through, surfaced a `_slug_probe_warning`. The collision was hidden behind a soft warning instead of being a hard reject.
+
+#### Fix
+
+Added `TABLE_TO_ENDPOINT` translation map and `_tableEndpoint(table)` helper. Single source of truth for BD's table-vs-endpoint name mismatches:
+
+```js
+const TABLE_TO_ENDPOINT = {
+  users_data: "user",
+};
+```
+
+`_slugProbeTable` now calls `_tableEndpoint(table)` before building the URL. Future BD endpoint mismatches just get added to this map. No more silent probe failures from name mismatches.
+
+### Added — corpus note clarifying table vs. endpoint names
+
+Added to `mcp-instructions.md`:
+
+> **Table names ≠ endpoint names in some cases.** BD's `users_data` table is exposed via `/api/v2/user/*` (singular). Use the tool names from your catalog (`getUser`, `listUsers`, etc.); do NOT construct BD URLs by hand from internal table names. The wrapper handles the table-to-endpoint translation for every internal probe; you should never need to.
+
+This protects against agents trying to construct BD URLs by table name in any natural-language path (rare but possible — agents sometimes hand-build curl examples in user-facing prose).
+
+### Verified live — `createWebPage` at user filename now rejects
+
+Pre-fix: write succeeded, returned `_slug_probe_warning: "Slug uniqueness could not be fully verified..."`. Post-fix: write rejects with the cross-namespace error pointing at `user_id=29`.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `TABLE_TO_ENDPOINT` map + `_tableEndpoint` helper added. `_slugProbeTable` URL-builder updated to use translated endpoint. ~10 lines net.
+- `mcp/openapi/mcp-instructions.md` — one corpus note added (~1 paragraph).
+
+### Note for future BD-side observation tracking
+
+Two existing-data anomalies Claude flagged from reading user records (NOT wrapper bugs):
+
+- Literal `top-level-category` string in some user `filename` fields — BD's slug generator appears to fall back to a placeholder when no real `profession_name` is set.
+- Quadruple-hyphen (`----`) in `filename_hidden` — BD's slug generator preserves the count of replaced characters instead of collapsing to a single hyphen.
+
+Both noted for the BD dev team but no wrapper action.
+
 ## [6.40.52] - 2026-04-25
 
 ### Changed — README + SKILL.md placeholder URLs use canonical `www.` form
