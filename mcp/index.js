@@ -1335,9 +1335,42 @@ function validatePathParamIds(toolPath, args) {
 // rgb()/rgba(), all-digit sizes like 16) before validateHeroEnumsInArgs
 // rejects anything still invalid. Only applies to createWebPage / updateWebPage.
 // Mirrored in Worker's `src/index.ts`. Keep in sync.
-const HERO_LINK_COLOR_VALUES = new Set(["primary", "info", "success", "warning", "danger", "default", "secondary"]);
-const HERO_LINK_SIZE_VALUES = new Set(["", "btn-lg", "btn-xl"]);
+// Hero/h1/h2 enum table — every enum-typed field on createWebPage /
+// updateWebPage that BD persists verbatim to users_meta and renders into CSS
+// classes or template logic. BD does NOT validate any of these server-side.
+// An invalid value (e.g. hero_alignment="flex-start", h1_font_weight="bold",
+// hero_column_width="13") gets stored as-is and breaks rendering — sometimes
+// silently, sometimes with broken CSS classes that look right but don't match
+// BD's stylesheet selectors. Fix: validate against the enum set BEFORE
+// forwarding to BD. Same lists as the spec — keep in sync if BD adds values.
+// Discrete-range fields from BD's admin UI dropdowns. Generated programmatically
+// to keep the table readable. Source of truth: BD admin form `<select>` options
+// for each field (verified live 2026-04-25).
+const HERO_PADDING_STEPS = Array.from({ length: 21 }, (_, i) => String(i * 10)); // 0..200 step 10
+const H1_FONT_SIZE_STEPS = Array.from({ length: 51 }, (_, i) => String(30 + i)); // 30..80 step 1
+const H2_FONT_SIZE_STEPS = Array.from({ length: 41 }, (_, i) => String(20 + i)); // 20..60 step 1
+const HERO_CONTENT_FONT_SIZE_STEPS = Array.from({ length: 21 }, (_, i) => String(10 + i)); // 10..30 step 1
+const HERO_ENUM_FIELDS = {
+  hero_link_color: ["primary", "info", "success", "warning", "danger", "default", "secondary"],
+  hero_link_size: ["", "btn-lg", "btn-xl"],
+  hero_link_target_blank: ["0", "1"],
+  hero_alignment: ["left", "center", "right"],
+  hero_column_width: ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  hero_background_image_size: ["mobile-ready", "standard"],
+  hero_hide_banner_ad: ["0", "1"],
+  hero_content_overlay_opacity: ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+  hero_top_padding: HERO_PADDING_STEPS,
+  hero_bottom_padding: HERO_PADDING_STEPS,
+  h1_font_size: H1_FONT_SIZE_STEPS,
+  h2_font_size: H2_FONT_SIZE_STEPS,
+  hero_content_font_size: HERO_CONTENT_FONT_SIZE_STEPS,
+  h1_font_weight: ["300", "400", "600", "800"],
+  h2_font_weight: ["300", "400", "600", "800"],
+};
+const HERO_LINK_COLOR_VALUES = new Set(HERO_ENUM_FIELDS.hero_link_color);
+const HERO_LINK_SIZE_VALUES = new Set(HERO_ENUM_FIELDS.hero_link_size);
 const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
+
 /** Coerce common agent mistakes before validate — BD builds `btn-${color}` + size class verbatim. */
 function sanitizeHeroCtaEnumsInArgs(toolName, args) {
   if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return;
@@ -1365,16 +1398,17 @@ function sanitizeHeroCtaEnumsInArgs(toolName, args) {
     }
   }
 }
+
 function validateHeroEnumsInArgs(toolName, args) {
   if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
-  if (args.hero_link_color !== undefined && args.hero_link_color !== null && args.hero_link_color !== "") {
-    if (!HERO_LINK_COLOR_VALUES.has(String(args.hero_link_color))) {
-      return `hero_link_color must be one of: primary, info, success, warning, danger, default, secondary (you sent: "${args.hero_link_color}"). Invalid values produce broken CSS classes like btn-${args.hero_link_color} — BD does not validate server-side.`;
-    }
-  }
-  if (args.hero_link_size !== undefined && args.hero_link_size !== null) {
-    if (!HERO_LINK_SIZE_VALUES.has(String(args.hero_link_size))) {
-      return `hero_link_size must be one of: "" (Normal), btn-lg (Large), btn-xl (Extra Large) (you sent: "${args.hero_link_size}"). Invalid values render as a broken class verbatim — BD does not validate server-side.`;
+  for (const [field, allowed] of Object.entries(HERO_ENUM_FIELDS)) {
+    const v = args[field];
+    if (v === undefined || v === null) continue;
+    // Empty string is allowed only if "" is in the enum (e.g. hero_link_size).
+    if (v === "" && !allowed.includes("")) continue;
+    const s = String(v);
+    if (!allowed.includes(s)) {
+      return `${field} must be one of: ${allowed.map((x) => `"${x}"`).join(", ")} (you sent: "${s}"). Invalid values are persisted verbatim — BD does not validate server-side, so the value renders as a broken CSS class or breaks the hero layout.`;
     }
   }
   return null;
@@ -2001,22 +2035,38 @@ async function main() {
         }
       }
 
-      // TRANSPORT STABILITY GUARD — auto-throttle heavy reads on USER_READ_TOOLS.
-      // When ANY include_* flag is true, each row balloons to ~5-10KB (nested
-      // schemas: subscription, services, photos, transactions, profession). At
-      // limit=50 a single response can exceed 300KB, which the MCP transport
-      // (stdio buffer, Streamable HTTP, SSE) intermittently truncates without
-      // a clean error — agents see silent timeouts. Cap at 25 when heavy
-      // includes are active. Adjustment, not rejection: agent always gets
-      // results; a `_throttled` warning in the response teaches it.
+      // TRANSPORT STABILITY GUARD — auto-throttle heavy reads.
+      //
+      // When ANY include_* flag is true, each row balloons (users: ~5-10KB
+      // with subscription/services/photos/transactions schemas; web pages:
+      // 14-41KB with content+code blobs). At limit=50 a single response can
+      // exceed 300KB-2MB, which the MCP transport (stdio buffer, Streamable
+      // HTTP, SSE) intermittently truncates without a clean error — agents
+      // see silent timeouts. Cap progressively and add a `_throttled` warning.
+      // Adjustment, not rejection: agent always gets results; the warning
+      // teaches them to paginate or drop heavy includes.
+      //
+      // Throttle tiers:
+      //   USER_READ_TOOLS + any include_* flag                → cap limit at 25
+      //   listWebPages + any include_* flag                   → cap limit at 25
+      //   listWebPages + include_content AND include_code     → cap limit at 10 (worst case — both heavy buckets)
       let _throttleWarning = null;
-      if (isUserReadTool && args && typeof args === "object") {
+      if (args && typeof args === "object") {
         const heavyActive = Object.values(includeFlags).some((v) => v === true || v === "1" || v === 1);
         const requested = Number(args.limit);
-        if (heavyActive && Number.isFinite(requested) && requested > 25) {
+        if (isUserReadTool && heavyActive && Number.isFinite(requested) && requested > 25) {
           _throttleWarning = `limit reduced from ${requested} to 25 because heavy include_* flag is set. To get more rows: (1) paginate with next_page, (2) drop include_* for a lean enumeration first then call getUser per-record for the few you need enriched, or (3) call without include_* and re-query specific user_ids individually.`;
           args.limit = 25;
           console.error(`[throttle] ${name}: ${_throttleWarning}`);
+        } else if (name === "listWebPages" && heavyActive && Number.isFinite(requested)) {
+          const bothHeavy = (includeFlags.include_content === true || includeFlags.include_content === "1" || includeFlags.include_content === 1) &&
+                            (includeFlags.include_code === true || includeFlags.include_code === "1" || includeFlags.include_code === 1);
+          const cap = bothHeavy ? 10 : 25;
+          if (requested > cap) {
+            _throttleWarning = `limit reduced from ${requested} to ${cap} because ${bothHeavy ? "BOTH include_content AND include_code are set (heaviest combo — pages can be 30-40KB each)" : "a heavy include_* flag is set"}. To get more rows: (1) paginate with next_page, (2) drop include_* for a lean enumeration first then call getWebPage per-record for the few you need enriched, or (3) split the read — separate calls with include_content=true and include_code=true.`;
+            args.limit = cap;
+            console.error(`[throttle] ${name}: ${_throttleWarning}`);
+          }
         }
       }
 
@@ -2165,6 +2215,41 @@ async function main() {
           content: [{ type: "text", text: pathIdErr }],
           isError: true,
         };
+      }
+
+      // Duplicate-filename guard for createWebPage. BD does NOT enforce
+      // unique `filename` on `list_seo` — two creates with the same slug
+      // both succeed and the public URL renders one of them non-deterministically
+      // (silent destructive: agent thinks the new page is live but it may
+      // be the OLD one shadowing it). Pre-check via listWebPages — one
+      // small filtered query — and reject if a row exists. Bypass with
+      // `force_duplicate_filename=true` for the rare legitimate case
+      // (e.g. intentional shadow page, internal fork).
+      if (name === "createWebPage" && args && typeof args === "object" && args.filename) {
+        const force = args.force_duplicate_filename === true || args.force_duplicate_filename === "1" || args.force_duplicate_filename === 1;
+        if (force) {
+          delete args.force_duplicate_filename; // never forward to BD
+        } else {
+          try {
+            const dupCheck = await makeRequest(
+              config,
+              "GET",
+              "/api/v2/list_seo/get",
+              { property: "filename", property_value: String(args.filename), property_operator: "=", limit: 1 },
+              null
+            );
+            const rows = dupCheck && dupCheck.body && Array.isArray(dupCheck.body.message) ? dupCheck.body.message : [];
+            const existing = rows.find((r) => r && String(r.filename) === String(args.filename));
+            if (existing) {
+              return {
+                content: [{ type: "text", text: `filename '${args.filename}' already exists at seo_id=${existing.seo_id}. Use updateWebPage(seo_id=${existing.seo_id}, ...) to modify, or pick a unique slug. Bypass with force_duplicate_filename=true if you genuinely need a duplicate (rare).` }],
+                isError: true,
+              };
+            }
+          } catch (err) {
+            console.error(`[createWebPage] duplicate-filename pre-check failed (${err && err.message ? err.message : "unknown"}); proceeding with create — caller should manually verify uniqueness post-create.`);
+          }
+        }
       }
 
       // EAV split: peel hero/EAV fields off updateWebPage args before the

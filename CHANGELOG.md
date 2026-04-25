@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.22] - 2026-04-25
+
+### Added — extend hero enum validator + duplicate-filename guard + listWebPages throttle
+
+Three preemptive hardening fixes from Claude's stress-test report. All apply to both npm + Worker, both verified locally before publish.
+
+#### 1. Hero enum validator extended from 2 → 15 fields (Bug 6)
+
+v6.40.10 only validated `hero_link_color` and `hero_link_size`. Stress tests confirmed BD persists invalid values verbatim across all hero/h1/h2 enum-typed fields and renders them as broken CSS or layout. Now validates all 15:
+
+| Field | Valid set |
+|---|---|
+| `hero_link_color` | primary / info / success / warning / danger / default / secondary |
+| `hero_link_size` | "" / btn-lg / btn-xl |
+| `hero_link_target_blank` | 0 / 1 |
+| `hero_alignment` | left / center / right |
+| `hero_column_width` | 3..12 (Bootstrap col-md-N) |
+| `hero_background_image_size` | mobile-ready / standard |
+| `hero_hide_banner_ad` | 0 / 1 |
+| `hero_content_overlay_opacity` | 0.0..0.9, 1 |
+| `hero_top_padding`, `hero_bottom_padding` | 0..200 step 10 (BD admin dropdown) |
+| `h1_font_size` | 30..80 step 1 (BD admin dropdown) |
+| `h2_font_size` | 20..60 step 1 |
+| `hero_content_font_size` | 10..30 step 1 |
+| `h1_font_weight`, `h2_font_weight` | 300 / 400 / 600 / 800 (Google Font weights loaded) |
+
+NOT touched (free-form, customizable): `h1_font_color`, `h2_font_color`, `hero_content_font_color`, `hero_content_overlay_color`, `hero_image`, `hero_link_text`, `hero_link_url`, `hero_section_content`, `hero_link_url`. Hex/rgb colors and custom URLs work as expected.
+
+#### 2. `createWebPage` filename uniqueness pre-check (Bug 4)
+
+BD doesn't enforce unique `filename` on `list_seo` — two creates with the same slug both succeed and the public URL renders one of them non-deterministically (silent destructive). Wrapper now auto-pre-checks `listWebPages property=filename property_value=<slug> property_operator==` before forwarding `createWebPage` to BD. If a row exists, rejects with seo_id of the existing record so the agent can `updateWebPage` instead. Bypass with explicit `force_duplicate_filename=true` for the rare legitimate case (intentional shadow page, internal fork).
+
+#### 3. `listWebPages` heavy-include throttle (Bug 1)
+
+Mirrors v6.40.13's user-tool throttle pattern. `listWebPages` rows can be 14-41KB each with `include_content=true` and/or `include_code=true`. At limit=50+ that's a 1-2MB response that the MCP transport intermittently truncates without a clean error.
+
+Tiered cap:
+- ANY `include_*` flag → cap 25
+- BOTH `include_content` AND `include_code` → cap 10 (worst case)
+
+Adjustment, not rejection — agent always gets results; `_throttled` warning attached to the response teaches them to paginate or split the read.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `HERO_ENUM_FIELDS` table generalized to drive the validator (one loop, 15 fields). Padding / font-size ranges generated programmatically. Filename pre-check added inline in tool dispatch. Throttle tier extended. Both files mirrored byte-for-byte. Smoke-tested locally on 4 enum-reject cases + 1 throttle case before publish.
+
 ## [6.40.21] - 2026-04-25
 
 ### Added — `validatePathParamIds` rejects `id <= 0` on every numeric-PK GET (CRITICAL — data leak fix)
