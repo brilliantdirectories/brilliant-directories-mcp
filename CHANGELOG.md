@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.41] - 2026-04-25
+
+### Fixed — three more findings from external audit Phase 3
+
+#### Datetime field truncation (HIGH — silent data corruption)
+
+BD's datetime columns (`date_updated`, `signup_date`, `last_login`, etc.) are 14-char varchars expecting `YYYYMMDDHHmmss`. BD does NOT validate format server-side — it silently truncates anything longer to fit the column. An agent passing ISO `"2026-04-25 10:00:00"` got `"2026-04-25 10:"` stored, breaking admin-UI sort and cache invalidation. The agent receives `status:success` and has no signal anything went wrong.
+
+Fix: `validateDatetime14InArgs` runs against any of 9 known datetime fields (`date_updated`, `date_added`, `date_created`, `date`, `signup_date`, `last_login`, `post_live_date`, `post_start_date`, `post_expire_date`). Format must match `^\d{14}$`; anything else is rejected upfront with the bad value echoed. 20 edge cases verified.
+
+#### Empty-filter result normalized class-wide (MEDIUM)
+
+The "list_seo not found" → empty array fix from earlier only covered `getWebPage` / `listWebPages`. BD returns the same misleading `status:error, message:"<table> not found"` for empty filter results on every list endpoint and every single-record miss across the catalog. Agents misread it as a system-level table-missing failure and abort retries.
+
+Fix generalized: any list*/search* tool returning `<anything> not found` is normalized to `status:success, message:[], total:0`. Any get* tool returning the same is rephrased to `No <table> record with <pk>=N` so it's clear the record is missing, not the table.
+
+#### Negative lead_price (MEDIUM)
+
+`updateTopCategory` / `updateSubCategory` / `createMembershipPlan` etc. accepted negative `lead_price` values silently. BD's billing engine wasn't designed for negative prices; behavior is undefined. Now rejected upfront with `lead_price must be >= 0`.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `validateDatetime14InArgs` + `lead_price` check wired into the dispatch path between path-param ID validation and content_active auto-force. Empty-filter handler generalized via `name.startsWith("list"|"search"|"get")`.
+
 ## [6.40.40] - 2026-04-25
 
 ### Fixed — cross-table users_meta hang + doc drift sweep from external audit

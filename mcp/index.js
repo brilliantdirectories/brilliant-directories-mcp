@@ -1446,6 +1446,39 @@ function validateRgbColorsInArgs(toolName, args) {
 }
 
 // ---------------------------------------------------------------------------
+// YYYYMMDDHHmmss datetime field validator
+// ---------------------------------------------------------------------------
+//
+// BD's datetime columns (`date_updated`, `signup_date`, `last_login`, etc.)
+// are 14-char varchars expecting `YYYYMMDDHHmmss` packed digits. BD does NOT
+// validate format server-side — it silently truncates anything longer to fit
+// the column, producing garbage like "2026-04-25 10:" from the agent's
+// "2026-04-25 10:00:00" ISO input. Admin UI's "Last Update" sort then breaks
+// because the truncated value isn't sortable as a real timestamp.
+//
+// The set of fields below is the union of all BD endpoints declaring
+// `Format: YYYYMMDDHHmmss` in their parameter descriptions. Validating only
+// when the field is provided (these are usually optional / auto-maintained;
+// agents pass them for migration/backfill).
+const DATETIME_14_FIELDS = new Set([
+  "date_updated", "date_added", "date_created", "date",
+  "signup_date", "last_login",
+  "post_live_date", "post_start_date", "post_expire_date",
+]);
+function validateDatetime14InArgs(args) {
+  if (!args || typeof args !== "object") return null;
+  for (const field of DATETIME_14_FIELDS) {
+    const v = args[field];
+    if (v === undefined || v === null || v === "") continue;
+    const s = String(v);
+    if (!/^\d{14}$/.test(s)) {
+      return `${field} must be 14 digits in YYYYMMDDHHmmss format (e.g. "20260425143022"). Got: "${s}". BD does NOT validate this server-side — it silently truncates longer values to fit the 14-char column, producing corrupted timestamps that break admin-UI sort and cache invalidation.`;
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Slug uniqueness — universal helper
 // ---------------------------------------------------------------------------
 //
@@ -2567,6 +2600,28 @@ async function main() {
         };
       }
 
+      // 14-digit datetime field validator: BD silently truncates wrong-format
+      // values to fit the column, corrupting timestamps. Reject upfront.
+      const dtErr = validateDatetime14InArgs(args);
+      if (dtErr) {
+        return {
+          content: [{ type: "text", text: dtErr }],
+          isError: true,
+        };
+      }
+
+      // Negative lead_price validator: BD's billing engine wasn't designed
+      // for negative prices. Reject upfront.
+      if (args && typeof args === "object" && args.lead_price !== undefined && args.lead_price !== null && args.lead_price !== "") {
+        const lp = Number(args.lead_price);
+        if (Number.isFinite(lp) && lp < 0) {
+          return {
+            content: [{ type: "text", text: `lead_price must be >= 0 (got ${args.lead_price}). BD's billing engine has undefined behavior on negative prices.` }],
+            isError: true,
+          };
+        }
+      }
+
       // Auto-force content_active=1 on createWebPage / updateWebPage.
       // BD's content_active has only one valid value (1 = live); 0 doesn't
       // exist server-side. Always overwrite — even if an agent or old client
@@ -2676,28 +2731,40 @@ async function main() {
         }
       }
 
-      // Rewrite BD's misleading "list_seo not found" 404 into something
-      // agents can act on. BD returns this string for both single-record
-      // misses and empty filtered lists, which agents misread as "the
-      // list_seo TABLE is missing" (a system-level failure) and abort
-      // retries. Distinguish + rephrase:
-      //   - getWebPage with a non-existent seo_id → "No list_seo record
-      //     with seo_id=N" (still error; clear that the record is the
-      //     thing missing, not the table).
-      //   - listWebPages with a filter that matches nothing → status
-      //     "success" with empty message array + total=0 (success because
-      //     the query worked correctly, it just found nothing).
-      if (result.body && typeof result.body === "object" && result.body.status === "error" && result.body.message === "list_seo not found") {
-        if (name === "getWebPage") {
-          const id = args && args.seo_id !== undefined ? args.seo_id : "?";
-          result.body.message = `No list_seo record with seo_id=${id}.`;
-        } else if (name === "listWebPages") {
-          // Empty filter result is success, not error.
+      // Rewrite BD's misleading "<table> not found" 404s class-wide. BD
+      // returns this string for both single-record misses (real 404) and
+      // empty filtered lists (where the query worked, just matched 0 rows).
+      // Agents misread it as a system-level "the table is missing" failure.
+      // Distinguish + rephrase:
+      //   - get*  → keep status:error, rephrase to "No <table> record with
+      //     <pk>=N" so it's clear the record is missing, not the table.
+      //   - list*/search* → empty filter result is success, not error.
+      //     Normalize to status:success, message:[], total:0.
+      if (
+        result.body &&
+        typeof result.body === "object" &&
+        result.body.status === "error" &&
+        typeof result.body.message === "string" &&
+        / not found$/.test(result.body.message)
+      ) {
+        const isList = typeof name === "string" && (name.startsWith("list") || name.startsWith("search"));
+        const isGet = typeof name === "string" && name.startsWith("get");
+        if (isList) {
           result.body.status = "success";
           result.body.message = [];
           result.body.total = result.body.total || 0;
           result.body.current_page = result.body.current_page || 1;
           result.body.total_pages = result.body.total_pages || 0;
+        } else if (isGet) {
+          // Find the path-param value the agent sent so the error names it.
+          const pkMatch = (toolDef.path || "").match(/\{([^}]+)\}/);
+          const pkName = pkMatch ? pkMatch[1] : null;
+          const pkVal = pkName && args && args[pkName] !== undefined ? args[pkName] : "?";
+          const tableMatch = result.body.message.match(/^(.+) not found$/);
+          const table = tableMatch ? tableMatch[1] : "record";
+          result.body.message = pkName
+            ? `No ${table} record with ${pkName}=${pkVal}.`
+            : `No ${table} record found.`;
         }
       }
 
