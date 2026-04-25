@@ -1519,10 +1519,12 @@ function _normalizeSlug(s) {
  *      BOM — invisible chars NOT covered by \s).
  *  (b) backslash and URL-reserved/structural chars (?, #, &, %, <, >, ")
  *      that always break BD routing.
- *  (c) forward slash UNLESS allowSlash=true. Web pages and posts support
- *      nested-path slugs ("parent/child", "posttype/post-slug"); categories
- *      and plans must be single-segment.
- *  Returns null on valid, error-string on invalid. */
+ *  (c) forward slash unless allowSlash=true. When slash IS allowed, the
+ *      path structure is validated: no leading or trailing slash, no
+ *      empty segments (double slash). Caller must pre-coerce to string;
+ *      non-string handling lives at the call site for clearer errors.
+ *  Emoji and unicode (CJK, Cyrillic, Arabic, etc.) are deliberately allowed
+ *  — BD supports them in URLs. */
 function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (typeof slug !== "string") return null;
   if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
@@ -1531,8 +1533,21 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (/[\\?#&%<>"]/.test(slug)) {
     return `${fieldLabel} '${slug}' contains URL-reserved characters (one of \\?#&%<>"), which are not allowed in BD URLs. Use only letters, digits, hyphens, underscores, and dots.`;
   }
-  if (!allowSlash && slug.includes("/")) {
-    return `${fieldLabel} '${slug}' contains a slash, which is not allowed for this resource (categories and plans must be single-segment slugs). Use hyphens instead.`;
+  if (slug.includes("/")) {
+    if (!allowSlash) {
+      return `${fieldLabel} '${slug}' contains a slash, which is not allowed for this resource (categories and plans must be single-segment slugs). Use hyphens instead.`;
+    }
+    // Slash IS allowed (web pages, posts) — validate path structure: no
+    // leading slash, no trailing slash, no empty segments (double slash).
+    if (slug.startsWith("/")) {
+      return `${fieldLabel} '${slug}' starts with a slash. Slugs cannot have a leading slash — write 'parent/child' not '/parent/child'.`;
+    }
+    if (slug.endsWith("/")) {
+      return `${fieldLabel} '${slug}' ends with a slash. Slugs cannot have a trailing slash — write 'parent/child' not 'parent/child/'.`;
+    }
+    if (slug.includes("//")) {
+      return `${fieldLabel} '${slug}' contains a double slash. Each path segment must be non-empty — write 'parent/child' not 'parent//child'.`;
+    }
   }
   return null;
 }
@@ -1572,6 +1587,11 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   const proposed = args[cfg.slugField];
   // Field absent — agent didn't pass it. No-op (let BD do whatever it does).
   if (proposed === undefined || proposed === null) return null;
+  // Type check: must be a string. Without this, an array silently coerces
+  // to "a,b" and a number to "12345" — both store wrong data without warning.
+  if (typeof proposed !== "string") {
+    return { ok: false, error: `${cfg.slugField} must be a string (got ${Array.isArray(proposed) ? "array" : typeof proposed}). Pass the slug as a plain string (e.g. "my-page").` };
+  }
   // Empty string — only valid for resources where allowEmpty=true (membership
   // plans). For everything else (web pages, categories, posts) the slug is
   // required and an empty string is a hard reject.
@@ -1580,9 +1600,9 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     return { ok: false, error: `${cfg.slugField} is required and cannot be empty for ${toolName}.` };
   }
 
-  // Format validation: reject whitespace/invisible/URL-reserved chars
-  // (and slash when not allowed) before any network work.
-  const formatErr = _validateSlugFormat(String(proposed), cfg.slugField, cfg.allowSlash);
+  // Format validation: reject whitespace/invisible/URL-reserved chars,
+  // 4-byte chars, and bad slash placement before any network work.
+  const formatErr = _validateSlugFormat(proposed, cfg.slugField, cfg.allowSlash);
   if (formatErr) return { ok: false, error: formatErr };
 
   const ownId = cfg.ownIdField && args[cfg.ownIdField] !== undefined && args[cfg.ownIdField] !== null

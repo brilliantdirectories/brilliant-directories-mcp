@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.39] - 2026-04-25
+
+### Fixed — three more slug-helper holes from stress testing
+
+Stress-tested v6.40.38 with 45 attack vectors. Three real bugs found.
+
+#### 1. Slash-position validation (HIGH — bad URLs slipped through)
+
+v6.40.38 only checked whether a slash was present, not its placement. So `"/parent"` (leading), `"parent/"` (trailing), and `"parent//child"` (empty segment / double slash) all passed for web pages and posts. All produce broken BD URLs. Added structural checks: when slash IS allowed, it cannot be at the start, end, or appear consecutively.
+
+#### 2. Non-string types silently coerced (HIGH — wrong data stored)
+
+`createWebPage filename=["a","b"]` would silently coerce to the string `"a,b"` via `String(proposed)` at the call site, then proceed to probe and create. Same for numbers (`12345` → `"12345"`), booleans (`true` → `"true"`), and objects (`{x:1}` → `"[object Object]"`). All produce wrong data in BD without any warning to the agent.
+
+Fixed at the call site: `typeof proposed !== "string"` now hard-rejects with a clear type error before any coercion happens. The validator's input is still typed as string for clarity.
+
+#### 3. Reconsidered: emoji + 4-byte unicode are deliberately allowed
+
+I initially flagged emoji (`page-🎯`) as a 4-byte UTF-8 char that BD's `utf8` (3-byte) database can't store and rejected them. **Reverted** — BD does support emoji in URLs (verified by user). The validator now allows the full unicode range; only invisible chars and structural characters are blocked.
+
+### Verified — 45 edge cases
+
+Slash placement: `/`, `/parent`, `parent/`, `a//b`, `a///b`, `/blog/post`, `gallery/` all reject with specific error messages. Non-string types: array, number, bool, object all reject. Valid nested paths: `parent/child`, `a/b/c`, `blog-2024/article-1`, `中文/page` all pass. Emoji: `page-🎯-test`, `🚀`, `premium-⭐` all pass. Unicode: CJK, Cyrillic, Arabic all pass.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. ~30 lines net change. Slash structural validation added inside the `slug.includes("/")` branch; non-string check added at call site in `reserveSiteUrlSlug`.
+
 ## [6.40.38] - 2026-04-25
 
 ### Changed — per-tool slash policy + per-tool empty-string policy
