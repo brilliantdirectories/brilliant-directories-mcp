@@ -110,7 +110,13 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 
 ### 🛠️ Advanced config block (requires Node.js install)
 
+> **STEP 1 — Install Node.js BEFORE pasting the config below.** The Advanced path runs an `npx` command on your machine. If Node.js isn't installed, you'll get `spawn npx ENOENT` and the AI will show "no MCP servers" with no helpful error. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> — click the green "LTS" button, double-click the downloaded file, click Next through every prompt (defaults are correct). **Reboot your computer after install** — Windows needs the restart for Node to be available to your AI app.
+>
+> Verify Node works: open Command Prompt (Windows: `Win+R` → type `cmd` → Enter) or Terminal (Mac), then run `node --version`. Should print `v18.x` or higher. If it says "command not found", Node didn't install — try again.
+
 > **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version on every agent launch. We ship frequent updates; pinning `@latest` keeps your agent on the freshest guardrails.
+
+**STEP 2 — Paste this config:**
 
 ```json
 {
@@ -128,6 +134,8 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 }
 ```
 
+**STEP 3 — Fully quit the AI app, then reopen.** On Windows, closing the window with the X button keeps the app running in the system tray (bottom-right corner of taskbar). Right-click the app's tray icon → **Quit**. Then reopen. The AI loads MCP servers only at fresh launch — without a true quit, it keeps the old config.
+
 ---
 
 ### Claude Desktop
@@ -141,6 +149,8 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 > **After initial connection, fully quit and reopen the app after editing the config.**
 >
 > Claude loads MCP servers only at app launch.
+
+> ⚠️ **Windows users — install Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>, not the Microsoft Store.** The Microsoft Store version puts your config in a sandboxed location that can silently reject the Easy (hosted) config with "not valid MCP server configurations." The direct .exe install from `claude.ai/download` doesn't have this issue and is the version we test against.
 
 **Steps (no terminal):**
 
@@ -710,7 +720,8 @@ Logs every API request and response to stderr (your API key is automatically red
   - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
   - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
   - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
-- **`npx: command not found`** — Node.js isn't installed. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick LTS).
+- **`npx: command not found` OR `spawn npx ENOENT`** — Node.js isn't installed (or installed but not on your system PATH). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick the green LTS button). **Reboot Windows after install** — without a reboot, your AI app won't see the new PATH. Verify with `node --version` in Command Prompt; should print `v18.x` or higher.
+- **"not valid MCP server configurations" (Windows, Microsoft Store Claude Desktop)** — the Microsoft Store version of Claude Desktop sandboxes the config and may reject the Easy (hosted) config syntax. **Fix:** uninstall the Microsoft Store version, then install the direct .exe from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>. The direct .exe accepts both Easy and Advanced configs without sandbox issues.
 
 ---
 

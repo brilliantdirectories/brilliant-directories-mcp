@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.16] - 2026-04-24
+
+### Changed — Windows setup docs hardened after non-technical user struggled with Advanced path
+
+A non-technical Windows user spent hours stuck between two unrelated failures: hosted config rejected by the Microsoft Store version of Claude Desktop (sandboxed, returns "not valid MCP server configurations"), then local/Advanced config failed because Node.js wasn't actually installed. Both failures looked identical to the user — Claude Desktop just shows "no MCP servers." Three doc gaps surfaced:
+
+1. **Advanced section assumed users would notice the "(requires Node.js install)" parenthetical** and act on it. They don't. Now restructured into explicit STEP 1 (install Node + reboot + verify with `node --version`), STEP 2 (paste config), STEP 3 (fully quit via tray icon, not X).
+2. **No Microsoft Store warning** for Claude Desktop on Windows. The MS Store sandbox quietly rejects the Easy/hosted config. Added a one-line warning under Claude Desktop pointing Windows users to the direct .exe at `claude.ai/download`.
+3. **Troubleshooting section's `npx: command not found` line didn't cover the Windows-specific `spawn npx ENOENT` error message** users actually see in logs. Added the Windows error text + the reboot step. Also added a new troubleshooting line for the "not valid MCP server configurations" error pointing to the .exe install fix.
+
+### Internal
+
+- `README.md` (+ mirror at `mcp/README.md` for npm tarball) — three additions, all in existing sections, no new top-level structure. Boomer-friendly tone preserved.
+
 ## [6.40.15] - 2026-04-24
 
 ### Changed — close the `seo_type=content` escape hatch on category SEO pages
