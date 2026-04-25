@@ -2262,6 +2262,15 @@ async function main() {
       // passes a different value, we coerce to 1 so the write always lands.
       // Removed from the input schema in v6.40.30 so agents don't see/think
       // about the field at all.
+      //
+      // NOTE: date_updated auto-defaulting was attempted in v6.40.30 (UTC)
+      // and reverted in v6.40.31 — UTC produces wrong "Last Update" display
+      // for non-UTC sites. Doing it correctly requires resolving the site's
+      // timezone via getSiteInfo and is now scoped as a separate project
+      // alongside other system-internal timestamps across all BD resources.
+      // See KNOWN-SERVER-BUGS.md "TODO — Wrapper-managed system timestamps"
+      // section. Until that ships, agents pass `date_updated` themselves
+      // (corpus already requires it).
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         args.content_active = 1; // unconditional overwrite — never use ??= or only-if-unset patterns here
       }

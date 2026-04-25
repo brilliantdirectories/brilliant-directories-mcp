@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.31] - 2026-04-25
+
+### Reverted — `date_updated` auto-defaulting (v6.40.30 was UTC-only, wrong)
+
+v6.40.30 added an auto-defaulter for `date_updated` on `createWebPage` / `updateWebPage` that used UTC. That's wrong for any site outside UTC — BD's admin-UI "Last Update" display would show times shifted from local. The correct implementation needs to resolve the site's timezone via `getSiteInfo.timezone` (returns IANA strings like `America/Los_Angeles`) and format the timestamp in that zone.
+
+Reverted the UTC defaulter. Agents pass `date_updated` themselves again (matches behavior pre-v6.40.30; corpus already documents it as required). `content_active=1` auto-force from v6.40.30 stays — that one had no timezone dimension.
+
+### Deferred — full system-timestamp wrapper-management project
+
+Triaging the right scope for "auto-default every system-internal timestamp across every BD resource" turned up ~25 resource families that need individual probing (which datetime field is system-internal vs business-meaning). Doing it off the cuff during stress-test triage would risk mis-categorizing fields and silently corrupting timestamps.
+
+Parked as a dedicated project in `KNOWN-SERVER-BUGS.md` under "TODO — Wrapper-managed system timestamps". The plan there names the pattern, the resource families to probe, the per-family work, and the smoke-test discipline. Pick up cleanly when stress-testing closes.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `date_updated` defaulter block removed; comment block added pointing at the deferred project. `content_active=1` auto-force preserved.
+- `KNOWN-SERVER-BUGS.md` — new "TODO — Wrapper-managed system timestamps" section at the bottom with the deferred plan.
+
 ## [6.40.30] - 2026-04-25
 
 ### Changed — `content_active` is now wrapper-managed; removed from agent surface
