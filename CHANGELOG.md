@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.44] - 2026-04-25
+
+### Final batch from external audit Phases 3-7
+
+#### FK + duplicate-pair guard on createMemberSubCategoryLink (HIGH)
+
+BD silently created orphan `rel_services` rows pointing at nonexistent `user_id` or `service_id`, AND allowed duplicate `(user_id, service_id)` pairs which double-count members in any "show this user's services" query. Pre-checks now run in parallel: `getUser`, `getSubCategory`, and `listMemberSubCategoryLinks` filtered to the user — single round-trip of latency. Reject upfront with specific errors.
+
+#### Filter-value SQL-injection-shape guard (HIGH)
+
+BD's filter parser silently DROPS `property_value` matching SQL-injection patterns and returns the FULL unfiltered table — same data-leak class as path-param `id=-1`. Verified live: `' OR 1=1--` returned all 26 rows on a 1-row-expected query. Guard rejects only the canonical SQL-injection patterns (`OR 1=1`, `; DROP`, `UNION SELECT`, `-- ` followed by content, `/* */` comments). Plain apostrophes (`O'Brien`, `Bob's Burgers`) pass — those are legitimate filter values, and BD's silent-drop on them produces a visible empty-result failure path the agent can recover from.
+
+#### 0/1 boolean-int field validator
+
+47 BD fields declare `enum: [0, 1]` in the schema but BD accepts arbitrary integers verbatim (verified live: `specialty=42` stored as-is). Front-end logic that branches on `=== 1` then silently treats 42 as truthy, and analytics counting `= 1` rows miss it. List auto-derived from spec; manually filtered against user-confirmed semantics:
+- Excluded `active` (multi-value 1-6 on users)
+- Excluded `status` on createMultiImagePostPhoto (now wrapper-managed, always `1`)
+- Excluded `content_layout` (empty OR `1` only — spec enum tightened to `[1]`)
+- Excluded `post_status` / `group_status` (BD admin UI exposes a third value `3`=Pending Approval — spec enums updated to `[0, 1, 3]`)
+
+#### Path-traversal slug guard
+
+`_validateSlugFormat` now rejects `.` and `..` path segments anywhere in slugs across all slug-bearing tools. BD URLs don't legitimately use dot-segments; allowing them is a security footgun (`../../etc/passwd` was previously stored verbatim).
+
+#### Auto-force `status=1` on createMultiImagePostPhoto
+
+BD's `users_portfolio` table only ever uses `status=1` for album/gallery photos. Wrapper now forces `status=1` unconditionally and the field is removed from the input schema — same pattern as `content_active=1` on createWebPage.
+
+#### Spec corrections
+
+- `post_status`, `group_status` enums: `[0, 1]` → `[0, 1, 3]` with description noting `3` = Pending Approval (rare, set when site admin requires manual moderation).
+- `content_layout` enum: `[0, 1]` → `[1]` only. BD treats absent/empty as default; `0` was never a real value.
+- `signature` (createEmailTemplate): added description noting `0` is the default and `1` should only be set when user explicitly asks to include the site signature.
+- `status` field removed from createMultiImagePostPhoto input schema.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. New helpers: `validateFilterValuesInArgs`, `validateBooleanIntInArgs`. `_validateSlugFormat` extended with dot-segment rejection. `BOOLEAN_INT_FIELDS` covers 47 fields across the BD surface; future fields auto-detect via the spec walker.
+
 ## [6.40.43] - 2026-04-25
 
 ### Added — 4 missing membership-plan price fields to money validator

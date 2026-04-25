@@ -3481,9 +3481,10 @@
                     "type": "integer",
                     "enum": [
                       0,
-                      1
+                      1,
+                      3
                     ],
-                    "description": "0=Draft, 1=Published"
+                    "description": "0=Not Published, 1=Published, 3=Pending Approval (rare — set when site admin requires manual moderation before posts go live)."
                   },
                   "post_price": {
                     "type": "number"
@@ -3958,8 +3959,10 @@
                     "type": "integer",
                     "enum": [
                       0,
-                      1
-                    ]
+                      1,
+                      3
+                    ],
+                    "description": "0=Not Published, 1=Published, 3=Pending Approval (rare — set when site admin requires manual moderation before albums go live)."
                   },
                   "auto_image_import": {
                     "type": "integer",
@@ -4241,13 +4244,6 @@
                   "original_image_url": {
                     "type": "string",
                     "description": "Image URL for this photo row. **LANDSCAPE only — never portrait/vertical. Bare URL — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Note: `createMultiImagePostPhoto` does NOT import externals — records the URL as-is. For external URLs that must survive source outages, use `createMultiImagePost`'s bulk `post_image` CSV with `auto_image_import=1` instead."
-                  },
-                  "status": {
-                    "type": "integer",
-                    "enum": [
-                      0,
-                      1
-                    ]
                   }
                 }
               }
@@ -4266,7 +4262,7 @@
             }
           }
         },
-        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Use when:** adding ONE image to an existing album where the image is **already hosted on the BD site** (or hotlinking is acceptable). The parent album must exist (call `createMultiImagePost` first to get `group_id`).\n\n**Does NOT import external URLs.** This endpoint has no `auto_image_import` field — the URL is recorded as-is. The parent album's `auto_image_import=1` applies only to photos passed via the parent's bulk `post_image` CSV at create time; it does NOT cascade to subsequent `createMultiImagePostPhoto` calls. For external URLs that must survive source outages (e.g. Pexels, stock sites), do NOT use this endpoint — create a NEW album via `createMultiImagePost` with a bulk CSV `post_image` + `auto_image_import=1`, and delete the old album.\n\n**Required:** `user_id`, `group_id`.\n\n**Parameter interactions:**\n\n- `group_id` - parent album group (from `createMultiImagePost` or `listMultiImagePosts`)\n\n- `original_image_url` - full URL of the image; must already be publicly accessible; stored verbatim (no fetch)\n\n- `status`: `0`=Hidden, `1`=Active\n\n**See also:** `createMultiImagePost` (the correct path for external URLs), `updateMultiImagePostPhoto` (modify title/order only — cannot re-import).\n\n"
+        "description": "Create a new portfoliophoto record. Writes live data.\n\n**Use when:** adding ONE image to an existing album where the image is **already hosted on the BD site** (or hotlinking is acceptable). The parent album must exist (call `createMultiImagePost` first to get `group_id`).\n\n**Does NOT import external URLs.** This endpoint has no `auto_image_import` field — the URL is recorded as-is. The parent album's `auto_image_import=1` applies only to photos passed via the parent's bulk `post_image` CSV at create time; it does NOT cascade to subsequent `createMultiImagePostPhoto` calls. For external URLs that must survive source outages (e.g. Pexels, stock sites), do NOT use this endpoint — create a NEW album via `createMultiImagePost` with a bulk CSV `post_image` + `auto_image_import=1`, and delete the old album.\n\n**Required:** `user_id`, `group_id`.\n\n**Parameter interactions:**\n\n- `group_id` - parent album group (from `createMultiImagePost` or `listMultiImagePosts`)\n\n- `original_image_url` - full URL of the image; must already be publicly accessible; stored verbatim (no fetch)\n\n**See also:** `createMultiImagePost` (the correct path for external URLs), `updateMultiImagePostPhoto` (modify title/order only — cannot re-import).\n\n"
       }
     },
     "/api/v2/users_portfolio/update": {
@@ -5218,7 +5214,8 @@
                     "enum": [
                       0,
                       1
-                    ]
+                    ],
+                    "description": "Append the site's default email signature to this template. Default `0`. Set to `1` only when the user explicitly asks to include the site signature; BD appends it automatically at send time."
                   },
                   "category_id": {
                     "type": "integer"
@@ -9057,10 +9054,9 @@
                   "content_layout": {
                     "type": "integer",
                     "enum": [
-                      0,
                       1
                     ],
-                    "description": "**Full Screen Page Width.** `0` (default) = content stays inside BD's normal max-width container. `1` = full-screen width; individual sections in `content` can break edge-to-edge (full-bleed background bands, hero-style strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake it with negative-margin/9999px-padding tricks in `content_css` - breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered. Only use when the page has sections DESIGNED edge-to-edge; plain content pages don't need it."
+                    "description": "**Full Screen Page Width override.** OMIT for normal pages (BD's default container width). Set to `1` for full-bleed pages — individual sections in `content` can then break edge-to-edge (background bands, hero strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake full-bleed with negative-margin/9999px-padding tricks in `content_css` — breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered."
                   },
                   "content_sidebar": {
                     "type": "string",
@@ -9410,10 +9406,9 @@
                   "content_layout": {
                     "type": "integer",
                     "enum": [
-                      0,
                       1
                     ],
-                    "description": "**Full Screen Page Width.** `0` (default) = content stays inside BD's normal max-width container. `1` = full-screen width; individual sections in `content` can break edge-to-edge (full-bleed background bands, hero-style strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake it with negative-margin/9999px-padding tricks in `content_css` - breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered. Only use when the page has sections DESIGNED edge-to-edge; plain content pages don't need it."
+                    "description": "**Full Screen Page Width override.** OMIT for normal pages (BD's default container width). Set to `1` for full-bleed pages — individual sections in `content` can then break edge-to-edge (background bands, hero strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake full-bleed with negative-margin/9999px-padding tricks in `content_css` — breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered."
                   },
                   "content_sidebar": {
                     "type": "string",

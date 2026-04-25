@@ -1491,6 +1491,101 @@ function validateMoneyInArgs(args) {
 }
 
 // ---------------------------------------------------------------------------
+// Filter-value SQL-injection-shape guard
+// ---------------------------------------------------------------------------
+//
+// BD's filter parser silently DROPS filters whose `property_value` matches
+// a pattern its sanitizer chokes on, then returns the FULL (unfiltered)
+// table — same data-leak shape as path-param `id=-1`. Verified live: a
+// value of `' OR 1=1--` returned all 26 rows on a 1-row-expected query.
+//
+// Trade-off: legitimate filter values can contain apostrophes (`O'Brien`,
+// `Bob's Burgers`) and we don't want to break those. So we reject only the
+// canonical SQL-injection patterns (`OR 1=1`, `; DROP`, `UNION SELECT`,
+// `-- ` followed by content, `/* ... */` comments). Plain apostrophes pass.
+// If BD silently drops a legit-apostrophe filter, the agent will see empty
+// results and can switch to `LIKE` or fuzzy search — visible failure path.
+const SQLI_PATTERNS = [
+  /\bOR\s+\d+\s*=\s*\d+/i,    // OR 1=1
+  /\bAND\s+\d+\s*=\s*\d+/i,   // AND 1=1
+  /\bUNION\s+SELECT\b/i,
+  /\bDROP\s+(?:TABLE|DATABASE)\b/i,
+  /\bINSERT\s+INTO\b/i,
+  /;\s*(?:DROP|DELETE|UPDATE|INSERT)\b/i,
+  /--\s/,                       // -- followed by space (SQL line comment)
+  /\/\*[\s\S]*?\*\//,           // /* ... */ block comment
+];
+function validateFilterValuesInArgs(args) {
+  if (!args || typeof args !== "object") return null;
+  const check = (label, val) => {
+    if (val === undefined || val === null || val === "") return null;
+    const s = String(val);
+    for (const pat of SQLI_PATTERNS) {
+      if (pat.test(s)) {
+        return `${label} contains SQL-injection-shape pattern. BD's filter parser silently drops these and returns the FULL unfiltered result set, which is a data-leak risk. Got: "${s.slice(0, 80)}". If you intended to search for text containing operators or comments, use property_operator=LIKE with a simpler value.`;
+      }
+    }
+    return null;
+  };
+  const e1 = check("property_value", args.property_value);
+  if (e1) return e1;
+  const arr = args["property_value[]"];
+  if (Array.isArray(arr)) {
+    for (let i = 0; i < arr.length; i++) {
+      const e = check(`property_value[${i}]`, arr[i]);
+      if (e) return e;
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// 0/1 integer-enum validator
+// ---------------------------------------------------------------------------
+//
+// 48 BD fields declare `enum: [0, 1]` in the schema but BD's runtime accepts
+// arbitrary integers (verified live: `specialty=42` stored as-is). Front-end
+// logic that branches on `=== 1` then silently treats 42 as truthy, and
+// analytics counting `= 1` rows miss it. List auto-derived from the spec
+// (excluding `active` which is multi-value `1`-`6` on users + `[0,1]` on
+// other tables — too ambiguous to validate without per-tool routing).
+// Excluded by user-confirmed semantics:
+// - active: multi-value 1-6 on users (not [0,1])
+// - status: wrapper-managed below (always 1 on createMultiImagePostPhoto)
+// - content_layout: empty OR 1 only (0 is not a real BD value)
+// - post_status / group_status: 0, 1, OR 3 (3 = pending admin moderation)
+const BOOLEAN_INT_FIELDS = new Set([
+  "auto_geocode", "auto_image_import", "auto_match",
+  "bootstrap_enabled", "category_active", "category_ignore_search_priority",
+  "create_new_categories", "data_active", "definitive",
+  "enable_search_results_map", "field_required", "form_email_on", "full",
+  "hero_hide_banner_ad", "hero_link_target_blank",
+  "hide_biennially_amount", "hide_billing_links", "hide_footer",
+  "hide_from_menu", "hide_header", "hide_header_links",
+  "hide_initial_amount", "hide_monthly_amount", "hide_notifications",
+  "hide_parent_accounts", "hide_quarterly_amount", "hide_reviews_rating_options",
+  "hide_semiyearly_amount", "hide_specialties", "hide_top_right",
+  "hide_triennially_amount", "hide_yearly_amount",
+  "limit_available", "menu_active", "notemplate",
+  "post_type_cache_system",
+  "recommend", "searchable", "send_email_notifications",
+  "send_lead_email_notification", "show_form", "signature",
+  "specialty", "sub_active", "unsubscribe_link",
+]);
+function validateBooleanIntInArgs(args) {
+  if (!args || typeof args !== "object") return null;
+  for (const field of BOOLEAN_INT_FIELDS) {
+    const v = args[field];
+    if (v === undefined || v === null || v === "") continue;
+    const s = String(v);
+    if (s !== "0" && s !== "1") {
+      return `${field} must be 0 or 1 (got "${s}"). BD does NOT validate this server-side — it stores arbitrary integers verbatim, which silently break front-end branching and analytics that expect 0/1.`;
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // YYYYMMDDHHmmss datetime field validator
 // ---------------------------------------------------------------------------
 //
@@ -1632,6 +1727,20 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     }
     if (slug.includes("//")) {
       return `${fieldLabel} '${slug}' contains a double slash. Each path segment must be non-empty — write 'parent/child' not 'parent//child'.`;
+    }
+    // Path-traversal guard: reject `.` or `..` segments anywhere in the path.
+    // BD URL slugs don't legitimately contain dot-segments; allowing them is
+    // a security footgun (filename like `../../etc/passwd` stored verbatim).
+    const segments = slug.split("/");
+    for (const seg of segments) {
+      if (seg === "." || seg === "..") {
+        return `${fieldLabel} '${slug}' contains a '${seg}' path segment. Dot-segments are not allowed — BD URLs use plain alphanumeric/hyphen segments.`;
+      }
+    }
+  } else {
+    // Single-segment slug: reject if the entire value is `.` or `..`.
+    if (slug === "." || slug === "..") {
+      return `${fieldLabel} '${slug}' is a dot-segment. Use plain alphanumeric/hyphen slugs.`;
     }
   }
   return null;
@@ -2672,6 +2781,34 @@ async function main() {
         };
       }
 
+      // 0/1 boolean-int validator: 47 BD fields declare enum:[0,1] but BD
+      // accepts arbitrary integers verbatim, breaking front-end branching.
+      const boolErr = validateBooleanIntInArgs(args);
+      if (boolErr) {
+        return {
+          content: [{ type: "text", text: boolErr }],
+          isError: true,
+        };
+      }
+
+      // Filter-value SQL-injection-shape guard: BD's filter parser silently
+      // drops dangerous-shape values and returns the FULL unfiltered table
+      // (same data-leak class as path-param id=-1). Reject upfront.
+      const filterErr = validateFilterValuesInArgs(args);
+      if (filterErr) {
+        return {
+          content: [{ type: "text", text: filterErr }],
+          isError: true,
+        };
+      }
+
+      // Auto-force `status=1` on createMultiImagePostPhoto. BD only ever uses
+      // status=1 for users_portfolio rows (album/gallery photos). Wrapper-
+      // managed unconditional overwrite — same pattern as content_active=1.
+      if (name === "createMultiImagePostPhoto" && args && typeof args === "object") {
+        args.status = 1;
+      }
+
       // Auto-force content_active=1 on createWebPage / updateWebPage.
       // BD's content_active has only one valid value (1 = live); 0 doesn't
       // exist server-side. Always overwrite — even if an agent or old client
@@ -2713,6 +2850,42 @@ async function main() {
       if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
+
+      // createMemberSubCategoryLink (rel_services) — FK + duplicate-pair guard.
+      // Without this, BD silently creates orphan rows pointing at nonexistent
+      // user_id or service_id, AND allows duplicate (user_id, service_id)
+      // pairs which double-count members in any "show this user's services"
+      // query. Both pre-checks run in parallel for one round-trip's latency.
+      if (name === "createMemberSubCategoryLink" && args && typeof args === "object" &&
+          args.user_id !== undefined && args.user_id !== null && args.user_id !== "" &&
+          args.service_id !== undefined && args.service_id !== null && args.service_id !== "") {
+        const userIdStr = String(args.user_id);
+        const serviceIdStr = String(args.service_id);
+        try {
+          const [userResp, svcResp, pairResp] = await Promise.all([
+            makeRequest(config, "GET", `/api/v2/users_data/get/${encodeURIComponent(userIdStr)}`, null, null),
+            makeRequest(config, "GET", `/api/v2/list_services/get/${encodeURIComponent(serviceIdStr)}`, null, null),
+            makeRequest(config, "GET", "/api/v2/rel_services/get", { property: "user_id", property_value: userIdStr, property_operator: "=", limit: 100 }, null),
+          ]);
+          const userOk = userResp && userResp.body && userResp.body.status === "success" && userResp.body.message;
+          const svcOk = svcResp && svcResp.body && svcResp.body.status === "success" && svcResp.body.message;
+          if (!userOk) {
+            return { content: [{ type: "text", text: `createMemberSubCategoryLink FK GUARD: user_id=${userIdStr} does not exist. Verify via getUser before linking.` }], isError: true };
+          }
+          if (!svcOk) {
+            return { content: [{ type: "text", text: `createMemberSubCategoryLink FK GUARD: service_id=${serviceIdStr} does not exist. Verify via getSubCategory before linking.` }], isError: true };
+          }
+          // Duplicate-pair check
+          const links = pairResp && pairResp.body && Array.isArray(pairResp.body.message) ? pairResp.body.message : [];
+          const dup = links.find(r => r && String(r.service_id) === serviceIdStr);
+          if (dup) {
+            return { content: [{ type: "text", text: `createMemberSubCategoryLink DUPLICATE GUARD: (user_id=${userIdStr}, service_id=${serviceIdStr}) is already linked (rel_id=${dup.rel_id}). Duplicates double-count the member in service queries — use updateMemberSubCategoryLink to modify the existing row instead.` }], isError: true };
+          }
+        } catch {
+          // Pre-check probe failed (transient). Let BD handle it; surface a
+          // soft warning on the response so the agent can re-verify.
+        }
+      }
 
       // Thin-content soft warning: createWebPage with NO title, h1, meta_desc,
       // or content (and no override) leaves a publicly-live blank page that
