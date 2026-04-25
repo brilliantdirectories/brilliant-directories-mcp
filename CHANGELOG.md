@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.34] - 2026-04-25
+
+### Added — universal slug uniqueness guard (DRY helper, 10 call sites)
+
+BD's public router uses ONE site-wide URL namespace shared by web pages, top categories, sub categories, and plan public URLs. Plan checkout URLs and post slugs have their own scoped pools. BD does NOT enforce uniqueness in any of these pools server-side; agents have historically had to do advisory pre-checks themselves (which they often forget). v6.40.22/24 fixed it for web pages only — leaving 8 other slug-bearing ops unguarded.
+
+Replaced the webpage-specific guard with a universal helper `reserveSiteUrlSlug(toolName, args)`:
+- Static config table (`SLUG_TOOL_CONFIG`) maps each of 10 ops to its scope, slug field, ownership info, and policy. No pattern-matching surprises.
+- Three scopes: `site` (4 tables probed in parallel — list_seo, list_professions, list_services, subscription_types), `post-type` (single table, filtered by data_id), and the implicit plan-checkout case (handled via separate field `custom_checkout_url` — deferred for now since it's EAV-routed).
+- Two policies: `autoSuffix:true` for categories (auto -1, -2, ... up to 20), `autoSuffix:false` for everything else (hard reject with proposal).
+- Self-exclusion on update ops: a row's existing slug doesn't conflict with itself when renamed to itself.
+- `_slug_adjusted` warning attached to response when category auto-suffix lands at -4 or higher (silent on -1, -2, -3 — match BD admin UX). Surfaces unusual cases (4+ resources fighting for the same name) without spamming the bulk-import path.
+
+Coverage:
+- `createWebPage` / `updateWebPage` (filename, site-wide, reject)
+- `createTopCategory` / `updateTopCategory` (filename, site-wide, auto-suffix)
+- `createSubCategory` / `updateSubCategory` (filename, site-wide, auto-suffix)
+- `createMembershipPlan` / `updateMembershipPlan` (subscription_filename, site-wide, reject)
+- `updateSingleImagePost` (post_filename, per-post-type, reject)
+- `updateMultiImagePost` (group_filename, per-post-type, reject)
+
+Smoke-tested live: web page collision against existing top category `personal-trainer` rejected with cross-table error; top category collision against existing web page `about` (seo_id=4) auto-suffixed silently to `about-1`; unique slug created normally. No false positives.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `reserveSiteUrlSlug` helper added (~120 lines). Replaces the v6.40.22/24 webpage-only guard at the dispatch path. Both files mirrored byte-for-byte. Ported pattern from `validateHeroEnumsInArgs` (static config table + per-resource policy).
+
+### Deferred (not yet wrapper-managed)
+
+- Plan `custom_checkout_url` uniqueness (separate plans-only pool). The field is EAV-routed via the existing `splitEavParams` machinery; the slug pre-check would need to probe `users_meta` with database=subscription_types, key=custom_checkout_url. Spec already documents this as agent-advisory. Pick up when revisiting the deferred system-timestamp project.
+
 ## [6.40.33] - 2026-04-25
 
 ### Changed — tighten the missing-tool corpus paragraph

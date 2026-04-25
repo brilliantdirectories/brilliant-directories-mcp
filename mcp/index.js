@@ -1446,6 +1446,166 @@ function validateRgbColorsInArgs(toolName, args) {
 }
 
 // ---------------------------------------------------------------------------
+// Slug uniqueness — universal helper
+// ---------------------------------------------------------------------------
+//
+// BD does NOT enforce slug uniqueness server-side, and the public router
+// uses ONE site-wide URL namespace shared by web pages, top categories,
+// sub categories, and plan public URLs. A duplicate in any of those four
+// tables produces non-deterministic render order. Plan checkout URLs and
+// post slugs have their own scoped pools.
+//
+// `reserveSiteUrlSlug` is called once per create/update on slug-bearing
+// resources. It probes the right tables in parallel, then either:
+//   - returns ok:true with the original slug (no collision)
+//   - returns ok:true with a suffixed slug + adjusted info (categories only,
+//     when collision found — auto-suffix `-1`, `-2`, ... up to MAX)
+//   - returns ok:false with an actionable error (everything else, or when
+//     auto-suffix exhausts MAX attempts)
+//
+// Mirrored byte-for-byte in the Worker `src/index.ts`. Keep in sync.
+
+const SITE_NAMESPACE_TABLES = [
+  { table: "list_seo",          field: "filename",              ownIdField: "seo_id",          label: "web page" },
+  { table: "list_professions",  field: "filename",              ownIdField: "profession_id",   label: "top category" },
+  { table: "list_services",     field: "filename",              ownIdField: "service_id",      label: "sub category" },
+  { table: "subscription_types", field: "subscription_filename", ownIdField: "subscription_id", label: "membership plan" },
+];
+const SLUG_AUTO_SUFFIX_MAX = 20;
+const SLUG_AUTO_SUFFIX_QUIET_THRESHOLD = 4; // suffixes 1-3 are silent; 4+ surfaces _slug_adjusted
+
+// Per-tool routing. Static map = no pattern-matching surprises if BD adds tools.
+//   slugField:    which arg holds the slug
+//   scope:        'site' | 'plans-checkout' | 'post-type'
+//   ownTable:     the resource's own table (excluded from collision scan on update)
+//   ownIdField:   the primary-key arg name (for update self-exclusion)
+//   autoSuffix:   true = categories (auto -1, -2, ...); false = everything else (reject)
+//   postTypeField: required when scope='post-type' (the data_id arg)
+const SLUG_TOOL_CONFIG = {
+  createWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: null,           autoSuffix: false },
+  updateWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: "seo_id",       autoSuffix: false },
+  createTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: null,           autoSuffix: true  },
+  updateTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: "profession_id", autoSuffix: true  },
+  createSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: null,           autoSuffix: true  },
+  updateSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: "service_id",   autoSuffix: true  },
+  createMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: null,           autoSuffix: false },
+  updateMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: "subscription_id", autoSuffix: false },
+  // post slugs are scoped per-post-type; pass the post-type's data_id alongside the slug
+  updateSingleImagePost: { slugField: "post_filename",  scope: "post-type", ownTable: "data_posts",                ownIdField: "post_id",  postTypeField: "data_id", autoSuffix: false },
+  updateMultiImagePost:  { slugField: "group_filename", scope: "post-type", ownTable: "users_portfolio_groups",    ownIdField: "group_id", postTypeField: "data_id", autoSuffix: false },
+};
+
+/** Look up rows in one BD table whose `field` equals the slug. */
+async function _slugProbeTable(config, table, field, slug, limit) {
+  try {
+    const result = await makeRequest(
+      config,
+      "GET",
+      `/api/v2/${table}/get`,
+      { property: field, property_value: String(slug), property_operator: "=", limit: limit || 5 },
+      null
+    );
+    const rows = result && result.body && Array.isArray(result.body.message) ? result.body.message : [];
+    return rows.filter((r) => r && String(r[field]) === String(slug));
+  } catch {
+    return null; // signals probe-failure to caller
+  }
+}
+
+/**
+ * Reserve a slug for the given tool call.
+ * Returns one of:
+ *   { ok: true, slug: <final>, adjusted?: { from, to, reason } }
+ *   { ok: false, error: <message> }
+ *   null (tool isn't slug-managed; caller proceeds normally)
+ */
+async function reserveSiteUrlSlug(config, toolName, args) {
+  const cfg = SLUG_TOOL_CONFIG[toolName];
+  if (!cfg || !args || typeof args !== "object") return null;
+  const proposed = args[cfg.slugField];
+  if (proposed === undefined || proposed === null || proposed === "") return null;
+  const ownId = cfg.ownIdField && args[cfg.ownIdField] !== undefined && args[cfg.ownIdField] !== null
+    ? String(args[cfg.ownIdField])
+    : null;
+
+  // Build collision-detection function based on scope.
+  const isCollision = async (slug) => {
+    if (cfg.scope === "site") {
+      // Probe all 4 site-namespace tables in parallel.
+      const probes = await Promise.all(SITE_NAMESPACE_TABLES.map((t) =>
+        _slugProbeTable(config, t.table, t.field, slug, 5).then((rows) => ({ ...t, rows }))
+      ));
+      // Find first non-self conflict.
+      for (const p of probes) {
+        if (p.rows === null) continue; // probe failed; treat as no-collision rather than block on transient BD error
+        for (const row of p.rows) {
+          // Self-exclusion: only on update, only same table + same id.
+          if (ownId && p.table === cfg.ownTable && String(row[p.ownIdField]) === ownId) continue;
+          return { table: p.table, label: p.label, id: row[p.ownIdField], idField: p.ownIdField };
+        }
+      }
+      return null;
+    }
+    if (cfg.scope === "post-type") {
+      const postType = args[cfg.postTypeField];
+      if (postType === undefined || postType === null || postType === "") return null;
+      const rows = await _slugProbeTable(config, cfg.ownTable, cfg.slugField, slug, 25);
+      if (rows === null) return null;
+      for (const row of rows) {
+        if (ownId && String(row[cfg.ownIdField]) === ownId) continue;
+        if (String(row.data_id) !== String(postType)) continue; // different post type — different namespace
+        return { table: cfg.ownTable, label: "post (same post-type)", id: row[cfg.ownIdField], idField: cfg.ownIdField };
+      }
+      return null;
+    }
+    return null;
+  };
+
+  // Single check (most paths) OR loop with auto-suffix (categories).
+  const baseSlug = String(proposed);
+  if (!cfg.autoSuffix) {
+    const collision = await isCollision(baseSlug);
+    if (collision) {
+      const action = toolName.startsWith("create")
+        ? `Pick a different ${cfg.slugField}, or use update${cfg.label ? "" : ""}* on the existing record.`
+        : `Pick a different ${cfg.slugField} for this record, or rename/delete the conflicting one first.`;
+      return {
+        ok: false,
+        error: `${cfg.slugField} '${baseSlug}' already exists as ${collision.label} (${collision.idField}=${collision.id}). ${action} Duplicate URLs break BD's router and are not permitted.`,
+      };
+    }
+    return { ok: true, slug: baseSlug };
+  }
+
+  // Auto-suffix path (categories): try base, then -1, -2, ... up to MAX.
+  let attempt = 0;
+  let candidate = baseSlug;
+  while (attempt <= SLUG_AUTO_SUFFIX_MAX) {
+    const collision = await isCollision(candidate);
+    if (!collision) {
+      args[cfg.slugField] = candidate; // mutate so the forwarded request uses the resolved slug
+      if (attempt === 0) return { ok: true, slug: candidate };
+      const adjusted = {
+        from: baseSlug,
+        to: candidate,
+        suffix_n: attempt,
+        reason: `${cfg.slugField} '${baseSlug}' was taken in the site URL namespace; auto-suffixed to '${candidate}'.`,
+      };
+      // Quiet for -1..-3, surface for -4+.
+      return attempt >= SLUG_AUTO_SUFFIX_QUIET_THRESHOLD
+        ? { ok: true, slug: candidate, adjusted }
+        : { ok: true, slug: candidate };
+    }
+    attempt++;
+    candidate = `${baseSlug}-${attempt}`;
+  }
+  return {
+    ok: false,
+    error: `${cfg.slugField} '${baseSlug}' and all suffix variants up to '${baseSlug}-${SLUG_AUTO_SUFFIX_MAX}' are taken in the site URL namespace. Pick a meaningfully different name.`,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
 
@@ -2275,49 +2435,28 @@ async function main() {
         args.content_active = 1; // unconditional overwrite — never use ??= or only-if-unset patterns here
       }
 
-      // Duplicate-filename guard for createWebPage AND updateWebPage. BD does
-      // NOT enforce unique `filename` on `list_seo` — two records with the
-      // same slug both succeed and the public URL renders one of them
-      // non-deterministically (silent destructive). The guard catches both
-      // entry points:
-      //   - createWebPage: any existing row with the same filename = conflict
-      //   - updateWebPage: any OTHER row with the same filename = conflict
-      //                    (same row's existing filename is fine — you can't
-      //                    conflict with yourself when updating)
-      // No bypass — duplicate URLs are never permitted via MCP. If a user
-      // genuinely needs two records, they must use distinct slugs.
-      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object" && args.filename) {
-        // Defensive strip in case an old client passes the deprecated flag.
-        if ("force_duplicate_filename" in args) delete args.force_duplicate_filename;
-        const ownSeoId = name === "updateWebPage" ? String(args.seo_id ?? "") : null;
-        try {
-          const dupCheck = await makeRequest(
-            config,
-            "GET",
-            "/api/v2/list_seo/get",
-            { property: "filename", property_value: String(args.filename), property_operator: "=", limit: 5 },
-            null
-          );
-          const rows = dupCheck && dupCheck.body && Array.isArray(dupCheck.body.message) ? dupCheck.body.message : [];
-          const conflict = rows.find((r) => {
-            if (!r || String(r.filename) !== String(args.filename)) return false;
-            // For update: ignore the row we're updating (same seo_id is fine).
-            if (ownSeoId && String(r.seo_id) === ownSeoId) return false;
-            return true;
-          });
-          if (conflict) {
-            const action = name === "createWebPage"
-              ? `Either updateWebPage(seo_id=${conflict.seo_id}, ...) to modify the existing page, or pick a unique slug for the new one.`
-              : `That slug is already taken by seo_id=${conflict.seo_id}. Pick a different filename for this page, or delete/rename the conflicting one first.`;
-            return {
-              content: [{ type: "text", text: `filename '${args.filename}' already exists at seo_id=${conflict.seo_id}. ${action} Duplicate URLs break BD's router and are not permitted.` }],
-              isError: true,
-            };
-          }
-        } catch (err) {
-          console.error(`[${name}] duplicate-filename pre-check failed (${err && err.message ? err.message : "unknown"}); proceeding — caller should manually verify uniqueness post-write.`);
-        }
+      // Slug uniqueness guard — universal helper. BD does NOT enforce unique
+      // slugs server-side on most resources, and the public router treats
+      // web pages, top categories, sub categories, and plan public URLs as
+      // a single namespace (cross-table collisions break routing). Plan
+      // checkout URLs and post slugs have their own scoped pools.
+      //
+      // The helper below handles all three scope shapes via a single
+      // function `reserveSiteUrlSlug` defined elsewhere in this file. Per
+      // call site:
+      //   - reject (most cases)  → return error response
+      //   - auto-suffix (categories) → mutate args, optionally annotate
+      //                                with `_slug_adjusted` if suffix>=4
+      const slugGuard = await reserveSiteUrlSlug(config, name, args);
+      if (slugGuard && !slugGuard.ok) {
+        return { content: [{ type: "text", text: slugGuard.error }], isError: true };
       }
+      let _slugAdjusted = null;
+      if (slugGuard && slugGuard.adjusted) {
+        _slugAdjusted = slugGuard.adjusted;
+      }
+      // Defensive: if any old client still sends the removed bypass flag.
+      if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
       // Thin-content soft warning: createWebPage with NO title, h1, meta_desc,
       // or content (and no override) leaves a publicly-live blank page that
@@ -2433,6 +2572,11 @@ async function main() {
       // were set (page goes live but Google may index as thin content).
       if (_thinContentWarning && result.body && typeof result.body === "object") {
         result.body._thin_content_warning = _thinContentWarning;
+      }
+      // Attach slug-adjusted notice when category auto-suffix went deep
+      // enough to suggest something unusual (>=4). Silent on -1, -2, -3.
+      if (_slugAdjusted && result.body && typeof result.body === "object") {
+        result.body._slug_adjusted = _slugAdjusted;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.
