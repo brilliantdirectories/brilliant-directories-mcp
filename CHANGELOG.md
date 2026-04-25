@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.66] - 2026-04-25
+
+### Added — plan-gated user image field routing
+
+When importing a single image for a user record without an explicit field name, the user's membership plan governs which image fields are even displayed in the BD dashboard. New corpus rule tells the agent to look up `show_profile_photo` and `show_logo_upload` (and the cover-photo toggle) in users_meta with `database=subscription_types database_id=<plan_id>`, then route by the plan's actual configuration: prefer `profile_photo` when both are on, fall back to whichever is enabled when only one is, skip the import (with a clear message to the user) when both are disabled. Writing to a field the plan has disabled is wasted — BD hides it on the dashboard and auto-clears on save.
+
 ## [6.40.65] - 2026-04-25
 
 ### Fixed — image-sourcing ladder restored with explicit subject-website tiers
