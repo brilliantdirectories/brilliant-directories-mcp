@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.67] - 2026-04-25
+
+### Improved — plan-gated user image rule now re-routes user-explicit field requests
+
+v6.40.66 only handled the "no field given" case. If the user explicitly said "upload as logo" on a plan where `show_logo_upload=0`, the agent forwarded the write and BD silently dropped it. The rule now covers both cases: when the requested field is disabled but the other one is enabled, route to the enabled one and mention the substitution in the response. Same logic both directions (logo→profile_photo and profile_photo→logo). Cover photo unchanged (no fallback — it's a different visual slot, skip if disabled). Same paragraph, no added length.
+
 ## [6.40.66] - 2026-04-25
 
 ### Added — plan-gated user image field routing
