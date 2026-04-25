@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.61] - 2026-04-25
+
+### Fixed — category-side override pattern (mirror of v6.40.59)
+
+v6.40.59 added the override exception in one direction: `createWebPage` / `updateWebPage` with `seo_type=profile_search_results` is allowed to use a filename matching an existing category. The inverse direction was still auto-suffixing: `createSubCategory` / `updateSubCategory` / `createTopCategory` / `updateTopCategory` writing a filename that an existing `profile_search_results` page already owned silently became `<filename>-1`. The auto-suffix made it look like BD itself was rejecting (it wasn't — the wrapper was).
+
+The slug-uniqueness collision check now skips `list_seo` rows where `seo_type=profile_search_results` when the calling tool is a category create/update. The intentional pairing — page and category sharing one slug so BD's router resolves to the page and the page queries the category's members — is now allowed in both directions.
+
+Real collisions (other web-page seo_types, members, plans) still reject. v6.40.60's bound-page guard (rejecting category renames/deletes that would orphan a `profile_search_results` page) still holds — the two fixes are complementary: v6.40.60 protects the existing binding from being broken; this fix lets the binding be intentionally established or maintained.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.60] - 2026-04-25
 
 ### Added — category rename/delete bound-page guard

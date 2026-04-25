@@ -2125,6 +2125,21 @@ async function reserveSiteUrlSlug(config, toolName, args) {
           ) {
             continue;
           }
+          // Inverse override pattern: when renaming/creating a category and
+          // the colliding row is a profile_search_results web page in
+          // list_seo, that's the intentional pairing (page + category share
+          // slug so BD's router resolves to the page and the page queries
+          // the category's members). Real list_seo collisions (other
+          // seo_types) still reject. Mirrors the create/update WebPage
+          // exception above the other direction.
+          if (
+            (toolName === "createSubCategory" || toolName === "updateSubCategory" ||
+             toolName === "createTopCategory" || toolName === "updateTopCategory") &&
+            p.table === "list_seo" &&
+            String(row.seo_type || "").toLowerCase() === "profile_search_results"
+          ) {
+            continue;
+          }
           return { table: p.table, label: p.label, id: row[p.ownIdField], idField: p.ownIdField };
         }
       }
