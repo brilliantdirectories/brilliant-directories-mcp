@@ -1539,6 +1539,37 @@ function validateFilterValuesInArgs(args) {
   return null;
 }
 
+// Filter operator enum guard. BD's filter parser silently substitutes
+// unsupported operators (`!=`, `<>`, `IN`, `NOT IN`, `LIKE BINARY`, etc.)
+// with `=` semantics and returns the wrong result set with no warning. Same
+// false-success class as the SQLi-shape filter bug. The OpenAPI spec declares
+// the valid set in `components.parameters.property_operator.enum`, but Zod's
+// generated tool schema strips enum constraints from string properties, so
+// runtime enforcement is the only line of defense. Reject with the documented
+// enum so the agent can switch to a supported operator (`LIKE`, range ops).
+const FILTER_OPERATOR_ALLOWED = new Set(["=", "LIKE", ">", "<", ">=", "<="]);
+function validateFilterOperatorInArgs(args) {
+  if (!args || typeof args !== "object") return null;
+  const check = (label, val) => {
+    if (val === undefined || val === null || val === "") return null;
+    const s = String(val);
+    if (!FILTER_OPERATOR_ALLOWED.has(s)) {
+      return `${label}='${s}' is not a supported filter operator. BD silently substitutes unsupported operators with '=' semantics, returning the wrong result set with no warning. Allowed: =, LIKE, >, <, >=, <=. For 'not equal', filter for the value you DO want, or fetch a wider set and filter client-side.`;
+    }
+    return null;
+  };
+  const e1 = check("property_operator", args.property_operator);
+  if (e1) return e1;
+  const arr = args["property_operator[]"];
+  if (Array.isArray(arr)) {
+    for (let i = 0; i < arr.length; i++) {
+      const e = check(`property_operator[${i}]`, arr[i]);
+      if (e) return e;
+    }
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // 0/1 integer-enum validator
 // ---------------------------------------------------------------------------
@@ -1724,6 +1755,7 @@ function _normalizeSlug(s) {
 // conventions; prevents runaway-long URLs that break browsers/email clients.
 const SLUG_MAX_LENGTH = 200;
 const SLUG_SEGMENT_MAX_LENGTH = 100;
+const SLUG_MAX_SEGMENTS = 10;
 
 // BD reserved-route prefixes — slugs whose FIRST segment matches one of
 // these would shadow built-in BD routes. Reject upfront. Add new entries
@@ -1819,6 +1851,20 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     if (seg.startsWith(".")) {
       return `${fieldLabel} '${slug}' has a segment starting with '.' (${label}). Leading-dot filenames could shadow Apache config and aren't valid BD URL slugs.`;
     }
+    // Trailing dot on a segment: IIS/Windows strip trailing dots, making
+    // `parent/middle../child` collide with `parent/middle/child`. Whole-slug
+    // trailing dot is already rejected above; this catches the per-segment
+    // case for nested paths.
+    if (seg.endsWith(".")) {
+      return `${fieldLabel} '${slug}' has a segment ending with '.' (${label}). Some web servers strip trailing dots from path segments, creating duplicate-equivalent collisions. Remove trailing dots from each segment.`;
+    }
+    // Punycode (IDN) prefix: `xn--<ascii>` is the wire encoding for Unicode
+    // domain/path labels. Some browsers display the decoded form to users,
+    // bypassing the script-mixing detector below (which only sees ASCII).
+    // Reject so phishing-shape labels can't sneak through ASCII-only.
+    if (/^xn--/i.test(seg)) {
+      return `${fieldLabel} '${slug}' has a Punycode-encoded segment (${label}). Punycode labels (xn--*) decode to Unicode in the browser address bar, bypassing the script-uniformity check. Use the decoded Unicode form directly so the homoglyph guard can validate it.`;
+    }
     // Require at least one alphanumeric ASCII char OR unicode letter (CJK, emoji, accented).
     if (!/[a-zA-Z0-9]/.test(seg) && !/\p{L}/u.test(seg) && !/\p{Extended_Pictographic}/u.test(seg)) {
       return `${fieldLabel} '${slug}' has a segment with no letters or digits (${label}). Each path segment must contain at least one alphanumeric character.`;
@@ -1876,6 +1922,13 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     }
     // Per-segment checks: dot-segment guard + structural rules.
     const segments = slug.split("/");
+    // Path-depth cap. BD's deepest legitimate hierarchy is country/state/
+    // city/category/subcategory/post (~6 segments); 10 leaves headroom for
+    // unusual taxonomies and rejects DoS-shape paths (router recursive
+    // segment lookup blowup).
+    if (segments.length > SLUG_MAX_SEGMENTS) {
+      return `${fieldLabel} '${slug}' has ${segments.length} path segments (max ${SLUG_MAX_SEGMENTS}). Deep paths slow the BD router and rarely reflect real hierarchies. Flatten the structure.`;
+    }
     // Reserved-route guard — only the FIRST segment shadows a built-in
     // route. Case-insensitive to match BD's router (which is itself case-
     // insensitive on path matching).
@@ -2884,6 +2937,25 @@ async function main() {
             isError: true,
           };
         }
+        // Mixed-style filter guard: first-class identity params (database/
+        // database_id/key) PLUS a non-identity property/property_value filter
+        // on the same call returns empty silently — BD's REST endpoint can't
+        // merge both styles, drops the non-identity filter, and the agent
+        // can't tell whether the empty result is genuine or a parse failure.
+        const hasFirstClass = hit.size > 0;
+        const hasNonIdentityProperty =
+          typeof a.property === "string" &&
+          a.property_value !== undefined && String(a.property_value).trim() !== "" &&
+          !["database", "database_id", "key"].includes(a.property);
+        if (hasFirstClass && hasNonIdentityProperty) {
+          return {
+            content: [{
+              type: "text",
+              text: `listUserMeta MIXED-STYLE GUARD: don't combine first-class params (database/database_id/key) with a property/property_value filter on a different field. BD silently drops one and returns misleading empty results. Pick one style: use first-class identity to scope to a parent row, then filter the response client-side, OR use property[]/property_value[] arrays to express multi-condition filters explicitly.`
+            }],
+            isError: true,
+          };
+        }
       }
 
       // Build URL path with path params substituted
@@ -3010,6 +3082,17 @@ async function main() {
         };
       }
 
+      // Filter-operator enum guard: BD silently substitutes unsupported
+      // operators (`!=`, `<>`, `IN`, `NOT IN`) with `=`, returning wrong
+      // result sets with no warning. Same false-success class as above.
+      const opErr = validateFilterOperatorInArgs(args);
+      if (opErr) {
+        return {
+          content: [{ type: "text", text: opErr }],
+          isError: true,
+        };
+      }
+
       // Auto-force `status=1` on createMultiImagePostPhoto. BD only ever uses
       // status=1 for users_portfolio rows (album/gallery photos). Wrapper-
       // managed unconditional overwrite — same pattern as content_active=1.
@@ -3103,6 +3186,58 @@ async function main() {
         }
       }
 
+      // Breadcrumb is a derived display field — BD generates it from
+      // parent/child filename relationships at render time. Manually setting
+      // it on createWebPage/updateWebPage stores a stale literal that
+      // diverges from the live structure as soon as parents/children move.
+      if ((name === "createWebPage" || name === "updateWebPage")
+          && args && typeof args === "object"
+          && args.breadcrumb !== undefined && args.breadcrumb !== null && String(args.breadcrumb).trim() !== "") {
+        return {
+          content: [{ type: "text", text: `${name} BREADCRUMB GUARD: breadcrumb is a derived display field — BD generates it from the parent/child filename hierarchy at render time. Manually-set values go stale the moment the page tree changes. Omit this field; the rendered breadcrumb stays accurate automatically.` }],
+          isError: true,
+        };
+      }
+
+      // Homepage uniqueness guard: BD enforces "one home per site" via
+      // router precedence, not schema. Two records with `seo_type=home` are
+      // physically allowed; whichever the router resolves first becomes
+      // the homepage and the other is permanently shadowed. Pre-check on
+      // any write that sets `seo_type=home` and reject if a different
+      // seo_id already holds that role. Same pattern as filename uniqueness.
+      if ((name === "createWebPage" || name === "updateWebPage")
+          && args && typeof args === "object"
+          && String(args.seo_type || "").toLowerCase() === "home") {
+        try {
+          const existing = await makeRequest(
+            config,
+            "GET",
+            "/api/v2/list_seo/get",
+            { property: "seo_type", property_value: "home", property_operator: "=", limit: 5 },
+            null
+          );
+          const rows = existing && existing.body && Array.isArray(existing.body.message) ? existing.body.message : [];
+          const incomingSeoId = args.seo_id !== undefined && args.seo_id !== null ? String(args.seo_id) : null;
+          // For createWebPage there's no incoming seo_id, so any existing
+          // home-row blocks. For updateWebPage, only block if the existing
+          // home is on a DIFFERENT seo_id than the one being updated.
+          const conflict = rows.find((r) => {
+            if (!r || !r.seo_id) return false;
+            if (name === "createWebPage") return true;
+            return incomingSeoId !== null && String(r.seo_id) !== incomingSeoId;
+          });
+          if (conflict) {
+            const action = name === "createWebPage" ? "create another" : "convert this page to";
+            return {
+              content: [{ type: "text", text: `${name} HOMEPAGE GUARD: cannot ${action} seo_type=home — seo_id=${conflict.seo_id} (filename='${conflict.filename || ""}') already holds that role. BD's router resolves only one homepage per site; a second home-row would be permanently shadowed. To modify the homepage, call updateWebPage on seo_id=${conflict.seo_id}. To make this a regular page, use seo_type=content instead.` }],
+              isError: true,
+            };
+          }
+        } catch {
+          // Pre-check probe failed (transient). Let BD handle it.
+        }
+      }
+
       // Thin-content soft warning: createWebPage with NO title, h1, meta_desc,
       // or content (and no override) leaves a publicly-live blank page that
       // Google may index as thin content. Don't reject — there are legit
@@ -3115,6 +3250,21 @@ async function main() {
         const has = (k) => args[k] !== undefined && args[k] !== null && String(args[k]).trim() !== "";
         if (!has("title") && !has("h1") && !has("meta_desc") && !has("content")) {
           _thinContentWarning = `Page created with no title, h1, meta_desc, or content — and is publicly live. Risk: Google indexes a blank page. Fix: updateWebPage to add at least one of those fields now, or deleteWebPage if the create was premature.`;
+        }
+      }
+
+      // Hero double-render soft warning: when the hero section is on (1 or 2)
+      // it already renders an H1 (the page's `h1` field). An additional
+      // `<h1>` inside the body `content` paints a second H1 on the same page,
+      // which fails most accessibility audits and dilutes SEO. H2s aren't
+      // flagged — multiple H2s are valid on a page with a single H1.
+      let _heroH1Warning = null;
+      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
+        const heroOn = args.enable_hero_section === 1 || args.enable_hero_section === 2 ||
+                       args.enable_hero_section === "1" || args.enable_hero_section === "2";
+        const body = typeof args.content === "string" ? args.content : "";
+        if (heroOn && /<h1\b/i.test(body)) {
+          _heroH1Warning = `Hero section is enabled AND content body contains <h1>. The hero already renders an H1 from the page's h1 field — your body H1 paints a second H1 on the same page (accessibility fail, SEO dilution). Either remove the body H1 or disable the hero.`;
         }
       }
 
@@ -3229,6 +3379,9 @@ async function main() {
       // were set (page goes live but Google may index as thin content).
       if (_thinContentWarning && result.body && typeof result.body === "object") {
         result.body._thin_content_warning = _thinContentWarning;
+      }
+      if (_heroH1Warning && result.body && typeof result.body === "object") {
+        result.body._hero_h1_warning = _heroH1Warning;
       }
       // Attach slug-adjusted notice when category auto-suffix went deep
       // enough to suggest something unusual (>=4). Silent on -1, -2, -3.

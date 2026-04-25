@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.57] - 2026-04-25
+
+### Added — homepage-uniqueness, filter-operator, and slug hardening
+
+Three CRITICAL false-success bugs closed and four MEDIUM gaps tightened, all surfaced by round 6 stress testing.
+
+**Homepage uniqueness guard.** `createWebPage` and `updateWebPage` now reject any write that sets `seo_type=home` when a different `seo_id` already holds that role. BD's router resolves only one homepage per site by precedence, not schema — a second home-row would be permanently shadowed. Pre-check probes `list_seo` for `seo_type=home` before forwarding, names the existing seo_id and filename, and tells the agent which call to use instead.
+
+**Filter operator enum guard.** `property_operator` is now validated against the documented enum (`=`, `LIKE`, `>`, `<`, `>=`, `<=`) at runtime. BD silently substitutes unsupported operators (`!=`, `<>`, `IN`, `NOT IN`) with `=` semantics and returns the wrong result set with no warning. Same false-success class as the SQLi-shape filter bug.
+
+**Breadcrumb hard guard.** `createWebPage` and `updateWebPage` now reject manual `breadcrumb` values. The field is a derived display value — BD generates it from parent/child filename relationships at render time. Manually-set values go stale the moment the page tree changes. The corpus already said "OMIT — never set"; the runtime now enforces.
+
+**listUserMeta mixed-style guard.** Reject queries that combine first-class identity params (`database`/`database_id`/`key`) with a property/property_value filter on a different field. BD can't merge both styles, drops one, and returns empty silently — agent can't tell whether the empty result is genuine or a parse failure.
+
+**Slug validator: per-segment trailing-dot.** Whole-slug trailing dot was already rejected; per-segment now is too. `parent/middle../child` is rejected because IIS/Windows strip trailing dots, creating duplicate-equivalent collisions.
+
+**Slug validator: Punycode prefix.** Reject any segment starting with `xn--`. Punycode labels decode to Unicode in browsers and bypass the script-uniformity check, which is the homoglyph-phishing line of defense.
+
+**Slug validator: 10-segment depth cap.** BD's deepest legitimate hierarchy is ~6 segments; 10 leaves headroom and rejects DoS-shape paths (router recursive-segment-lookup blowup).
+
+**Hero double-render soft warning.** `createWebPage` and `updateWebPage` now attach `_hero_h1_warning` to the response when `enable_hero_section in [1, 2]` AND body `content` contains `<h1>`. The hero already renders an H1 from the page's `h1` field; a second body H1 fails accessibility audits and dilutes SEO. Soft warning, not a hard reject — agent decides how to handle.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.56] - 2026-04-25
 
 ### Added — caller-bug literal-string guard on slugs
