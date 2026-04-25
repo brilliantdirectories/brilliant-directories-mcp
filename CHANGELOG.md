@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.19] - 2026-04-24
+
+### Changed — README title + harmonize Node install instructions to match nodejs.org's current UI
+
+Two updates in one release:
+
+1. **Title rebranded.** `Brilliant Directories API — Universal AI Integration` → `Official Brilliant Directories MCP Server — Setup Guide`. The "Universal AI Integration" tagline survives as a one-line subtitle for SEO. The new title front-loads "Official" (trust signal for non-technical users landing via Google search) and is more accurate ("MCP Server" beats "API"; "Setup Guide" beats marketing copy).
+
+2. **Node install instructions match nodejs.org's current UI AND emphasize the install step.** nodejs.org redesigned their homepage — there's no longer a "green LTS button" on the front page; the homepage CTA is now `Get Node.js®`, which leads to a download page where users pick `Windows Installer (.msi)` or `macOS Installer`. Plus a separate boomer-trap surfaced: "download" without "install" leaves users with a `.msi` file in Downloads they never run. Every reference now explicitly walks: download → click installer → DOUBLE-CLICK to run installer. All 11 references to "green LTS button" updated to the new flow. Boomers told to find a button that doesn't exist would bounce; the new wording matches what they actually see and stops at the right end-state.
+
+### Internal
+
+- `README.md` (+ mirror at `mcp/README.md`) — title + tagline rewritten; 11 Node install references harmonized to a single accurate phrasing.
+
 ## [6.40.18] - 2026-04-24
 
 ### Changed — final sweep: stamp Node.js prereq at every remaining Advanced reference

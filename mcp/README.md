@@ -1,10 +1,10 @@
-# Brilliant Directories API — Universal AI Integration
+# Official Brilliant Directories MCP Server — Setup Guide
 
 [![npm version](https://img.shields.io/npm/v/brilliant-directories-mcp?color=blue&label=npm)](https://www.npmjs.com/package/brilliant-directories-mcp)
 [![license](https://img.shields.io/github/license/brilliantdirectories/brilliant-directories-mcp?color=green)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io)
 
-Give any AI agent full access to your Brilliant Directories site with one API key.
+Universal AI integration for your BD site. Give any AI agent full access to your Brilliant Directories site with one API key.
 
 Manage **members, posts (single-image and multi-image), leads, reviews, top and sub categories, email templates, pages (homepage, landing pages), 301 redirects, smart lists, widgets, menus, forms, tags, membership plans**, and more — across every resource BD exposes via its REST API.
 
@@ -22,7 +22,7 @@ This guide walks you through connecting your AI of choice (Claude, Cursor, etc.)
 
    <a href="https://support.brilliantdirectories.com/support/solutions/articles/12000088768" target="_blank" rel="noopener noreferrer">Full walkthrough: How to Create an API Key</a>.
 
-3. **Node.js — only for the Advanced path** (see below). Not needed for the Easy path. If you need it, one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick the "LTS" version, double-click, Next through the prompts).
+3. **Node.js — only for the Advanced path** (see below). Not needed for the Easy path. If you need it, one-time install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — double-click the downloaded file to install, Next through the prompts).
 
 ### 🚨 API PERMISSIONS — DO NOT SKIP THIS
 
@@ -78,7 +78,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 Each platform has **two options**:
 
 - **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
-- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button) and reboot before continuing. Use when you want the MCP on your own hardware.
+- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it) and reboot before continuing. Use when you want the MCP on your own hardware.
 
 **Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
 
@@ -110,7 +110,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 
 ### 🛠️ Advanced config block (requires Node.js install)
 
-> **STEP 1 — Install Node.js BEFORE pasting the config below.** The Advanced path runs an `npx` command on your machine. If Node.js isn't installed, you'll get `spawn npx ENOENT` and the AI will show "no MCP servers" with no helpful error. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> — click the green "LTS" button, double-click the downloaded file, click Next through every prompt (defaults are correct). **Reboot your computer after install** — Windows needs the restart for Node to be available to your AI app.
+> **STEP 1 — Install Node.js BEFORE pasting the config below.** The Advanced path runs an `npx` command on your machine. If Node.js isn't installed, you'll get `spawn npx ENOENT` and the AI will show "no MCP servers" with no helpful error. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> — click the green `Get Node.js®` button to download, then on the download page click `Windows Installer (.msi)` (Mac: `macOS Installer`), then DOUBLE-CLICK the downloaded file to RUN the installer, click Next through every prompt (defaults are correct). **Reboot your computer after install** — Windows needs the restart for Node to be available to your AI app.
 >
 > Verify Node works: open Command Prompt (Windows: `Win+R` → type `cmd` → Enter) or Terminal (Mac), then run `node --version`. Should print `v18.x` or higher. If it says "command not found", Node didn't install — try again.
 
@@ -186,7 +186,7 @@ Paste one of these into the file (Easy is recommended):
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```json
 {
@@ -278,7 +278,7 @@ Claude Code has no MCP GUI — install via terminal. Works in:
 
 **Prerequisites:** the `claude` CLI must be installed (it's itself an npm package, so Node.js is required for the CLI). One-time install:
 
-1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick "LTS", double-click, Next through the prompts). Verify with `node --version` (should print `v18.x` or higher).
+1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — double-click the downloaded file to install, Next through the prompts). Verify with `node --version` (should print `v18.x` or higher).
 2. **The `claude` CLI:**
 
    ```bash
@@ -303,7 +303,7 @@ No `npx` child process, no BD MCP install on your machine. Claude Code hits our 
 
 #### 🛠️ Advanced path — BD MCP runs as an `npx` child process on your machine
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```bash
 claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
@@ -335,7 +335,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 
 **Easiest setup — edit the JSON file in Notepad (NO terminal, NO `claude` CLI needed):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 1. **Open the file.** Paste the path into File Explorer's address bar (Windows) or Finder's Go → Go to Folder (Mac). If it doesn't exist yet, create a new empty text file at that path named exactly `.claude.json`.
 2. **Paste this inside** (if the file already has content with a `mcpServers` key, merge the `"brilliant-directories": {...}` entry into the existing `mcpServers` object — don't overwrite other entries):
@@ -445,7 +445,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```json
 {
@@ -495,7 +495,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```json
 {
@@ -530,7 +530,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 
 **Cursor Directory one-click install for the Advanced path (no terminal, no file editing):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. The Cursor Directory installer wires up an `npx` child process; without Node + reboot, Cursor will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. The Cursor Directory installer wires up an `npx` child process; without Node + reboot, Cursor will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 1. **Open** → <a href="https://cursor.directory/plugins/brilliant-directories" target="_blank" rel="noopener noreferrer">cursor.directory/plugins/brilliant-directories</a>
 2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
@@ -732,7 +732,7 @@ Logs every API request and response to stderr (your API key is automatically red
   - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
   - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
   - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
-- **`npx: command not found` OR `spawn npx ENOENT`** — Node.js isn't installed (or installed but not on your system PATH). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (pick the green LTS button). **Reboot Windows after install** — without a reboot, your AI app won't see the new PATH. Verify with `node --version` in Command Prompt; should print `v18.x` or higher.
+- **`npx: command not found` OR `spawn npx ENOENT`** — Node.js isn't installed (or installed but not on your system PATH). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then `Windows Installer (.msi)` or `macOS Installer`, then double-click the downloaded file to install). **Reboot Windows after install** — without a reboot, your AI app won't see the new PATH. Verify with `node --version` in Command Prompt; should print `v18.x` or higher.
 - **"not valid MCP server configurations" (Windows, Microsoft Store Claude Desktop)** — the Microsoft Store version of Claude Desktop sandboxes the config and may reject the Easy (hosted) config syntax. **Fix:** uninstall the Microsoft Store version, then install the direct .exe from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>. The direct .exe accepts both Easy and Advanced configs without sandbox issues.
 
 ---
