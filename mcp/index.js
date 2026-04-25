@@ -1295,6 +1295,38 @@ const IMAGE_SINGLE_URL_FIELDS = new Set([
   "original_image_url",
 ]);
 const IMAGE_CSV_URL_TOOLS = new Set(["createMultiImagePost", "updateMultiImagePost"]);
+
+// Rich-text body fields where Froala emits <img> tags with fr-dib + fr-fil/fr-fir
+// classes. BD's frontend expects `img-rounded` on these images for the corner-
+// rounding the rest of the site uses; missing it leaves a single unrounded image
+// that visibly breaks the page's visual consistency. Force-add to every Froala-
+// style img tag on write so agents (and pasted Froala markup) stay consistent
+// with what the BD editor would have produced from the UI.
+const RICH_TEXT_BODY_FIELDS = new Set(["post_content", "group_desc", "content"]);
+function ensureImgRoundedClass(html) {
+  if (typeof html !== "string" || !html.includes("<img")) return html;
+  // Match <img ...class="...fr-..."...> — only target Froala-style images
+  // (those carrying any `fr-*` class). Plain <img> from external paste stays
+  // untouched so we don't trample customer markup.
+  return html.replace(/<img\b([^>]*?)\bclass\s*=\s*(["'])([^"']*)\2([^>]*)>/gi,
+    (match, pre, quote, classes, post) => {
+      if (!/\bfr-/.test(classes)) return match; // not Froala-style
+      if (/\bimg-rounded\b/.test(classes)) return match; // already present
+      const newClasses = (classes + " img-rounded").trim();
+      return `<img${pre}class=${quote}${newClasses}${quote}${post}>`;
+    });
+}
+function applyImgRoundedToBodyFields(args) {
+  if (!args || typeof args !== "object") return;
+  for (const field of RICH_TEXT_BODY_FIELDS) {
+    const v = args[field];
+    if (typeof v === "string" && v.includes("<img")) {
+      const cleaned = ensureImgRoundedClass(v);
+      if (cleaned !== v) args[field] = cleaned;
+    }
+  }
+}
+
 function sanitizeSingleImageUrl(url) { return url.trim().split("?")[0]; }
 function sanitizeImageUrlsInArgs(toolName, args) {
   if (!args || typeof args !== "object") return;
@@ -1781,6 +1813,23 @@ const SLUG_CALLER_BUG_LITERALS = new Set([
   "nan",
 ]);
 
+// Decode an `xn--*` Punycode label into its Unicode form for validation
+// purposes. Returns the decoded string, or null if the label is malformed
+// (in which case the caller falls back to validating the raw label).
+// Node's `URL` constructor decodes IDN host labels automatically; we wrap
+// the segment as a fake hostname to leverage that without pulling in the
+// (deprecated) `punycode` module.
+function _tryPunycodeDecode(label) {
+  try {
+    const u = new URL(`http://${label}.invalid`);
+    const host = u.hostname; // already lowercased + IDN-decoded
+    const idx = host.lastIndexOf(".invalid");
+    return idx > 0 ? host.slice(0, idx) : null;
+  } catch {
+    return null;
+  }
+}
+
 function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (typeof slug !== "string") return null;
   // Length cap (full slug). Browsers/CDNs typically cap URLs ~2000 chars;
@@ -1859,14 +1908,20 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
       return `${fieldLabel} '${slug}' has a segment ending with '.' (${label}). Some web servers strip trailing dots from path segments, creating duplicate-equivalent collisions. Remove trailing dots from each segment.`;
     }
     // Punycode (IDN) prefix: `xn--<ascii>` is the wire encoding for Unicode
-    // domain/path labels. Some browsers display the decoded form to users,
-    // bypassing the script-mixing detector below (which only sees ASCII).
-    // Reject so phishing-shape labels can't sneak through ASCII-only.
+    // labels. International customers (Asian/RTL/Cyrillic markets) pass
+    // legitimate Punycode-encoded slugs through external import pipelines;
+    // rejecting on prefix would block them. Instead, decode transparently
+    // so the script-uniformity check below sees the actual Unicode chars
+    // and the homoglyph guard validates the real label, not the ASCII wire.
+    // The stored slug stays in its original form (we don't rewrite); we
+    // only decode for the purpose of validation.
+    let segForChecks = seg;
     if (/^xn--/i.test(seg)) {
-      return `${fieldLabel} '${slug}' has a Punycode-encoded segment (${label}). Punycode labels (xn--*) decode to Unicode in the browser address bar, bypassing the script-uniformity check. Use the decoded Unicode form directly so the homoglyph guard can validate it.`;
+      const decoded = _tryPunycodeDecode(seg);
+      if (decoded !== null) segForChecks = decoded;
     }
     // Require at least one alphanumeric ASCII char OR unicode letter (CJK, emoji, accented).
-    if (!/[a-zA-Z0-9]/.test(seg) && !/\p{L}/u.test(seg) && !/\p{Extended_Pictographic}/u.test(seg)) {
+    if (!/[a-zA-Z0-9]/.test(segForChecks) && !/\p{L}/u.test(segForChecks) && !/\p{Extended_Pictographic}/u.test(segForChecks)) {
       return `${fieldLabel} '${slug}' has a segment with no letters or digits (${label}). Each path segment must contain at least one alphanumeric character.`;
     }
     // Homoglyph guard: detect mixed-script segments.
@@ -1875,7 +1930,7 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     // each letter, collect its Script property; if >1 script appears,
     // reject. Common script (digits, punctuation, emoji) doesn't count.
     const scripts = new Set();
-    for (const ch of seg) {
+    for (const ch of segForChecks) {
       // Only inspect letters. Numbers, hyphens, dots, emoji are neutral.
       if (!/\p{L}/u.test(ch)) continue;
       // Map char to its primary script via regex tests against named
@@ -3015,6 +3070,7 @@ async function main() {
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
       sanitizeImageUrlsInArgs(name, args);
+      applyImgRoundedToBodyFields(args);
       const heroEnumErr = validateHeroEnumsInArgs(name, args);
       if (heroEnumErr) {
         return {

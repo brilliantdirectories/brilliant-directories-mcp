@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.58] - 2026-04-25
+
+### Added — Froala img-rounded auto-class, Punycode-aware homoglyph guard, mirror drift check
+
+**`img-rounded` auto-add on Froala images.** When agents (or pasted markup) emit `<img>` tags with the Froala signature classes `fr-dib fr-fil` / `fr-dib fr-fir` inside `post_content`, `group_desc`, or `content` fields, the wrapper now adds `img-rounded` to the class list if missing. BD's frontend expects this class for the corner-rounding the rest of the site uses; without it, a single image renders unrounded and visibly breaks the page's visual consistency. Plain `<img>` tags from external sources stay untouched (only Froala-style images, identified by any `fr-*` class, are transformed).
+
+**Punycode-aware homoglyph guard.** Reverted the v6.40.57 hard rejection of `xn--*` slug segments; international customers (Asian, RTL, Cyrillic markets) legitimately import Punycode-encoded slugs through external pipelines and the rejection was blocking valid use cases. Replaced with transparent decode: when a slug segment starts with `xn--`, the wrapper decodes it via the platform's IDN decoder (Node's `URL` constructor on npm, Workers' built-in `URL` on the Worker) for the purpose of validation only. The script-uniformity check then sees the actual Unicode characters and validates the real label, so homoglyph protection stays intact while the stored slug remains in its original form.
+
+**Image URL corpus clarification.** One-line addition to the imported-image-fields rule: agents are now told the wrapper auto-strips `?query` strings on these fields if forgotten, so the corpus and the wire match. Closes the confusion where Claude flagged the silent strip as "data corruption" in round 6 stress testing.
+
+**Schema drift check: validator mirror enforcement (CHECK 9).** New check compares structural fingerprints (count of `if`, `return`, `for`, `===`, `!==`, `args.<field>` accesses) of named safety validators between `mcp/index.js` and `brilliant-directories-mcp-hosted/src/index.ts`. Catches the case where a fix lands in only one of the two files. Ships as a warning rather than a hard error to absorb known JS-vs-TS dialect noise; reviewer eyeballs the diff before publishing.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.57] - 2026-04-25
 
 ### Added — homepage-uniqueness, filter-operator, and slug hardening

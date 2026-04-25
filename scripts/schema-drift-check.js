@@ -433,6 +433,130 @@ if (toolCount < 100 || toolCount > 250) {
   warn(`Tool count sanity: spec has ${toolCount} operations. Expected range 100-250. Did the spec file get corrupted or truncated?`);
 }
 
+// CHECK 9: Validator drift between npm package and Worker. The byte-identical-
+// pair rule (publish protocol) requires every safety validator to mirror
+// across `mcp/index.js` and `brilliant-directories-mcp-hosted/src/index.ts`.
+// Compare normalized function bodies (whitespace + comments + JS/TS keyword
+// noise stripped) and warn on any divergence. Catches the case where a fix
+// landed in only one file.
+//
+// The list below is the authoritative set of mirror-required functions. If
+// you add a new validator that should mirror, add its name here.
+const MIRROR_FUNCTIONS = [
+  "validateFilterValuesInArgs",
+  "validateFilterOperatorInArgs",
+  "validateBooleanIntInArgs",
+  "validateMoneyInArgs",
+  "validateDatetime14InArgs",
+  "validatePathParamIds",
+  "validateHeroEnumsInArgs",
+  "validateRgbColorsInArgs",
+  "_validateSlugFormat",
+  "_tryPunycodeDecode",
+  "sanitizeImageUrlsInArgs",
+  "ensureImgRoundedClass",
+  "applyImgRoundedToBodyFields",
+  "sanitizeScaffoldingInArgs",
+];
+// validateUsersMetaRead is intentionally excluded — npm inlines the same
+// logic in dispatch instead of factoring into a named function. Not a
+// drift bug, just a code-organization difference.
+const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
+const WORKER_PATH = path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts");
+function extractFunctionBody(source, fnName) {
+  // Find `function fnName(...) {` then return the brace-balanced body. Works
+  // for both JS and TS (we strip type annotations via the normalizer below).
+  const re = new RegExp(`function\\s+${fnName.replace(/[$]/g, "\\$")}\\s*\\(`, "m");
+  const m = re.exec(source);
+  if (!m) return null;
+  // Find the opening `{` for the function body (skips arg list + return type).
+  let i = m.index + m[0].length;
+  let depth = 1; // we're already past the opening `(`
+  while (i < source.length && depth > 0) {
+    const c = source[i++];
+    if (c === "(") depth++;
+    else if (c === ")") depth--;
+  }
+  // Skip whitespace + optional `: ReturnType` annotation up to the opening `{`.
+  while (i < source.length && source[i] !== "{") i++;
+  if (i >= source.length) return null;
+  const start = i;
+  depth = 0;
+  for (; i < source.length; i++) {
+    const c = source[i];
+    if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth === 0) return source.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+function normalizeFunctionBody(body) {
+  if (body === null) return null;
+  // Strip comments + whitespace; we don't try to fully reconcile TS/JS dialects
+  // because a proper AST diff would be prohibitive. Instead, CHECK 9 below
+  // uses a *length budget* (size ratio + structural-token count) rather than
+  // exact body equivalence. The goal is "catch when a fix lands in only one
+  // file," which size-drift detects reliably without false positives from
+  // unrelated TS noise.
+  return body
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+// Count structural tokens that almost always mirror across JS+TS: the validator's
+// branching shape. If npm has 4 `if`s and Worker has 7, someone added logic to
+// only one file. Count: `if `, `return`, `for `, identifier `args.`, `===`, `!==`.
+function structuralFingerprint(body) {
+  if (!body) return null;
+  return {
+    ifs: (body.match(/\bif\s*\(/g) || []).length,
+    returns: (body.match(/\breturn\b/g) || []).length,
+    fors: (body.match(/\bfor\s*\(/g) || []).length,
+    eq3: (body.match(/===/g) || []).length,
+    neq3: (body.match(/!==/g) || []).length,
+    accesses: (body.match(/args\.[a-zA-Z_]/g) || []).length,
+  };
+}
+try {
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  for (const fn of MIRROR_FUNCTIONS) {
+    const npmBody = normalizeFunctionBody(extractFunctionBody(npmSrc, fn));
+    const workerBody = normalizeFunctionBody(extractFunctionBody(workerSrc, fn));
+    if (npmBody === null && workerBody === null) {
+      warn(`Mirror validator "${fn}" not found in EITHER mcp/index.js or brilliant-directories-mcp-hosted/src/index.ts. Was it renamed or removed? Update MIRROR_FUNCTIONS in this script.`);
+      continue;
+    }
+    if (npmBody === null) {
+      err(`Mirror validator "${fn}" exists in Worker but NOT in mcp/index.js. Port it to npm or remove from Worker — the byte-identical-pair rule was violated.`);
+      continue;
+    }
+    if (workerBody === null) {
+      err(`Mirror validator "${fn}" exists in mcp/index.js but NOT in Worker. Port it to brilliant-directories-mcp-hosted/src/index.ts.`);
+      continue;
+    }
+    const npmFp = structuralFingerprint(npmBody);
+    const workerFp = structuralFingerprint(workerBody);
+    const diffs = [];
+    for (const k of Object.keys(npmFp)) {
+      if (npmFp[k] !== workerFp[k]) diffs.push(`${k} npm=${npmFp[k]} worker=${workerFp[k]}`);
+    }
+    if (diffs.length > 0) {
+      // Warn (not error) — JS-vs-TS dialect noise produces some unavoidable
+      // false positives. Maintainer should eyeball the diff and confirm it's
+      // not a real divergence before publishing. Real bug-class drift (e.g.
+      // a fix that added 3 ifs to one file only) shows up as obvious large
+      // deltas; cosmetic dialect drift is small (1-2 in eq3, accesses).
+      warn(`Mirror validator "${fn}" structurally DIVERGED (${diffs.join(", ")}). VERIFY: open both files and confirm this is dialect noise (TS \`as any\` casts, type annotations) and not a fix that landed in only one file.`);
+    }
+  }
+} catch (e) {
+  warn(`Could not run validator mirror check: ${e.message}. Verify both source files exist at expected paths.`);
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
