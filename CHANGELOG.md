@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.21] - 2026-04-25
+
+### Added — `validatePathParamIds` rejects `id <= 0` on every numeric-PK GET (CRITICAL — data leak fix)
+
+**Bug class — confirmed live:** `getWebPage seo_id=-1` and `seo_id=0` against `/api/v2/list_seo/get/{id}` returned the ENTIRE webpages table (341 KB, all 25 records on a small site). Likely root cause is BD's route handler treating `WHERE id <= 0` as "no filter" and falling through to an unfiltered SELECT. Same pattern almost certainly affects every numeric-PK GET (34 endpoints: `getUser user_id`, `getCity locaiton_id`, `getReview review_id`, etc.).
+
+**Privacy/security impact:** any authenticated caller can dump full tables by passing `-1` or `0` as the path-param ID. Not auth-bypass (auth still required), but any valid key gets table dumps when the operation should return one record.
+
+**Fix shipped:** `validatePathParamIds` in npm + Worker rejects path-param IDs that are not positive integers BEFORE forwarding to BD. Catches:
+- Negative IDs (`-1`)
+- Zero (`0`)
+- Floats (`1.5`)
+- Non-numeric strings (`"abc"`)
+- `null`, `undefined`, empty string
+
+Structural rule (any path token ending in `_id` or the bare `id`) = automatically covers current AND future endpoints. No per-endpoint allowlist to maintain.
+
+Defense-in-depth: when BD fixes their route handler, our wrapper guard stays. Catches future regressions.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `validatePathParamIds` helper + wired into the tool-call pipeline right after `validateHeroEnumsInArgs`. Both files mirror byte-for-byte. Smoke-tested locally on 5 cases (-1, 0, 1.5, "abc", 1) — all 4 invalid rejected with clear error, valid case passes through cleanly.
+- `KNOWN-SERVER-BUGS.md` — added entry #0 (top of list, CRITICAL severity) so the BD dev team sees this as the highest-priority fix to make server-side. Wrapper guard documented as the workaround.
+
 ## [6.40.20] - 2026-04-24
 
 ### Changed — break the Advanced bullet's Node prereq onto its own line

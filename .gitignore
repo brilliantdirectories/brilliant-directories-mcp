@@ -27,3 +27,11 @@ KNOWN-SERVER-BUGS.md
 *.log
 .DS_Store
 Thumbs.db
+
+# Throwaway scratch files (verification scratchpads, test reports, etc.)
+# Delete the file itself when the work is done — gitignore is a safety net
+# to prevent accidental commit of in-progress notes that may contain
+# customer credentials or partial test data.
+SCRATCH-*.md
+SCRATCH-*.txt
+SCRATCH-*.json

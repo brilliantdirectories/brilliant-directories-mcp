@@ -1299,6 +1299,36 @@ function sanitizeImageUrlsInArgs(toolName, args) {
   }
 }
 
+// Path-param ID validator — BD's REST API has a SQL-routing bug where any
+// /resource/get/{id} call with id<=0 (negative or zero) ignores the filter
+// and returns the ENTIRE table. Confirmed live against `/api/v2/list_seo/get/-1`
+// and `/api/v2/list_seo/get/0` (each returns all 25 webpages on a fresh site,
+// 340KB+ payload). Same risk profile likely affects every numeric-PK GET
+// endpoint (34 of them). Reject non-positive integers in path-param position
+// before forwarding to BD. Defense-in-depth — also catches typos like
+// `seo_id=null` / `seo_id=""` / `seo_id="abc"` that would stringify weirdly
+// into the URL. Path-param keys treated as numeric IDs: anything ending in
+// `_id` or the bare `id` token. Structural rule = covers current + future
+// endpoints automatically. Mirrored in Worker's `src/index.ts`.
+function validatePathParamIds(toolPath, args) {
+  if (!args || typeof args !== "object") return null;
+  const matches = toolPath.match(/\{([^}]+)\}/g) || [];
+  for (const tok of matches) {
+    const key = tok.slice(1, -1);
+    if (!(key.endsWith("_id") || key === "id")) continue;
+    if (!(key in args)) continue;
+    const v = args[key];
+    if (v === null || v === undefined || v === "") {
+      return `${key} is required for this operation. Got empty value.`;
+    }
+    const n = Number(v);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) {
+      return `${key} must be a positive integer. Got: ${JSON.stringify(v)}. (BD's REST API has a known bug where ${key}<=0 returns the entire table instead of a single record — wrapper rejects this to prevent data leak.)`;
+    }
+  }
+  return null;
+}
+
 // Hero CTA button enum guard — BD concatenates these verbatim into Bootstrap
 // classes (btn-<hero_link_color>, <hero_link_size>) and does not validate
 // server-side. sanitizeHeroCtaEnumsInArgs coerces obvious mistakes (#hex,
@@ -2124,6 +2154,15 @@ async function main() {
       if (heroEnumErr) {
         return {
           content: [{ type: "text", text: heroEnumErr }],
+          isError: true,
+        };
+      }
+      // Path-param ID validator: reject seo_id=-1 / user_id=0 etc. before
+      // forwarding to BD (BD treats these as "ignore filter, dump table").
+      const pathIdErr = validatePathParamIds(toolDef.path, args);
+      if (pathIdErr) {
+        return {
+          content: [{ type: "text", text: pathIdErr }],
           isError: true,
         };
       }
