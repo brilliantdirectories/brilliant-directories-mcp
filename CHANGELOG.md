@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.32] - 2026-04-25
+
+### Changed — corpus now explains the "missing tool" symptom (closes Bug #8 framing)
+
+Stress-test Bug #8 was originally framed as "Posts/PostTypes tools not exposed in this session." Investigation showed it isn't a session-cache issue or a server bug — it's BD's API key permission scoping. BD ships keys with ~25 "Easy" endpoints enabled by default; everything else (Forms, Menus, Widgets, Posts, Post Types, Tags, Membership Plans, etc.) lives behind an "Advanced Endpoints" toggle in BD Admin → Developer Hub → API Permissions. If a customer hasn't toggled those on, the agent's loaded tool set is genuinely missing those tools — not a bug, configuration.
+
+Added one paragraph to `mcp-instructions.md` (right after the "never fabricate tool calls" line) explaining the symptom and the fix-path the agent should tell the user. Targeted at the agent: when you expect `listSingleImagePosts` or `createForm` and don't see it loaded, that's the user's API key permission scope, tell them where to enable it.
+
+Note: `README.md` and `SKILL.md` already documented this for the human/setup audience; this is the corpus-level twin so the AGENT can self-diagnose mid-conversation instead of stalling.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — single paragraph added at the top of the corpus, above the destructive-actions rules. ~6 lines.
+
 ## [6.40.31] - 2026-04-25
 
 ### Reverted — `date_updated` auto-defaulting (v6.40.30 was UTC-only, wrong)
