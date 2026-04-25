@@ -725,7 +725,6 @@ const POST_TYPE_CODE_BUNDLE = [
   "category_header",
   "category_footer",
   "comments_code",
-  "comments_header",
 ];
 
 const POST_TYPE_REVIEW_NOTIFICATIONS = [
@@ -1211,10 +1210,8 @@ const SCAFFOLDING_SENSITIVE_FIELDS = new Set([
   "content", "content_css", "content_head", "content_footer_html", "hero_section_content",
   // Widget body + assets
   "widget_data", "widget_style", "widget_javascript",
-  // PostType code templates (all 9 — widget-equivalent trust)
-  "category_header", "search_results_div", "category_footer",
-  "profile_header", "profile_results_layout", "profile_footer",
-  "search_results_layout", "comments_code", "comments_header",
+  // PostType code templates — single source of truth via POST_TYPE_CODE_BUNDLE
+  ...POST_TYPE_CODE_BUNDLE,
   // User long-form HTML
   "about_me",
   // Post body fields
@@ -2200,7 +2197,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
       // Suggest the update-tool that OWNS the colliding record's table —
       // not the caller's resource type. createWebPage colliding with a
       // top category should suggest updateTopCategory, not updateWebPage.
-      const updateTool = TABLE_TO_UPDATE_TOOL[collision.table] || correspondingUpdateTool;
+      const updateTool = TABLE_TO_UPDATE_TOOL[collision.table];
       const action = toolName.startsWith("create")
         ? `Pick a different ${cfg.slugField}, or use ${updateTool} on the existing record (${collision.idField}=${collision.id}).`
         : `Pick a different ${cfg.slugField} for this record, or rename/delete the conflicting one first.`;

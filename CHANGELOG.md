@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.70] - 2026-04-25
+
+### Fixed — audit cleanup pass
+
+Top-to-bottom audit (corpus, OpenAPI spec prose, npm wrapper, Worker source) found and fixed 11 defects. All findings personally verified by reading cited lines — not taken on agent word.
+
+**Spec prose copy-paste leaks (3):** `updateWidget.widget_data`, `updateEmailTemplate.email_body`, and `createSingleImagePost.post_caption` all carried the wrong description string `"Description of the tag group. HTML allowed."` — wrong field altogether. Replaced with accurate descriptions (`widget_data` = main HTML/PHP code body of the widget; `email_body` = HTML body of the email; `post_caption` = deprecated relic, leave unset).
+
+**`comments_header` mistakenly treated as a code template:** the wrapper had been stripping `comments_header` as if it were a heavy code-template field. It's actually a regular text-input field (normally null/empty). Removed from `POST_TYPE_CODE_BUNDLE` and `SCAFFOLDING_SENSITIVE_FIELDS` in both npm + Worker, dropped from spec descriptions on `include_code` flag and `listPostTypes`, dropped from corpus strip-list paragraph. Counts updated 9 → 8 across all sites.
+
+**DRY refactor of `POST_TYPE_CODE_BUNDLE` consumers:** the 8 code-template names were duplicated inside `SCAFFOLDING_SENSITIVE_FIELDS` in both files. Now spread (`...POST_TYPE_CODE_BUNDLE`) — single source of truth. Sub-agent verified 6/6 functional checks pass.
+
+**Latent ReferenceError fix:** `mcp/index.js` had `correspondingUpdateTool` referenced but never declared (would crash if `TABLE_TO_UPDATE_TOOL` ever lacked a colliding table). Dropped the unsafe `||` fallback; if the map ever becomes non-exhaustive, the error message will display "undefined" — a screaming-loud signal during dev/test.
+
+**Cache-refresh contradictions removed (3 sites):** `createUserMeta` and `updateUserMeta` descriptions had trailing sentences telling agents to call `refreshSiteCache` after WebPage EAV writes — directly contradicting the same descriptions' "use createWebPage / updateWebPage directly, the wrapper auto-routes" rule. `refreshSiteCache.description` itself said "Required after every createWebPage AND updateWebPage" — also contradicting the auto-refresh behavior. All three rewritten to match reality (writes auto-refresh; manual call only on `auto_cache_refreshed: false`).
+
+**`data_id` description correction:** "Post type category ID" → "Parent post-type ID (data_categories.data_id, from listPostTypes)." Applied at all spec sites.
+
+**Hero safe-defaults bundle expanded to 9 fields:** corpus L431 canonical bundle (8 fields) and L545 application reference (9 fields with column width) now both list 9 with `hero_column_width="5"` (~40% of 12-grid) as the canonical mandatory width. Both paragraphs aligned.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.69] - 2026-04-25
 
 ### Added — `og:image` as last-resort identity signal in image-sourcing tier 2

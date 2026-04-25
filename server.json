@@ -6,12 +6,12 @@
     "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
     "source": "github"
   },
-  "version": "6.40.69",
+  "version": "6.40.70",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "brilliant-directories-mcp",
-      "version": "6.40.69",
+      "version": "6.40.70",
       "transport": {
         "type": "stdio"
       },
