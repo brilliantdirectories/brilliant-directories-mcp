@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.15] - 2026-04-24
+
+### Changed — close the `seo_type=content` escape hatch on category SEO pages
+
+Customer reported an agent creating a SEO page for `/strength-training` (a real sub-category URL) as `seo_type=content` instead of `profile_search_results`, missing all the search-results page defaults (form_name, menu_layout, custom_html_placement, hero recipe). Two contributing wording gaps:
+
+1. The routing rule said "route to createWebPage with seo_type=profile_search_results" but didn't say "MUST" or call out `seo_type=content` as the wrong path.
+2. A separate caveat falsely implied bare category slugs (no location prefix) didn't render — giving the agent permission to fall back to `seo_type=content`. They DO render on installs that route bare slugs.
+
+**Tightened both lines surgically. No new bullets, no new sections.** Routing rule is now imperative and names the failure mode (`Never seo_type=content`). Slug-validity caveat now correctly states bare category slugs work alongside full hierarchies.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — two single-line edits at the existing rules. ~30 words delta.
+
 ## [6.40.14] - 2026-04-24
 
 ### Changed — `_throttled` warning names a third recovery path

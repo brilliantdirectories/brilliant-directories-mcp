@@ -330,7 +330,7 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 - "write intro copy for the category page"
 - "better SEO for my sub-categories"
 
-All route to `createWebPage` (or `updateWebPage` if one exists) with `seo_type=profile_search_results` and the matching slug.
+ALL category/sub-category/sub-sub URL pages MUST use `seo_type=profile_search_results`. Never `seo_type=content`. Applies to bare slugs (`/strength-training`) and full slug hierarchies (`country/state/city/top_cat/sub_cat`) alike. Route to `createWebPage` (or `updateWebPage` if one exists) with the matching slug.
 
 **Do NOT route to `updateTopCategory.desc` or `updateSubCategory.desc`** even when the user literally says "description" - those fields are short internal taxonomy-row labels that most BD themes don't render. SEO copy written there persists to a dead field while the live search page stays untouched.
 
@@ -508,7 +508,7 @@ Set the current time in every exposed timestamp field on every update. On create
 
 Slug hierarchy (no leading slash, `/`-separated, any left-parent droppable): `country/state/city/top_cat/sub_cat`.
 
-**CRITICAL: `filename` MUST be a real location/category slug BD's dynamic router recognizes.** Arbitrary/made-up slugs (`my-cool-page`, `foo-bar`) return HTTP 404 publicly even though the `list_seo` record is created successfully - BD has no dynamic page to override. Country-only slug (`united-states` alone) also does NOT render for this page type - country slug only works as a left-parent PREFIX on longer slugs. For arbitrary-URL static pages, use `seo_type=content` instead (content pages route at any `filename`).
+**CRITICAL: `filename` MUST be a real location/category slug BD's dynamic router recognizes.** Arbitrary/made-up slugs (`my-cool-page`, `foo-bar`) return HTTP 404 publicly even though the `list_seo` record is created successfully - BD has no dynamic page to override. Bare category slugs (`/strength-training`) and full hierarchies (`/california/los-angeles/personal-trainer`) both work; country-only slug (`united-states` alone) does NOT render. For arbitrary-URL static pages with no underlying category/location route, use `seo_type=content` instead.
 
 Every slug segment must come from live lookups:
 
