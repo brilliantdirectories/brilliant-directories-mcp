@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.26] - 2026-04-25
+
+### Fixed — `hero_link_color`/`hero_link_size` false-success silent-coerce + RGB validator added for free-form color fields
+
+Two related fixes from Claude's stress retest of Bug #6 (v6.40.22). The original v6.40.10/v6.40.22 work added a `sanitizeHeroCtaEnumsInArgs` helper that "helpfully" coerced obvious mistakes (`#ffffff` → `primary`, `"16"` → `btn-lg`) BEFORE the enum validator ran. That created a false-success failure mode worse than the original bug:
+
+- Agent sends `hero_link_color="#ffffff"`
+- Sanitizer coerces to `"primary"` silently
+- Validator passes (sees `"primary"`, valid)
+- Wrapper writes `"primary"` to users_meta
+- Response: `status:success`, `eav_results.action:updated`
+- Agent thinks they configured white; actually got the site default. No signal.
+
+**Reject-don't-coerce.** Removed `sanitizeHeroCtaEnumsInArgs` entirely. The validator now sees the agent's actual value and rejects it cleanly with the allowed-set message — agent gets a clear actionable error instead of a silent change. Confirmed live: `hero_link_color="#ffffff"` and `hero_link_size="16"` now reject with the same surgical messages as the other 13 enum fields.
+
+### Added — RGB-format validator for free-form color fields
+
+`h1_font_color`, `h2_font_color`, `hero_content_font_color`, `hero_content_overlay_color` are not enums — they accept arbitrary RGB strings. BUT BD's hero templates only render `rgb(R, G, B)` format. Hex (`#ffffff`), named colors (`white`), and rgba (`rgba(0,0,0,0.5)`) all break the CSS interpolation BD uses. Spec descriptions said "RGB format ONLY" but no validator enforced it.
+
+New `validateRgbColorsInArgs` rejects anything that isn't `rgb(R, G, B)` with channels in [0, 255]. Whitespace inside the parens is permitted (`rgb(0,0,0)` and `rgb(0, 0, 0)` both accepted — CSS treats them as equivalent and BD's templates render both correctly). Out-of-range channels (e.g. `rgb(300,0,0)`) caught with a specific channel-error message.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — removed `sanitizeHeroCtaEnumsInArgs` and its call site; removed dangling `HERO_LINK_COLOR_VALUES` and `HERO_LINK_SIZE_VALUES` Sets that no longer had readers. Added `validateRgbColorsInArgs` + `HERO_RGB_FIELDS` Set + `RGB_PATTERN` regex. Both files mirrored byte-for-byte. Smoke-tested 8 cases live: hex/named/rgba reject, both `rgb(0,0,0)` and `rgb(0, 0, 0)` accept, channel >255 rejects with specific message.
+
 ## [6.40.25] - 2026-04-25
 
 ### Changed — finish EAV doc-drift sweep (v6.40.23 was incomplete)

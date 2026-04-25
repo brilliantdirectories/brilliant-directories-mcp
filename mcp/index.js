@@ -1329,23 +1329,16 @@ function validatePathParamIds(toolPath, args) {
   return null;
 }
 
-// Hero CTA button enum guard — BD concatenates these verbatim into Bootstrap
-// classes (btn-<hero_link_color>, <hero_link_size>) and does not validate
-// server-side. sanitizeHeroCtaEnumsInArgs coerces obvious mistakes (#hex,
-// rgb()/rgba(), all-digit sizes like 16) before validateHeroEnumsInArgs
-// rejects anything still invalid. Only applies to createWebPage / updateWebPage.
-// Mirrored in Worker's `src/index.ts`. Keep in sync.
-// Hero/h1/h2 enum table — every enum-typed field on createWebPage /
+// Hero/h1/h2 enum guard — every enum-typed field on createWebPage /
 // updateWebPage that BD persists verbatim to users_meta and renders into CSS
 // classes or template logic. BD does NOT validate any of these server-side.
 // An invalid value (e.g. hero_alignment="flex-start", h1_font_weight="bold",
-// hero_column_width="13") gets stored as-is and breaks rendering — sometimes
-// silently, sometimes with broken CSS classes that look right but don't match
-// BD's stylesheet selectors. Fix: validate against the enum set BEFORE
-// forwarding to BD. Same lists as the spec — keep in sync if BD adds values.
-// Discrete-range fields from BD's admin UI dropdowns. Generated programmatically
-// to keep the table readable. Source of truth: BD admin form `<select>` options
-// for each field (verified live 2026-04-25).
+// hero_column_width="13") gets stored as-is and breaks rendering. The
+// validator rejects anything outside the declared set BEFORE forwarding to
+// BD — reject-don't-coerce: silent coercion to defaults masks the agent's
+// real intent and produces false-success responses. Discrete-range fields
+// (paddings, font sizes) source-of-truth: BD admin form `<select>` options
+// (verified live 2026-04-25). Mirrored in Worker's `src/index.ts`.
 const HERO_PADDING_STEPS = Array.from({ length: 21 }, (_, i) => String(i * 10)); // 0..200 step 10
 const H1_FONT_SIZE_STEPS = Array.from({ length: 51 }, (_, i) => String(30 + i)); // 30..80 step 1
 const H2_FONT_SIZE_STEPS = Array.from({ length: 41 }, (_, i) => String(20 + i)); // 20..60 step 1
@@ -1367,38 +1360,15 @@ const HERO_ENUM_FIELDS = {
   h1_font_weight: ["300", "400", "600", "800"],
   h2_font_weight: ["300", "400", "600", "800"],
 };
-const HERO_LINK_COLOR_VALUES = new Set(HERO_ENUM_FIELDS.hero_link_color);
-const HERO_LINK_SIZE_VALUES = new Set(HERO_ENUM_FIELDS.hero_link_size);
 const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
 
-/** Coerce common agent mistakes before validate — BD builds `btn-${color}` + size class verbatim. */
-function sanitizeHeroCtaEnumsInArgs(toolName, args) {
-  if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return;
-  const color = args.hero_link_color;
-  if (color !== undefined && color !== null && color !== "") {
-    const s = String(color).trim();
-    if (!HERO_LINK_COLOR_VALUES.has(s)) {
-      const lower = s.toLowerCase();
-      if (lower.startsWith("#") || lower.startsWith("rgb(") || lower.includes("rgba(")) {
-        console.error(
-          `[sanitize] ${toolName}: coerced invalid hero_link_color "${s}" → primary (BD uses btn-<color>)`
-        );
-        args.hero_link_color = "primary";
-      }
-    }
-  }
-  const size = args.hero_link_size;
-  if (size !== undefined && size !== null && size !== "") {
-    const s = String(size).trim();
-    if (!HERO_LINK_SIZE_VALUES.has(s) && /^\d+$/.test(s)) {
-      console.error(
-        `[sanitize] ${toolName}: coerced invalid hero_link_size "${s}" → btn-lg (BD appends size as a CSS class)`
-      );
-      args.hero_link_size = "btn-lg";
-    }
-  }
-}
-
+// `sanitizeHeroCtaEnumsInArgs` was removed in v6.40.26. Earlier versions
+// silently coerced invalid hero_link_color (#ffffff → "primary") and
+// hero_link_size (numeric → "btn-lg"), which produced a false-success
+// failure mode: validator passed because the value was already coerced,
+// agent received status:success, but their actual intent was discarded.
+// Reject-don't-coerce — the validator below now rejects bad enum values
+// loudly so the agent gets a clear actionable error, never a silent change.
 function validateHeroEnumsInArgs(toolName, args) {
   if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
   for (const [field, allowed] of Object.entries(HERO_ENUM_FIELDS)) {
@@ -1409,6 +1379,41 @@ function validateHeroEnumsInArgs(toolName, args) {
     const s = String(v);
     if (!allowed.includes(s)) {
       return `${field} must be one of: ${allowed.map((x) => `"${x}"`).join(", ")} (you sent: "${s}"). Invalid values are persisted verbatim — BD does not validate server-side, so the value renders as a broken CSS class or breaks the hero layout.`;
+    }
+  }
+  return null;
+}
+
+// Free-form RGB color fields on createWebPage / updateWebPage. BD's hero
+// templates expect `rgb(R, G, B)` literally — hex codes (#ffffff), named
+// colors (white), and rgba(...) all break the CSS variable interpolation
+// BD uses to render these values. The spec descriptions say "RGB format
+// ONLY" but agents pass hex anyway. Reject anything that isn't `rgb(R, G, B)`
+// with channels in [0, 255]. Whitespace inside the parens is permitted
+// (rgb(0,0,0) and rgb(0, 0, 0) both render correctly). Reject-don't-coerce
+// to keep parity with the enum validator.
+const HERO_RGB_FIELDS = new Set([
+  "h1_font_color",
+  "h2_font_color",
+  "hero_content_font_color",
+  "hero_content_overlay_color",
+]);
+const RGB_PATTERN = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i;
+function validateRgbColorsInArgs(toolName, args) {
+  if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
+  for (const field of HERO_RGB_FIELDS) {
+    const v = args[field];
+    if (v === undefined || v === null || v === "") continue;
+    const s = String(v).trim();
+    const m = s.match(RGB_PATTERN);
+    if (!m) {
+      return `${field} must be in rgb(R, G, B) format (e.g. "rgb(0, 0, 0)" or "rgb(255,255,255)") — you sent: "${s}". BD's hero templates only accept rgb() — hex codes, named colors, and rgba() all break rendering.`;
+    }
+    for (let i = 1; i <= 3; i++) {
+      const channel = Number(m[i]);
+      if (!Number.isFinite(channel) || channel < 0 || channel > 255) {
+        return `${field} channel ${i} out of range (0-255): "${m[i]}" in "${s}".`;
+      }
     }
   }
   return null;
@@ -2199,11 +2204,19 @@ async function main() {
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
       sanitizeImageUrlsInArgs(name, args);
-      sanitizeHeroCtaEnumsInArgs(name, args);
       const heroEnumErr = validateHeroEnumsInArgs(name, args);
       if (heroEnumErr) {
         return {
           content: [{ type: "text", text: heroEnumErr }],
+          isError: true,
+        };
+      }
+      // Free-form RGB color fields: must be `rgb(R, G, B)` literally —
+      // hex/rgba/named colors break BD's hero template CSS interpolation.
+      const rgbErr = validateRgbColorsInArgs(name, args);
+      if (rgbErr) {
+        return {
+          content: [{ type: "text", text: rgbErr }],
           isError: true,
         };
       }
