@@ -8095,7 +8095,7 @@
             }
           }
         },
-        "description": "Hidden from agent catalog. users_meta row creation happens only via the wrapper's EAV auto-route on parent tools — see corpus **WebPage EAV fields** rule. Use `updateUserMeta` (existing rows) or `deleteUserMeta` (orphan cleanup)."
+        "description": "Hidden from agent catalog. users_meta row creation happens only via the wrapper's EAV auto-route on parent tools — see corpus **EAV auto-route** rule for the canonical list. Use `updateUserMeta` (existing rows) or `deleteUserMeta` (orphan cleanup)."
       }
     },
     "/api/v2/users_meta/update": {

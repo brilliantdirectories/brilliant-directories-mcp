@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.75] - 2026-04-25
+
+### Fixed — canonical EAV auto-route table extended to match wrapper reality
+
+Live test (createMembershipPlan + updateMembershipPlan custom_checkout_url + listUserMeta) confirmed the wrapper auto-routes `subscription_types.custom_checkout_url` exactly the way it auto-routes `list_seo` hero/EAV fields — `eav_results` reports `action: created`, row lands in users_meta. The corpus's "WebPage EAV fields" rule was list_seo-only and didn't acknowledge subscription_types support.
+
+Renamed canonical rule to **EAV auto-route**, restructured as a (parent table → routed fields → parent tool) lookup, added the subscription_types row. Cross-references in corpus L14, L286, and spec `createUserMeta.description` updated to point at the new heading. Agent now sees the truthful set of supported parent tables and the supported field on each.
+
+`updateUserMeta` for non-auto-routed keys still requires existing `meta_id`; that prohibition is unchanged.
+
 ## [6.40.74] - 2026-04-25
 
 ### Fixed — users_meta create-semantics: kill 6 contradictions, harden 404 framing

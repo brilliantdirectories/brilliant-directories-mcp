@@ -11,7 +11,7 @@ Tool names are NOT derived from table names — there is no `createUsersData`. W
 | BD table | Read | Mutate |
 |---|---|---|
 | `users_data` | `listUsers`, `getUser`, `searchUsers` | `createUser`, `updateUser`, `deleteUser` |
-| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` — no standalone create; row creation only via wrapper EAV auto-route (see users_meta-writes-restricted rule below) |
+| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` — no standalone create; row creation only via wrapper EAV auto-route on supported parents (see users_meta-writes-restricted rule below for the canonical list) |
 | `list_seo` | `listWebPages`, `getWebPage` | `createWebPage`, `updateWebPage`, `deleteWebPage` |
 | `list_professions` | `listTopCategories`, `getTopCategory` | `createTopCategory`, `updateTopCategory`, `deleteTopCategory` |
 | `list_services` | `listSubCategories`, `getSubCategory` | `createSubCategory`, `updateSubCategory`, `deleteSubCategory` |
@@ -283,7 +283,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on search results, or full-content export. Skip at `limit=100` on moderation sweeps — stick to lean and re-fetch the handful of reviews you care about with `getReview` + this flag.
 
-**users_meta writes are restricted to `updateUserMeta` / `deleteUserMeta`.** `createUserMeta` is not exposed. Row creation happens ONLY through the wrapper's EAV auto-route on parent tools — see **WebPage EAV fields** rule below for the canonical list and behavior. Always confirm `meta_id` via `listUserMeta` before calling `updateUserMeta` — never guess; 404 = stop, not retry. Keys outside the EAV routing table can't be created — report as wrapper gap, don't fabricate.
+**users_meta writes are restricted to `updateUserMeta` / `deleteUserMeta`.** `createUserMeta` is not exposed. Row creation happens ONLY through the wrapper's EAV auto-route on supported parent tools — see **EAV auto-route** rule below for the canonical list of (parent table → routed fields) and behavior. Always confirm `meta_id` via `listUserMeta` before calling `updateUserMeta` — never guess; 404 = stop, not retry. Keys outside the canonical EAV auto-route can't be created — report as wrapper gap, don't fabricate.
 
 **Write responses are ALWAYS lean.** Every `create*` / `update*` across users, posts (single + multi), post types, top + sub categories, web pages, and widgets returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object, no raw widget_data/widget_style/widget_javascript. The `include_*` flags do NOT apply to write responses — they only work on `get*` / `list*` / `search*`. If you need the full record after a write, call the matching `get*` with whatever `include_*` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
 
@@ -488,9 +488,14 @@ Treat these as a single atomic recipe, not a menu. If you're tempted to skip one
 
 A single mistake here can cascade-destroy member data, plan metadata, and page settings that happen to share the same ID across unrelated tables.
 
-**WebPage EAV fields — auto-routed by the wrapper, no special handling needed.** BD's `list_seo` table mixes direct columns with EAV-stored fields in `users_meta`. BD's REST API itself silently ignores EAV fields on `updateWebPage`, but the MCP wrapper auto-detects them and routes the writes through `users_meta` for you. Just call `updateWebPage` with whatever fields you want to set; the response includes an `eav_results` array confirming which EAV fields were written. Reads merge automatically — `getWebPage` / `listWebPages` return the merged record at top level.
+**EAV auto-route — auto-routed by the wrapper, no special handling needed.** Some BD tables mix direct columns with EAV-stored fields in `users_meta`. BD's REST API silently ignores EAV fields on parent updates, but the MCP wrapper auto-detects them and routes the writes through `users_meta`. Just call the parent tool with whatever fields you want; response includes `eav_results` confirming which EAV fields were written (and `action: created` for newly-seeded rows). Reads merge automatically.
 
-EAV-backed fields auto-routed (verified live): `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`. Do NOT call `updateUserMeta` directly for these — `updateWebPage` is the right tool.
+Canonical auto-route table (parent table → fields → parent tool):
+
+- `list_seo` (WebPages, via `updateWebPage`): `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`.
+- `subscription_types` (Membership Plans, via `updateMembershipPlan`): `custom_checkout_url`.
+
+Do NOT call `updateUserMeta` directly for these — use the parent tool. Fields not on this list are NOT auto-routed; `updateUserMeta` requires an existing `meta_id` for them.
 
 **Delete cleanup:** `deleteWebPage` deletes the `list_seo` row but does NOT cascade-delete the corresponding users_meta rows. After `deleteWebPage(seo_id)`:
 
