@@ -78,7 +78,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 Each platform has **two options**:
 
 - **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
-- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Needs Node.js. Use when you want the MCP on your own hardware.
+- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button) and reboot before continuing. Use when you want the MCP on your own hardware.
 
 **Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
 
@@ -185,6 +185,8 @@ Paste one of these into the file (Easy is recommended):
 ```
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```json
 {
@@ -439,6 +441,8 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+
 ```json
 {
   "mcpServers": {
@@ -486,6 +490,8 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 ```
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```json
 {

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.17] - 2026-04-24
+
+### Changed — repeat the Node.js prerequisite at every Advanced block
+
+v6.40.16 hardened the main Advanced section but left four other Advanced references in the README without the install pointer (the "Setup by Platform" overview bullet, plus the per-platform Claude Desktop / Cursor / Cline blocks). Users skim — they jump to their platform section and miss the prerequisite at the top.
+
+Now every place "Advanced" appears with config code has an inline reminder to install Node from nodejs.org and reboot before pasting. Same one-line warning, four locations. Catches users who land on the README from a search result mid-page or who copy-paste the platform-specific config without reading from the top.
+
+### Internal
+
+- `README.md` (+ mirror at `mcp/README.md`) — single-line reminder added in 4 places (1 overview bullet, 3 platform-specific Advanced blocks).
+
 ## [6.40.16] - 2026-04-24
 
 ### Changed — Windows setup docs hardened after non-technical user struggled with Advanced path
