@@ -1730,6 +1730,17 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (slug.length > SLUG_MAX_LENGTH) {
     return `${fieldLabel} is ${slug.length} chars (max ${SLUG_MAX_LENGTH}). BD URL slugs over this length break browsers, CDNs, and email clients.`;
   }
+  // Reject NFKC-non-canonical slugs. NFKC compatibility-decomposes
+  // Unicode chars that visually look like other chars (e.g. `ﬃ`
+  // U+FB03 → `ffi`, full-width digits → ASCII digits, etc.). Two
+  // slugs that decompose to the same canonical form should be the
+  // SAME slug; allowing both creates phishing-equivalent duplicates
+  // that bypass the duplicate-pair guard. We reject the non-
+  // canonical form and tell the agent to use the decomposed version.
+  const normalized = slug.normalize("NFKC");
+  if (normalized !== slug) {
+    return `${fieldLabel} '${slug}' contains characters that decompose to a different form under Unicode NFKC normalization (canonical: '${normalized}'). Use the canonical form to avoid creating phishing-equivalent duplicates.`;
+  }
   if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
     return `${fieldLabel} '${slug}' contains whitespace or invisible characters, which are not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
   }
@@ -1739,6 +1750,12 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   // chars are auto-rejected without spec maintenance.
   if (/\p{C}/u.test(slug)) {
     return `${fieldLabel} '${slug}' contains control or bidi-override characters (e.g. RTL override U+202E). These enable phishing-display attacks where a slug visually renders differently than its actual content.`;
+  }
+  // Trailing dot: some routers (IIS, Windows) normalize trailing dots
+  // away, making `about.` a duplicate-equivalent of `about`. Reject so
+  // both can't coexist on platforms with that quirk.
+  if (slug.endsWith(".")) {
+    return `${fieldLabel} '${slug}' ends with a dot. Some web servers (IIS, Windows) silently strip trailing dots, making the slug a duplicate of the same name without the dot. Remove the trailing dot.`;
   }
   // URL-reserved chars + RFC 3986 reserved chars + chars that enable
   // phishing-link shapes (`javascript:alert(1)` via `:` + `(` + `)`).
@@ -1966,12 +1983,20 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     return null;
   };
 
-  // Derive the corresponding update-tool name for create-error suggestions.
-  // Used to be a buggy `update${cfg.label ? "" : ""}*` literal — replaced
-  // with a real op name so agents get an actionable suggestion.
-  const correspondingUpdateTool = toolName.startsWith("create")
-    ? toolName.replace(/^create/, "update")
-    : toolName;
+  // Map BD table → the update-tool that owns it. Used so cross-namespace
+  // collision errors suggest the RIGHT update tool (not just the one that
+  // matches the caller's resource type). Was a real bug: createWebPage
+  // colliding with a top category said "use updateWebPage on profession_id=X"
+  // when it should say "use updateTopCategory(profession_id=X)".
+  const TABLE_TO_UPDATE_TOOL = {
+    list_seo: "updateWebPage",
+    list_professions: "updateTopCategory",
+    list_services: "updateSubCategory",
+    subscription_types: "updateMembershipPlan",
+    users_data: "updateUser",
+    data_posts: "updateSingleImagePost",
+    users_portfolio_groups: "updateMultiImagePost",
+  };
 
   // Build a probe-failure annotation if any tables couldn't be checked.
   const buildProbeFailureNote = () => probeFailures.length === 0
@@ -1983,8 +2008,12 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   if (!cfg.autoSuffix) {
     const collision = await isCollision(baseSlug);
     if (collision) {
+      // Suggest the update-tool that OWNS the colliding record's table —
+      // not the caller's resource type. createWebPage colliding with a
+      // top category should suggest updateTopCategory, not updateWebPage.
+      const updateTool = TABLE_TO_UPDATE_TOOL[collision.table] || correspondingUpdateTool;
       const action = toolName.startsWith("create")
-        ? `Pick a different ${cfg.slugField}, or use ${correspondingUpdateTool} on the existing record (${collision.idField}=${collision.id}).`
+        ? `Pick a different ${cfg.slugField}, or use ${updateTool} on the existing record (${collision.idField}=${collision.id}).`
         : `Pick a different ${cfg.slugField} for this record, or rename/delete the conflicting one first.`;
       return {
         ok: false,

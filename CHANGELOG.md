@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.51] - 2026-04-25
+
+### Fixed — three more URL gaps from Claude's continued stress test (Phases 14-18)
+
+#### NFKC normalization bypass (HIGH)
+
+`aﬃliate` (with `ﬃ` U+FB03 Latin small ligature ffi) was accepted as distinct from `affiliate`. Two slugs that decompose to the same canonical form via Unicode NFKC are visually identical but bypass the duplicate-pair guard. Same class as the homoglyph attack but via compatibility-decomposition rather than script-mixing.
+
+Fix: reject any slug where `slug.normalize("NFKC") !== slug`. The error message includes the canonical form so the agent can resubmit. Also catches full-width digits, ligatures, and other compatibility variants.
+
+#### Trailing dot bypass (LOW-MED)
+
+`about.` was accepted as distinct from `about`. Some web servers (IIS, Windows) silently strip trailing dots from URL paths, making `/about.` route to `/about` — duplicate-equivalent on those platforms.
+
+Fix: reject any slug ending in `.`. Internal dots (`page.v2`) still pass; only trailing dots reject.
+
+#### Cross-table tool-name suggestion mismatch (LOW)
+
+When `createWebPage` collided with a top category, the error message said *"use updateWebPage on the existing record (profession_id=X)"* — but `profession_id` belongs to top categories, so the correct suggestion is `updateTopCategory`. Now uses a static table → update-tool map (`list_seo` → `updateWebPage`, `list_professions` → `updateTopCategory`, etc.) so cross-namespace suggestions name the right tool.
+
+### Verified — 14 stress-test cases
+
+NFKC: ligature `ﬃ` and full-width digits both reject; pre-composed canonical `café` passes. Trailing dot: `about.`, `a.b.c.`, `a/b.` all reject; internal dot `page.v2` passes. Plus 8 regression checks against v6.40.50 behavior.
+
+### Investigated, no code change
+
+- **Compound suffixing** (`slug-1-1-1`): functional, just visually noisy. Real users won't hit this; not worth complicating the auto-suffix loop.
+- **6 untested call sites** (membership plans, posts, custom_checkout_url): structurally guaranteed by the shared `SLUG_TOOL_CONFIG` + `reserveSiteUrlSlug` middleware. All 12 entries route through the same validator; no per-tool wiring divergence possible.
+- **TOCTOU race window**: cannot fix at wrapper layer without server-side mutex. Worker pre-check is best-effort; BD's DB has no unique constraint on slug fields. Documented as known limitation; would need BD-side fix.
+- **Allow-list architectural change**: rejected. Pure `[a-zA-Z0-9._/-]` allow-list breaks CJK, emoji, accented Latin (BD supports them per user direction). Extended deny-list + structural rules + script-uniformity check + NFKC achieves the same goal while preserving unicode.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. NFKC check + trailing-dot reject added near top of `_validateSlugFormat` (~10 lines). `TABLE_TO_UPDATE_TOOL` map added in `reserveSiteUrlSlug` (~10 lines).
+
 ## [6.40.50] - 2026-04-25
 
 ### Added — close 4 advanced URL stress-test gaps
