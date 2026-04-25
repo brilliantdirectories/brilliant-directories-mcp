@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.14] - 2026-04-24
+
+### Changed — `_throttled` warning names a third recovery path
+
+Customer-facing warning on auto-throttled `searchUsers` / `listUsers` calls now lists three recovery options instead of two: paginate via `next_page`, drop `include_*` flags for a lean enumeration then `getUser` per-record, or call without `include_*` and re-query specific `user_ids` individually. Agents recover faster from messages that name the next action.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — single-line message change. No behavior change.
+
 ## [6.40.13] - 2026-04-24
 
 ### Added — auto-throttle on heavy USER reads + force JSON output on `searchUsers`

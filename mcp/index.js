@@ -1984,7 +1984,7 @@ async function main() {
         const heavyActive = Object.values(includeFlags).some((v) => v === true || v === "1" || v === 1);
         const requested = Number(args.limit);
         if (heavyActive && Number.isFinite(requested) && requested > 25) {
-          _throttleWarning = `limit reduced from ${requested} to 25 because heavy include_* flag is set. For larger result sets, paginate with the same limit using next_page, or omit include_* flags for a lean enumeration.`;
+          _throttleWarning = `limit reduced from ${requested} to 25 because heavy include_* flag is set. To get more rows: (1) paginate with next_page, (2) drop include_* for a lean enumeration first then call getUser per-record for the few you need enriched, or (3) call without include_* and re-query specific user_ids individually.`;
           args.limit = 25;
           console.error(`[throttle] ${name}: ${_throttleWarning}`);
         }
