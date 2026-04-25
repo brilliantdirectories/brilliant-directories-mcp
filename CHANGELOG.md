@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.56] - 2026-04-25
+
+### Added — caller-bug literal-string guard on slugs
+
+Reject slugs whose segments are the literal strings `null`, `undefined`, or `NaN` (case-insensitive). These are caller-bug fingerprints — almost always upstream `String(<bad value>)` JS coercion, not real intent. JSON-schema `type: string` doesn't catch these because they ARE valid strings.
+
+Whole-segment match: bare `null` rejects, but `null-experience`, `undefined-behavior`, `nan-bread-recipes`, and `review-of-null` all still pass — the guard only fires when the entire segment IS the suspicious literal.
+
+Applies to single-segment slugs and to each segment of nested-path slugs (so `blog/null` rejects on segment 2; `blog/null-pointer` passes).
+
+### Verified — 15 stress-test cases
+
+- 9 bare/case-variant/nested rejects (`null`, `NULL`, `Null`, `undefined`, `nan`, `NaN`, `page/null`, `section/undefined/sub`, `blog/post/NaN`)
+- 6 legitimate-substring passes (`null-experience`, `undefined-behavior`, `nan-bread-recipes`, `review-of-null`, `blog/null-pointer`, `about-us`)
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. New `SLUG_CALLER_BUG_LITERALS` set + per-segment check inside `_validateSlugFormat`. ~12 lines net.
+
 ## [6.40.55] - 2026-04-25
 
 ### Added — three small prophylactics around the BD-table → tool-name lookup

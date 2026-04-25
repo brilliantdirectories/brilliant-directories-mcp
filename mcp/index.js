@@ -1737,6 +1737,18 @@ const SLUG_RESERVED_FIRST_SEGMENTS = new Set([
   "photos",    // member photo gallery routes
 ]);
 
+// Caller-bug fingerprint literals — strings that almost always represent
+// `String(null)` / `String(undefined)` / `String(NaN)` upstream coercion
+// in a buggy caller, not a real intent. JSON-schema `type:string` doesn't
+// catch these because they ARE valid strings. Whole-segment match,
+// case-insensitive — so `null` rejects but `null-experience` and `null-result`
+// still pass.
+const SLUG_CALLER_BUG_LITERALS = new Set([
+  "null",
+  "undefined",
+  "nan",
+]);
+
 function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (typeof slug !== "string") return null;
   // Length cap (full slug). Browsers/CDNs typically cap URLs ~2000 chars;
@@ -1875,6 +1887,12 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
       if (seg === "." || seg === "..") {
         return `${fieldLabel} '${slug}' contains a '${seg}' path segment. Dot-segments are not allowed — BD URLs use plain alphanumeric/hyphen segments.`;
       }
+      // Caller-bug literal guard — `null`/`undefined`/`nan` as a whole
+      // segment is almost always upstream `String(<bad value>)` coercion,
+      // not real intent. Hyphenated forms like `null-experience` pass.
+      if (SLUG_CALLER_BUG_LITERALS.has(seg.toLowerCase())) {
+        return `${fieldLabel} '${slug}' has a segment that is the literal string '${seg}'. This usually means an upstream caller passed null/undefined/NaN and JS coerced it to a string. Pass a real slug instead.`;
+      }
       const segErr = checkSegment(seg, `segment ${i + 1}`);
       if (segErr) return segErr;
     }
@@ -1885,6 +1903,9 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     }
     if (SLUG_RESERVED_FIRST_SEGMENTS.has(slug.toLowerCase())) {
       return `${fieldLabel} '${slug}' is a reserved BD route. This shadows a built-in BD route (admin panel, account, checkout, api, photos) and breaks page routing. Pick a different name.`;
+    }
+    if (SLUG_CALLER_BUG_LITERALS.has(slug.toLowerCase())) {
+      return `${fieldLabel} '${slug}' is the literal string '${slug}'. This usually means an upstream caller passed null/undefined/NaN and JS coerced it to a string. Pass a real slug instead.`;
     }
     const segErr = checkSegment(slug, "whole slug");
     if (segErr) return segErr;
