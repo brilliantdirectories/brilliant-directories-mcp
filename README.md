@@ -116,7 +116,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 >
 > Verify Node works: open Command Prompt (Windows: `Win+R` → type `cmd` → Enter) or Terminal (Mac), then run `node --version`. Should print `v18.x` or higher. If it says "command not found", Node didn't install — try again.
 
-> **Why `brilliant-directories-mcp@latest` and not just `brilliant-directories-mcp`?** The `@latest` tag forces `npx` to pull the newest published version on every agent launch. We ship frequent updates; pinning `@latest` keeps your agent on the freshest guardrails.
+> **Why `--prefer-online` + `@latest`?** `--prefer-online` forces npm to revalidate against the registry on every launch instead of serving stale cached metadata. Combined with `@latest` (which targets the freshest version), it eliminates the `ETARGET No matching version found` error that hits when we publish a new version and your local npm cache hasn't refreshed yet. Adds ~200ms to startup; saves you from `npm cache clean --force` debugging.
 
 **STEP 2 — Paste this config:**
 
@@ -127,6 +127,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
       "command": "npx",
       "args": [
         "-y",
+        "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
@@ -197,6 +198,7 @@ Paste one of these into the file (Easy is recommended):
       "command": "npx",
       "args": [
         "-y",
+        "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
@@ -238,6 +240,7 @@ Merge — don't overwrite. Two rules:
       "command": "npx",
       "args": [
         "-y",
+        "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
@@ -308,7 +311,7 @@ No `npx` child process, no BD MCP install on your machine. Claude Code hits our 
 > ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```bash
-claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
 Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code. The `-y` flag auto-accepts the first-time npx install prompt so the spawn doesn't hang.
@@ -348,7 +351,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
        "brilliant-directories": {
          "type": "stdio",
          "command": "npx",
-         "args": ["-y", "brilliant-directories-mcp@latest"],
+         "args": ["-y", "--prefer-online", "brilliant-directories-mcp@latest"],
          "env": {
            "BD_API_URL": "https://your-site.com",
            "BD_API_KEY": "ENTER_API_KEY"
@@ -369,7 +372,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 Run this in any terminal (PowerShell, Terminal.app, Cursor's built-in terminal — any works):
 
 ```bash
-claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
 
 The CLI writes the same JSON to `~/.claude.json` for you — same end result as editing the file by hand. If `claude` isn't installed (`command not found`), just use the Notepad method above — you don't need the CLI.
@@ -408,7 +411,7 @@ Follow the browser sign-in prompt on first run. `Ctrl+C` to exit after sign-in.
 ```toml
 [mcp_servers.brilliant-directories]
 command = "npx"
-args = ["-y", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+args = ["-y", "--prefer-online", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
 ```
 
 Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
@@ -456,6 +459,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
       "command": "npx",
       "args": [
         "-y",
+        "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
@@ -506,6 +510,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
       "command": "npx",
       "args": [
         "-y",
+        "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
         "--url", "https://your-site.com"
@@ -711,13 +716,13 @@ Once set up, you get new MCP versions automatically the next time you fully quit
 
 **Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL:
 ```bash
-npx brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx --prefer-online brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Prints `OK` if credentials work, `FAIL` with the error otherwise. Good first step for any connectivity issue.
 
 **Debug mode — see exactly what's happening:**
 ```bash
-npx brilliant-directories-mcp@latest --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx --prefer-online brilliant-directories-mcp@latest --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
 ```
 Logs every API request and response to stderr (your API key is automatically redacted), then exits. Useful when something isn't working and you want to share output with BD support.
 
@@ -735,6 +740,7 @@ Logs every API request and response to stderr (your API key is automatically red
   - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
   - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
 - **`npx: command not found` OR `spawn npx ENOENT`** — Node.js isn't installed (or installed but not on your system PATH). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then `Windows Installer (.msi)` or `macOS Installer`, then double-click the downloaded file to install). **Reboot Windows after install** — without a reboot, your AI app won't see the new PATH. Verify with `node --version` in Command Prompt; should print `v18.x` or higher.
+- **`ETARGET No matching version found`** — your local npm cache is stale. Adding `--prefer-online` to your config args (per the snippets above) prevents this; if your config doesn't have it yet, run `npm cache clean --force` and restart your AI app.
 - **"not valid MCP server configurations" (Windows, Microsoft Store Claude Desktop)** — the Microsoft Store version of Claude Desktop sandboxes the config and may reject the Easy (hosted) config syntax. **Fix:** uninstall the Microsoft Store version, then install the direct .exe from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>. The direct .exe accepts both Easy and Advanced configs without sandbox issues.
 
 ---

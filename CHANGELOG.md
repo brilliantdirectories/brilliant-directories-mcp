@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.45] - 2026-04-25
+
+### Changed — `--prefer-online` added to all npx config snippets
+
+A real customer-impact bug surfaced today: when we publish a new version, customers' local npm metadata cache stays stale until it expires (5 min default, longer in practice on Windows). During that window, `npx -y brilliant-directories-mcp@latest` fails with `ETARGET No matching version found for brilliant-directories-mcp@<version>` because npm's cached registry index doesn't yet know about the new version. The customer's MCP client then disconnects with no useful error.
+
+Fix: `--prefer-online` flag added to every `npx` invocation in setup snippets (READMEs + `.mcp.json` template + `SKILL.md`). The flag forces npm to revalidate against the registry on every launch instead of serving stale cached metadata. ~200ms startup overhead, zero ETARGET failures.
+
+`ETARGET No matching version found` added as a Common Issues entry in the Troubleshooting section pointing at `npm cache clean --force` for customers on older config snippets.
+
+No code changes. Customers on existing `.mcp.json` configs without `--prefer-online` continue to work; the next time their local npm cache refreshes (or they update their config to match the new snippets), they get the fix.
+
 ## [6.40.44] - 2026-04-25
 
 ### Final batch from external audit Phases 3-7
