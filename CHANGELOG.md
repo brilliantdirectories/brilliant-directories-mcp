@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.64] - 2026-04-25
+
+### Fixed — slug-uniqueness probe warning only fires on real outages
+
+The `_slug_probe_warning` was attaching to the response whenever ANY of 5 namespace probes failed. In practice, per-site API-key permission gating means individual probes routinely fail without indicating a real problem — the warning fired on every category/page write, training agents to ignore the signal when it actually matters. Now surfaces only when EVERY probe fails (genuine outage / auth issue worth flagging). Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
+### Added — identity-confirming fields rule for real-person/real-business records
+
+Hoisted the "no stock photos / no fabricated URLs" rule from a single field description (`profile_photo` only) to a top-level corpus rule covering `profile_photo`, `logo`, `website`, and all social URL fields (`facebook`, `twitter`, `instagram`, `linkedin`, `youtube`) on `createUser`/`updateUser` and any record representing a specific real entity. Framed as a forced branch (verify-or-omit-and-tell-user) instead of a passive guideline, and explicitly overrides the image-sourcing fallback so the agent doesn't pattern-match into "use Pexels" mode after working on generic blog/hero images. Closes a real failure mode: agent created 3 yoga trainers with stock Pexels headshots and invented `website` domains because the rule lived only at the bottom of one field's docs and got skimmed past on the second pass.
+
 ## [6.40.63] - 2026-04-25
 
 ### Fixed — slug-uniqueness probes now serialize so they actually succeed

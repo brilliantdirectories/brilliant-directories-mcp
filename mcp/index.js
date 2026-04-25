@@ -2183,10 +2183,14 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     users_portfolio_groups: "updateMultiImagePost",
   };
 
-  // Build a probe-failure annotation if any tables couldn't be checked.
-  const buildProbeFailureNote = () => probeFailures.length === 0
-    ? ""
-    : ` (probe-failure: couldn't verify uniqueness in ${[...new Set(probeFailures)].join(", ")} due to a transient BD error — re-check post-write if this matters)`;
+  // Build a probe-failure annotation only when EVERY namespace probe failed.
+  // Per-site permission gating means partial failures are expected noise.
+  const buildProbeFailureNote = () => {
+    const uniq = new Set(probeFailures).size;
+    return (uniq > 0 && uniq === SITE_NAMESPACE_TABLES.length)
+      ? ` (probe-failure: couldn't verify uniqueness — all ${SITE_NAMESPACE_TABLES.length} namespace probes failed; re-check post-write)`
+      : "";
+  };
 
   // Single check (most paths) OR loop with auto-suffix (categories).
   const baseSlug = String(proposed);
@@ -2205,9 +2209,14 @@ async function reserveSiteUrlSlug(config, toolName, args) {
         error: `${cfg.slugField} '${baseSlug}' already exists as ${collision.label} (${collision.idField}=${collision.id}). ${action} Duplicate URLs break BD's router and are not permitted.${buildProbeFailureNote()}`,
       };
     }
-    if (probeFailures.length > 0) {
-      // No collision found, but we couldn't fully verify. Allow write, surface a soft warning.
-      return { ok: true, slug: baseSlug, probe_warning: `Slug uniqueness could not be fully verified (transient BD error on ${[...new Set(probeFailures)].join(", ")}). Re-check post-write if uniqueness is critical.` };
+    // Only surface the warning when EVERY probe failed (genuine outage).
+    // Per-site API-key permission gating means individual probe failures are
+    // expected baseline noise, not "transient" — surfacing them every call
+    // trains agents to ignore the warning when it actually matters.
+    const totalProbes = SITE_NAMESPACE_TABLES.length;
+    const uniqueFailures = new Set(probeFailures).size;
+    if (uniqueFailures > 0 && uniqueFailures === totalProbes) {
+      return { ok: true, slug: baseSlug, probe_warning: `Slug uniqueness could not be verified — all ${totalProbes} namespace probes failed (BD outage or auth issue). Re-check post-write if uniqueness is critical.` };
     }
     return { ok: true, slug: baseSlug };
   }
@@ -2230,8 +2239,9 @@ async function reserveSiteUrlSlug(config, toolName, args) {
         // Quiet for -1..-3 (silent suffix), surface for -4+ (unusual).
         if (attempt < SLUG_AUTO_SUFFIX_QUIET_THRESHOLD) delete result.adjusted;
       }
-      if (probeFailures.length > 0) {
-        result.probe_warning = `Slug uniqueness could not be fully verified (transient BD error on ${[...new Set(probeFailures)].join(", ")}). Re-check post-write if uniqueness is critical.`;
+      const uniqueFails = new Set(probeFailures).size;
+      if (uniqueFails > 0 && uniqueFails === SITE_NAMESPACE_TABLES.length) {
+        result.probe_warning = `Slug uniqueness could not be verified — all ${SITE_NAMESPACE_TABLES.length} namespace probes failed (BD outage or auth issue). Re-check post-write if uniqueness is critical.`;
       }
       return result;
     }
