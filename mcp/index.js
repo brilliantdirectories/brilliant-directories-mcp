@@ -1710,9 +1710,39 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
     return `${fieldLabel} '${slug}' contains whitespace or invisible characters, which are not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
   }
-  if (/[\\?#&%<>"]/.test(slug)) {
-    return `${fieldLabel} '${slug}' contains URL-reserved characters (one of \\?#&%<>"), which are not allowed in BD URLs. Use only letters, digits, hyphens, underscores, and dots.`;
+  // URL-reserved chars + RFC 3986 reserved chars + chars that enable
+  // phishing-link shapes (`javascript:alert(1)` via `:` + `(` + `)`).
+  // Asymmetric reject of `'` vs `"` in earlier versions left an SQLi-shape
+  // gap. Now both blocked.
+  // BD URL slugs (`filename`, `subscription_filename`, `post_filename`,
+  // `group_filename`) never use these characters in practice — social-link
+  // fields like `instagram`/`twitter`/`facebook` are SEPARATE fields with
+  // their own validation, so rejecting `@` here doesn't affect those.
+  if (/[\\?#&%<>"':@;|\[\]{}=()]/.test(slug)) {
+    return `${fieldLabel} '${slug}' contains URL-reserved or unsafe characters. Use only letters, digits, hyphens, underscores, and dots (and slashes for nested paths where allowed).`;
   }
+  // Structural rules:
+  //   (a) cannot start with `-` (anti-pattern; many CMS validators reject)
+  //   (b) cannot start with `.` (dotfile shape; could shadow .htaccess)
+  //   (c) must contain at least one alphanumeric or unicode letter — pure
+  //       punctuation slugs like `---` or `...` route but are useless URLs
+  //       and indicate accidental input.
+  // Per-segment: applied to the WHOLE slug for non-slash case, and to
+  // EACH segment for nested paths (so `valid-slug/-bad` is rejected on
+  // the second segment).
+  const checkSegment = (seg, label) => {
+    if (seg.startsWith("-")) {
+      return `${fieldLabel} '${slug}' has a segment starting with '-' (${label}). BD URL slugs cannot start with a hyphen.`;
+    }
+    if (seg.startsWith(".")) {
+      return `${fieldLabel} '${slug}' has a segment starting with '.' (${label}). Leading-dot filenames could shadow Apache config and aren't valid BD URL slugs.`;
+    }
+    // Require at least one alphanumeric ASCII char OR unicode letter (CJK, emoji, accented).
+    if (!/[a-zA-Z0-9]/.test(seg) && !/\p{L}/u.test(seg) && !/\p{Extended_Pictographic}/u.test(seg)) {
+      return `${fieldLabel} '${slug}' has a segment with no letters or digits (${label}). Each path segment must contain at least one alphanumeric character.`;
+    }
+    return null;
+  };
   if (slug.includes("/")) {
     if (!allowSlash) {
       return `${fieldLabel} '${slug}' contains a slash, which is not allowed for this resource (categories and plans must be single-segment slugs). Use hyphens instead.`;
@@ -1728,20 +1758,23 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     if (slug.includes("//")) {
       return `${fieldLabel} '${slug}' contains a double slash. Each path segment must be non-empty — write 'parent/child' not 'parent//child'.`;
     }
-    // Path-traversal guard: reject `.` or `..` segments anywhere in the path.
-    // BD URL slugs don't legitimately contain dot-segments; allowing them is
-    // a security footgun (filename like `../../etc/passwd` stored verbatim).
+    // Per-segment checks: dot-segment guard + structural rules.
     const segments = slug.split("/");
-    for (const seg of segments) {
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
       if (seg === "." || seg === "..") {
         return `${fieldLabel} '${slug}' contains a '${seg}' path segment. Dot-segments are not allowed — BD URLs use plain alphanumeric/hyphen segments.`;
       }
+      const segErr = checkSegment(seg, `segment ${i + 1}`);
+      if (segErr) return segErr;
     }
   } else {
-    // Single-segment slug: reject if the entire value is `.` or `..`.
+    // Single-segment slug: dot-segment guard + structural rules.
     if (slug === "." || slug === "..") {
       return `${fieldLabel} '${slug}' is a dot-segment. Use plain alphanumeric/hyphen slugs.`;
     }
+    const segErr = checkSegment(slug, "whole slug");
+    if (segErr) return segErr;
   }
   return null;
 }

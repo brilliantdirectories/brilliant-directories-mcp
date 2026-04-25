@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.48] - 2026-04-25
+
+### Fixed — 11 slug-format gaps from Claude's URL stress test
+
+Claude ran a focused stress test on the slug validator (round 4) and found 11 character/structural gaps the deny-list missed. All addressed.
+
+#### Character reject set extended
+
+Added to the reject set: `:` `'` `@` `;` `|` `[` `]` `{` `}` `=` `(` `)`
+
+The big ones:
+- **`:` enables `javascript:alert(1)` phishing-link shapes** stored as filename — wouldn't auto-execute as a route but is dangerous if rendered in admin autocomplete or any unescaped `<a href>` context.
+- **`'` (apostrophe) was an asymmetric gap** vs `"` (double quote was rejected, single was not). Enabled SQLi-shape filenames like `'OR'1'='1`.
+- **`@` `;` `|` `[]` `{}` `=` `()`** are RFC 3986 reserved or shell-metachar-adjacent. None appear in legitimate BD URL slugs in practice.
+
+`@` is rejected even though it appears in Instagram/social URLs — those go in **separate** `instagram`/`twitter`/`facebook` member fields with their own validation, never in BD's `filename` slug fields. `+` deliberately remains allowed (legitimate use cases).
+
+#### Structural rules added
+
+Three per-segment rules (applied to whole slug for non-slash, to each segment for nested paths):
+- Cannot start with `-` (anti-pattern; many CMS validators reject)
+- Cannot start with `.` (dotfile shape; could shadow Apache `.htaccess`)
+- Must contain at least one alphanumeric or unicode letter (rejects pure-punctuation slugs like `---`, `...`, single `-`, single `.`)
+
+The unicode-letter check uses `\p{L}` and `\p{Extended_Pictographic}` so CJK (`中文`), accented (`café`), and emoji (`🎯`) slugs continue to pass.
+
+### Verified — 44 stress-test cases all behave correctly
+
+- 11 valid slugs (CJK, emoji, accented, plus, hyphens-inside, dots-inside, nested paths) → all PASS
+- 13 character-reject cases → all REJECT
+- 8 structural-rule cases → all REJECT (including nested with bad segment)
+- 5 path-structure cases (leading/trailing/double slash, dot-segments) → all REJECT (regression check)
+- 7 other regression checks → all consistent with prior behavior
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `_validateSlugFormat` extended by ~25 lines: extended reject regex, added `checkSegment` helper, applied per-segment for both single-segment and nested-path branches.
+
 ## [6.40.47] - 2026-04-25
 
 ### Fixed — three findings from background-agent stress test against v6.40.46
