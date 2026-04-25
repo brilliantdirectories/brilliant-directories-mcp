@@ -1374,8 +1374,12 @@ function validateHeroEnumsInArgs(toolName, args) {
   for (const [field, allowed] of Object.entries(HERO_ENUM_FIELDS)) {
     const v = args[field];
     if (v === undefined || v === null) continue;
-    // Empty string is allowed only if "" is in the enum (e.g. hero_link_size).
-    if (v === "" && !allowed.includes("")) continue;
+    // Empty strings are allowed only when "" is in the field's enum
+    // (e.g. hero_link_size: "" means "Normal" size). Otherwise treat
+    // empty as an invalid value — reject like any other bad input
+    // rather than silently slipping through (which would produce a
+    // false-success where the agent's empty input "succeeds" but no
+    // change is written).
     const s = String(v);
     if (!allowed.includes(s)) {
       return `${field} must be one of: ${allowed.map((x) => `"${x}"`).join(", ")} (you sent: "${s}"). Invalid values are persisted verbatim — BD does not validate server-side, so the value renders as a broken CSS class or breaks the hero layout.`;

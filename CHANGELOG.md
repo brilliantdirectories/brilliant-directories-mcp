@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.27] - 2026-04-25
+
+### Fixed — empty-string false-success on hero enum fields
+
+Claude's stress retest of v6.40.26 found one remaining false-success edge case: passing `hero_alignment=""` (or any non-link-size hero enum field) returned `status:success` with `eav_results.action:"updated"` but the stored value was unchanged. Same false-success class as the v6.40.26 fix, just with empty string as the bad value.
+
+Root cause: validator had a special-case `if (v === "" && !allowed.includes("")) continue;` that skipped empty-string checks entirely, letting them slip through to the wrapper's EAV write path which BD then no-op'd.
+
+The line was wrong. Removed it. Empty strings are now treated like any other invalid value — rejected with the standard "must be one of: ..." error message — UNLESS the field's enum legitimately includes `""` (e.g. `hero_link_size: ""` means "Normal" size).
+
+Smoke-tested live:
+- `hero_alignment=""` → rejected (empty not in `[left, center, right]`)
+- `hero_link_size=""` → accepted (empty IS in `["", btn-lg, btn-xl]`, means Normal)
+- `h1_font_color=""` → accepted (RGB validator skips empty by design — empty means "no value")
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — single line removed from `validateHeroEnumsInArgs`. Both files mirrored byte-for-byte.
+
+### Why not coerce empty → default?
+
+Considered defaulting `hero_alignment=""` → `"left"`. Rejected for the same reason v6.40.26 removed `sanitizeHeroCtaEnumsInArgs`: silent coercion produces false-success (agent thinks they configured something specific, got the default). Reject-don't-coerce is the consistent rule across all hero validators.
+
 ## [6.40.26] - 2026-04-25
 
 ### Fixed — `hero_link_color`/`hero_link_size` false-success silent-coerce + RGB validator added for free-form color fields
