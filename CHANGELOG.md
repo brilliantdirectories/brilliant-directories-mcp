@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.43] - 2026-04-25
+
+### Added — 4 missing membership-plan price fields to money validator
+
+Membership plans have 6 billing-period prices, not 2. v6.40.42 only covered `monthly_amount` and `yearly_amount`. Added the missing four:
+
+- `quarterly_amount` — billed every 3 months
+- `semiyearly_amount` — billed every 6 months
+- `biennially_amount` — billed every 2 years
+- `triennially_amount` — billed every 3 years
+
+Same validation rules apply: finite number, `>= 0`, max 2 decimals. Now covers the full plan-billing surface area an admin can configure.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `MONEY_FIELDS` extended to 8 entries.
+
 ## [6.40.42] - 2026-04-25
 
 ### Added — user profile filename in slug uniqueness guard + universal money validator

@@ -1458,10 +1458,14 @@ function validateRgbColorsInArgs(toolName, args) {
 // name to MONEY_FIELDS — the validator runs on every dispatch and only acts
 // on fields actually present in args.
 const MONEY_FIELDS = new Set([
-  "lead_price",       // top/sub category and membership plan
-  "monthly_amount",   // membership plan
-  "yearly_amount",    // membership plan
-  "initial_amount",   // membership plan (signup fee / first-period charge)
+  "lead_price",          // top/sub category and membership plan
+  "monthly_amount",      // membership plan — billed every 30 days
+  "quarterly_amount",    // membership plan — billed every 3 months
+  "semiyearly_amount",   // membership plan — billed every 6 months
+  "yearly_amount",       // membership plan — billed every 12 months
+  "biennially_amount",   // membership plan — billed every 2 years
+  "triennially_amount",  // membership plan — billed every 3 years
+  "initial_amount",      // membership plan — one-time setup fee
 ]);
 function validateMoneyInArgs(args) {
   if (!args || typeof args !== "object") return null;
