@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.18] - 2026-04-24
+
+### Changed — final sweep: stamp Node.js prereq at every remaining Advanced reference
+
+Continued audit after v6.40.17 found three more Advanced/npx-spawning blocks without the install warning: Claude Code CLI Advanced path, Claude-extension-inside-Cursor Notepad method, and Cursor Directory one-click installer. All three could leave a non-technical user staring at "no MCP servers" with no helpful pointer. All three now stamped.
+
+Final tally: every Advanced or npx-spawning block in the README — 6 locations — has the inline Node.js install pointer.
+
+### Internal
+
+- `README.md` (+ mirror at `mcp/README.md`) — three additional locations updated. No new headings or structural changes.
+
 ## [6.40.17] - 2026-04-24
 
 ### Changed — repeat the Node.js prerequisite at every Advanced block

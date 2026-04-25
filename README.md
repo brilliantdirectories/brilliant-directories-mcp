@@ -303,6 +303,8 @@ No `npx` child process, no BD MCP install on your machine. Claude Code hits our 
 
 #### 🛠️ Advanced path — BD MCP runs as an `npx` child process on your machine
 
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+
 ```bash
 claude mcp add brilliant-directories -- npx -y brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
 ```
@@ -332,6 +334,8 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 - Tools appear: Cursor **Settings → Tools & MCP**
 
 **Easiest setup — edit the JSON file in Notepad (NO terminal, NO `claude` CLI needed):**
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 1. **Open the file.** Paste the path into File Explorer's address bar (Windows) or Finder's Go → Go to Folder (Mac). If it doesn't exist yet, create a new empty text file at that path named exactly `.claude.json`.
 2. **Paste this inside** (if the file already has content with a `mcpServers` key, merge the `"brilliant-directories": {...}` entry into the existing `mcpServers` object — don't overwrite other entries):
@@ -525,6 +529,8 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
 > Prefer the local install? Keep reading — the Cursor Directory installer below sets up the Advanced path (runs as an npx child process).
 
 **Cursor Directory one-click install for the Advanced path (no terminal, no file editing):**
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (green LTS button), then **reboot your computer**. The Cursor Directory installer wires up an `npx` child process; without Node + reboot, Cursor will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 1. **Open** → <a href="https://cursor.directory/plugins/brilliant-directories" target="_blank" rel="noopener noreferrer">cursor.directory/plugins/brilliant-directories</a>
 2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
