@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.25] - 2026-04-25
+
+### Changed — finish EAV doc-drift sweep (v6.40.23 was incomplete)
+
+v6.40.23 updated the corpus instructions and `hero_content_overlay_opacity` field description to reflect EAV auto-routing, but missed three other places that still carried the old "silently drops, manually route" guidance. Claude's stress retest caught the inconsistency:
+
+- `updateWebPage` description still had the big multi-paragraph EAV workflow block ("EAV-stored fields - `updateWebPage` silently drops these 18+ fields on UPDATE...") with the per-field workflow steps
+- `updateUserMeta` description still said "Critical BD pattern: updating WebPage fields that `updateWebPage` silently skips"
+- `createUserMeta` description still had a parallel "Critical BD pattern: UPDATING WebPage EAV fields that `updateWebPage` doesn't persist" section
+- `hero_section_content` field description (both create + update copies) still said "EAV-stored - createWebPage seeds correctly, updateWebPage silently drops. On update, write via updateUserMeta with database=list_seo"
+
+Net effect of the drift: agent reading the spec got contradictory guidance — one field said "pass directly", another said "manually route", and the parent tool description told them to always do the manual route. Some agents would default to the manual path shown most prominently in the parent tool description, generating 2-3 unnecessary `updateUserMeta` calls per update.
+
+All four locations now updated to match the actual auto-routing behavior. Plus a new "if a field doesn't persist after `updateWebPage`, file it as a wrapper bug rather than working around with manual `updateUserMeta`" hint added to the `updateWebPage` description — gives agents the unknown-unknowns recovery path Claude suggested.
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — `updateWebPage` description: replaced ~10-line EAV workflow block with 3-line auto-routing note + wrapper-bug fallback hint. `updateUserMeta` and `createUserMeta` descriptions: replaced "Critical BD pattern" workaround sections with one-line redirects to `createWebPage` / `updateWebPage`. `hero_section_content` field description: rewritten to match `hero_content_overlay_opacity`'s wording.
+- No code changes — pure docs sweep.
+
 ## [6.40.24] - 2026-04-25
 
 ### Changed — duplicate URLs are now never permitted via MCP (no bypass)
