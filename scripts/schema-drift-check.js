@@ -365,6 +365,67 @@ for (const [toolName, keepFields] of Object.entries(WRITE_KEEP_SETS)) {
   }
 }
 
+// CHECK 7.5: include_* fields must be `type: integer, enum: [0, 1]`, NOT
+// `type: boolean`. Reason: agents pass `=1` (matching our README docs and
+// BD's URL convention) but the SDK's Zod validator strict-types `boolean`
+// and rejects `1` with "Expected boolean, received number". BD itself
+// accepts both =1 and =true server-side; integer is the right shape.
+//
+// IMPORTANT — three places to check (a future spec edit can land in any):
+//   1. components.parameters.include_*    — top-level $ref-able definitions
+//   2. inline-in-operation parameters[]    — params inside a path operation
+//   3. inline-in-property-schemas          — properties of a request body schema
+//
+// Initial conversion in v6.40.47; location 2 was missed and re-fixed in
+// v6.40.48. This check enforces the invariant going forward.
+{
+  const offenders = [];
+  // Location 1: components.parameters
+  const compParams = spec.components && spec.components.parameters;
+  if (compParams) {
+    for (const [name, def] of Object.entries(compParams)) {
+      if (name.startsWith("include_") && def.schema && def.schema.type === "boolean") {
+        offenders.push(`components.parameters.${name}`);
+      }
+    }
+  }
+  // Location 2: inline operation parameters
+  for (const [pathKey, pathItem] of Object.entries(spec.paths || {})) {
+    if (!pathItem || typeof pathItem !== "object") continue;
+    for (const method of ["get", "post", "put", "delete", "patch"]) {
+      const op = pathItem[method];
+      if (op && Array.isArray(op.parameters)) {
+        for (const p of op.parameters) {
+          if (p && typeof p.name === "string" && p.name.startsWith("include_")
+              && p.schema && p.schema.type === "boolean") {
+            offenders.push(`${method.toUpperCase()} ${pathKey} parameters[name=${p.name}]`);
+          }
+        }
+      }
+    }
+  }
+  // Location 3: request-body property schemas
+  for (const [pathKey, pathItem] of Object.entries(spec.paths || {})) {
+    if (!pathItem || typeof pathItem !== "object") continue;
+    for (const method of ["post", "put", "patch"]) {
+      const op = pathItem[method];
+      const content = op && op.requestBody && op.requestBody.content;
+      const body = content && (content["application/x-www-form-urlencoded"] || content["application/json"]);
+      const props = body && body.schema && body.schema.properties;
+      if (props) {
+        for (const [pname, pdef] of Object.entries(props)) {
+          if (pname.startsWith("include_") && pdef && pdef.type === "boolean") {
+            offenders.push(`${method.toUpperCase()} ${pathKey} body.${pname}`);
+          }
+        }
+      }
+    }
+  }
+  if (offenders.length > 0) {
+    warn(`include_* fields with type:boolean detected (${offenders.length}). The SDK's Zod validator rejects "=1" when type is boolean, but our docs/agents use the =1 convention. Convert to type:integer, enum:[0,1]. Locations:\n  - ${offenders.join("\n  - ")}`);
+  }
+}
+
 // CHECK 8: Tool count sanity — if the spec has <100 or >250 tools, something
 // is wildly off and we should notice.
 const toolCount = Object.keys(OPS).length;

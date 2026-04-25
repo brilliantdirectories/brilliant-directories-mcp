@@ -2502,8 +2502,12 @@
             "in": "query",
             "description": "Opt in to return the full `review_description` body. Default is lean: bodies over 500 chars are truncated and tagged `review_description_truncated: true`. Set `1` when the agent needs full text (single-record inspection, exporting, keyword-in-body analysis).",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],
@@ -2543,8 +2547,12 @@
             "in": "query",
             "description": "Opt in to return the full `review_description` body. Default is lean: bodies over 500 chars are truncated and tagged `review_description_truncated: true`. Set `1` to get the complete body for this specific review.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],
@@ -6414,8 +6422,12 @@
             "in": "query",
             "description": "Opt in to restore plan config fields: `sub_active`, `search_priority`, `auto_activate`, `status_after_upgrade`, `upgradable_membership`, `search_membership_permissions`, `photo_limit`, `style_limit`, `service_limit`, `location_limit`, all form/sidebar/email-template fields, `profile_layout`, `menu_name`, `data_settings`, `payment_default`, `hide_specialties`, `email_member`, `login_redirect`, `page_header`, `page_footer`, `display_ads`, `receive_messages`, `index_rule`, `nofollow_links`. Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           },
           {
@@ -6423,8 +6435,12 @@
             "in": "query",
             "description": "Opt in to restore profile-visibility toggles: `show_about`, `show_experience`, `show_education`, `show_background`, `show_affiliations`, `show_publications`, `show_awards`, `show_slogan`, `show_sofware`, `show_phone`, `seal_link`, `website_link`, `social_link`. Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],
@@ -6464,8 +6480,12 @@
             "in": "query",
             "description": "Opt in to restore plan config fields (limits, sidebars, forms, email templates, upgrade chain, display/payment settings). Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           },
           {
@@ -6473,8 +6493,12 @@
             "in": "query",
             "description": "Opt in to restore profile-visibility toggles (`show_about`, `show_experience`, `show_phone`, `seal_link`, `website_link`, `social_link`, etc.). Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],
@@ -9578,8 +9602,12 @@
             "in": "query",
             "description": "Opt in to return the `content` (body HTML) field on each row. Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           },
           {
@@ -9587,8 +9615,12 @@
             "in": "query",
             "description": "Opt in to return `content_css`, `content_head`, `content_footer_html` on each row. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],
@@ -9628,8 +9660,12 @@
             "in": "query",
             "description": "Opt in to return the `content` (body HTML) field. Default stripped.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           },
           {
@@ -9637,8 +9673,12 @@
             "in": "query",
             "description": "Opt in to return `content_css`, `content_head`, `content_footer_html`. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
             }
           }
         ],

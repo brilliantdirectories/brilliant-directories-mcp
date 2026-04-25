@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.49] - 2026-04-25
+
+### Fixed — `include_*=1` fix completed across all spec locations + drift-check guard
+
+v6.40.47's `include_*` boolean→integer fix only converted 2 of the 3 locations the spec stores fields. Inline-in-operation-parameters (`paths.<route>.<method>.parameters: [...]`) was missed, leaving 10 `include_*` fields (including `listWebPages.include_content`) still typed as `boolean`. The SDK's Zod validator kept rejecting `=1` for those operations — verified live: `listWebPages include_content=1` returned `"Expected boolean, received number"` even after v6.40.47 publish + Worker redeploys.
+
+#### What was missed
+
+A field name like `include_content` can appear in **three structurally distinct places** in an OpenAPI 3.1 spec:
+
+1. `components.parameters.<name>` — top-level $ref-able definitions
+2. `paths.<route>.<method>.parameters: [{name: ..., schema: ...}]` — **inline operation parameters** (was missed in v6.40.47)
+3. `paths.<route>.<method>.requestBody.content.<mime>.schema.properties.<name>` — request-body property schemas
+
+A spec-wide change has to update all three. v6.40.47 hit (1) + (3) but not (2).
+
+#### Fix
+
+10 inline-in-operation `include_*` parameters converted from `type: boolean` to `type: integer, enum: [0, 1]`. Total spec count of `type: boolean` is now 0.
+
+#### Guard added — `scripts/schema-drift-check.js` CHECK 7.5
+
+New check explicitly inspects all three locations for `include_*` fields with `type: boolean` and fails the drift check before publish if any are found. Future spec edits that drop a new boolean `include_*` will trip this immediately.
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — 10 inline operation parameters converted
+- `scripts/schema-drift-check.js` — CHECK 7.5 added (~50 lines)
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — cache-bust comment marker (`// CACHE_BUST: <timestamp>`) at end of file from forcing a fresh isolate during debugging; harmless trailing comment, no behavior change
+
 ## [6.40.48] - 2026-04-25
 
 ### Fixed — 11 slug-format gaps from Claude's URL stress test
