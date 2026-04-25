@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.68] - 2026-04-25
+
+### Added — `.webp` to allowed image format list
+
+The corpus image-format rule listed only `.jpg` and `.png` for imported image fields (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`, `original_image_url`). BD's pipeline supports WebP — agents were unnecessarily constrained from using it. Rule now reads `.jpg`, `.png`, or `.webp`.
+
 ## [6.40.67] - 2026-04-25
 
 ### Improved — plan-gated user image rule now re-routes user-explicit field requests

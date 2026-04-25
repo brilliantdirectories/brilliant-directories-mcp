@@ -461,7 +461,7 @@ Treat these as a single atomic recipe, not a menu. If you're tempted to skip one
 - **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`, `original_image_url`) — bare URL, no `?` query string (BD's filename generator breaks on it). Wrapper auto-strips query strings on these fields if you forget; write the bare URL anyway so the corpus and the wire match.
 - **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness).
 - **Orientation — LANDSCAPE only, never portrait/vertical** for every content image: `post_image`, `hero_image`, `cover_photo`, multi-image album photos (`createMultiImagePost` CSV + `createMultiImagePostPhoto.original_image_url`), AND inline `<img>` in Froala body fields (`post_content`, `group_desc`). Portrait breaks article/card/hero/album-grid/body-flow layouts. `profile_photo` / `logo` are headshots/icons — orientation rule doesn't apply. **On Pexels, fetch the public search page with `?orientation=landscape` before picking a photo** — e.g. `https://www.pexels.com/search/mountain/?orientation=landscape` (no API key, no auth). That param belongs on the search URL only, NEVER on the final `images.pexels.com/photos/...jpeg` URL you send to BD (imported fields stay bare — see bullet 1). Do not pick from unfiltered thumbnails — they crop to squares and hide portrait-only originals. If unsure about a URL, skip it.
-- **Format:** `.jpg` or `.png` only.
+- **Format:** `.jpg`, `.png`, or `.webp`.
 
 **Banned image sources** (never use, period):
 
