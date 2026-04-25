@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.60] - 2026-04-25
+
+### Added — category rename/delete bound-page guard
+
+A `seo_type=profile_search_results` web page is bound to a category by exact filename match — that's how BD's router queries the right members for the page. Renaming or deleting the category orphans the bound page (renders empty, no category to query). The wrapper now rejects both operations when a bound page exists.
+
+**Runtime guard** on `updateSubCategory` / `updateTopCategory` (when `filename` changes) and on `deleteSubCategory` / `deleteTopCategory`: probes `list_seo` for a `profile_search_results` page bound to the OLD filename. If found, rejects with the bound page's `seo_id` and step-by-step recovery (rename or repurpose the bound page first, then retry; on rename, also suggests `createRedirect` for SEO continuity).
+
+**Field descriptions** added to `updateSubCategory.filename` and `updateTopCategory.filename` explaining the rename caveat. **Tool descriptions** on the four affected tools (`updateSubCategory`, `updateTopCategory`, `deleteSubCategory`, `deleteTopCategory`) now mention the bound-page check.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.59] - 2026-04-25
 
 ### Fixed — slug-uniqueness guard now allows the profile_search_results override pattern

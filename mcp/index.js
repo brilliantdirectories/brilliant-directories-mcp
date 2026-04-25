@@ -3214,6 +3214,56 @@ async function main() {
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
+      // Category rename/delete bound-page guard. A `seo_type=profile_search_results`
+      // web page is bound to a category by exact filename match — that's how BD's
+      // router knows which category's members to query. Renaming or deleting the
+      // category orphans the bound page (it renders empty). Probe list_seo for a
+      // bound page; if found, reject with rename-page-or-delete-it guidance.
+      if (
+        (name === "updateSubCategory" || name === "updateTopCategory" ||
+         name === "deleteSubCategory" || name === "deleteTopCategory") &&
+        args && typeof args === "object"
+      ) {
+        const isTop = name === "updateTopCategory" || name === "deleteTopCategory";
+        const idField = isTop ? "profession_id" : "service_id";
+        const idVal = args[idField];
+        if (idVal !== undefined && idVal !== null && idVal !== "") {
+          // For UPDATE: only fire when filename is being changed. For DELETE: always fire.
+          const isDelete = name.startsWith("delete");
+          const isFilenameChange = !isDelete && typeof args.filename === "string" && args.filename !== "";
+          if (isDelete || isFilenameChange) {
+            try {
+              const endpoint = isTop ? "list_professions" : "list_services";
+              const catResp = await makeRequest(config, "GET", `/api/v2/${endpoint}/get/${encodeURIComponent(String(idVal))}`, null, null);
+              const catMsg = catResp && catResp.body && catResp.body.message;
+              const catRow = Array.isArray(catMsg) ? catMsg[0] : catMsg;
+              const oldFilename = catRow && catRow.filename;
+              if (typeof oldFilename === "string" && oldFilename !== "" &&
+                  (isDelete || oldFilename !== args.filename)) {
+                const pageResp = await makeRequest(config, "GET", "/api/v2/list_seo/get",
+                  { property: "filename", property_value: oldFilename, property_operator: "=", limit: 5 },
+                  null
+                );
+                const pageRows = pageResp && pageResp.body && Array.isArray(pageResp.body.message) ? pageResp.body.message : [];
+                const boundPage = pageRows.find((r) => r && String(r.seo_type || "").toLowerCase() === "profile_search_results");
+                if (boundPage) {
+                  const action = isDelete ? "delete" : "rename";
+                  const recovery = isDelete
+                    ? `Delete or repurpose the bound page first (deleteWebPage seo_id=${boundPage.seo_id}, OR updateWebPage seo_id=${boundPage.seo_id} seo_type=content), then retry this delete.`
+                    : `Rename the bound page first (updateWebPage seo_id=${boundPage.seo_id} filename='${args.filename}'), or change its seo_type, then retry this rename. Consider createRedirect from '${oldFilename}' to '${args.filename}' for SEO continuity.`;
+                  return {
+                    content: [{ type: "text", text: `${name} BOUND-PAGE GUARD: cannot ${action} category (${idField}=${idVal}, filename='${oldFilename}') — web page seo_id=${boundPage.seo_id} has seo_type=profile_search_results bound to this filename. ${action === "delete" ? "Deleting" : "Renaming"} the category would orphan that page (it'd render empty with no category to query). ${recovery}` }],
+                    isError: true,
+                  };
+                }
+              }
+            } catch {
+              // Probe failure is transient — let BD handle it.
+            }
+          }
+        }
+      }
+
       // createMemberSubCategoryLink (rel_services) — FK + duplicate-pair guard.
       // Without this, BD silently creates orphan rows pointing at nonexistent
       // user_id or service_id, AND allows duplicate (user_id, service_id)
