@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.74] - 2026-04-25
+
+### Fixed — users_meta create-semantics: kill 6 contradictions, harden 404 framing
+
+Stress tests (3 parallel sub-agents) on v6.40.73 found 6 places in corpus + spec still carrying the old upsert / createUserMeta-positive story that the new L286 rule contradicts. Fixed all 6:
+
+- corpus L14 footer (table quick-ref) — was claiming `updateUserMeta` upserts on non-list_seo parents; now references the rule below
+- spec `createUserMeta.description` (hidden tool, but description still leaked create-positive workflow recipes) — collapsed to a single sentence pointing at the EAV rule
+- spec `updateUserMeta.description` — replaced "If no row exists, use createUserMeta instead" with "row cannot be created via this endpoint — see corpus rule. Never guess meta_id; 404 = stop, not retry."
+- spec `createMembershipPlan.custom_checkout_url` description — claimed BD auto-seeds the row on plan create. Live test (`createMembershipPlan` then `listUserMeta database=subscription_types`) returned zero rows. Claim was false; corrected to "stored only after explicit set."
+
+Also tightened L286 itself: 404 reframed from observation to prohibition ("never guess; 404 = stop, not retry"). Closes the adversarial-reading loophole where an agent could treat 404 as cost-free probing.
+
+`updateUserMeta` is unchanged for legitimate uses (existing rows). Hero/EAV auto-route on `updateWebPage` is unchanged. Compound-identity safety guards unchanged.
+
 ## [6.40.73] - 2026-04-25
 
 ### Fixed — users_meta create-semantics rule corrected

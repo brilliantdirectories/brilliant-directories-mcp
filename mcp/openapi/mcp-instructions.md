@@ -11,7 +11,7 @@ Tool names are NOT derived from table names — there is no `createUsersData`. W
 | BD table | Read | Mutate |
 |---|---|---|
 | `users_data` | `listUsers`, `getUser`, `searchUsers` | `createUser`, `updateUser`, `deleteUser` |
-| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` — no standalone create; row creation is auto-handled by parent-table tools where the parent has EAV fields (`updateWebPage` for `list_seo`). For other parent tables (`users_data`, `subscription_types`, `data_posts`, etc.), `updateUserMeta` creates the row if it doesn't exist |
+| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` — no standalone create; row creation only via wrapper EAV auto-route (see users_meta-writes-restricted rule below) |
 | `list_seo` | `listWebPages`, `getWebPage` | `createWebPage`, `updateWebPage`, `deleteWebPage` |
 | `list_professions` | `listTopCategories`, `getTopCategory` | `createTopCategory`, `updateTopCategory`, `deleteTopCategory` |
 | `list_services` | `listSubCategories`, `getSubCategory` | `createSubCategory`, `updateSubCategory`, `deleteSubCategory` |
@@ -283,7 +283,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on search results, or full-content export. Skip at `limit=100` on moderation sweeps — stick to lean and re-fetch the handful of reviews you care about with `getReview` + this flag.
 
-**users_meta writes are restricted to `updateUserMeta` / `deleteUserMeta`.** `createUserMeta` is not exposed. Row creation happens ONLY through the wrapper's EAV auto-route on parent tools — see **WebPage EAV fields** rule below for the canonical list and behavior. `updateUserMeta` 404s on missing `meta_id`. Keys outside the EAV routing table can't be created — report as wrapper gap, don't fabricate.
+**users_meta writes are restricted to `updateUserMeta` / `deleteUserMeta`.** `createUserMeta` is not exposed. Row creation happens ONLY through the wrapper's EAV auto-route on parent tools — see **WebPage EAV fields** rule below for the canonical list and behavior. Always confirm `meta_id` via `listUserMeta` before calling `updateUserMeta` — never guess; 404 = stop, not retry. Keys outside the EAV routing table can't be created — report as wrapper gap, don't fabricate.
 
 **Write responses are ALWAYS lean.** Every `create*` / `update*` across users, posts (single + multi), post types, top + sub categories, web pages, and widgets returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object, no raw widget_data/widget_style/widget_javascript. The `include_*` flags do NOT apply to write responses — they only work on `get*` / `list*` / `search*`. If you need the full record after a write, call the matching `get*` with whatever `include_*` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
 
