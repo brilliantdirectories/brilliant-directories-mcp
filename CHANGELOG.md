@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.52] - 2026-04-25
+
+### Changed — README + SKILL.md placeholder URLs use canonical `www.` form
+
+Most BD sites are served at `https://www.<domain>` rather than the bare-apex form. Customers copying the setup snippets verbatim were sometimes ending up with `https://customer-site.com` when the canonical hostname is `https://www.customer-site.com`, producing 404s on the BD API.
+
+Updated:
+- The "Before you start" requirements block now leads with `https://www.mysite.com` as the primary example, keeps the bare-apex form as a fallback "only if your site has no www.", and adds an explicit anti-pattern: `https://mysite.com` when the site actually serves at `www.mysite.com`.
+- All 44 placeholder URL examples across both READMEs (root + `mcp/`) use `https://www.your-site.com`.
+- Troubleshooting "404 Not Found" entry adds the `www.` canonical-form guidance.
+- `SKILL.md` agent-facing examples updated to `https://www.mysite.com`.
+
+No code changes. The Worker forwards the customer's `X-BD-Site-URL` header verbatim to BD — it does NOT canonicalize between `www.` and bare-apex. So a customer who passes `https://mysite.com` when BD only responds at `https://www.mysite.com` will see 404s. Docs now lead with the canonical form so first-try installs work.
+
 ## [6.40.51] - 2026-04-25
 
 ### Fixed — three more URL gaps from Claude's continued stress test (Phases 14-18)

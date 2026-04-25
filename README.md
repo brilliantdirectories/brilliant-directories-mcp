@@ -12,10 +12,12 @@ This guide walks you through connecting your AI of choice (Claude, Cursor, etc.)
 
 ## ⚠️ REQUIREMENTS — Before you start
 
-1. **Your BD site URL.** Include `https://`, no trailing slash.
-   - ✅ `https://mysite.com`
+1. **Your BD site URL.** Use the full canonical URL exactly as it loads in a browser — include `https://`, include `www.` if your site uses it, no trailing slash.
+   - ✅ `https://www.mysite.com` (most BD sites)
+   - ✅ `https://mysite.com` (only if your site has no `www.`)
    - ❌ `mysite.com` (missing `https://`)
    - ❌ `https://mysite.com/` (trailing slash)
+   - ❌ `https://mysite.com` if the site actually serves at `www.mysite.com` — use the form your site canonically responds at
 2. **Your BD API key.**
 
    BD Admin → **Developer Hub** → **Generate API Key** → copy it.
@@ -95,14 +97,14 @@ In your AI client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, etc.), 
       "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://your-site.com"
+        "X-BD-Site-URL": "https://www.your-site.com"
       }
     }
   }
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
 
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
 
@@ -130,7 +132,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
         "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
-        "--url", "https://your-site.com"
+        "--url", "https://www.your-site.com"
       ]
     }
   }
@@ -180,7 +182,7 @@ Paste one of these into the file (Easy is recommended):
       "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://your-site.com"
+        "X-BD-Site-URL": "https://www.your-site.com"
       }
     }
   }
@@ -201,14 +203,14 @@ Paste one of these into the file (Easy is recommended):
         "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
-        "--url", "https://your-site.com"
+        "--url", "https://www.your-site.com"
       ]
     }
   }
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 #### Scenario B — file already has content (preferences, Google connectors, other MCP servers)
 
@@ -243,14 +245,14 @@ Merge — don't overwrite. Two rules:
         "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
-        "--url", "https://your-site.com"
+        "--url", "https://www.your-site.com"
       ]
     }
   }
 }
 ```
 
-Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 > **Paste your final file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a> before restarting to ensure correct formatting.**
 >
@@ -299,10 +301,10 @@ Once the CLI is installed, you've got the same two options as every other client
 ```bash
 claude mcp add brilliant-directories --transport http https://brilliantmcp.com \
   --header "X-Api-Key: ENTER_API_KEY" \
-  --header "X-BD-Site-URL: https://your-site.com"
+  --header "X-BD-Site-URL: https://www.your-site.com"
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Verify with `claude mcp list` — `brilliant-directories` should appear. Close and reopen Claude Code.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Verify with `claude mcp list` — `brilliant-directories` should appear. Close and reopen Claude Code.
 
 No `npx` child process, no BD MCP install on your machine. Claude Code hits our hosted Worker over HTTP.
 
@@ -311,7 +313,7 @@ No `npx` child process, no BD MCP install on your machine. Claude Code hits our 
 > ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 ```bash
-claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 
 Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code. The `-y` flag auto-accepts the first-time npx install prompt so the spawn doesn't hang.
@@ -353,7 +355,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
          "command": "npx",
          "args": ["-y", "--prefer-online", "brilliant-directories-mcp@latest"],
          "env": {
-           "BD_API_URL": "https://your-site.com",
+           "BD_API_URL": "https://www.your-site.com",
            "BD_API_KEY": "ENTER_API_KEY"
          }
        }
@@ -361,7 +363,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
    }
    ```
 
-3. Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file.**
+3. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file.**
 4. **Fully quit and reopen Cursor** so the Claude extension picks up the new config.
 5. Chat with Claude and ask "what tools do you have?" — you should see `brilliant-directories` tools listed.
 
@@ -372,7 +374,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 Run this in any terminal (PowerShell, Terminal.app, Cursor's built-in terminal — any works):
 
 ```bash
-claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://your-site.com
+claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 
 The CLI writes the same JSON to `~/.claude.json` for you — same end result as editing the file by hand. If `claude` isn't installed (`command not found`), just use the Notepad method above — you don't need the CLI.
@@ -411,10 +413,10 @@ Follow the browser sign-in prompt on first run. `Ctrl+C` to exit after sign-in.
 ```toml
 [mcp_servers.brilliant-directories]
 command = "npx"
-args = ["-y", "--prefer-online", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://your-site.com"]
+args = ["-y", "--prefer-online", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://www.your-site.com"]
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 **3. Run `codex`.** Ask it *"list my first 5 members on my BD site"* — tools invoke, data comes back.
 
@@ -441,7 +443,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
       "serverUrl": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://your-site.com"
+        "X-BD-Site-URL": "https://www.your-site.com"
       }
     }
   }
@@ -462,14 +464,14 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
         "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
-        "--url", "https://your-site.com"
+        "--url", "https://www.your-site.com"
       ]
     }
   }
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 6. **Fully quit and reopen Windsurf.**
 
@@ -492,7 +494,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
       "url": "https://brilliantmcp.com",
       "headers": {
         "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://your-site.com"
+        "X-BD-Site-URL": "https://www.your-site.com"
       }
     }
   }
@@ -513,14 +515,14 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
         "--prefer-online",
         "brilliant-directories-mcp@latest",
         "--api-key", "ENTER_API_KEY",
-        "--url", "https://your-site.com"
+        "--url", "https://www.your-site.com"
       ]
     }
   }
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 6. Back in the MCP Servers panel, confirm `brilliant-directories` appears — toggle it **on** if not already.
 7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
@@ -554,7 +556,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
    | Left (do NOT touch) | Right (paste your values) |
    |---|---|
    | `BD_API_KEY` | your BD API key |
-   | `BD_API_URL` | `https://your-site.com` — include `https://`, no trailing slash |
+   | `BD_API_URL` | `https://www.your-site.com` — include `https://`, no trailing slash |
 
    - API key → BD Admin → **Developer Hub** → **Generate API Key** (BD shows it once; if lost, generate a new one).
    - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#requirements--before-you-start).
@@ -579,7 +581,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with yo
    - Or: Command Palette (`Cmd/Ctrl+Shift+P`) → type `Open MCP Settings`
 3. In the sidebar, click **Tools & MCP**.
 4. Click **New MCP Server**.
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
 6. Click **Save**.
 7. **Fully quit and reopen Cursor.**
 
@@ -596,7 +598,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 3. Type `~/.cursor` → Enter.
    - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
 4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 6. **Fully quit and reopen Cursor.**
 
 #### Windows
@@ -606,7 +608,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
    - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
 3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
    - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
-4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL. Save.
+4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 5. **Fully quit and reopen Cursor.**
 
 </details>
@@ -625,7 +627,7 @@ n8n's built-in **MCP Client Tool** node connects to our server and loads every B
 | **MCP Endpoint URL** | `https://brilliantmcp.com/sse` |
 | **Authentication** | `Multiple Headers Auth` |
 | **Header 1** | Name: `X-Api-Key` · Value: *your 32-char hex BD API key* |
-| **Header 2** | Name: `X-BD-Site-URL` · Value: `https://your-site.com` |
+| **Header 2** | Name: `X-BD-Site-URL` · Value: `https://www.your-site.com` |
 
 Save the node. Click the **Tool** dropdown — should populate with every BD tool. Pick any tool, click Execute.
 
@@ -641,7 +643,7 @@ https://raw.githubusercontent.com/brilliantdirectories/brilliant-directories-mcp
 ```
 n8n generates a node for every BD operation automatically. Prompts for your BD site URL and API key on import. Every BD operation available, zero MCP protocol involved.
 
-**✅ Plain HTTP Request node** — point a single HTTP Request node at `https://your-site.com/api/v2/user/get` with header `X-Api-Key: ENTER_API_KEY`. Chain multiple nodes for workflows touching several BD endpoints. Simplest possible setup.
+**✅ Plain HTTP Request node** — point a single HTTP Request node at `https://www.your-site.com/api/v2/user/get` with header `X-Api-Key: ENTER_API_KEY`. Chain multiple nodes for workflows touching several BD endpoints. Simplest possible setup.
 
 **Want to verify the server is healthy yourself?** Install the official <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> (`npx @modelcontextprotocol/inspector`) and point it at `https://brilliantmcp.com/sse`. Inspector is the reference implementation of MCP's client spec.
 
@@ -649,41 +651,41 @@ n8n generates a node for every BD operation automatically. Prompts for your BD s
 
 ### Make / Zapier
 
-**Make:** Create a custom app using the OpenAPI spec, or use the HTTP module with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*`.
+**Make:** Create a custom app using the OpenAPI spec, or use the HTTP module with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*`.
 
 **Zapier:** The "MCP Client by Zapier" app only supports OAuth / Bearer Token — it has no custom-headers field, so it cannot authenticate against our Worker.
 
 Use one of these paths instead:
 - **BD's existing Zapier app** (if it covers what you need) — same underlying API, same API key.
-- **Webhooks by Zapier** against `https://your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com`. This hits BD's REST API directly and skips MCP entirely — every BD operation reachable.
+- **Webhooks by Zapier** against `https://www.your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://www.your-site.com`. This hits BD's REST API directly and skips MCP entirely — every BD operation reachable.
 
 ---
 
 ### curl / Any HTTP Client
 
-Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL.
+Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
 
 ```bash
 # Verify your API key
-curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/token/verify
+curl -H "X-Api-Key: ENTER_API_KEY" https://www.your-site.com/api/v2/token/verify
 
 # List members
-curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/user/get?limit=10
+curl -H "X-Api-Key: ENTER_API_KEY" https://www.your-site.com/api/v2/user/get?limit=10
 
 # Create a member
 curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
   -d "email=new@example.com&password=secret123&subscription_id=1&first_name=Jane&last_name=Doe" \
-  https://your-site.com/api/v2/user/create
+  https://www.your-site.com/api/v2/user/create
 
 # Search members (spaces in values need URL-encoding as + or %20)
 curl -X POST -H "X-Api-Key: ENTER_API_KEY" \
   -d "q=dentist&address=Los+Angeles&limit=10" \
-  https://your-site.com/api/v2/user/search
+  https://www.your-site.com/api/v2/user/search
 
 # Update a member
 curl -X PUT -H "X-Api-Key: ENTER_API_KEY" \
   -d "user_id=42&company=New Company Name" \
-  https://your-site.com/api/v2/user/update
+  https://www.your-site.com/api/v2/user/update
 ```
 
 ---
@@ -714,15 +716,15 @@ Once set up, you get new MCP versions automatically the next time you fully quit
 
 ## Troubleshooting
 
-**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://your-site.com` with your BD site URL:
+**Verify your setup with one command.** Paste in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL:
 ```bash
-npx --prefer-online brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx --prefer-online brilliant-directories-mcp@latest --verify --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 Prints `OK` if credentials work, `FAIL` with the error otherwise. Good first step for any connectivity issue.
 
 **Debug mode — see exactly what's happening:**
 ```bash
-npx --prefer-online brilliant-directories-mcp@latest --debug --verify --api-key ENTER_API_KEY --url https://your-site.com
+npx --prefer-online brilliant-directories-mcp@latest --debug --verify --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 Logs every API request and response to stderr (your API key is automatically redacted), then exits. Useful when something isn't working and you want to share output with BD support.
 
@@ -732,7 +734,7 @@ Logs every API request and response to stderr (your API key is automatically red
 - **AI says "no tools" or "I don't have access"** — you didn't fully quit and reopen your AI app after setup. Fully quit (Mac `Cmd+Q`; Windows right-click taskbar → Quit), then reopen.
 - **`401 Unauthorized`** — API key is wrong, revoked, or lacks permission for the endpoint. Regenerate in BD Admin → Developer Hub.
 - **`403 API Key does not have permission to access this endpoint`** — this specific endpoint isn't granted on your key. Edit the key in BD Admin → Developer Hub and enable the missing endpoint (the error names it).
-- **`404 Not Found`** — your site URL is wrong. Must include `https://` and NO trailing slash. Correct: `https://mysite.com`. Wrong: `mysite.com` or `https://mysite.com/`.
+- **`404 Not Found`** — your site URL is wrong. Must include `https://` and NO trailing slash, and match the canonical form your site responds at (include `www.` if your site uses it). Correct: `https://www.mysite.com`. Wrong: `mysite.com`, `https://mysite.com/`, or `https://mysite.com` when the site actually serves at `www.mysite.com`.
 - **`429 Too Many Requests`** — rate limit hit (100 req/60s default). Wait 60 seconds, or email BD support to raise your site's limit up to 1,000/min.
 - **`Unknown tool` (from Claude)** — the MCP server didn't load the OpenAPI spec. Usually fixed by fully quitting the AI app (not just closing the window) and reopening. If that doesn't fix it, your npx cache may have a broken install — delete the cache and try again:
   - **Windows PowerShell:** `Remove-Item -Recurse -Force "$env:LOCALAPPDATA\npm-cache\_npx"`
@@ -752,7 +754,7 @@ Two credentials, sent as HTTP headers on every request. No OAuth, no Bearer toke
 | Header | Value | Required | Notes |
 |---|---|---|---|
 | `X-Api-Key` | your BD API key | Yes | Admin → **Developer Hub** → **Generate API Key**. Permissions are scoped per key — you choose which endpoints it can reach. |
-| `X-BD-Site-URL` | `https://your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Accepts the URL with or without `https://` — the Worker normalizes it. Not needed for the npx/Advanced path (already in the `--url` flag). |
+| `X-BD-Site-URL` | `https://www.your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Accepts the URL with or without `https://` — the Worker normalizes it. Not needed for the npx/Advanced path (already in the `--url` flag). |
 
 ### Universal MCP Client Reference
 
@@ -762,7 +764,7 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 |---|---|
 | **MCP Server URL** / Endpoint URL / Remote Server URL | `https://brilliantmcp.com` (no `/sse`, no trailing path) |
 | **Transport** | `Streamable HTTP` (also called "HTTP Streamable"). **NOT** SSE. **NOT** WebSocket. |
-| **Custom / Multiple Headers** | Two entries: `X-Api-Key: <your key>` and `X-BD-Site-URL: https://your-site.com` |
+| **Custom / Multiple Headers** | Two entries: `X-Api-Key: <your key>` and `X-BD-Site-URL: https://www.your-site.com` |
 | **OAuth** | Off / No / disabled — we don't use OAuth |
 | **Bearer Token** | Leave empty — we don't use Bearer auth |
 
@@ -778,7 +780,7 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 | **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
 | **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
 | **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
-| **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
+| **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
 | **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [OpenAI section](#openai-chatgpt--codex). |
 | **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
 
@@ -860,10 +862,10 @@ Some endpoints support dynamic field discovery:
 
 ```bash
 # Get all available user fields
-curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/user/fields
+curl -H "X-Api-Key: ENTER_API_KEY" https://www.your-site.com/api/v2/user/fields
 
 # Get custom fields for a specific post type
-curl -H "X-Api-Key: ENTER_API_KEY" https://your-site.com/api/v2/data_posts/fields?form_name=my-form
+curl -H "X-Api-Key: ENTER_API_KEY" https://www.your-site.com/api/v2/data_posts/fields?form_name=my-form
 ```
 
 ## Stable asset URLs

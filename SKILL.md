@@ -67,7 +67,7 @@ Both paths are documented in detail in the README's "Setup by Platform" section.
 ### Path B — Direct HTTPS using the OpenAPI spec (for ChatGPT Actions, n8n, Make, Zapier, LangChain, custom agents)
 
 If MCP isn't available but the agent can make authenticated HTTP requests:
-- Base URL: the user's BD site (e.g., `https://mysite.com`) — never hardcode, always ask
+- Base URL: the user's BD site, full canonical URL with `www.` if applicable (e.g., `https://www.mysite.com`) — never hardcode, always ask
 - Auth: HTTP header `X-Api-Key: {user's API key}`
 - All endpoints and schemas: the OpenAPI spec URL above. Read it to discover operations, required fields, response shapes.
 
@@ -89,7 +89,7 @@ If a user asks for something and no matching operation appears in the spec, say 
 Every API call uses `X-Api-Key` as an HTTP header. Via MCP, the server handles this automatically. Never ask the user to paste their API key into chat.
 
 ### Base URL pattern
-All endpoints live under `{site_url}/api/v2/{resource}/{action}` — e.g., `https://mysite.com/api/v2/user/get`.
+All endpoints live under `{site_url}/api/v2/{resource}/{action}` — e.g., `https://www.mysite.com/api/v2/user/get`.
 
 ### Pagination (cursor-based)
 - Request: `limit` (default 25, max 100) + `page` (opaque cursor token from prior response's `next_page`)
