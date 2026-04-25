@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.69] - 2026-04-25
+
+### Added — `og:image` as last-resort identity signal in image-sourcing tier 2
+
+The image-sourcing ladder's tier 2 (subject's own web presence) walked homepage → About/team page → verified socials. Added a 4th sub-step: the `og:image` meta tag from the homepage HTML head, after socials. Site authors set `og:image` deliberately for social-share previews — usually their headshot or logo — making it a reliable owner-controlled identity signal when nothing else surfaces. Placed last in the ladder because explicit About-page headshots and verified socials are stronger person-specific signals; `og:image` catches the case where neither yields a usable image but the homepage HTML still carries one.
+
 ## [6.40.68] - 2026-04-25
 
 ### Added — `.webp` to allowed image format list
