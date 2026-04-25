@@ -2109,6 +2109,22 @@ async function reserveSiteUrlSlug(config, toolName, args) {
         for (const row of p.rows) {
           // Self-exclusion: only on update, only same table + same id.
           if (ownId && p.table === cfg.ownTable && String(row[p.ownIdField]) === ownId) continue;
+          // profile_search_results override pattern: web pages with seo_type=
+          // profile_search_results are intentionally meant to shadow a
+          // category's auto-generated search-results URL (e.g. a richer
+          // pillar page at /strength-training that overrides the auto-page
+          // for service_id=3). For this specific seo_type, a slug match in
+          // list_services / list_professions is the *intended* relationship,
+          // not a collision. Real collisions (another web page, a member,
+          // a plan) still reject. Other seo_types still reject category
+          // overlaps.
+          if (
+            (toolName === "createWebPage" || toolName === "updateWebPage") &&
+            String(args.seo_type || "").toLowerCase() === "profile_search_results" &&
+            (p.table === "list_services" || p.table === "list_professions")
+          ) {
+            continue;
+          }
           return { table: p.table, label: p.label, id: row[p.ownIdField], idField: p.ownIdField };
         }
       }

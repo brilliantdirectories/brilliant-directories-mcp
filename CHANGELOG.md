@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.59] - 2026-04-25
+
+### Fixed — slug-uniqueness guard now allows the profile_search_results override pattern
+
+`createWebPage` and `updateWebPage` with `seo_type=profile_search_results` are intentionally designed to shadow a category's auto-generated search-results URL — a richer pillar/landing page at the same slug as an existing top category or sub-category. The slug-uniqueness pre-check was treating this intentional overlap as a collision and blocking the create.
+
+The guard now skips list_services / list_professions matches when the incoming write carries `seo_type=profile_search_results`. Real collisions (another web page on `list_seo`, a member, a plan) still reject. Other `seo_type` values (`content`, `home`, `data_category`, etc.) still reject category overlaps — only `profile_search_results` gets the exception, because it's the only seo_type whose router behavior depends on matching the category slug.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.58] - 2026-04-25
 
 ### Added — Froala img-rounded auto-class, Punycode-aware homoglyph guard, mirror drift check
