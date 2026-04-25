@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.37] - 2026-04-25
+
+### Fixed — slug format validator missed zero-width chars and URL-reserved chars
+
+Third audit pass on the slug helper. v6.40.36 only blocked `\s`-class whitespace, but `\s` does NOT cover several invisible-character classes that would silently corrupt URLs, and the validator didn't block URL-reserved chars at all. Tested 29 edge cases; expanded the validator to cover both holes.
+
+#### What was missing
+
+- **Zero-width chars `\s` doesn't catch:** ZWSP U+200B, ZWNJ U+200C, ZWJ U+200D, format-control U+2060–U+2064, BOM U+FEFF, soft-hyphen U+00AD. An agent pasting from a doc that contains any of these would have produced a URL that visually matches existing content but isn't caught as a duplicate.
+- **URL-reserved characters:** `/ \ ? # & % < > "`. An agent passing `filename="path/to/page"` would have created a multi-segment URL; `filename="page?x=1"` would have appended a query string. Both break BD routing.
+
+#### Fix
+
+Extended `_validateSlugFormat` with two character-class checks:
+
+1. Whitespace + invisible-character class: `[\s­​-‏⁠-⁤﻿]` covers `\s` (regular whitespace, NBSP, ideographic space, etc.) PLUS the zero-width / format-control / BOM gap.
+2. URL-reserved class: `[\/\\?#&%<>"]`.
+
+Both reject upfront with actionable error messages before any network work.
+
+#### Verified — 29 edge cases all behave correctly
+
+Whitespace variants (regular space, leading/trailing, tabs, newlines, NBSP, ideographic space) → all reject. Invisible chars (ZWSP, ZWNJ, ZWJ, BOM, soft-hyphen) → all reject. URL-reserved (`/`, `\`, `?`, `#`, `&`, `%`, `<`, `>`, `"`) → all reject. Valid slugs (`hello-world`, `Hello_World`, `page-2024`, `my.page`, `café-menu`) → all pass.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. ~10 lines net change. Test suite at `c:\tmp\slug-test.js` covers all 29 cases (not committed; one-shot audit harness).
+
 ## [6.40.36] - 2026-04-25
 
 ### Fixed — two more blind spots in slug-uniqueness helper, found in second audit pass

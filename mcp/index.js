@@ -1507,14 +1507,23 @@ function _normalizeSlug(s) {
   return String(s).trim().toLowerCase();
 }
 
-/** Validate slug format — BD URL slugs must NOT contain whitespace anywhere
- *  (spaces, tabs, newlines all break routing or render as `%20` etc.). Reject
- *  upfront with a clear actionable message before doing any probe work.
+/** Validate slug format — BD URL slugs must NOT contain:
+ *  (a) whitespace OR zero-width / invisible characters (would silently
+ *      corrupt URLs — \s catches regular whitespace + NBSP + ideographic
+ *      space; the explicit class adds soft-hyphen U+00AD, ZWSP/ZWNJ/ZWJ
+ *      U+200B-U+200D, format-control U+2060-U+2064, BOM U+FEFF — all
+ *      invisible chars NOT covered by \s).
+ *  (b) URL-reserved / structural characters (would break BD routing —
+ *      slash, backslash, ?, #, &, %, <, >, ").
+ *  Reject upfront with a clear actionable message before any probe work.
  *  Returns null on valid, error-string on invalid. */
 function _validateSlugFormat(slug, fieldLabel) {
-  if (typeof slug !== "string") return null; // non-strings are skipped earlier
-  if (/\s/.test(slug)) {
-    return `${fieldLabel} '${slug}' contains whitespace, which is not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
+  if (typeof slug !== "string") return null; // non-strings skipped earlier
+  if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
+    return `${fieldLabel} '${slug}' contains whitespace or invisible characters, which are not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
+  }
+  if (/[\/\\?#&%<>"]/.test(slug)) {
+    return `${fieldLabel} '${slug}' contains URL-reserved characters (one of /\\?#&%<>"), which are not allowed in BD URLs. Use only letters, digits, hyphens, underscores, and dots.`;
   }
   return null;
 }
