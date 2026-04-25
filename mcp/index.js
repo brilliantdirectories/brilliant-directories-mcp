@@ -2443,6 +2443,40 @@ async function main() {
             isError: true,
           };
         }
+        // Cross-table identity verification: pre-fetch the meta_id and confirm
+        // the (database, database_id) the agent passed actually matches the
+        // row. Without this, BD's update/delete with a wrong identity pair
+        // hangs the connection until the 4-minute MCP transport timeout
+        // (BD does a multi-condition UPDATE that finds zero rows and stalls).
+        // Skip on createUserMeta (no meta_id yet) and skip the verify call's
+        // own probe failures (treat as soft — let BD reject if it must).
+        if (!isCreate) {
+          try {
+            const verify = await makeRequest(
+              config,
+              "GET",
+              `/api/v2/users_meta/get/${encodeURIComponent(String(a.meta_id))}`,
+              null,
+              null
+            );
+            const row = verify && verify.body && verify.body.message;
+            const realDb = row && (row.database != null ? String(row.database) : null);
+            const realPid = row && (row.database_id != null ? String(row.database_id) : null);
+            const sentDb = String(a.database);
+            const sentPid = String(a.database_id);
+            if (realDb !== null && realPid !== null && (realDb !== sentDb || realPid !== sentPid)) {
+              return {
+                content: [{
+                  type: "text",
+                  text: `${name} CROSS-TABLE GUARD: meta_id=${a.meta_id} actually belongs to (database="${realDb}", database_id=${realPid}), not (database="${sentDb}", database_id=${sentPid}) you passed. Refusing to forward — BD's response on cross-table mismatch is a 4-minute hang. Use listUserMeta with database="${sentDb}" and database_id=${sentPid} to find the correct meta_id for your target, OR pass database="${realDb}" and database_id=${realPid} if you intended this row.`
+                }],
+                isError: true,
+              };
+            }
+          } catch {
+            // Verify call failed (transient) — proceed and let BD handle it.
+          }
+        }
       }
 
       // SAFETY GUARD (parallel to Worker's validateUsersMetaRead): listUserMeta

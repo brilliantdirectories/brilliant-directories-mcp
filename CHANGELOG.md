@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.40] - 2026-04-25
+
+### Fixed — cross-table users_meta hang + doc drift sweep from external audit
+
+External Claude audit produced ~14 findings. Triage:
+- 4 already covered by v6.40.34-v6.40.39 (slug uniqueness on web pages, top categories, sub categories, plans + cross-resource namespace check) — no action.
+- 1 server-side BD bug parked in KNOWN-SERVER-BUGS.md (`revision_timestamp` stale on EAV writes).
+- 1 high-impact wrapper bug fixed (cross-table identity hang).
+- 7 doc-drift issues addressed surgically.
+
+#### updateUserMeta / deleteUserMeta cross-table identity verification (HIGH)
+
+Before this release: the wrapper required the agent to PASS `(database, database_id)` alongside `meta_id`, but didn't verify the pair MATCHED the row. When agents passed a wrong pair (stale data, copy-paste error), BD's response on the multi-condition UPDATE/DELETE hung the connection until the 4-minute MCP transport timeout. From the agent's perspective: silent stall, then disconnect. No useful error.
+
+Fix: pre-fetch `users_meta/get/<meta_id>` and compare the row's actual `(database, database_id)` to what the agent passed. On mismatch, reject upfront with a specific error naming both pairs and pointing the agent at `listUserMeta` for the correct lookup. Both files mirrored. Skipped on `createUserMeta` (no `meta_id` yet) and on transient probe failures (let BD handle them).
+
+#### Doc drift fixes (in `mcp/openapi/bd-api.json`)
+
+- **`breadcrumb` field** (createWebPage + updateWebPage): replaced "OMIT — do not set unless user explicitly requests it" with stronger "OMIT — BD auto-generates the breadcrumb trail. Never set this yourself; a manual value overrides BD's generated trail and breaks the page." Per user direction: never set, no exceptions.
+
+- **`seo_type` enum on update**: added explicit "`home` appears in the enum only so existing-record round-trips pass validation; never convert another page TO `home` (only one homepage per site)" — closes the ambiguity Claude flagged.
+
+- **`updateWebPage.filename`**: was a bare "URL slug (e.g. home, about-us)". Now documents the cross-resource rename uniqueness guard the wrapper enforces (across web pages, top categories, sub categories, and plan public URLs).
+
+- **`content_images` phantom field**: removed the dangling reference from updateWebPage prose. The field isn't declared in the schema; the prose mention misled agents into thinking it was a settable parameter.
+
+- **`org_template` and `page_render_widget`**: replaced terse "Template/layout ID" / "Widget ID to render as page content" descriptions with explicit OMIT directives explaining there's no public lookup endpoint and arbitrary values break rendering.
+
+- **`h1_font_size`, `h2_font_size`, `hero_content_font_size` defaults**: removed misleading "Default 30/56/10" claims (BD's effective default varies by `seo_type`). For `hero_content_font_size`, added a UX hint that 10 renders very small.
+
+### Internal
+
+- `mcp/index.js` — `verifyUserMetaCrossTable` logic added inline in the dispatch path (~25 lines).
+- `src/index.ts` — same logic mirrored as a standalone async function `verifyUserMetaCrossTable`, called between the existing identity check and the read check.
+- `mcp/openapi/bd-api.json` — 8 description-string updates, no schema changes.
+
 ## [6.40.39] - 2026-04-25
 
 ### Fixed — three more slug-helper holes from stress testing
