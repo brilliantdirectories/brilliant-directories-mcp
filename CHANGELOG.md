@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.55] - 2026-04-25
+
+### Added — three small prophylactics around the BD-table → tool-name lookup
+
+Claude reviewed v6.40.54's lookup table and surfaced three failure-mode preventions worth adding. All compact:
+
+1. **Concrete example after the table** — pins the abstract mapping to a specific case (`database=users_data` → use `getUser`, no `getUsersData`).
+2. **Tool naming convention** — explicit `<verb><Entity>` rule with the prophylactic *"never guess by transforming a table name."* This was the missing piece — agents had the snake_case-vs-camelCase distinction but no rule for *deriving* one from the other, so under load they'd default to "transform the table name" instead of consulting the table.
+3. **Missing-tool escalation path** — a tool absent from `tools/list` is a session-config issue, not evidence the tool doesn't exist. Tells agents to escalate rather than work around.
+
+### Fixed — `users_meta` lookup row scope
+
+The v6.40.54 row said *"no standalone create — auto-routed via `updateWebPage`"* which was only accurate for `list_seo` EAV fields. Reworded to clarify: row auto-creation is parent-tool-driven for tables with EAV fields (`updateWebPage` for `list_seo`); for other parents (`users_data`, `subscription_types`, `data_posts`, etc.), `updateUserMeta` creates the row if it doesn't exist.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — 3 short paragraphs added after the lookup table, 1 row clarification. ~700 chars net. No code changes.
+
 ## [6.40.54] - 2026-04-25
 
 ### Added — BD-table → tool-name lookup table in corpus

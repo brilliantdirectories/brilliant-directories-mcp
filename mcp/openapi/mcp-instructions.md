@@ -11,7 +11,7 @@ Tool names are NOT derived from table names — there is no `createUsersData`. W
 | BD table | Read | Mutate |
 |---|---|---|
 | `users_data` | `listUsers`, `getUser`, `searchUsers` | `createUser`, `updateUser`, `deleteUser` |
-| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` (no standalone create — auto-routed via `updateWebPage`) |
+| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` — no standalone create; row creation is auto-handled by parent-table tools where the parent has EAV fields (`updateWebPage` for `list_seo`). For other parent tables (`users_data`, `subscription_types`, `data_posts`, etc.), `updateUserMeta` creates the row if it doesn't exist |
 | `list_seo` | `listWebPages`, `getWebPage` | `createWebPage`, `updateWebPage`, `deleteWebPage` |
 | `list_professions` | `listTopCategories`, `getTopCategory` | `createTopCategory`, `updateTopCategory`, `deleteTopCategory` |
 | `list_services` | `listSubCategories`, `getSubCategory` | `createSubCategory`, `updateSubCategory`, `deleteSubCategory` |
@@ -21,6 +21,12 @@ Tool names are NOT derived from table names — there is no `createUsersData`. W
 | `subscription_types` | `listMembershipPlans`, `getMembershipPlan` | `createMembershipPlan`, `updateMembershipPlan`, `deleteMembershipPlan` |
 | `location_cities` | `listCities`, `getCity` | `updateCity` only (no create/delete by design) |
 | `location_states` | `listStates`, `getState` | `updateState` only |
+
+Example: a `users_meta` row's `database=users_data` value identifies which parent table the meta attaches to. To READ the parent member, use `getUser`. There is no `getUsersData` tool.
+
+Tool naming: `<verb><Entity>` where Entity is the agent-facing concept name, NOT the table name. `users_data` → `User` → `createUser`/`getUser`/`listUsers`. `list_professions` → `TopCategory` → `createTopCategory`/`listTopCategories`. `rel_services` → `MemberSubCategoryLink` → `createMemberSubCategoryLink`. **Never guess by transforming a table name** — always consult the lookup table above.
+
+If a tool you need from this lookup is missing from your loaded `tools/list`, that is a session-config issue, NOT evidence the tool doesn't exist. Tell the user to verify their MCP client is loading the full BD catalog (173 tools); do not work around the absence.
 
 **Every write goes to a live production site - there is no staging mode, no sandbox, no `?dry_run=1`.** Every create/update/delete takes effect immediately on the real public site. For bulk operations (many records, potentially destructive changes, schema-like edits) confirm intent with the user before executing.
 
