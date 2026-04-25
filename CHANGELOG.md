@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.62] - 2026-04-25
+
+### Fixed — bound-page guard now catches multi-tier slugs
+
+v6.40.60's category rename/delete guard probed `list_seo` for an exact filename match against the category's filename — which only caught bare-leaf bindings (page filename `ballet` ↔ category `ballet`). It missed the standard hierarchical pattern documented in the corpus: pages whose filename ENDS in or CONTAINS the category's filename as a path segment (page `dance-schools/ballet` or `california/los-angeles/ballet` ↔ category `ballet`).
+
+Live test confirmed the gap: renaming sub-category `ballet` (`service_id=39`) succeeded silently while leaving `seo_id=163 filename=dance-schools/ballet` orphaned. The orphaned page rendered empty because BD's router still resolved `/dance-schools/ballet` to the page, but the page's category-leaf query (`WHERE filename=ballet`) returned zero rows.
+
+The guard now pulls all `seo_type=profile_search_results` pages once (single BD GET, scoped by seo_type filter) and segment-matches each page's filename against the category's old filename. Exact path-segment match → bound. `seo_type=content` pages don't participate in the binding (they're static, no router→category lookup) — automatically excluded by the seo_type filter.
+
+The error response now names the bound page's full filename (so the agent sees `dance-schools/ballet`, not just the leaf) and suggests a recovery slug template.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.61] - 2026-04-25
 
 ### Fixed — category-side override pattern (mirror of v6.40.59)

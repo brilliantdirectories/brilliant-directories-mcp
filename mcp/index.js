@@ -3230,10 +3230,12 @@ async function main() {
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
       // Category rename/delete bound-page guard. A `seo_type=profile_search_results`
-      // web page is bound to a category by exact filename match — that's how BD's
-      // router knows which category's members to query. Renaming or deleting the
-      // category orphans the bound page (it renders empty). Probe list_seo for a
-      // bound page; if found, reject with rename-page-or-delete-it guidance.
+      // web page binds to a category by exact filename match on ANY path segment
+      // — bare slugs (`/ballet`) AND multi-tier hierarchies (`/dance-schools/ballet`,
+      // `/california/los-angeles/ballet`) all use BD's router to find the matching
+      // category. Pull all profile_search_results pages once, segment-match the
+      // old category filename against each. seo_type=content pages at the same
+      // path don't bind — they're just static pages, no router→category lookup.
       if (
         (name === "updateSubCategory" || name === "updateTopCategory" ||
          name === "deleteSubCategory" || name === "deleteTopCategory") &&
@@ -3243,7 +3245,6 @@ async function main() {
         const idField = isTop ? "profession_id" : "service_id";
         const idVal = args[idField];
         if (idVal !== undefined && idVal !== null && idVal !== "") {
-          // For UPDATE: only fire when filename is being changed. For DELETE: always fire.
           const isDelete = name.startsWith("delete");
           const isFilenameChange = !isDelete && typeof args.filename === "string" && args.filename !== "";
           if (isDelete || isFilenameChange) {
@@ -3256,18 +3257,21 @@ async function main() {
               if (typeof oldFilename === "string" && oldFilename !== "" &&
                   (isDelete || oldFilename !== args.filename)) {
                 const pageResp = await makeRequest(config, "GET", "/api/v2/list_seo/get",
-                  { property: "filename", property_value: oldFilename, property_operator: "=", limit: 5 },
+                  { property: "seo_type", property_value: "profile_search_results", property_operator: "=", limit: 100 },
                   null
                 );
                 const pageRows = pageResp && pageResp.body && Array.isArray(pageResp.body.message) ? pageResp.body.message : [];
-                const boundPage = pageRows.find((r) => r && String(r.seo_type || "").toLowerCase() === "profile_search_results");
+                const boundPage = pageRows.find((r) => {
+                  if (!r || typeof r.filename !== "string") return false;
+                  return r.filename.split("/").includes(oldFilename);
+                });
                 if (boundPage) {
                   const action = isDelete ? "delete" : "rename";
                   const recovery = isDelete
                     ? `Delete or repurpose the bound page first (deleteWebPage seo_id=${boundPage.seo_id}, OR updateWebPage seo_id=${boundPage.seo_id} seo_type=content), then retry this delete.`
-                    : `Rename the bound page first (updateWebPage seo_id=${boundPage.seo_id} filename='${args.filename}'), or change its seo_type, then retry this rename. Consider createRedirect from '${oldFilename}' to '${args.filename}' for SEO continuity.`;
+                    : `Rename the bound page first (updateWebPage seo_id=${boundPage.seo_id} filename=<new-slug-with-'${args.filename}'-as-the-matching-segment>), or change its seo_type, then retry this rename. Consider createRedirect from '${boundPage.filename}' to the new page slug for SEO continuity.`;
                   return {
-                    content: [{ type: "text", text: `${name} BOUND-PAGE GUARD: cannot ${action} category (${idField}=${idVal}, filename='${oldFilename}') — web page seo_id=${boundPage.seo_id} has seo_type=profile_search_results bound to this filename. ${action === "delete" ? "Deleting" : "Renaming"} the category would orphan that page (it'd render empty with no category to query). ${recovery}` }],
+                    content: [{ type: "text", text: `${name} BOUND-PAGE GUARD: cannot ${action} category (${idField}=${idVal}, filename='${oldFilename}') — web page seo_id=${boundPage.seo_id} (filename='${boundPage.filename}', seo_type=profile_search_results) has '${oldFilename}' as a path segment and binds to this category. ${action === "delete" ? "Deleting" : "Renaming"} this category would orphan that page (BD router resolves the URL but the page can't query the missing category, renders empty). ${recovery}` }],
                     isError: true,
                   };
                 }
