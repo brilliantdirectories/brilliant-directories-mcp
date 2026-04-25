@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.73] - 2026-04-25
+
+### Fixed — users_meta create-semantics rule corrected
+
+L286 previously claimed BD auto-seeds users_meta rows on parent-create. Live test disproved: `createWebPage` seeds zero rows; the wrapper auto-creates rows on `updateWebPage` only for EAV-routed fields. Rule rewritten to match reality, scoped tight (no general-create promise), points to canonical EAV rule via cross-reference.
+
 ## [6.40.72] - 2026-04-25
 
 ### Changed — DRY pass: sidebars, cache-refresh, slug hierarchy
