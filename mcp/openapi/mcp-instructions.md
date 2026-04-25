@@ -488,7 +488,7 @@ Treat these as a single atomic recipe, not a menu. If you're tempted to skip one
 
 A single mistake here can cascade-destroy member data, plan metadata, and page settings that happen to share the same ID across unrelated tables.
 
-**EAV auto-route — auto-routed by the wrapper, no special handling needed.** Some BD tables mix direct columns with EAV-stored fields in `users_meta`. BD's REST API silently ignores EAV fields on parent updates, but the MCP wrapper auto-detects them and routes the writes through `users_meta`. Just call the parent tool with whatever fields you want; response includes `eav_results` confirming which EAV fields were written (and `action: created` for newly-seeded rows). Reads merge automatically.
+**EAV auto-route — auto-routed by the wrapper, no special handling needed.** Some BD tables mix direct columns with EAV-stored fields in `users_meta`. BD's REST API silently ignores EAV fields on parent updates, but the MCP wrapper auto-detects them and routes the writes through `users_meta`. Just call the parent tool with whatever fields you want; on update calls the response includes `eav_results` confirming which EAV fields were written (and `action: created` for newly-seeded rows). On create calls the wrapper still routes the fields but does not surface a per-field receipt — verify via `getWebPage`/`getMembershipPlan`/`listUserMeta` if confirmation matters. Reads merge automatically for `getWebPage`/`listWebPages`; `getMembershipPlan` does NOT merge users_meta values, read EAV-routed plan fields via `listUserMeta` directly.
 
 Canonical auto-route table (parent table → fields → parent tool):
 

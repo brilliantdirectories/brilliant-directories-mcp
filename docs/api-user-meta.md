@@ -1,6 +1,8 @@
 # BD API — User Metadata (EAV) Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108063_
 
+> **MCP wrapper note (binding for agents):** This file documents BD's raw REST API. The MCP wrapper hides `createUserMeta` from the agent catalog and only allows row creation through the wrapper's EAV auto-route on supported parent tools (currently `updateWebPage` for `list_seo` hero/EAV fields and `updateMembershipPlan` for `subscription_types.custom_checkout_url`). For wrapper-binding rules and the canonical auto-route table, see `mcp/openapi/mcp-instructions.md` — corpus rules supersede this file when they conflict.
+
 Despite the name, `users_meta` is a **generic EAV (Entity-Attribute-Value) key/value table** used across BD — NOT limited to user records. It stores arbitrary key/value pairs attached to any BD table row, keyed by `(database, database_id)`. Model: `users_meta`. DB table: `users_meta`.
 
 ## ⚠️ HARD SAFETY RULE — always include `database` + `database_id` on update and delete

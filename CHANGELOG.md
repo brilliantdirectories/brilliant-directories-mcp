@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.76] - 2026-04-25
+
+### Fixed — surface 3 wrapper-reality gaps the corpus didn't capture
+
+Sub-agent stress tests on v6.40.75 surfaced 3 small mismatches between agent expectations and actual wrapper behavior. Each fixed with one sentence added — no rewrites, no removals.
+
+- `docs/api-user-meta.md` had createUserMeta-positive workflow that contradicted the corpus. Added a binding warning at the top: "MCP wrapper hides createUserMeta; row creation only via auto-route on `updateWebPage` for `list_seo` and `updateMembershipPlan` for `subscription_types.custom_checkout_url`. Corpus rules supersede this file when they conflict."
+- Corpus EAV auto-route rule didn't mention that `eav_results` only appears on update calls (create-side routing happens silently). Added one sentence noting the asymmetry and how to verify (`getWebPage`/`getMembershipPlan`/`listUserMeta`).
+- `getMembershipPlan` description added one line on the read asymmetry: `custom_checkout_url` is users_meta-stored and NOT merged into this response even with `include_plan_config=1`; read via `listUserMeta database=subscription_types`.
+
 ## [6.40.75] - 2026-04-25
 
 ### Fixed — canonical EAV auto-route table extended to match wrapper reality
