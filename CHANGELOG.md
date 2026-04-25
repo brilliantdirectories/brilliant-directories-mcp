@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.30] - 2026-04-25
+
+### Changed — `content_active` is now wrapper-managed; removed from agent surface
+
+User pointed out: `content_active=1` is mandatory on every BD page create/update and there is no other valid value. Exposing it as an agent-tunable input was pure noise — the agent had to remember to pass it (some forgot, producing broken records), and the only "tuning" was a value that's already a constant.
+
+**Now wrapper-managed:**
+- `content_active` field declaration removed from `createWebPage` and `updateWebPage` input schemas (no longer visible to agents)
+- Wrapper unconditionally overwrites `args.content_active = 1` on every create/update before forwarding to BD — even if an agent or old client passes a different value, we coerce to 1 so the write always lands
+- All agent-facing prose mentions of `content_active=1` as a "required default" stripped from spec descriptions and `mcp-instructions.md`
+- The lean-by-default field-list in `listWebPages` description still mentions `content_active` because it IS in the read response — that's accurate and load-bearing for agents reading existing pages
+
+**Behavior is strictly improved or equivalent for all customer paths:**
+- Customers passing `content_active=1` → wrapper overwrites with same value, no behavior change
+- Customers passing `content_active=0` (the impossible value the old spec falsely advertised) → wrapper corrects to 1, write succeeds (was previously rejected by BD or stored garbage)
+- Customers omitting it → wrapper adds 1, write succeeds (was previously inconsistent — some BD versions defaulted, others didn't)
+
+Smoke-tested live: `createWebPage` with no `content_active` arg → seo_id=38 created, GET returned `content_active='1'`. Confirms auto-injection works end-to-end.
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — removed `content_active` field from createWebPage + updateWebPage input schemas; stripped 4 agent-facing prose mentions of `content_active=1` as a required default; updated 2 mentions of `arbitrary slugs return HTTP 404 even with content_active=1` → `even when the page record is created successfully` (more accurate framing).
+- `mcp/openapi/mcp-instructions.md` — removed the `content_active=1` line from the profile_search_results required-defaults list (line 510).
+- `mcp/index.js` and `src/index.ts` — added unconditional `args.content_active = 1` overwrite at the top of the createWebPage/updateWebPage dispatch path. Comments explicitly call out the unconditional-overwrite intent so future maintainers don't accidentally change to `??=` or "only-if-unset" patterns.
+
 ## [6.40.29] - 2026-04-25
 
 ### Fixed — `content_active=0` doesn't exist in BD; multiple stale references removed

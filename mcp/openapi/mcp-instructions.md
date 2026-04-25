@@ -507,7 +507,6 @@ Before create, check existence: `listWebPages property=filename property_value=<
 
 **Required defaults on create AND every update for profile_search_results pages** (unless user overrides):
 
-- `content_active=1`
 - `custom_html_placement=4`
 - `form_name="Member Search Result"` (sidebar - NOT "Member Profile Page", which is for member profile pages)
 - `menu_layout=3` (Left Slim)

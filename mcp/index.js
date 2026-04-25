@@ -2256,6 +2256,16 @@ async function main() {
         };
       }
 
+      // Auto-force content_active=1 on createWebPage / updateWebPage.
+      // BD's content_active has only one valid value (1 = live); 0 doesn't
+      // exist server-side. Always overwrite — even if an agent or old client
+      // passes a different value, we coerce to 1 so the write always lands.
+      // Removed from the input schema in v6.40.30 so agents don't see/think
+      // about the field at all.
+      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
+        args.content_active = 1; // unconditional overwrite — never use ??= or only-if-unset patterns here
+      }
+
       // Duplicate-filename guard for createWebPage AND updateWebPage. BD does
       // NOT enforce unique `filename` on `list_seo` — two records with the
       // same slug both succeed and the public URL renders one of them
