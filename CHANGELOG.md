@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.71] - 2026-04-25
+
+### Changed — drop count-coupled prose, DRY by cross-reference
+
+Removed every "ALL N fields" / "N PHP/HTML code templates" / "N safe-defaults" count from corpus and spec descriptions. Counts created brittle promises that drifted with every field added or removed (yesterday's session shipped fixes for "9" vs "8" and "8" vs "5" disagreements between paragraphs). The lists themselves were always the source of truth; the count was decoration that became a foot-gun.
+
+Same paragraphs now use cross-reference DRY: profile_search_results recipe says "apply the hero safe-defaults bundle from the rule above" instead of duplicating the field list; post-types strip-list says "the same set listed in the Post-type code fields rule above" instead of re-listing fields. createWebPage / updateWebPage spec descriptions point to the corpus hero rule instead of carrying their own (drift-prone) inline copies.
+
+Side effect: this kills two stale bugs — the spec descriptions previously said "6 readability safe-defaults" with `hero_column_width="8"` while the corpus mandated 9 fields with `hero_column_width="5"`. The spec descriptions now defer to corpus, so the drift is structurally impossible.
+
+Future-you adding a new hero default: edit corpus L431 once. Every other paragraph picks it up automatically.
+
 ## [6.40.70] - 2026-04-25
 
 ### Fixed — audit cleanup pass
