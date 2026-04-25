@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.29] - 2026-04-25
+
+### Fixed — `content_active=0` doesn't exist in BD; multiple stale references removed
+
+User flagged that `content_active=0` is not a real value — only `content_active=1` exists. The wrapper and spec had been suggesting `content_active=0` as a "hide page" alternative in three places, all wrong:
+
+- `_thin_content_warning` runtime message: said "pass `content_active=0` to keep it hidden until populated"
+- `createWebPage` description: same suggestion in prose
+- `updateWebPage` description: listed "Visibility: `content_active` (1=live, 0=hidden)" under common edits
+- `deleteWebPage` description: suggested "use `updateWebPage` with `content_active=0` for hide-without-delete"
+- `content_active` field declaration itself: declared `enum: [0, 1]` with description "1 = active, 0 = hidden"
+
+Replaced all five with correct guidance:
+- Thin-content warning: `Fix: updateWebPage to add at least one of those fields now, or deleteWebPage if the create was premature.`
+- `content_active` field: `enum: [1]`, description "Always `1` (page is live). BD does not support hiding a page via this flag — to remove a page use `deleteWebPage`."
+- `deleteWebPage`: dropped the "hide without delete" suggestion entirely.
+- `updateWebPage`: removed the visibility line from common edits.
+
+### Fixed — path-param ID validator now calls out decimals explicitly
+
+Validator already rejects decimals via `Number.isInteger()`, but the agent-facing error message only said "must be a positive integer" which agents could misread. Tightened to: "must be a positive whole integer (>=1, no decimals). Got: X. Negative IDs, 0, and decimals all trigger BD's table-dump bug — wrapper rejects to prevent data leak."
+
+### Changed — thin-content warning prose tightened
+
+Old (32 words): "createWebPage created a page with no title, h1, meta_desc, or content. content_active defaults to 1 — the page is publicly live and Google may index it as thin content. Provide at least one of those fields, or pass content_active=0 to keep it hidden until populated."
+
+New (28 words, with correct Fix path): "Page created with no title, h1, meta_desc, or content — and is publicly live. Risk: Google indexes a blank page. Fix: updateWebPage to add at least one of those fields now, or deleteWebPage if the create was premature."
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — three runtime messages updated, both files mirrored.
+- `mcp/openapi/bd-api.json` — five spec touchpoints fixed (createWebPage / updateWebPage / deleteWebPage descriptions + `content_active` field declaration on both create + update).
+
 ## [6.40.28] - 2026-04-25
 
 ### Fixed — `eav_results` now reports `action: "no_change"` for empty-string updates that BD silently no-ops

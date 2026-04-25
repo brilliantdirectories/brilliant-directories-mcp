@@ -1345,7 +1345,7 @@ function validatePathParamIds(toolPath, args) {
     }
     const n = Number(v);
     if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) {
-      return `${key} must be a positive integer. Got: ${JSON.stringify(v)}. (BD's REST API has a known bug where ${key}<=0 returns the entire table instead of a single record — wrapper rejects this to prevent data leak.)`;
+      return `${key} must be a positive whole integer (>=1, no decimals). Got: ${JSON.stringify(v)}. Negative IDs, 0, and decimals all trigger BD's table-dump bug — wrapper rejects to prevent data leak.`;
     }
   }
   return null;
@@ -2311,7 +2311,7 @@ async function main() {
       if (name === "createWebPage" && args && typeof args === "object" && args.seo_type === "content") {
         const has = (k) => args[k] !== undefined && args[k] !== null && String(args[k]).trim() !== "";
         if (!has("title") && !has("h1") && !has("meta_desc") && !has("content")) {
-          _thinContentWarning = `createWebPage created a page with no title, h1, meta_desc, or content. content_active defaults to 1 — the page is publicly live and Google may index it as thin content. Provide at least one of those fields, or pass content_active=0 to keep it hidden until populated.`;
+          _thinContentWarning = `Page created with no title, h1, meta_desc, or content — and is publicly live. Risk: Google indexes a blank page. Fix: updateWebPage to add at least one of those fields now, or deleteWebPage if the create was premature.`;
         }
       }
 
