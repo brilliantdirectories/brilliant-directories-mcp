@@ -2091,23 +2091,16 @@
                       1
                     ]
                   },
-                  "output_type": {
-                    "type": "string",
-                    "enum": [
-                      "array",
-                      "html"
-                    ]
-                  },
                   "include_password": { "type": "boolean", "description": "Opt in to return bcrypt `password` hash." },
-                  "include_subscription": { "type": "boolean", "description": "Opt in to return full `subscription_schema`." },
+                  "include_subscription": { "type": "boolean", "description": "Opt in to return full `subscription_schema`. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
                   "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
-                  "include_photos": { "type": "boolean", "description": "Opt in to return `photos_schema` array." },
-                  "include_transactions": { "type": "boolean", "description": "Opt in to return full `transactions` array." },
+                  "include_photos": { "type": "boolean", "description": "Opt in to return `photos_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
+                  "include_transactions": { "type": "boolean", "description": "Opt in to return full `transactions` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
                   "include_profession": { "type": "boolean", "description": "Opt in to return `profession_schema`." },
                   "include_tags": { "type": "boolean", "description": "Opt in to return `tags` array." },
-                  "include_services": { "type": "boolean", "description": "Opt in to return `services_schema` array." },
+                  "include_services": { "type": "boolean", "description": "Opt in to return `services_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
                   "include_seo_hidden": { "type": "boolean", "description": "Opt in to return SEO-hidden meta fields." },
-                  "include_about": { "type": "boolean", "description": "Opt in to return the `about_me` HTML bio." }
+                  "include_about": { "type": "boolean", "description": "Opt in to return the `about_me` HTML bio. Heavy — when set, `limit` is auto-capped at 25 for transport stability." }
                 }
               }
             }

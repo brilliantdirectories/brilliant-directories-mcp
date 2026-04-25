@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.13] - 2026-04-24
+
+### Added — auto-throttle on heavy USER reads + force JSON output on `searchUsers`
+
+Customer reported `searchUsers q="strength training" include_services=true limit=50` returning a silent transport timeout in Claude Code (no error, no response, just cutoff). Investigation found two root causes:
+
+1. **`searchUsers` returns HTML by default**, not structured JSON. The OpenAPI spec said default was `array`, but BD's actual behavior returns rendered search-results HTML (`<hr><div class="grid-container">...`). Our lean-shaper expects an array; on HTML it silently no-ops, agent receives a multi-KB blob.
+2. **Heavy include flags balloon row size**. With `include_services=1`, a single user record is ~6KB. At `limit=50` that's ~300KB, which the MCP transport (stdio buffer, Streamable HTTP framing, SSE) intermittently truncates without a clean error.
+
+**Fix is two layers, both leaning toward stability over rejection:**
+
+- **Force `output_type=array` on every `searchUsers` call** in both transports. Removed `output_type` from the input schema entirely so agents can't even pass `html` accidentally. Defense-in-depth — spec strip + runtime force.
+- **Auto-throttle: when ANY `include_*` flag is true on `searchUsers` / `listUsers` / `getUser` and `limit > 25`, lower it to 25 silently and attach a `_throttled` warning to the response.** Adjustment, not rejection — agent always gets results; warning teaches it to paginate or drop heavy includes.
+
+Sharpened the `include_*` field descriptions on `searchUsers` to mention the auto-cap.
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — removed `output_type` field from `searchUsers` input schema; appended "Heavy — when set, `limit` is auto-capped at 25 for transport stability." to `include_subscription`, `include_services`, `include_transactions`, `include_photos`, `include_about`.
+- `mcp/index.js` and `src/index.ts` — added the throttle guard + `output_type=array` injection right after include-flag extraction. Both files mirrored byte-for-byte. Smoke-tested locally before publish.
+
 ## [6.40.11] - 2026-04-23
 
 ### Changed — tighten corpus rule against `max-width` / `margin: auto` in `content_css`

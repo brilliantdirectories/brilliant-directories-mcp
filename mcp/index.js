@@ -1301,13 +1301,40 @@ function sanitizeImageUrlsInArgs(toolName, args) {
 
 // Hero CTA button enum guard — BD concatenates these verbatim into Bootstrap
 // classes (btn-<hero_link_color>, <hero_link_size>) and does not validate
-// server-side. An agent passing `#ffffff` or `16` produces broken CSS classes
-// on the rendered page. Reject invalid values here with a clear error naming
-// the allowed set. Only applies to createWebPage / updateWebPage.
-// Mirrored byte-for-byte in Worker's `src/index.ts`. Keep in sync.
+// server-side. sanitizeHeroCtaEnumsInArgs coerces obvious mistakes (#hex,
+// rgb()/rgba(), all-digit sizes like 16) before validateHeroEnumsInArgs
+// rejects anything still invalid. Only applies to createWebPage / updateWebPage.
+// Mirrored in Worker's `src/index.ts`. Keep in sync.
 const HERO_LINK_COLOR_VALUES = new Set(["primary", "info", "success", "warning", "danger", "default", "secondary"]);
 const HERO_LINK_SIZE_VALUES = new Set(["", "btn-lg", "btn-xl"]);
 const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
+/** Coerce common agent mistakes before validate — BD builds `btn-${color}` + size class verbatim. */
+function sanitizeHeroCtaEnumsInArgs(toolName, args) {
+  if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return;
+  const color = args.hero_link_color;
+  if (color !== undefined && color !== null && color !== "") {
+    const s = String(color).trim();
+    if (!HERO_LINK_COLOR_VALUES.has(s)) {
+      const lower = s.toLowerCase();
+      if (lower.startsWith("#") || lower.startsWith("rgb(") || lower.includes("rgba(")) {
+        console.error(
+          `[sanitize] ${toolName}: coerced invalid hero_link_color "${s}" → primary (BD uses btn-<color>)`
+        );
+        args.hero_link_color = "primary";
+      }
+    }
+  }
+  const size = args.hero_link_size;
+  if (size !== undefined && size !== null && size !== "") {
+    const s = String(size).trim();
+    if (!HERO_LINK_SIZE_VALUES.has(s) && /^\d+$/.test(s)) {
+      console.error(
+        `[sanitize] ${toolName}: coerced invalid hero_link_size "${s}" → btn-lg (BD appends size as a CSS class)`
+      );
+      args.hero_link_size = "btn-lg";
+    }
+  }
+}
 function validateHeroEnumsInArgs(toolName, args) {
   if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
   if (args.hero_link_color !== undefined && args.hero_link_color !== null && args.hero_link_color !== "") {
@@ -1944,6 +1971,34 @@ async function main() {
         }
       }
 
+      // TRANSPORT STABILITY GUARD — auto-throttle heavy reads on USER_READ_TOOLS.
+      // When ANY include_* flag is true, each row balloons to ~5-10KB (nested
+      // schemas: subscription, services, photos, transactions, profession). At
+      // limit=50 a single response can exceed 300KB, which the MCP transport
+      // (stdio buffer, Streamable HTTP, SSE) intermittently truncates without
+      // a clean error — agents see silent timeouts. Cap at 25 when heavy
+      // includes are active. Adjustment, not rejection: agent always gets
+      // results; a `_throttled` warning in the response teaches it.
+      let _throttleWarning = null;
+      if (isUserReadTool && args && typeof args === "object") {
+        const heavyActive = Object.values(includeFlags).some((v) => v === true || v === "1" || v === 1);
+        const requested = Number(args.limit);
+        if (heavyActive && Number.isFinite(requested) && requested > 25) {
+          _throttleWarning = `limit reduced from ${requested} to 25 because heavy include_* flag is set. For larger result sets, paginate with the same limit using next_page, or omit include_* flags for a lean enumeration.`;
+          args.limit = 25;
+          console.error(`[throttle] ${name}: ${_throttleWarning}`);
+        }
+      }
+
+      // searchUsers — force structured-array output. BD's default is HTML
+      // markup which our shaper can't process; agents would receive a multi-KB
+      // HTML blob instead of records. Strip any output_type the agent passed
+      // and force array. Defense-in-depth — spec already removed the html
+      // option from the input schema.
+      if (name === "searchUsers" && args && typeof args === "object") {
+        args.output_type = "array";
+      }
+
       // SAFETY GUARD: users_meta writes must pass compound identity.
       // Protects against cross-table destruction/corruption - the same `database_id`
       // belongs to UNRELATED rows on different parent tables. Acting on meta_id or
@@ -2064,6 +2119,7 @@ async function main() {
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
       sanitizeImageUrlsInArgs(name, args);
+      sanitizeHeroCtaEnumsInArgs(name, args);
       const heroEnumErr = validateHeroEnumsInArgs(name, args);
       if (heroEnumErr) {
         return {
@@ -2135,6 +2191,12 @@ async function main() {
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
+      }
+
+      // Attach throttle warning if we lowered the limit. Visible to the agent
+      // so it can paginate or drop heavy includes on the next call.
+      if (_throttleWarning && result.body && typeof result.body === "object") {
+        result.body._throttled = _throttleWarning;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.
