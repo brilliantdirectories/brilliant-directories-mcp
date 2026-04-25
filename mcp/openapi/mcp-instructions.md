@@ -6,6 +6,22 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 
 **Table names ≠ endpoint names in some cases.** BD's `users_data` table is exposed via `/api/v2/user/*` (singular). Use the tool names from your catalog (`getUser`, `listUsers`, etc.); do NOT construct BD URLs by hand from internal table names. The wrapper handles the table-to-endpoint translation for every internal probe; you should never need to.
 
+Tool names are NOT derived from table names — there is no `createUsersData`. When you see a BD table name in a `database` parameter or in error messages, map to the right tool via this lookup:
+
+| BD table | Read | Mutate |
+|---|---|---|
+| `users_data` | `listUsers`, `getUser`, `searchUsers` | `createUser`, `updateUser`, `deleteUser` |
+| `users_meta` | `listUserMeta`, `getUserMeta` | `updateUserMeta`, `deleteUserMeta` (no standalone create — auto-routed via `updateWebPage`) |
+| `list_seo` | `listWebPages`, `getWebPage` | `createWebPage`, `updateWebPage`, `deleteWebPage` |
+| `list_professions` | `listTopCategories`, `getTopCategory` | `createTopCategory`, `updateTopCategory`, `deleteTopCategory` |
+| `list_services` | `listSubCategories`, `getSubCategory` | `createSubCategory`, `updateSubCategory`, `deleteSubCategory` |
+| `rel_services` | `listMemberSubCategoryLinks`, `getMemberSubCategoryLink` | `createMemberSubCategoryLink`, `updateMemberSubCategoryLink`, `deleteMemberSubCategoryLink` |
+| `data_posts` | `listSingleImagePosts`, `getSingleImagePost` | `createSingleImagePost`, `updateSingleImagePost`, `deleteSingleImagePost` |
+| `users_portfolio_groups` | `listMultiImagePosts`, `getMultiImagePost` | `createMultiImagePost`, `updateMultiImagePost`, `deleteMultiImagePost` |
+| `subscription_types` | `listMembershipPlans`, `getMembershipPlan` | `createMembershipPlan`, `updateMembershipPlan`, `deleteMembershipPlan` |
+| `location_cities` | `listCities`, `getCity` | `updateCity` only (no create/delete by design) |
+| `location_states` | `listStates`, `getState` | `updateState` only |
+
 **Every write goes to a live production site - there is no staging mode, no sandbox, no `?dry_run=1`.** Every create/update/delete takes effect immediately on the real public site. For bulk operations (many records, potentially destructive changes, schema-like edits) confirm intent with the user before executing.
 
 **Destructive actions are LAST RESORT - only when the user explicitly asks OR when no non-destructive path exists.** When a record exists but is wrong - content thin, wrong fields set, missing sections, bad styling - the fix is `update*`, NOT `delete*` then `create*`. Deleting a record BD can't cascade (users_meta orphans after `deleteWebPage`, subscription history after `deleteUser`, member links after `deleteSubCategory`) destroys history (revision timestamps, audit trails, inbound links that 404) and creates cleanup work. Update preserves all of it.

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.54] - 2026-04-25
+
+### Added — BD-table → tool-name lookup table in corpus
+
+Claude reported confusion in a recent session — when reasoning about BD tables, conflated the SQL table name (`users_data`) with the tool name and started saying "the `users_data` CRUD tools aren't loaded" instead of "`createUser`/`updateUser`/`deleteUser` aren't loaded." Tool names are deliberately decoupled from table names (no `createUsersData`), but the asymmetry — `users_data` doesn't follow the table-name pattern, while some other tables do — made the wrong default surface under load.
+
+Added a single 11-row lookup table to the corpus right next to the existing "Table names ≠ endpoint names" note. Maps each public BD table to its read + mutate tool names. Agents grep "users_data" and find the right tools in one hop.
+
+Kept compact (~600 chars) — chose lookup-table format over the four prose-heavy alternatives Claude suggested. Prose is already long; one well-placed table is more durable.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — 11-row lookup table appended to the existing table-vs-endpoint note. No code changes.
+
 ## [6.40.53] - 2026-04-25
 
 ### Fixed — `users_data` filename collision check was silently failing (HIGH)
