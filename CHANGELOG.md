@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.50] - 2026-04-25
+
+### Added — close 4 advanced URL stress-test gaps
+
+Claude's URL stress test found four more attack classes that bypassed v6.40.48. All addressed.
+
+#### Length cap (LOW-MED)
+
+Slugs over 200 chars total or 100 chars per segment now reject. Browsers, CDNs, and email clients commonly truncate or reject long URLs; CMS conventions cap at this length. Hard cap prevents runaway-long payloads.
+
+#### Control + bidi-override chars (MED-HIGH)
+
+`\p{C}` Unicode property — covers RTL override (U+202E), LTR override (U+202D), ZWSP, BOM, all C0/C1 control chars, format-control chars. RTL override is a known phishing vector: `file‮gpj.exe` displays as `fileexe.jpg` in some contexts but is actually a `.exe`. Future-proof: new Unicode releases that add bidi-control or format chars are auto-rejected without spec maintenance.
+
+#### Homoglyph guard — script-uniformity check (MED-HIGH)
+
+Per segment, count distinct Unicode scripts among letter chars. If >1 script appears, reject. Latin + Cyrillic mixed (`аbout` where `а` is Cyrillic U+0430 visually impersonating Latin `a`) = phishing → reject.
+
+Pure-Latin OK, pure-Cyrillic OK, pure-Greek OK, pure-CJK (Han + Hiragana + Katakana unified) OK, pure-Hangul OK, pure-Arabic OK, pure-Hebrew OK, pure-Thai OK, pure-Devanagari OK. Digits, hyphens, dots, and emoji are script-neutral and don't trigger the rule.
+
+This preserves the "BD supports unicode in URLs" stance while catching every confusable-pair attack without maintaining a custom mapping table.
+
+#### Reserved BD route prefixes (MED)
+
+First-segment match against an explicit reject set. Slugs starting with `admin`, `account`, `checkout`, `api`, or `photos` shadow built-in BD routes (admin panel, member account, checkout flow, REST API, photo gallery) and break page routing. Case-insensitive (matches BD router behavior).
+
+Per-tool: applies to web pages, top categories, sub categories, plans, posts, and members — anywhere the slug becomes a public URL path. Users can still create slugs containing these words (`my-admin`, `administration`, `section/admin`); only the FIRST segment matching exactly triggers rejection.
+
+### Verified — 49 stress-test cases
+
+11 valid slugs (CJK, emoji, accented, plus, nested) all PASS. 38 attack vectors all REJECT correctly. Includes the 28 cases from v6.40.48 plus 21 new for v6.40.50: 7 length cases, 7 control/bidi, 5 homoglyph, 12 reserved-route, plus regression checks.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `_validateSlugFormat` extended ~70 lines: `SLUG_MAX_LENGTH` + `SLUG_SEGMENT_MAX_LENGTH` constants, `SLUG_RESERVED_FIRST_SEGMENTS` set, `\p{C}` control-char regex, per-segment script-uniformity scan via `\p{Script=...}` properties.
+
 ## [6.40.49] - 2026-04-25
 
 ### Fixed — `include_*=1` fix completed across all spec locations + drift-check guard

@@ -1705,10 +1705,40 @@ function _normalizeSlug(s) {
  *      non-string handling lives at the call site for clearer errors.
  *  Emoji and unicode (CJK, Cyrillic, Arabic, etc.) are deliberately allowed
  *  — BD supports them in URLs. */
+// Length caps for slugs. 200 chars total, 100 per segment. Matches CMS/CDN
+// conventions; prevents runaway-long URLs that break browsers/email clients.
+const SLUG_MAX_LENGTH = 200;
+const SLUG_SEGMENT_MAX_LENGTH = 100;
+
+// BD reserved-route prefixes — slugs whose FIRST segment matches one of
+// these would shadow built-in BD routes. Reject upfront. Add new entries
+// as BD reserves more top-level routes; comparison is case-insensitive
+// (matches BD router behavior).
+const SLUG_RESERVED_FIRST_SEGMENTS = new Set([
+  "admin",     // BD admin panel
+  "account",   // member account / billing pages
+  "checkout",  // signup + plan checkout flow
+  "api",       // BD REST API at /api/v2/*
+  "photos",    // member photo gallery routes
+]);
+
 function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   if (typeof slug !== "string") return null;
+  // Length cap (full slug). Browsers/CDNs typically cap URLs ~2000 chars;
+  // most CMSes cap slugs ~200. Hard cap before any other check to avoid
+  // wasting cycles on a deliberately massive payload.
+  if (slug.length > SLUG_MAX_LENGTH) {
+    return `${fieldLabel} is ${slug.length} chars (max ${SLUG_MAX_LENGTH}). BD URL slugs over this length break browsers, CDNs, and email clients.`;
+  }
   if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
     return `${fieldLabel} '${slug}' contains whitespace or invisible characters, which are not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
+  }
+  // Control + bidi chars (\p{C} = control + format + private-use, covers
+  // RTL override U+202E + every C0/C1 control + ZWSP-class redundantly).
+  // Future-proof: new Unicode releases that add bidi-control or format
+  // chars are auto-rejected without spec maintenance.
+  if (/\p{C}/u.test(slug)) {
+    return `${fieldLabel} '${slug}' contains control or bidi-override characters (e.g. RTL override U+202E). These enable phishing-display attacks where a slug visually renders differently than its actual content.`;
   }
   // URL-reserved chars + RFC 3986 reserved chars + chars that enable
   // phishing-link shapes (`javascript:alert(1)` via `:` + `(` + `)`).
@@ -1727,10 +1757,18 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   //   (c) must contain at least one alphanumeric or unicode letter — pure
   //       punctuation slugs like `---` or `...` route but are useless URLs
   //       and indicate accidental input.
+  //   (d) per-segment length cap.
+  //   (e) homoglyph guard: each segment must use a SINGLE Unicode script
+  //       for letter chars (Latin only OR Cyrillic only OR CJK only,
+  //       not Latin + Cyrillic mixed = phishing). ASCII digits, hyphens,
+  //       dots, and emoji are script-neutral and don't trigger the rule.
   // Per-segment: applied to the WHOLE slug for non-slash case, and to
   // EACH segment for nested paths (so `valid-slug/-bad` is rejected on
   // the second segment).
   const checkSegment = (seg, label) => {
+    if (seg.length > SLUG_SEGMENT_MAX_LENGTH) {
+      return `${fieldLabel} '${slug}' has a ${seg.length}-char segment (${label}, max ${SLUG_SEGMENT_MAX_LENGTH}). Each path segment must stay under the cap to avoid CDN/browser truncation.`;
+    }
     if (seg.startsWith("-")) {
       return `${fieldLabel} '${slug}' has a segment starting with '-' (${label}). BD URL slugs cannot start with a hyphen.`;
     }
@@ -1740,6 +1778,40 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     // Require at least one alphanumeric ASCII char OR unicode letter (CJK, emoji, accented).
     if (!/[a-zA-Z0-9]/.test(seg) && !/\p{L}/u.test(seg) && !/\p{Extended_Pictographic}/u.test(seg)) {
       return `${fieldLabel} '${slug}' has a segment with no letters or digits (${label}). Each path segment must contain at least one alphanumeric character.`;
+    }
+    // Homoglyph guard: detect mixed-script segments.
+    // Letters in two distinct non-Common scripts within one segment are
+    // almost always a homoglyph attack (Cyrillic 'а' vs Latin 'a'). Walk
+    // each letter, collect its Script property; if >1 script appears,
+    // reject. Common script (digits, punctuation, emoji) doesn't count.
+    const scripts = new Set();
+    for (const ch of seg) {
+      // Only inspect letters. Numbers, hyphens, dots, emoji are neutral.
+      if (!/\p{L}/u.test(ch)) continue;
+      // Map char to its primary script via regex tests against named
+      // Script properties. Order matters — most specific first.
+      let scriptName = null;
+      if (/\p{Script=Latin}/u.test(ch)) scriptName = "Latin";
+      else if (/\p{Script=Cyrillic}/u.test(ch)) scriptName = "Cyrillic";
+      else if (/\p{Script=Greek}/u.test(ch)) scriptName = "Greek";
+      else if (/\p{Script=Han}/u.test(ch)) scriptName = "Han"; // CJK Chinese
+      else if (/\p{Script=Hiragana}/u.test(ch)) scriptName = "Hiragana";
+      else if (/\p{Script=Katakana}/u.test(ch)) scriptName = "Katakana";
+      else if (/\p{Script=Hangul}/u.test(ch)) scriptName = "Hangul"; // Korean
+      else if (/\p{Script=Arabic}/u.test(ch)) scriptName = "Arabic";
+      else if (/\p{Script=Hebrew}/u.test(ch)) scriptName = "Hebrew";
+      else if (/\p{Script=Thai}/u.test(ch)) scriptName = "Thai";
+      else if (/\p{Script=Devanagari}/u.test(ch)) scriptName = "Devanagari";
+      else scriptName = "Other";
+      // Treat Hiragana+Katakana+Han as compatible (Japanese mixes them).
+      if (scriptName === "Hiragana" || scriptName === "Katakana" || scriptName === "Han") {
+        scripts.add("CJK");
+      } else {
+        scripts.add(scriptName);
+      }
+    }
+    if (scripts.size > 1) {
+      return `${fieldLabel} '${slug}' has a segment mixing multiple writing systems (${label}: ${[...scripts].join(" + ")}). Mixed-script slugs are usually homoglyph phishing attacks (e.g. Cyrillic 'а' visually impersonating Latin 'a'). Use a single script per segment.`;
     }
     return null;
   };
@@ -1760,6 +1832,12 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
     }
     // Per-segment checks: dot-segment guard + structural rules.
     const segments = slug.split("/");
+    // Reserved-route guard — only the FIRST segment shadows a built-in
+    // route. Case-insensitive to match BD's router (which is itself case-
+    // insensitive on path matching).
+    if (SLUG_RESERVED_FIRST_SEGMENTS.has(segments[0].toLowerCase())) {
+      return `${fieldLabel} '${slug}' starts with the reserved BD route '${segments[0]}'. This shadows a built-in BD route (admin panel, account, checkout, api, photos) and breaks page routing. Pick a different first segment.`;
+    }
     for (let i = 0; i < segments.length; i++) {
       const seg = segments[i];
       if (seg === "." || seg === "..") {
@@ -1769,9 +1847,12 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
       if (segErr) return segErr;
     }
   } else {
-    // Single-segment slug: dot-segment guard + structural rules.
+    // Single-segment slug: dot-segment guard + structural rules + reserved.
     if (slug === "." || slug === "..") {
       return `${fieldLabel} '${slug}' is a dot-segment. Use plain alphanumeric/hyphen slugs.`;
+    }
+    if (SLUG_RESERVED_FIRST_SEGMENTS.has(slug.toLowerCase())) {
+      return `${fieldLabel} '${slug}' is a reserved BD route. This shadows a built-in BD route (admin panel, account, checkout, api, photos) and breaks page routing. Pick a different name.`;
     }
     const segErr = checkSegment(slug, "whole slug");
     if (segErr) return segErr;
