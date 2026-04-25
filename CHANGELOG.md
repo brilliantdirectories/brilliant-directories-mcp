@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.20] - 2026-04-24
+
+### Changed — break the Advanced bullet's Node prereq onto its own line
+
+The Setup-by-Platform overview bullet for "Advanced config block" mashed the description, the Node prerequisite, AND the use-case into a single 60-word run-on sentence. Boomers skim — the Node install pointer got buried mid-paragraph. Split into two: short description on the bullet line, then a separate indented paragraph for the Node prereq + install steps. Same content, separated visually so the install requirement can't be missed.
+
+### Internal
+
+- `README.md` (+ mirror at `mcp/README.md`) — single bullet split into bullet + indented sub-paragraph. No new content.
+
 ## [6.40.19] - 2026-04-24
 
 ### Changed — README title + harmonize Node install instructions to match nodejs.org's current UI

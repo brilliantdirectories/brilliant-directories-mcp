@@ -78,7 +78,9 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 Each platform has **two options**:
 
 - **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
-- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it) and reboot before continuing. Use when you want the MCP on your own hardware.
+- **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Use when you want the MCP on your own hardware.
+
+  **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then reboot before continuing.
 
 **Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
 
