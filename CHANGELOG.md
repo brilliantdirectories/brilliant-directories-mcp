@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.72] - 2026-04-25
+
+### Changed — DRY pass: sidebars, cache-refresh, slug hierarchy
+
+Three more rule families collapsed to single source of truth via cross-reference (same pattern as v6.40.71 hero defaults):
+
+- **Master Default Sidebars** (`Global Website Search`, `Member Profile Page`, `Member Search Result`, `Personal Post Feed`, `Post Search Result`, `Post Single Page`): canonical list lives at corpus L568. Spec `createWebPage.form_name`, `updateWebPage.form_name`, `createPostType.category_sidebar`, `updatePostType.category_sidebar`, `listSidebars.description`, `getSidebar.description` no longer duplicate the 6-name list — they reference the corpus **Sidebars** rule. Adding a 7th master in BD = edit one place.
+
+- **Auto-cache-refresh boilerplate**: `createWebPage` and `updateWebPage` descriptions used a 3-sentence explainer of auto-refresh semantics; now use the same 1-sentence form already shipped in `updatePostType` / `createWidget` / `updateWidget`. Authoritative explanation lives in `refreshSiteCache.description`.
+
+- **Slug hierarchy explanation** (`country/state/city/top_cat/sub_cat` + live-lookup endpoint per segment): `createWebPage.description` and `updateWebPage.description` now reference corpus **Member Search Results SEO pages** rule instead of duplicating ~6 lines of segment sources.
+
+**Bonus fixes** (not technically DRY — copy-paste leak fixes deferred from yesterday's audit Tier 1):
+- `createEmailTemplate.email_name` description corrected — was carrying the SIDEBAR boilerplate from a wrong-field copy-paste. Now reads "Internal name for this email template…"
+- `createForm.form_name` description corrected — was the same SIDEBAR leak. Now reads "Form slug used by `[form=Name]` shortcodes…"
+
+Net token savings across spec + corpus: ~2,000 tokens. Drift bugs prevented per future field addition: ~3 sites no longer require manual sync.
+
 ## [6.40.71] - 2026-04-25
 
 ### Changed — drop count-coupled prose, DRY by cross-reference

@@ -565,7 +565,7 @@ Location + Sidebar CRUD are read-only by design in this MCP (create/delete delib
 
 **When setting a sidebar on any page or post type**, the name must match one of:
 
-**(a) The 6 Master Default Sidebars** (always available, never in `listSidebars` output - hardcoded in BD core, verbatim order from the admin UI dropdown):
+**(a) The Master Default Sidebars** (always available, never in `listSidebars` output - hardcoded in BD core, verbatim order from the admin UI dropdown):
 
 - `Global Website Search`
 - `Member Profile Page`
