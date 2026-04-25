@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.42] - 2026-04-25
+
+### Added — user profile filename in slug uniqueness guard + universal money validator
+
+#### Member profile `filename` joined the site URL namespace
+
+Member profile pages live at site-wide URLs (`/state/city/category/member-slug`). The `filename` field on createUser/updateUser was previously unguarded — agents who passed it (or BD itself when auto-generating) could collide with web pages, categories, plans, or other members. Two changes:
+
+- `users_data` added to `SITE_NAMESPACE_TABLES` so probes from web page / category / plan creates also catch member-profile collisions.
+- `createUser` and `updateUser` added to `SLUG_TOOL_CONFIG` with `allowSlash:true` (path-style slugs supported), `allowEmpty:true` (BD auto-generates if absent — agents rarely pass it).
+
+Self-exclusion on update works the same way as web pages: a user renaming to their own current filename doesn't conflict with themselves.
+
+#### Universal money/price validator
+
+Replaces the inline `lead_price >= 0` check from v6.40.41 with a class-level validator covering 4 known money fields: `lead_price`, `monthly_amount`, `yearly_amount`, `initial_amount`. Future BD price fields just get appended to the `MONEY_FIELDS` set.
+
+Rules:
+- Must be a finite number (rejects strings like `"abc"` and objects).
+- Must be `>= 0` (BD billing engine has undefined behavior on negatives).
+- Must have at most 2 decimal places. BD stores prices as cents — extra decimals get silently truncated, breaking downstream rounding (e.g. `50.999` would round inconsistently across BD's billing pipeline).
+
+31 money cases + 14 user-slug cases verified (45/45 passing).
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `validateMoneyInArgs` + `MONEY_FIELDS` added near `validateDatetime14InArgs`. SLUG_TOOL_CONFIG and SITE_NAMESPACE_TABLES extended.
+
 ## [6.40.41] - 2026-04-25
 
 ### Fixed — three more findings from external audit Phase 3

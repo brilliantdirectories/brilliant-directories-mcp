@@ -1446,6 +1446,47 @@ function validateRgbColorsInArgs(toolName, args) {
 }
 
 // ---------------------------------------------------------------------------
+// Money / price field validator
+// ---------------------------------------------------------------------------
+//
+// All BD price/amount fields are USD-denominated, non-negative, max 2
+// decimals (cents). BD does NOT validate format server-side: negatives slip
+// through (undefined billing-engine behavior), and 3+ decimals get truncated
+// or stored verbatim and break downstream rounding.
+//
+// To extend coverage when BD adds new price fields, just append the field
+// name to MONEY_FIELDS — the validator runs on every dispatch and only acts
+// on fields actually present in args.
+const MONEY_FIELDS = new Set([
+  "lead_price",       // top/sub category and membership plan
+  "monthly_amount",   // membership plan
+  "yearly_amount",    // membership plan
+  "initial_amount",   // membership plan (signup fee / first-period charge)
+]);
+function validateMoneyInArgs(args) {
+  if (!args || typeof args !== "object") return null;
+  for (const field of MONEY_FIELDS) {
+    const v = args[field];
+    if (v === undefined || v === null || v === "") continue;
+    const n = Number(v);
+    if (!Number.isFinite(n)) {
+      return `${field} must be a number (got "${v}").`;
+    }
+    if (n < 0) {
+      return `${field} must be >= 0 (got ${v}). BD's billing engine has undefined behavior on negative prices.`;
+    }
+    // Reject 3+ decimal places. Use string check, not Number arithmetic
+    // (floating-point can lose digits — 1.005 -> 1.005 stored as 1.00499...).
+    const s = String(v);
+    const dot = s.indexOf(".");
+    if (dot >= 0 && s.length - dot - 1 > 2) {
+      return `${field} must have at most 2 decimal places (got "${v}"). BD stores prices as cents — extra decimals are silently truncated, breaking downstream rounding.`;
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // YYYYMMDDHHmmss datetime field validator
 // ---------------------------------------------------------------------------
 //
@@ -1499,10 +1540,11 @@ function validateDatetime14InArgs(args) {
 // Mirrored byte-for-byte in the Worker `src/index.ts`. Keep in sync.
 
 const SITE_NAMESPACE_TABLES = [
-  { table: "list_seo",          field: "filename",              ownIdField: "seo_id",          label: "web page" },
-  { table: "list_professions",  field: "filename",              ownIdField: "profession_id",   label: "top category" },
-  { table: "list_services",     field: "filename",              ownIdField: "service_id",      label: "sub category" },
+  { table: "list_seo",           field: "filename",              ownIdField: "seo_id",          label: "web page" },
+  { table: "list_professions",   field: "filename",              ownIdField: "profession_id",   label: "top category" },
+  { table: "list_services",      field: "filename",              ownIdField: "service_id",      label: "sub category" },
   { table: "subscription_types", field: "subscription_filename", ownIdField: "subscription_id", label: "membership plan" },
+  { table: "users_data",         field: "filename",              ownIdField: "user_id",         label: "member profile" },
 ];
 const SLUG_AUTO_SUFFIX_MAX = 20;
 const SLUG_AUTO_SUFFIX_QUIET_THRESHOLD = 4; // suffixes 1-3 are silent; 4+ surfaces _slug_adjusted
@@ -1529,6 +1571,12 @@ const SLUG_TOOL_CONFIG = {
   updateSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: "service_id",   autoSuffix: true,  allowSlash: false, allowEmpty: false },
   createMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: null,           autoSuffix: false, allowSlash: false, allowEmpty: true  },
   updateMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: "subscription_id", autoSuffix: false, allowSlash: false, allowEmpty: true  },
+  // member profile filename — site-wide URL namespace (cross-collides with
+  // web pages, categories, plans). Path-style slug (state/city/cat/name).
+  // BD auto-generates if absent; agents rarely pass it but when they do it
+  // must not collide. allowEmpty:true so omitting is fine.
+  createUser:           { slugField: "filename",              scope: "site",            ownTable: "users_data",        ownIdField: null,           autoSuffix: false, allowSlash: true,  allowEmpty: true  },
+  updateUser:           { slugField: "filename",              scope: "site",            ownTable: "users_data",        ownIdField: "user_id",      autoSuffix: false, allowSlash: true,  allowEmpty: true  },
   // post slugs are scoped per-post-type; pass the post-type's data_id alongside the slug
   updateSingleImagePost: { slugField: "post_filename",  scope: "post-type", ownTable: "data_posts",                ownIdField: "post_id",  postTypeField: "data_id", autoSuffix: false, allowSlash: true,  allowEmpty: false },
   updateMultiImagePost:  { slugField: "group_filename", scope: "post-type", ownTable: "users_portfolio_groups",    ownIdField: "group_id", postTypeField: "data_id", autoSuffix: false, allowSlash: true,  allowEmpty: false },
@@ -2610,16 +2658,14 @@ async function main() {
         };
       }
 
-      // Negative lead_price validator: BD's billing engine wasn't designed
-      // for negative prices. Reject upfront.
-      if (args && typeof args === "object" && args.lead_price !== undefined && args.lead_price !== null && args.lead_price !== "") {
-        const lp = Number(args.lead_price);
-        if (Number.isFinite(lp) && lp < 0) {
-          return {
-            content: [{ type: "text", text: `lead_price must be >= 0 (got ${args.lead_price}). BD's billing engine has undefined behavior on negative prices.` }],
-            isError: true,
-          };
-        }
+      // Money / price field validator: non-negative, max 2 decimals across
+      // all known BD price columns (lead_price, monthly/yearly/initial_amount).
+      const moneyErr = validateMoneyInArgs(args);
+      if (moneyErr) {
+        return {
+          content: [{ type: "text", text: moneyErr }],
+          isError: true,
+        };
       }
 
       // Auto-force content_active=1 on createWebPage / updateWebPage.
