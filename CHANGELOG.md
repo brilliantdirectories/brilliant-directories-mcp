@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.65] - 2026-04-25
+
+### Fixed — image-sourcing ladder restored with explicit subject-website tiers
+
+The image-sourcing priority list compressed "the subject's own website" into one tier without enumerating where to look (homepage → About/team page → verified socials). Agents reading the rule on an `add 3 personal trainers` task collapsed straight from "user URL not given" to "Pexels fallback" and grabbed stock headshots. The ladder is now explicit: tier 2 walks the subject's own web presence in order — homepage / brand-asset page → About / team / staff-bio page → verified social profiles (LinkedIn, Instagram, Facebook, YouTube) — only confirmed-to-be-this-exact-entity. Tier 3 (Pexels fallback) explicitly excludes `profile_photo` / `logo` / `website` / social URLs on real entity records, so the v6.40.64 verify-or-omit rule no longer needs to "override" anything — the ladder doesn't lead there in the first place.
+
 ## [6.40.64] - 2026-04-25
 
 ### Fixed — slug-uniqueness probe warning only fires on real outages
