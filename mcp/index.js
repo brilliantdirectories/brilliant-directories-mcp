@@ -1481,18 +1481,24 @@ const SLUG_AUTO_SUFFIX_QUIET_THRESHOLD = 4; // suffixes 1-3 are silent; 4+ surfa
 //   ownIdField:   the primary-key arg name (for update self-exclusion)
 //   autoSuffix:   true = categories (auto -1, -2, ...); false = everything else (reject)
 //   postTypeField: required when scope='post-type' (the data_id arg)
+//   allowSlash:   true = nested-path slugs allowed (web pages "parent/child",
+//                 posts "posttype/post-slug"); false = single-segment only
+//                 (categories + plans). Backslash is universally blocked.
+//   allowEmpty:   true = empty string is a valid passthrough (membership plans
+//                 only — BD allows plans without a public URL); false = empty
+//                 is a hard reject (slug is required on these resources).
 const SLUG_TOOL_CONFIG = {
-  createWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: null,           autoSuffix: false },
-  updateWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: "seo_id",       autoSuffix: false },
-  createTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: null,           autoSuffix: true  },
-  updateTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: "profession_id", autoSuffix: true  },
-  createSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: null,           autoSuffix: true  },
-  updateSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: "service_id",   autoSuffix: true  },
-  createMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: null,           autoSuffix: false },
-  updateMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: "subscription_id", autoSuffix: false },
+  createWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: null,           autoSuffix: false, allowSlash: true,  allowEmpty: false },
+  updateWebPage:        { slugField: "filename",              scope: "site",            ownTable: "list_seo",          ownIdField: "seo_id",       autoSuffix: false, allowSlash: true,  allowEmpty: false },
+  createTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: null,           autoSuffix: true,  allowSlash: false, allowEmpty: false },
+  updateTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: "profession_id", autoSuffix: true,  allowSlash: false, allowEmpty: false },
+  createSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: null,           autoSuffix: true,  allowSlash: false, allowEmpty: false },
+  updateSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: "service_id",   autoSuffix: true,  allowSlash: false, allowEmpty: false },
+  createMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: null,           autoSuffix: false, allowSlash: false, allowEmpty: true  },
+  updateMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: "subscription_id", autoSuffix: false, allowSlash: false, allowEmpty: true  },
   // post slugs are scoped per-post-type; pass the post-type's data_id alongside the slug
-  updateSingleImagePost: { slugField: "post_filename",  scope: "post-type", ownTable: "data_posts",                ownIdField: "post_id",  postTypeField: "data_id", autoSuffix: false },
-  updateMultiImagePost:  { slugField: "group_filename", scope: "post-type", ownTable: "users_portfolio_groups",    ownIdField: "group_id", postTypeField: "data_id", autoSuffix: false },
+  updateSingleImagePost: { slugField: "post_filename",  scope: "post-type", ownTable: "data_posts",                ownIdField: "post_id",  postTypeField: "data_id", autoSuffix: false, allowSlash: true,  allowEmpty: false },
+  updateMultiImagePost:  { slugField: "group_filename", scope: "post-type", ownTable: "users_portfolio_groups",    ownIdField: "group_id", postTypeField: "data_id", autoSuffix: false, allowSlash: true,  allowEmpty: false },
 };
 
 /** Normalize a slug for comparison — match BD's URL router behavior.
@@ -1507,23 +1513,26 @@ function _normalizeSlug(s) {
   return String(s).trim().toLowerCase();
 }
 
-/** Validate slug format — BD URL slugs must NOT contain:
- *  (a) whitespace OR zero-width / invisible characters (would silently
- *      corrupt URLs — \s catches regular whitespace + NBSP + ideographic
- *      space; the explicit class adds soft-hyphen U+00AD, ZWSP/ZWNJ/ZWJ
- *      U+200B-U+200D, format-control U+2060-U+2064, BOM U+FEFF — all
- *      invisible chars NOT covered by \s).
- *  (b) URL-reserved / structural characters (would break BD routing —
- *      slash, backslash, ?, #, &, %, <, >, ").
- *  Reject upfront with a clear actionable message before any probe work.
+/** Validate slug format. Rejects:
+ *  (a) whitespace OR zero-width / invisible characters (\s plus the
+ *      explicit class for soft-hyphen, ZWSP/ZWNJ/ZWJ, format-control,
+ *      BOM — invisible chars NOT covered by \s).
+ *  (b) backslash and URL-reserved/structural chars (?, #, &, %, <, >, ")
+ *      that always break BD routing.
+ *  (c) forward slash UNLESS allowSlash=true. Web pages and posts support
+ *      nested-path slugs ("parent/child", "posttype/post-slug"); categories
+ *      and plans must be single-segment.
  *  Returns null on valid, error-string on invalid. */
-function _validateSlugFormat(slug, fieldLabel) {
-  if (typeof slug !== "string") return null; // non-strings skipped earlier
+function _validateSlugFormat(slug, fieldLabel, allowSlash) {
+  if (typeof slug !== "string") return null;
   if (/[\s­​-‏⁠-⁤﻿]/.test(slug)) {
     return `${fieldLabel} '${slug}' contains whitespace or invisible characters, which are not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
   }
-  if (/[\/\\?#&%<>"]/.test(slug)) {
-    return `${fieldLabel} '${slug}' contains URL-reserved characters (one of /\\?#&%<>"), which are not allowed in BD URLs. Use only letters, digits, hyphens, underscores, and dots.`;
+  if (/[\\?#&%<>"]/.test(slug)) {
+    return `${fieldLabel} '${slug}' contains URL-reserved characters (one of \\?#&%<>"), which are not allowed in BD URLs. Use only letters, digits, hyphens, underscores, and dots.`;
+  }
+  if (!allowSlash && slug.includes("/")) {
+    return `${fieldLabel} '${slug}' contains a slash, which is not allowed for this resource (categories and plans must be single-segment slugs). Use hyphens instead.`;
   }
   return null;
 }
@@ -1561,10 +1570,19 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   const cfg = SLUG_TOOL_CONFIG[toolName];
   if (!cfg || !args || typeof args !== "object") return null;
   const proposed = args[cfg.slugField];
-  if (proposed === undefined || proposed === null || proposed === "") return null;
+  // Field absent — agent didn't pass it. No-op (let BD do whatever it does).
+  if (proposed === undefined || proposed === null) return null;
+  // Empty string — only valid for resources where allowEmpty=true (membership
+  // plans). For everything else (web pages, categories, posts) the slug is
+  // required and an empty string is a hard reject.
+  if (proposed === "") {
+    if (cfg.allowEmpty) return null;
+    return { ok: false, error: `${cfg.slugField} is required and cannot be empty for ${toolName}.` };
+  }
 
-  // Format validation: reject whitespace before any network work.
-  const formatErr = _validateSlugFormat(String(proposed), cfg.slugField);
+  // Format validation: reject whitespace/invisible/URL-reserved chars
+  // (and slash when not allowed) before any network work.
+  const formatErr = _validateSlugFormat(String(proposed), cfg.slugField, cfg.allowSlash);
   if (formatErr) return { ok: false, error: formatErr };
 
   const ownId = cfg.ownIdField && args[cfg.ownIdField] !== undefined && args[cfg.ownIdField] !== null

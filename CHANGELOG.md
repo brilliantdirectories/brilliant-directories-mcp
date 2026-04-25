@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.38] - 2026-04-25
+
+### Changed — per-tool slash policy + per-tool empty-string policy
+
+v6.40.37 blocked forward slash in slugs universally. That's wrong: BD legitimately supports nested-path slugs on web pages (`parent/child`) and posts (`posttypeslug/post`), but not on categories or membership plans. v6.40.37 also short-circuited empty strings as no-op, which silently let agents submit empty slugs on resources where the slug is required.
+
+#### What changed
+
+`SLUG_TOOL_CONFIG` gained two per-tool flags:
+
+- **`allowSlash`** — `true` for createWebPage, updateWebPage, updateSingleImagePost, updateMultiImagePost (nested-path slugs supported). `false` for categories and plans (single-segment only).
+- **`allowEmpty`** — `true` for createMembershipPlan, updateMembershipPlan only (BD allows plans without a public URL). `false` for everything else (slug is required).
+
+`_validateSlugFormat` now takes `allowSlash` and conditionally allows `/`. Backslash and other URL-reserved chars (`?`, `#`, `&`, `%`, `<`, `>`, `"`) remain universally blocked.
+
+`reserveSiteUrlSlug` now distinguishes:
+- `proposed === undefined/null` → no-op (agent didn't pass the field).
+- `proposed === ""` → reject if `allowEmpty:false`, no-op if `allowEmpty:true`.
+- Non-empty string → format validate with per-tool `allowSlash`, then probe.
+
+#### Verified — 26 edge cases
+
+Web pages and posts: `parent/child`, `deep/nested/path`, `blog-posts/my-post` → all pass. Categories and plans: same slashed inputs → all reject with clear "slash not allowed for this resource" message. Empty string: web pages/categories/posts → all reject "is required and cannot be empty"; plans → pass. Backslash → still rejected universally as URL-reserved.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. Two new fields on `SLUG_TOOL_CONFIG` entries; `_validateSlugFormat` signature gained `allowSlash` parameter; `reserveSiteUrlSlug` updated empty-handling. ~25 lines net change.
+
 ## [6.40.37] - 2026-04-25
 
 ### Fixed — slug format validator missed zero-width chars and URL-reserved chars
