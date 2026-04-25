@@ -2217,38 +2217,47 @@ async function main() {
         };
       }
 
-      // Duplicate-filename guard for createWebPage. BD does NOT enforce
-      // unique `filename` on `list_seo` — two creates with the same slug
-      // both succeed and the public URL renders one of them non-deterministically
-      // (silent destructive: agent thinks the new page is live but it may
-      // be the OLD one shadowing it). Pre-check via listWebPages — one
-      // small filtered query — and reject if a row exists. Bypass with
-      // `force_duplicate_filename=true` for the rare legitimate case
-      // (e.g. intentional shadow page, internal fork).
-      if (name === "createWebPage" && args && typeof args === "object" && args.filename) {
-        const force = args.force_duplicate_filename === true || args.force_duplicate_filename === "1" || args.force_duplicate_filename === 1;
-        if (force) {
-          delete args.force_duplicate_filename; // never forward to BD
-        } else {
-          try {
-            const dupCheck = await makeRequest(
-              config,
-              "GET",
-              "/api/v2/list_seo/get",
-              { property: "filename", property_value: String(args.filename), property_operator: "=", limit: 1 },
-              null
-            );
-            const rows = dupCheck && dupCheck.body && Array.isArray(dupCheck.body.message) ? dupCheck.body.message : [];
-            const existing = rows.find((r) => r && String(r.filename) === String(args.filename));
-            if (existing) {
-              return {
-                content: [{ type: "text", text: `filename '${args.filename}' already exists at seo_id=${existing.seo_id}. Use updateWebPage(seo_id=${existing.seo_id}, ...) to modify, or pick a unique slug. Bypass with force_duplicate_filename=true if you genuinely need a duplicate (rare).` }],
-                isError: true,
-              };
-            }
-          } catch (err) {
-            console.error(`[createWebPage] duplicate-filename pre-check failed (${err && err.message ? err.message : "unknown"}); proceeding with create — caller should manually verify uniqueness post-create.`);
+      // Duplicate-filename guard for createWebPage AND updateWebPage. BD does
+      // NOT enforce unique `filename` on `list_seo` — two records with the
+      // same slug both succeed and the public URL renders one of them
+      // non-deterministically (silent destructive). The guard catches both
+      // entry points:
+      //   - createWebPage: any existing row with the same filename = conflict
+      //   - updateWebPage: any OTHER row with the same filename = conflict
+      //                    (same row's existing filename is fine — you can't
+      //                    conflict with yourself when updating)
+      // No bypass — duplicate URLs are never permitted via MCP. If a user
+      // genuinely needs two records, they must use distinct slugs.
+      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object" && args.filename) {
+        // Defensive strip in case an old client passes the deprecated flag.
+        if ("force_duplicate_filename" in args) delete args.force_duplicate_filename;
+        const ownSeoId = name === "updateWebPage" ? String(args.seo_id ?? "") : null;
+        try {
+          const dupCheck = await makeRequest(
+            config,
+            "GET",
+            "/api/v2/list_seo/get",
+            { property: "filename", property_value: String(args.filename), property_operator: "=", limit: 5 },
+            null
+          );
+          const rows = dupCheck && dupCheck.body && Array.isArray(dupCheck.body.message) ? dupCheck.body.message : [];
+          const conflict = rows.find((r) => {
+            if (!r || String(r.filename) !== String(args.filename)) return false;
+            // For update: ignore the row we're updating (same seo_id is fine).
+            if (ownSeoId && String(r.seo_id) === ownSeoId) return false;
+            return true;
+          });
+          if (conflict) {
+            const action = name === "createWebPage"
+              ? `Either updateWebPage(seo_id=${conflict.seo_id}, ...) to modify the existing page, or pick a unique slug for the new one.`
+              : `That slug is already taken by seo_id=${conflict.seo_id}. Pick a different filename for this page, or delete/rename the conflicting one first.`;
+            return {
+              content: [{ type: "text", text: `filename '${args.filename}' already exists at seo_id=${conflict.seo_id}. ${action} Duplicate URLs break BD's router and are not permitted.` }],
+              isError: true,
+            };
           }
+        } catch (err) {
+          console.error(`[${name}] duplicate-filename pre-check failed (${err && err.message ? err.message : "unknown"}); proceeding — caller should manually verify uniqueness post-write.`);
         }
       }
 

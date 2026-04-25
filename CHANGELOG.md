@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.24] - 2026-04-25
+
+### Changed — duplicate URLs are now never permitted via MCP (no bypass)
+
+v6.40.22 added a duplicate-filename pre-check to `createWebPage` with a `force_duplicate_filename=true` bypass for "rare legitimate cases." Live testing exposed two real problems:
+
+1. **The bypass field was never declared in the input schema**, so passing `force_duplicate_filename=true` was rejected by the SDK before the wrapper could honor it. Documented escape hatch was unreachable — the rejection error message advertised a flag that didn't work.
+2. **Duplicate URLs are never legitimate.** BD's router resolves `filename` to one record non-deterministically. Even the "intentional shadow page" / "internal fork" use cases I imagined earlier produce broken state, not useful behavior. There is no scenario where two pages at the same URL render correctly.
+
+Removed the bypass entirely. Tightened the rule: **MCP never permits duplicate URLs.** If a user genuinely needs two records with similar paths, they must pick distinct slugs.
+
+Also extended the guard to `updateWebPage` — Claude flagged the gap: an agent renaming an existing page's `filename` to one already taken would create the same duplicate-URL problem from the update side. The update guard correctly ignores the row's own current filename (you can't conflict with yourself) and only rejects if a DIFFERENT seo_id holds the proposed slug.
+
+### Internal
+
+- `mcp/openapi/bd-api.json` — removed `force_duplicate_filename` field declaration. Updated `filename` field description to call out the uniqueness rule. Updated `createWebPage` description's filename-uniqueness paragraph: removed bypass mention, added "no exceptions" framing.
+- `mcp/index.js` and `src/index.ts` — removed bypass logic; extended guard to cover `updateWebPage`. Defensive strip of any deprecated `force_duplicate_filename` flag still in place (backward-compat for old clients). Both files mirrored byte-for-byte. Smoke-tested 4 cases live: create-dup → reject, create-with-deprecated-bypass → reject, update-self-rename → accept, update-rename-to-taken-slug → reject.
+
 ## [6.40.23] - 2026-04-25
 
 ### Changed — UX polish trifecta from Claude's stress-test report
