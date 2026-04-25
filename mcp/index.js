@@ -2653,7 +2653,9 @@ async function main() {
               null,
               null
             );
-            const row = verify && verify.body && verify.body.message;
+            // BD returns `message` as an array containing one row; unwrap it.
+            const msg = verify && verify.body && verify.body.message;
+            const row = Array.isArray(msg) ? msg[0] : msg;
             const realDb = row && (row.database != null ? String(row.database) : null);
             const realPid = row && (row.database_id != null ? String(row.database_id) : null);
             const sentDb = String(a.database);
@@ -2863,12 +2865,20 @@ async function main() {
         const serviceIdStr = String(args.service_id);
         try {
           const [userResp, svcResp, pairResp] = await Promise.all([
-            makeRequest(config, "GET", `/api/v2/users_data/get/${encodeURIComponent(userIdStr)}`, null, null),
+            // BD's public-API path for users_data is `/api/v2/user/*` (the
+            // table is `users_data` but the endpoint is `user`). Same for
+            // list_services → `/api/v2/list_services/*` (those match).
+            makeRequest(config, "GET", `/api/v2/user/get/${encodeURIComponent(userIdStr)}`, null, null),
             makeRequest(config, "GET", `/api/v2/list_services/get/${encodeURIComponent(serviceIdStr)}`, null, null),
             makeRequest(config, "GET", "/api/v2/rel_services/get", { property: "user_id", property_value: userIdStr, property_operator: "=", limit: 100 }, null),
           ]);
-          const userOk = userResp && userResp.body && userResp.body.status === "success" && userResp.body.message;
-          const svcOk = svcResp && svcResp.body && svcResp.body.status === "success" && svcResp.body.message;
+          // BD returns `message` as an array on get-by-id; unwrap to first row.
+          const userMsg = userResp && userResp.body && userResp.body.message;
+          const userRow = Array.isArray(userMsg) ? userMsg[0] : userMsg;
+          const userOk = userResp && userResp.body && userResp.body.status === "success" && userRow && userRow.user_id;
+          const svcMsg = svcResp && svcResp.body && svcResp.body.message;
+          const svcRow = Array.isArray(svcMsg) ? svcMsg[0] : svcMsg;
+          const svcOk = svcResp && svcResp.body && svcResp.body.status === "success" && svcRow && svcRow.service_id;
           if (!userOk) {
             return { content: [{ type: "text", text: `createMemberSubCategoryLink FK GUARD: user_id=${userIdStr} does not exist. Verify via getUser before linking.` }], isError: true };
           }

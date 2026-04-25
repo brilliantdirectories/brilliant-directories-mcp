@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.46] - 2026-04-25
+
+### Fixed — two regressions from v6.40.40 / v6.40.44 found by Claude retest
+
+#### `updateUserMeta` cross-table verify silently passing through (HIGH — replaces 4-min hang with silent corruption)
+
+`verifyUserMetaCrossTable` was reading `body.message` directly, but BD returns `message` as a one-element array on get-by-id. So `row.database` was always `undefined`, `realDb` was `null`, and the mismatch check `(realDb !== null && ...)` always evaluated to false. The verify silently passed through and BD then accepted whatever `(database, database_id)` the agent sent — overwriting the row's identity fields. Fort Worth's `hero_alignment` row was misattributed to `(users_data, 99999)` in Claude's retest until manually restored.
+
+Fix: unwrap the array before reading fields. `Array.isArray(msg) ? msg[0] : msg`.
+
+#### `createMemberSubCategoryLink` FK guard rejecting all valid users (CRITICAL — endpoint was unusable)
+
+Two compounding bugs:
+
+1. **Wrong endpoint path** — code called `/api/v2/users_data/get/<id>` but BD's public API exposes the `users_data` table via `/api/v2/user/get/<id>` (singular `user`). The wrong path returned no data, so `userOk` was always false → "user_id does not exist" for every valid ID.
+2. **Same array-unwrap bug** — `userBody.message` is an array, so even with the correct path, the success check looked at the array (always truthy if non-empty) instead of the row, and the actual row's `user_id` was never inspected.
+
+Fix: switch path to `/api/v2/user/get/<id>`, unwrap the array, and check `row.user_id` truthiness for the existence test (same pattern for `service` via `list_services/get/<id>`).
+
+The duplicate-pair guard misclassification Claude flagged was a downstream symptom of #1 — once the FK guard fired falsely, the duplicate-pair check never ran. Fixing the FK path also fixes the duplicate-pair branch.
+
+### Verified live
+
+- `curl /api/v2/user/get/1` returns valid Sample Member 1 row with `user_id: "1"` confirming the path.
+- Cross-table verify and FK guard now correctly identify mismatches and report the actual failing field.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` mirrored. ~10 lines net change across both fixes.
+
 ## [6.40.45] - 2026-04-25
 
 ### Changed — `--prefer-online` added to all npx config snippets
