@@ -1495,6 +1495,30 @@ const SLUG_TOOL_CONFIG = {
   updateMultiImagePost:  { slugField: "group_filename", scope: "post-type", ownTable: "users_portfolio_groups",    ownIdField: "group_id", postTypeField: "data_id", autoSuffix: false },
 };
 
+/** Normalize a slug for comparison — match BD's URL router behavior.
+ *  BD's `=` filter on slug columns is case-insensitive and trims whitespace,
+ *  AND BD's public URL router treats `/foo`, `/Foo`, and `/FOO` as the same
+ *  page (verified live 2026-04-25 — all 3 variants returned identical 376KB
+ *  HTML for an existing category). So a duplicate-detection check must
+ *  match case-insensitively + whitespace-trimmed; otherwise a "Restaurants"
+ *  probe against existing "restaurants" would falsely report no collision
+ *  and BD would create a routing-conflict duplicate. */
+function _normalizeSlug(s) {
+  return String(s).trim().toLowerCase();
+}
+
+/** Validate slug format — BD URL slugs must NOT contain whitespace anywhere
+ *  (spaces, tabs, newlines all break routing or render as `%20` etc.). Reject
+ *  upfront with a clear actionable message before doing any probe work.
+ *  Returns null on valid, error-string on invalid. */
+function _validateSlugFormat(slug, fieldLabel) {
+  if (typeof slug !== "string") return null; // non-strings are skipped earlier
+  if (/\s/.test(slug)) {
+    return `${fieldLabel} '${slug}' contains whitespace, which is not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').`;
+  }
+  return null;
+}
+
 /** Look up rows in one BD table whose `field` equals the slug. */
 async function _slugProbeTable(config, table, field, slug, limit) {
   try {
@@ -1506,7 +1530,12 @@ async function _slugProbeTable(config, table, field, slug, limit) {
       null
     );
     const rows = result && result.body && Array.isArray(result.body.message) ? result.body.message : [];
-    return rows.filter((r) => r && String(r[field]) === String(slug));
+    // Client-side filter mirrors BD's case-insensitive + whitespace-trimmed
+    // matching. Without normalization here, a row BD returned (because BD's
+    // own filter case-insensitively matched it) could be incorrectly
+    // discarded by us, leading to false-negative collision detection.
+    const target = _normalizeSlug(slug);
+    return rows.filter((r) => r && _normalizeSlug(r[field]) === target);
   } catch {
     return null; // signals probe-failure to caller
   }
@@ -1524,6 +1553,11 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   if (!cfg || !args || typeof args !== "object") return null;
   const proposed = args[cfg.slugField];
   if (proposed === undefined || proposed === null || proposed === "") return null;
+
+  // Format validation: reject whitespace before any network work.
+  const formatErr = _validateSlugFormat(String(proposed), cfg.slugField);
+  if (formatErr) return { ok: false, error: formatErr };
+
   const ownId = cfg.ownIdField && args[cfg.ownIdField] !== undefined && args[cfg.ownIdField] !== null
     ? String(args[cfg.ownIdField])
     : null;

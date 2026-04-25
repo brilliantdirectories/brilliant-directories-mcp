@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.36] - 2026-04-25
+
+### Fixed — two more blind spots in slug-uniqueness helper, found in second audit pass
+
+After v6.40.35 a second critical-audit pass on the slug helper turned up two more real bugs:
+
+#### 1. Case-sensitive client-side filter could miss collisions (HIGH — silent allow)
+
+BD's URL router is **case-INSENSITIVE** (verified live: `/personal-trainer`, `/Personal-Trainer`, `/PERSONAL-TRAINER` all serve the same page). BD's filter operator is also case-insensitive on the server side. But our defensive client-side filter used strict `String(r[field]) === String(slug)` — meaning if an agent proposed `Personal-Trainer` and BD's case-insensitive filter returned the existing `personal-trainer` row, our strict-equal check would reject the match and falsely report "no collision". Result: silent allow of a duplicate URL with different casing.
+
+Fix: added `_normalizeSlug(s) = String(s).trim().toLowerCase()` mirroring BD router behavior, and updated `_slugProbeTable` to compare via `_normalizeSlug(r[field]) === target`. The probe stays defensive (catches BD's silent-drop-on-unknown-property bug) but now correctly handles case variants.
+
+#### 2. Whitespace in slugs accepted, breaking URLs (MEDIUM — corrupt data)
+
+BD does NOT auto-slugify on create — it stores the filename verbatim. An agent passing `filename="my page"` would get a literal space stored, producing a broken URL. The helper would do a probe and might allow it through (if no other row had that exact value).
+
+Fix: added `_validateSlugFormat(slug, fieldLabel)` that rejects any whitespace upfront before any network work, with a clear actionable error: `filename 'my page' contains whitespace, which is not allowed in BD URLs. Use hyphens instead (e.g. 'my-page' not 'my page').` Wired into `reserveSiteUrlSlug` as the first check.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. `_normalizeSlug` and `_validateSlugFormat` added; `_slugProbeTable` updated to use normalized comparison; `reserveSiteUrlSlug` calls format validator first. ~15 lines net.
+
 ## [6.40.35] - 2026-04-25
 
 ### Fixed — three blind spots in v6.40.34 slug-uniqueness helper, found in self-audit
