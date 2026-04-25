@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.28] - 2026-04-25
+
+### Fixed — `eav_results` now reports `action: "no_change"` for empty-string updates that BD silently no-ops
+
+Claude's third Test 6 retest found a remaining false-success: passing `hero_link_size=""` (a legitimate enum value meaning "Normal" size) returned `eav_results.action: "updated"` but the stored value didn't change. Live curl probe confirmed this is BD's behavior, not ours — BD's `users_meta/update` endpoint silently ignores empty-string `value` params, treating them as "no change to value." Our wrapper was reporting BD's HTTP 200 as `updated` regardless.
+
+Fix: in `writeEavFields`, after looking up the existing meta row, capture its current `value`. If the agent's target value is empty AND the existing value is non-empty, BD will silently no-op the update. Detect this BEFORE the write and report honestly:
+
+```json
+"eav_results": [
+  {
+    "key": "hero_link_size",
+    "action": "no_change",
+    "status": "success",
+    "message": "BD silently no-ops empty-string updates on users_meta — existing value \"btn-lg\" preserved. To reset to default, use deleteUserMeta on this meta_id.",
+    "meta_id": "37411"
+  }
+]
+```
+
+The "to reset to default" hint gives the agent a clear next step: `deleteUserMeta(meta_id)` removes the row entirely, BD falls back to its built-in default (which IS empty for these fields). Considered auto-deleting on empty-string write, but that changes DB shape (row absent vs. row with empty value) which may have side effects elsewhere — `no_change` + agent-explicit `deleteUserMeta` is safer and more honest.
+
+When the EAV row doesn't exist yet (`!metaId`), empty-string still works — `createUserMeta` writes the empty value successfully (BD's create endpoint accepts empty, only the update endpoint silently ignores it). No special handling needed in the create branch.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — `writeEavFields` now captures `existingValue` from the lookup and adds the no-op detection branch before the update fetch. Both files mirrored byte-for-byte. Smoke-tested live: `hero_link_size=""` against an existing `btn-xl` value reports `action: "no_change"` with the explanation message; setting `hero_link_size="btn-lg"` still reports `action: "updated"` correctly.
+
 ## [6.40.27] - 2026-04-25
 
 ### Fixed — empty-string false-success on hero enum fields

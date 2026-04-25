@@ -1110,6 +1110,7 @@ async function writeEavFields(config, route, parentId, eavParams) {
   const results = [];
   for (const [key, value] of Object.entries(eavParams)) {
     let metaId = null;
+    let existingValue = null;
     try {
       const listResult = await makeRequest(
         config,
@@ -1126,7 +1127,10 @@ async function writeEavFields(config, route, parentId, eavParams) {
           String(row.database) === String(route.eavDatabase) &&
           String(row.database_id) === String(parentId)
       );
-      if (matches.length > 0 && matches[0].meta_id) metaId = matches[0].meta_id;
+      if (matches.length > 0 && matches[0].meta_id) {
+        metaId = matches[0].meta_id;
+        existingValue = matches[0].value !== undefined ? String(matches[0].value) : null;
+      }
     } catch {
       results.push({ key, action: "updated", status: "error", message: "EAV lookup failed" });
       continue;
@@ -1147,13 +1151,31 @@ async function writeEavFields(config, route, parentId, eavParams) {
       }
       continue;
     }
+    // Empty-string update detection: BD's users_meta/update endpoint silently
+    // ignores empty `value` params (URL-encoded `value=` arrives but BD
+    // treats it as "no change to value" rather than "set to empty"). If we
+    // sent the update naively, the response would lie — saying "updated" for
+    // a no-op. Detect upfront and report honestly. To actually reset to
+    // BD's default (which IS empty for these fields), use deleteUserMeta
+    // to remove the row entirely.
+    const targetValue = String(value);
+    if (targetValue === "" && existingValue !== null && existingValue !== "") {
+      results.push({
+        key,
+        action: "no_change",
+        status: "success",
+        message: `BD silently no-ops empty-string updates on users_meta — existing value "${existingValue}" preserved. To reset to default, use deleteUserMeta on this meta_id.`,
+        meta_id: metaId,
+      });
+      continue;
+    }
     try {
       const updateResult = await makeRequest(
         config,
         "PUT",
         "/api/v2/users_meta/update",
         null,
-        { meta_id: metaId, value: String(value), database: route.eavDatabase, database_id: parentId }
+        { meta_id: metaId, value: targetValue, database: route.eavDatabase, database_id: parentId }
       );
       const ok = updateResult && updateResult.status >= 200 && updateResult.status < 300;
       results.push({ key, action: "updated", status: ok ? "success" : "error", http: updateResult && updateResult.status });
