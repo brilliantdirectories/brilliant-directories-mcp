@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.33] - 2026-04-25
+
+### Changed — tighten the missing-tool corpus paragraph
+
+v6.40.32 added a 6-line paragraph explaining how an agent should respond when a tool isn't loaded. Two issues caught immediately:
+
+1. I said the user must "restart your AI client" after enabling new endpoints — wrong. BD's API key permission changes take effect immediately; no client restart needed.
+2. The paragraph was too long for what it conveys.
+
+Trimmed from ~120 words to ~45. Load-bearing info preserved: example tool names so the agent recognizes the symptom, the BD-side diagnosis (key permission scope), the fix path (Developer Hub → key → Permissions → enable), no-restart note, and the don't-work-around guard. Removed the ~25 endpoints / Easy vs Advanced Endpoints framing — agent doesn't need the architecture lesson, just the fix.
+
+### Internal
+
+- `mcp/openapi/mcp-instructions.md` — single-paragraph rewrite. ~75 words removed.
+
 ## [6.40.32] - 2026-04-25
 
 ### Changed — corpus now explains the "missing tool" symptom (closes Bug #8 framing)
