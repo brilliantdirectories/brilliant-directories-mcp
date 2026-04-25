@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.63] - 2026-04-25
+
+### Fixed — slug-uniqueness probes now serialize so they actually succeed
+
+Cross-namespace slug uniqueness probes were running in parallel via `Promise.all`. BD's PHP-FPM / LiteSpeed setup drops 4 of 5 simultaneous same-client requests, so 4 of the 5 probes consistently failed. The wrapper fell open with a `_slug_probe_warning` on every category/page write — but the cross-namespace collision safety net wasn't actually running. Agents either ignored the warning (cried-wolf signal) or wasted BD calls on redundant re-verification.
+
+The probes now run serially. Adds ~800ms latency on the 12 slug-bearing write tools only (categories, pages, plans, members, posts). Reads, post writes, and every other tool unaffected. The safety net actually executes now — cross-namespace collisions are detected, auto-suffix works for category writes, and `_slug_probe_warning` only appears when there's a genuine BD issue worth surfacing.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.62] - 2026-04-25
 
 ### Fixed — bound-page guard now catches multi-tier slugs

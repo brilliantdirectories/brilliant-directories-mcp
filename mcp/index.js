@@ -2091,15 +2091,20 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   // Build collision-detection function based on scope.
   const isCollision = async (slug) => {
     if (cfg.scope === "site") {
-      // Probe all 4 site-namespace tables in parallel.
-      // limit=25 not 5 — handles the (rare but possible) historical case
-      // where BD already has multiple same-slug rows in one table; with
-      // limit=5 + ownId-self-exclusion we could miss a real collision on
-      // row 6+. 25 is BD's recommended page size and exhausts realistic
-      // collision patterns without paginating.
-      const probes = await Promise.all(SITE_NAMESPACE_TABLES.map((t) =>
-        _slugProbeTable(config, t.table, t.field, slug, 25).then((rows) => ({ ...t, rows }))
-      ));
+      // Probe all 5 site-namespace tables. SERIAL not parallel — BD's PHP-FPM
+      // / LiteSpeed setup drops 4 of 5 simultaneous requests from the same
+      // client (verified live: parallel probes consistently surface
+      // _slug_probe_warning across 4 tables; serial probes succeed). The
+      // ~800ms total latency only applies to slug-bearing writes (12 tools)
+      // and is the price of the cross-namespace collision safety net
+      // actually running. limit=25 not 5 — handles the historical case
+      // where BD has multiple same-slug rows in one table; with limit=5 +
+      // ownId-self-exclusion we could miss a collision on row 6+.
+      const probes = [];
+      for (const t of SITE_NAMESPACE_TABLES) {
+        const rows = await _slugProbeTable(config, t.table, t.field, slug, 25);
+        probes.push({ ...t, rows });
+      }
       // Find first non-self conflict.
       for (const p of probes) {
         if (p.rows === null) {
