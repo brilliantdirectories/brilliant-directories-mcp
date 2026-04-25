@@ -2252,6 +2252,21 @@ async function main() {
         }
       }
 
+      // Thin-content soft warning: createWebPage with NO title, h1, meta_desc,
+      // or content (and no override) leaves a publicly-live blank page that
+      // Google may index as thin content. Don't reject — there are legit
+      // placeholder/draft flows. Just attach a `_thin_content_warning` to the
+      // response body so the agent and human user notice. Only fires for
+      // seo_type=content (homepage / search-results / data_category have
+      // their own template-driven content).
+      let _thinContentWarning = null;
+      if (name === "createWebPage" && args && typeof args === "object" && args.seo_type === "content") {
+        const has = (k) => args[k] !== undefined && args[k] !== null && String(args[k]).trim() !== "";
+        if (!has("title") && !has("h1") && !has("meta_desc") && !has("content")) {
+          _thinContentWarning = `createWebPage created a page with no title, h1, meta_desc, or content. content_active defaults to 1 — the page is publicly live and Google may index it as thin content. Provide at least one of those fields, or pass content_active=0 to keep it hidden until populated.`;
+        }
+      }
+
       // EAV split: peel hero/EAV fields off updateWebPage args before the
       // parent update. Flushed via users_meta after the parent succeeds.
       const { direct: eavDirect, eav: eavQueued, route: eavRoute } = splitEavParams(name, args || {});
@@ -2304,6 +2319,31 @@ async function main() {
         }
       }
 
+      // Rewrite BD's misleading "list_seo not found" 404 into something
+      // agents can act on. BD returns this string for both single-record
+      // misses and empty filtered lists, which agents misread as "the
+      // list_seo TABLE is missing" (a system-level failure) and abort
+      // retries. Distinguish + rephrase:
+      //   - getWebPage with a non-existent seo_id → "No list_seo record
+      //     with seo_id=N" (still error; clear that the record is the
+      //     thing missing, not the table).
+      //   - listWebPages with a filter that matches nothing → status
+      //     "success" with empty message array + total=0 (success because
+      //     the query worked correctly, it just found nothing).
+      if (result.body && typeof result.body === "object" && result.body.status === "error" && result.body.message === "list_seo not found") {
+        if (name === "getWebPage") {
+          const id = args && args.seo_id !== undefined ? args.seo_id : "?";
+          result.body.message = `No list_seo record with seo_id=${id}.`;
+        } else if (name === "listWebPages") {
+          // Empty filter result is success, not error.
+          result.body.status = "success";
+          result.body.message = [];
+          result.body.total = result.body.total || 0;
+          result.body.current_page = result.body.current_page || 1;
+          result.body.total_pages = result.body.total_pages || 0;
+        }
+      }
+
       // Apply lean-response shaping. Reads honor include_* flags; writes
       // are always lean (create/update echoes trimmed to a small keep-set).
       if (result.body) {
@@ -2321,6 +2361,11 @@ async function main() {
       // so it can paginate or drop heavy includes on the next call.
       if (_throttleWarning && result.body && typeof result.body === "object") {
         result.body._throttled = _throttleWarning;
+      }
+      // Attach thin-content warning on createWebPage if no SEO/title fields
+      // were set (page goes live but Google may index as thin content).
+      if (_thinContentWarning && result.body && typeof result.body === "object") {
+        result.body._thin_content_warning = _thinContentWarning;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.

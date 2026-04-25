@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.23] - 2026-04-25
+
+### Changed — UX polish trifecta from Claude's stress-test report
+
+Three quality-of-life fixes. None are bugs — agents technically work today — but each one closes a quiet failure mode that wastes agent turns or produces silent SEO leakage.
+
+#### 1. Rewrite "list_seo not found" 404 → context-aware message (Bug 2)
+
+BD returns the literal string `"list_seo not found"` for both single-record GET misses AND empty filtered list results. Agents misread it as "the `list_seo` TABLE is missing" (a system-level failure) and abort retries. Wrapper now post-processes:
+- `getWebPage` 404 → `"No list_seo record with seo_id=N."` (still error; clear that the record is missing, not the table)
+- `listWebPages` empty filter → `status: "success", message: [], total: 0` (success because the query worked correctly, it just found nothing — agents should iterate, not retry)
+
+Verified live: `getWebPage seo_id=99999` and `listWebPages property=seo_type property_value=data_category` both produce the new clear responses.
+
+#### 2. Thin-content soft warning on `createWebPage` (Bug 3)
+
+`createWebPage` with `seo_type=content` and no `title`, `h1`, `meta_desc`, or `content` creates a publicly-live blank page that Google may index as thin content. Don't reject — there are legitimate placeholder/draft flows. Soft warn: response includes `_thin_content_warning` field listing the missing fields. Agent + human user both see it. Suggestion in the message: provide at least one SEO field, or pass `content_active=0` to keep the page hidden until populated.
+
+#### 3. Corpus prose update — EAV is auto-routed (Bug 5)
+
+`mcp/openapi/mcp-instructions.md`: replaced the multi-paragraph "WebPage users_meta field-update workaround (CRITICAL)" stale section with a 5-line accurate description. The MCP wrapper has been auto-routing EAV-stored fields through `users_meta` for some time — agents reading the old prose were writing 2-3 unnecessary defensive `updateUserMeta` calls. New prose: just call `updateWebPage` with whatever fields you want; the response's `eav_results` array confirms which EAV fields were written.
+
+Also updated `createWebPage`'s spec description: removed the stale "EAV path silently drops on UPDATE" workflow paragraph; replaced with a short pointer that EAV fields are auto-routed and the response includes `eav_results`. `hero_content_overlay_opacity` field description tightened the same way.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — added 404 rewrite + thin-content warning. Both files mirrored byte-for-byte. Smoke-tested live.
+- `mcp/openapi/mcp-instructions.md` — collapsed 25-line stale EAV section into 5 accurate lines.
+- `mcp/openapi/bd-api.json` — `createWebPage` description trimmed of stale EAV workaround paragraph; `hero_content_overlay_opacity` field description tightened (both create + update copies).
+
 ## [6.40.22] - 2026-04-25
 
 ### Added — extend hero enum validator + duplicate-filename guard + listWebPages throttle

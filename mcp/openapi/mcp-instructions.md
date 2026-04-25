@@ -457,24 +457,9 @@ Treat these as a single atomic recipe, not a menu. If you're tempted to skip one
 
 A single mistake here can cascade-destroy member data, plan metadata, and page settings that happen to share the same ID across unrelated tables.
 
-**WebPage users_meta field-update workaround (CRITICAL).** BD's `list_seo` table has a mix of DIRECT columns and EAV-stored fields in the `users_meta` table (keyed by `database=list_seo` + `database_id=<seo_id>` + `key=<field>`).
+**WebPage EAV fields — auto-routed by the wrapper, no special handling needed.** BD's `list_seo` table mixes direct columns with EAV-stored fields in `users_meta`. BD's REST API itself silently ignores EAV fields on `updateWebPage`, but the MCP wrapper auto-detects them and routes the writes through `users_meta` for you. Just call `updateWebPage` with whatever fields you want to set; the response includes an `eav_results` array confirming which EAV fields were written. Reads merge automatically — `getWebPage` / `listWebPages` return the merged record at top level.
 
-- On CREATE: `createWebPage` writes ALL fields correctly - direct columns AND users_meta rows are seeded together.
-- On UPDATE: `updateWebPage` only writes the direct columns - **users_meta-stored fields are SILENTLY IGNORED** (the write succeeds but the new value doesn't persist, live-verified).
-
-**EAV-backed fields that MUST be updated via `updateUserMeta`** (not `updateWebPage`):
-
-`linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`.
-
-**This is a verified-live list; BD's `list_seo` EAV layer may include additional columns beyond these 18.** Reliable detection: after `updateWebPage`, re-GET and compare; if the value didn't persist, fall back to the EAV path. Any GET-returned `list_seo` field can be written via EAV.
-
-**Update workflow for each EAV field:**
-
-1. `listUserMeta` with compound filter — send all three conditions server-side in one call: `property[]=database&property_value[]=list_seo&property_operator[]==&property[]=database_id&property_value[]=<seo_id>&property_operator[]==&property[]=key&property_value[]=<field>&property_operator[]==`. Returns the existing `meta_id` (or empty if unprovisioned).
-2. If found -> `updateUserMeta(meta_id=..., database=list_seo, database_id=<seo_id>, value=<new value>)`.
-3. If not found -> the WebPage doesn't have that EAV key provisioned. BD auto-seeds these on `createWebPage`; a missing row means the field is unsupported on this site. Confirm the field name; do NOT manually create a row (`createUserMeta` is intentionally not exposed as a tool).
-
-**Reads merge automatically:** `getWebPage` / `listWebPages` return the merged record including users_meta values at the top level. You do NOT need to query UserMeta separately for reads.
+EAV-backed fields auto-routed (verified live): `linked_post_category`, `linked_post_type`, `disable_preview_screenshot`, `disable_css_stylesheets`, `hero_content_overlay_opacity`, `hero_link_target_blank`, `hero_background_image_size`, `hero_link_size`, `hero_link_color`, `hero_content_font_size`, `hero_section_content`, `hero_column_width`, `h2_font_weight`, `h1_font_weight`, `h2_font_size`, `h1_font_size`, `hero_link_text`, `hero_link_url`. Do NOT call `updateUserMeta` directly for these — `updateWebPage` is the right tool.
 
 **Delete cleanup:** `deleteWebPage` deletes the `list_seo` row but does NOT cascade-delete the corresponding users_meta rows. After `deleteWebPage(seo_id)`:
 
