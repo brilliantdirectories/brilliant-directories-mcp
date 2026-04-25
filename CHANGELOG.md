@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.35] - 2026-04-25
+
+### Fixed — three blind spots in v6.40.34 slug-uniqueness helper, found in self-audit
+
+Right after shipping v6.40.34 I did a critical-audit pass on the new helper. Three real issues:
+
+#### 1. Buggy `update*` literal in create-error suggestion (HIGH — agent-facing)
+
+The error message had a leftover bug from refactoring: `use update${cfg.label ? "" : ""}* on the existing record` — `cfg.label` doesn't exist as a property, so the result was always literal `update*` (with a star). Agents reading the rejection saw a non-existent tool name and had to figure out the real one (`updateWebPage`, `updateTopCategory`, etc.) themselves.
+
+Fix: derive the corresponding update-tool name from the create-tool name (`createWebPage` → `updateWebPage`, `createTopCategory` → `updateTopCategory`, etc.) and include the conflict's `idField=id` so the suggestion is directly actionable: `use updateWebPage on the existing record (seo_id=4)`.
+
+Smoke-tested: `createWebPage filename=about` (existing seo_id=4) now returns `Pick a different filename, or use updateWebPage on the existing record (seo_id=4).`
+
+#### 2. Probe limit too low for site-wide scan (MEDIUM — silent miss)
+
+Probe `limit=5` per table. With BD allowing duplicate slugs historically (no server-side uniqueness), a table could legitimately have 6+ rows with the same slug. If the agent's `ownId` happened to match all 5 returned rows on update, we'd miss the real conflict on row 6+. Statistically rare but real. Bumped to `limit=25` (BD's recommended page size) which exhausts realistic patterns.
+
+#### 3. Probe failures silently treated as "no collision" (MEDIUM — silent allow on flake)
+
+If the BD probe call itself fails (transient network/timeout), the helper would silently treat the table as "no rows match" and let the write through. Deliberate trade-off (don't block legitimate writes on a flake) — but the agent had no signal we couldn't fully verify.
+
+Fix: track probe failures, and if any occurred AND the write was allowed through, attach `_slug_probe_warning` to the response naming which tables failed and recommending post-write verification. Same pattern as `_throttled` and `_thin_content_warning`.
+
+If a probe failure occurs AND we DID detect a collision (other tables responded), the rejection message includes the same probe-failure note inline so the agent gets full context.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. ~30 lines added across the helper and dispatch path. Smoke-tested live: error message shows `updateWebPage` not `update*`; auto-suffix loop correctly probes own table when colliding with own resource.
+
+### Known limitations (NOT fixed in this release — deliberately)
+
+- Race condition between probe and create. Another caller can grab the slug between our probe and BD's create. Not solvable without server-side locking. BD already auto-suffixes natively for some resources; for the cross-table reject case, the worst outcome is an agent sees a successful probe but BD rejects the write — surfaced via BD's own response.
+- Auto-suffix loop is sequential. With `-1` through `-19` taken, we make up to 76 sequential subrequests. Pathological case; not optimizing without evidence of real-world impact.
+
 ## [6.40.34] - 2026-04-25
 
 ### Added — universal slug uniqueness guard (DRY helper, 10 call sites)

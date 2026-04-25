@@ -1528,16 +1528,29 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     ? String(args[cfg.ownIdField])
     : null;
 
+  // Track probe failures so we can surface them on the response. A failed
+  // probe is treated as "no collision detected on that table" so we don't
+  // block writes on transient BD errors — but the agent should know we
+  // couldn't fully verify, so they can re-check post-write if needed.
+  const probeFailures = [];
   // Build collision-detection function based on scope.
   const isCollision = async (slug) => {
     if (cfg.scope === "site") {
       // Probe all 4 site-namespace tables in parallel.
+      // limit=25 not 5 — handles the (rare but possible) historical case
+      // where BD already has multiple same-slug rows in one table; with
+      // limit=5 + ownId-self-exclusion we could miss a real collision on
+      // row 6+. 25 is BD's recommended page size and exhausts realistic
+      // collision patterns without paginating.
       const probes = await Promise.all(SITE_NAMESPACE_TABLES.map((t) =>
-        _slugProbeTable(config, t.table, t.field, slug, 5).then((rows) => ({ ...t, rows }))
+        _slugProbeTable(config, t.table, t.field, slug, 25).then((rows) => ({ ...t, rows }))
       ));
       // Find first non-self conflict.
       for (const p of probes) {
-        if (p.rows === null) continue; // probe failed; treat as no-collision rather than block on transient BD error
+        if (p.rows === null) {
+          probeFailures.push(p.table);
+          continue; // probe failed; non-fatal but recorded
+        }
         for (const row of p.rows) {
           // Self-exclusion: only on update, only same table + same id.
           if (ownId && p.table === cfg.ownTable && String(row[p.ownIdField]) === ownId) continue;
@@ -1550,7 +1563,10 @@ async function reserveSiteUrlSlug(config, toolName, args) {
       const postType = args[cfg.postTypeField];
       if (postType === undefined || postType === null || postType === "") return null;
       const rows = await _slugProbeTable(config, cfg.ownTable, cfg.slugField, slug, 25);
-      if (rows === null) return null;
+      if (rows === null) {
+        probeFailures.push(cfg.ownTable);
+        return null;
+      }
       for (const row of rows) {
         if (ownId && String(row[cfg.ownIdField]) === ownId) continue;
         if (String(row.data_id) !== String(postType)) continue; // different post type — different namespace
@@ -1561,18 +1577,34 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     return null;
   };
 
+  // Derive the corresponding update-tool name for create-error suggestions.
+  // Used to be a buggy `update${cfg.label ? "" : ""}*` literal — replaced
+  // with a real op name so agents get an actionable suggestion.
+  const correspondingUpdateTool = toolName.startsWith("create")
+    ? toolName.replace(/^create/, "update")
+    : toolName;
+
+  // Build a probe-failure annotation if any tables couldn't be checked.
+  const buildProbeFailureNote = () => probeFailures.length === 0
+    ? ""
+    : ` (probe-failure: couldn't verify uniqueness in ${probeFailures.join(", ")} due to a transient BD error — re-check post-write if this matters)`;
+
   // Single check (most paths) OR loop with auto-suffix (categories).
   const baseSlug = String(proposed);
   if (!cfg.autoSuffix) {
     const collision = await isCollision(baseSlug);
     if (collision) {
       const action = toolName.startsWith("create")
-        ? `Pick a different ${cfg.slugField}, or use update${cfg.label ? "" : ""}* on the existing record.`
+        ? `Pick a different ${cfg.slugField}, or use ${correspondingUpdateTool} on the existing record (${collision.idField}=${collision.id}).`
         : `Pick a different ${cfg.slugField} for this record, or rename/delete the conflicting one first.`;
       return {
         ok: false,
-        error: `${cfg.slugField} '${baseSlug}' already exists as ${collision.label} (${collision.idField}=${collision.id}). ${action} Duplicate URLs break BD's router and are not permitted.`,
+        error: `${cfg.slugField} '${baseSlug}' already exists as ${collision.label} (${collision.idField}=${collision.id}). ${action} Duplicate URLs break BD's router and are not permitted.${buildProbeFailureNote()}`,
       };
+    }
+    if (probeFailures.length > 0) {
+      // No collision found, but we couldn't fully verify. Allow write, surface a soft warning.
+      return { ok: true, slug: baseSlug, probe_warning: `Slug uniqueness could not be fully verified (transient BD error on ${probeFailures.join(", ")}). Re-check post-write if uniqueness is critical.` };
     }
     return { ok: true, slug: baseSlug };
   }
@@ -1584,24 +1616,28 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     const collision = await isCollision(candidate);
     if (!collision) {
       args[cfg.slugField] = candidate; // mutate so the forwarded request uses the resolved slug
-      if (attempt === 0) return { ok: true, slug: candidate };
-      const adjusted = {
-        from: baseSlug,
-        to: candidate,
-        suffix_n: attempt,
-        reason: `${cfg.slugField} '${baseSlug}' was taken in the site URL namespace; auto-suffixed to '${candidate}'.`,
-      };
-      // Quiet for -1..-3, surface for -4+.
-      return attempt >= SLUG_AUTO_SUFFIX_QUIET_THRESHOLD
-        ? { ok: true, slug: candidate, adjusted }
-        : { ok: true, slug: candidate };
+      const result = { ok: true, slug: candidate };
+      if (attempt > 0) {
+        result.adjusted = {
+          from: baseSlug,
+          to: candidate,
+          suffix_n: attempt,
+          reason: `${cfg.slugField} '${baseSlug}' was taken in the site URL namespace; auto-suffixed to '${candidate}'.`,
+        };
+        // Quiet for -1..-3 (silent suffix), surface for -4+ (unusual).
+        if (attempt < SLUG_AUTO_SUFFIX_QUIET_THRESHOLD) delete result.adjusted;
+      }
+      if (probeFailures.length > 0) {
+        result.probe_warning = `Slug uniqueness could not be fully verified (transient BD error on ${probeFailures.join(", ")}). Re-check post-write if uniqueness is critical.`;
+      }
+      return result;
     }
     attempt++;
     candidate = `${baseSlug}-${attempt}`;
   }
   return {
     ok: false,
-    error: `${cfg.slugField} '${baseSlug}' and all suffix variants up to '${baseSlug}-${SLUG_AUTO_SUFFIX_MAX}' are taken in the site URL namespace. Pick a meaningfully different name.`,
+    error: `${cfg.slugField} '${baseSlug}' and all suffix variants up to '${baseSlug}-${SLUG_AUTO_SUFFIX_MAX}' are taken in the site URL namespace. Pick a meaningfully different name.${buildProbeFailureNote()}`,
   };
 }
 
@@ -2452,9 +2488,9 @@ async function main() {
         return { content: [{ type: "text", text: slugGuard.error }], isError: true };
       }
       let _slugAdjusted = null;
-      if (slugGuard && slugGuard.adjusted) {
-        _slugAdjusted = slugGuard.adjusted;
-      }
+      let _slugProbeWarning = null;
+      if (slugGuard && slugGuard.adjusted) _slugAdjusted = slugGuard.adjusted;
+      if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
@@ -2577,6 +2613,13 @@ async function main() {
       // enough to suggest something unusual (>=4). Silent on -1, -2, -3.
       if (_slugAdjusted && result.body && typeof result.body === "object") {
         result.body._slug_adjusted = _slugAdjusted;
+      }
+      // Probe-failure warning: we couldn't fully verify uniqueness due to a
+      // transient BD error on one of the namespace tables. Write was allowed
+      // through (don't block legitimate work on a flake) but agent should
+      // know to verify post-write if uniqueness matters for their use case.
+      if (_slugProbeWarning && result.body && typeof result.body === "object") {
+        result.body._slug_probe_warning = _slugProbeWarning;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.
