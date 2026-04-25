@@ -1862,7 +1862,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
   // Build a probe-failure annotation if any tables couldn't be checked.
   const buildProbeFailureNote = () => probeFailures.length === 0
     ? ""
-    : ` (probe-failure: couldn't verify uniqueness in ${probeFailures.join(", ")} due to a transient BD error — re-check post-write if this matters)`;
+    : ` (probe-failure: couldn't verify uniqueness in ${[...new Set(probeFailures)].join(", ")} due to a transient BD error — re-check post-write if this matters)`;
 
   // Single check (most paths) OR loop with auto-suffix (categories).
   const baseSlug = String(proposed);
@@ -1879,7 +1879,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     }
     if (probeFailures.length > 0) {
       // No collision found, but we couldn't fully verify. Allow write, surface a soft warning.
-      return { ok: true, slug: baseSlug, probe_warning: `Slug uniqueness could not be fully verified (transient BD error on ${probeFailures.join(", ")}). Re-check post-write if uniqueness is critical.` };
+      return { ok: true, slug: baseSlug, probe_warning: `Slug uniqueness could not be fully verified (transient BD error on ${[...new Set(probeFailures)].join(", ")}). Re-check post-write if uniqueness is critical.` };
     }
     return { ok: true, slug: baseSlug };
   }
@@ -1903,7 +1903,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
         if (attempt < SLUG_AUTO_SUFFIX_QUIET_THRESHOLD) delete result.adjusted;
       }
       if (probeFailures.length > 0) {
-        result.probe_warning = `Slug uniqueness could not be fully verified (transient BD error on ${probeFailures.join(", ")}). Re-check post-write if uniqueness is critical.`;
+        result.probe_warning = `Slug uniqueness could not be fully verified (transient BD error on ${[...new Set(probeFailures)].join(", ")}). Re-check post-write if uniqueness is critical.`;
       }
       return result;
     }
@@ -2718,11 +2718,33 @@ async function main() {
       if (isUsersMetaRead && args) {
         const workingArgs = { ...args };
         const pairs = [];
+        const seenKeys = new Set();
         for (const k of ["database", "database_id", "key"]) {
           if (workingArgs[k] !== undefined && workingArgs[k] !== null && workingArgs[k] !== "") {
             pairs.push([k, workingArgs[k]]);
+            seenKeys.add(k);
             delete workingArgs[k];
           }
+        }
+        // Also consume property-style filters if they target one of the
+        // identity fields. Agents sometimes pass database via property/
+        // property_value instead of the first-class arg; without this the
+        // guard sees 2 hits (counting both forms) but only one gets
+        // translated to the array-syntax filter, and BD silently drops
+        // the property-style form, returning cross-table noise.
+        if (
+          typeof workingArgs.property === "string" &&
+          ["database", "database_id", "key"].includes(workingArgs.property) &&
+          !seenKeys.has(workingArgs.property) &&
+          workingArgs.property_value !== undefined &&
+          workingArgs.property_value !== null &&
+          String(workingArgs.property_value).trim() !== ""
+        ) {
+          pairs.push([workingArgs.property, workingArgs.property_value]);
+          seenKeys.add(workingArgs.property);
+          delete workingArgs.property;
+          delete workingArgs.property_value;
+          delete workingArgs.property_operator;
         }
         if (pairs.length > 0) {
           metaFilterPairs = pairs;

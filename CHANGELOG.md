@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.47] - 2026-04-25
+
+### Fixed — three findings from background-agent stress test against v6.40.46
+
+#### listUserMeta property-style filter silently dropped (HIGH — cross-table noise)
+
+When agents passed a mixed filter (one identity field as first-class arg, one via `property`/`property_value`), the safety guard counted both and let the call through (correctly), but the **translation step** only consumed the first-class params. The property-style pair was forwarded as a plain `?property=database&property_value=list_seo` query, which BD's `users_meta/get` silently ignores. Result: only one filter actually applied, returning cross-table noise (e.g. `database=users_reviews` rows when the agent asked for `database=list_seo`).
+
+Fix: translation now also consumes property-style filters when `property` targets one of the identity fields. Both forms now combine correctly into BD's array-syntax `property[]` filters.
+
+#### include_* boolean fields rejected when passed as `1` (Zod strict typing)
+
+OpenAPI schema declared 36 `include_*` flags as `type: boolean`. Agents naturally pass `=1` (matching BD's own `?key=1` URL convention plus the `=1` examples used throughout our docs), but the SDK's Zod validator rejected `1` with `"Expected boolean, received number"`. BD itself accepts both `=1` and `=true` server-side; the wrapper consumes via `!!flag` truthy check; only the schema layer cared.
+
+Fix: changed all `include_*` fields from `type: boolean` to `type: integer, enum: [0, 1]`. Agents can pass `0` or `1`, matching BD's actual API convention. 36 fields updated (19 inline schemas + 17 top-level component params).
+
+#### Slug probe-failure warning duplicated table names (LOW — cosmetic)
+
+Auto-suffix loop on category creates calls `isCollision` once per attempt. If a probe failed on attempt 1 and again on attempt 2, the table name was pushed to `probeFailures` twice, producing warnings like `"... transient BD error on list_seo, list_seo, list_seo"`.
+
+Fix: dedupe via `[...new Set(probeFailures)]` at every join site (3 spots).
+
+### Investigated, no code change
+
+- **CJK char `中` falsely rejected** (agent #4 finding): root cause was Windows console mangling `中` to `?` before curl sent the request. Worker correctly rejected the literal `?`. Verified via UTF-8 file payload that `中` filenames work correctly. No bug.
+- **createMemberSubCategoryLink second-call FK fail** (agent #2 finding): could not reproduce. Identical args ran twice in immediate succession against the live Worker — both correctly returned `DUPLICATE GUARD` with the right rel_id. Likely a rate-limit transient on the agent's first probe burst.
+- **Claude's "MCP hung 4 min" report** (round 2 retest): Worker verified healthy in <600ms on all reported endpoints. Cross-table guard fires correctly. Claude's session was stale, not the server.
+
+### Internal
+
+- `mcp/index.js` and `src/index.ts` — both files mirrored. listUserMeta translator extended by ~14 lines, probeFailures dedup applied at 3 sites.
+- `mcp/openapi/bd-api.json` — 36 include_* fields converted from `boolean` to `integer enum: [0, 1]`.
+
 ## [6.40.46] - 2026-04-25
 
 ### Fixed — two regressions from v6.40.40 / v6.40.44 found by Claude retest

@@ -72,103 +72,222 @@
         "name": "include_password",
         "in": "query",
         "description": "Opt in to return bcrypt `password` hash. Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_subscription": {
         "name": "include_subscription",
         "in": "query",
         "description": "Opt in to return full `subscription_schema` (60+ plan fields). Default: `subscription_id` only.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_clicks": {
         "name": "include_clicks",
         "in": "query",
         "description": "Opt in to return `user_clicks_schema.clicks` array. Default: `total_clicks` count only.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_photos": {
         "name": "include_photos",
         "in": "query",
         "description": "Opt in to return `photos_schema` array. Default: `total_photos` count only (`image_main_file` URL always returned).",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_transactions": {
         "name": "include_transactions",
         "in": "query",
         "description": "Opt in to return full `transactions` invoice array. Default stripped (`revenue` rollup always returned).",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_profession": {
         "name": "include_profession",
         "in": "query",
         "description": "Opt in to return `profession_schema` (category metadata). Default: `profession_id` only.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_tags": {
         "name": "include_tags",
         "in": "query",
         "description": "Opt in to return `tags` array. Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_services": {
         "name": "include_services",
         "in": "query",
         "description": "Opt in to return `services_schema` sub-category array. Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_seo_hidden": {
         "name": "include_seo_hidden",
         "in": "query",
         "description": "Opt in to return SEO meta fields (`seo_page_*_hidden`, `seo_social_*_hidden`, `search_description`). Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_about": {
         "name": "include_about",
         "in": "query",
         "description": "Opt in to return the `about_me` HTML bio. Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_content": {
         "name": "include_content",
         "in": "query",
         "description": "Opt in to return the full `post_content` HTML body. Default stripped (`post_title` + `post_caption` always returned).",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_post_seo": {
         "name": "include_post_seo",
         "in": "query",
         "description": "Opt in to return `post_meta_title`, `post_meta_description`, `post_meta_keywords`. Default stripped.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_author_full": {
         "name": "include_author_full",
         "in": "query",
         "description": "Opt in to return the full original `user` nested object (every field BD returns, including `password` hash, session `token`, `cookie`). Default: curated `author` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`).",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_category_schema": {
         "name": "include_category_schema",
         "in": "query",
         "description": "Opt in to restore full category metadata: `desc` (SEO description), `keywords`, `image`, `icon`, `sort_order`, `lead_price`, `revision_timestamp`. Default lean keeps: category ID + `name` + `filename` + hierarchy links (`profession_id` on top/sub, `master_id` on sub for sub-sub parent). Hierarchy is always visible so agents can traverse top -> sub -> sub-sub without opt-in.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_code": {
         "name": "include_code",
         "in": "query",
         "description": "Opt in to return the 9 PHP/HTML code-template fields on post types: `search_results_div`, `search_results_layout`, `profile_results_layout`, `profile_header`, `profile_footer`, `category_header`, `category_footer`, `comments_code`, `comments_header`. Default stripped. Only needed when editing post-type templates. Each field can be 1-30KB.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_post_comment_settings": {
         "name": "include_post_comment_settings",
         "in": "query",
         "description": "Opt in to return the `post_comment_settings` JSON-string field on post types (comment display / edit / delete settings).",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "include_review_notifications": {
         "name": "include_review_notifications",
         "in": "query",
         "description": "Opt in to return the 5 review-notification email template fields on post types: `review_admin_notification_email`, `review_member_notification_email`, `review_submitter_notification_email`, `review_approved_submitter_notification_email`, `review_member_pending_notification_email`.",
-        "schema": { "type": "boolean", "default": false }
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
       },
       "property_value": {
         "name": "property_value",
@@ -1334,16 +1453,36 @@
           {
             "$ref": "#/components/parameters/order_type"
           },
-          { "$ref": "#/components/parameters/include_password" },
-          { "$ref": "#/components/parameters/include_subscription" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" },
-          { "$ref": "#/components/parameters/include_transactions" },
-          { "$ref": "#/components/parameters/include_profession" },
-          { "$ref": "#/components/parameters/include_tags" },
-          { "$ref": "#/components/parameters/include_services" },
-          { "$ref": "#/components/parameters/include_seo_hidden" },
-          { "$ref": "#/components/parameters/include_about" }
+          {
+            "$ref": "#/components/parameters/include_password"
+          },
+          {
+            "$ref": "#/components/parameters/include_subscription"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          },
+          {
+            "$ref": "#/components/parameters/include_transactions"
+          },
+          {
+            "$ref": "#/components/parameters/include_profession"
+          },
+          {
+            "$ref": "#/components/parameters/include_tags"
+          },
+          {
+            "$ref": "#/components/parameters/include_services"
+          },
+          {
+            "$ref": "#/components/parameters/include_seo_hidden"
+          },
+          {
+            "$ref": "#/components/parameters/include_about"
+          }
         ],
         "responses": {
           "200": {
@@ -1375,16 +1514,36 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_password" },
-          { "$ref": "#/components/parameters/include_subscription" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" },
-          { "$ref": "#/components/parameters/include_transactions" },
-          { "$ref": "#/components/parameters/include_profession" },
-          { "$ref": "#/components/parameters/include_tags" },
-          { "$ref": "#/components/parameters/include_services" },
-          { "$ref": "#/components/parameters/include_seo_hidden" },
-          { "$ref": "#/components/parameters/include_about" }
+          {
+            "$ref": "#/components/parameters/include_password"
+          },
+          {
+            "$ref": "#/components/parameters/include_subscription"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          },
+          {
+            "$ref": "#/components/parameters/include_transactions"
+          },
+          {
+            "$ref": "#/components/parameters/include_profession"
+          },
+          {
+            "$ref": "#/components/parameters/include_tags"
+          },
+          {
+            "$ref": "#/components/parameters/include_services"
+          },
+          {
+            "$ref": "#/components/parameters/include_seo_hidden"
+          },
+          {
+            "$ref": "#/components/parameters/include_about"
+          }
         ],
         "responses": {
           "200": {
@@ -2091,16 +2250,86 @@
                       1
                     ]
                   },
-                  "include_password": { "type": "boolean", "description": "Opt in to return bcrypt `password` hash." },
-                  "include_subscription": { "type": "boolean", "description": "Opt in to return full `subscription_schema`. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
-                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
-                  "include_photos": { "type": "boolean", "description": "Opt in to return `photos_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
-                  "include_transactions": { "type": "boolean", "description": "Opt in to return full `transactions` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
-                  "include_profession": { "type": "boolean", "description": "Opt in to return `profession_schema`." },
-                  "include_tags": { "type": "boolean", "description": "Opt in to return `tags` array." },
-                  "include_services": { "type": "boolean", "description": "Opt in to return `services_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability." },
-                  "include_seo_hidden": { "type": "boolean", "description": "Opt in to return SEO-hidden meta fields." },
-                  "include_about": { "type": "boolean", "description": "Opt in to return the `about_me` HTML bio. Heavy — when set, `limit` is auto-capped at 25 for transport stability." }
+                  "include_password": {
+                    "type": "integer",
+                    "description": "Opt in to return bcrypt `password` hash.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_subscription": {
+                    "type": "integer",
+                    "description": "Opt in to return full `subscription_schema`. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_clicks": {
+                    "type": "integer",
+                    "description": "Opt in to return `user_clicks_schema.clicks` array.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_photos": {
+                    "type": "integer",
+                    "description": "Opt in to return `photos_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_transactions": {
+                    "type": "integer",
+                    "description": "Opt in to return full `transactions` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_profession": {
+                    "type": "integer",
+                    "description": "Opt in to return `profession_schema`.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_tags": {
+                    "type": "integer",
+                    "description": "Opt in to return `tags` array.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_services": {
+                    "type": "integer",
+                    "description": "Opt in to return `services_schema` array. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_seo_hidden": {
+                    "type": "integer",
+                    "description": "Opt in to return SEO-hidden meta fields.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_about": {
+                    "type": "integer",
+                    "description": "Opt in to return the `about_me` HTML bio. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  }
                 }
               }
             }
@@ -2543,8 +2772,12 @@
                     "description": "Review status (integer):\n\n- `0` = Pending (awaiting moderation)\n\n- `2` = Accepted (visible on profile)\n\n- `3` = Declined (rejected, not public)\n\n- `4` = Waiting for Admin (member pre-accepted, needs admin sign-off)\n\nValue `1` is NOT documented. BD does NOT reject it - stores `\"1\"` verbatim with undefined render behavior. Stick to documented values. Normal flow: `0` -> `2` (accepted) or `0` -> `3` (declined)."
                   },
                   "include_full_text": {
-                    "type": "boolean",
-                    "description": "Opt in to return the full `review_description` body. Default is lean: bodies over 500 chars are truncated and tagged `review_description_truncated: true`. Set `1` when matching in body content or exporting full results."
+                    "type": "integer",
+                    "description": "Opt in to return the full `review_description` body. Default is lean: bodies over 500 chars are truncated and tagged `review_description_truncated: true`. Set `1` when matching in body content or exporting full results.",
+                    "enum": [
+                      0,
+                      1
+                    ]
                   }
                 }
               }
@@ -2899,12 +3132,18 @@
                   },
                   "send_lead_email_notification": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Set `1` to fire lead notification emails on create. Default `0` - API-created leads are silent.\n\n- With `auto_match=1` or `users_to_match` populated -> matched-member notification fires (if this flag = `1`)\n\n- Without a match step -> only admin notification fires (if configured)\n\n**For matched-member notifications:** combine this flag with a matching trigger (`auto_match=1` and/or `users_to_match`) - neither alone is sufficient."
                   },
                   "auto_match": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Set to 1 to run the auto-match flow inline during create (equivalent to calling `matchLead` immediately after). Default is 0. When combined with `users_to_match`, the auto-match is bypassed and the lead is routed only to the specified members."
                   },
                   "users_to_match": {
@@ -3341,15 +3580,33 @@
           "Posts"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_post_seo" },
-          { "$ref": "#/components/parameters/include_author_full" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/include_content"
+          },
+          {
+            "$ref": "#/components/parameters/include_post_seo"
+          },
+          {
+            "$ref": "#/components/parameters/include_author_full"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          }
         ],
         "responses": {
           "200": {
@@ -3382,11 +3639,21 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_post_seo" },
-          { "$ref": "#/components/parameters/include_author_full" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" }
+          {
+            "$ref": "#/components/parameters/include_content"
+          },
+          {
+            "$ref": "#/components/parameters/include_post_seo"
+          },
+          {
+            "$ref": "#/components/parameters/include_author_full"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          }
         ],
         "responses": {
           "200": {
@@ -3539,7 +3806,14 @@
                   },
                   "post_job": {
                     "type": "string",
-                    "enum": ["Full-Time", "Part-Time", "Freelance", "Internship", "Consultant", "Contract"],
+                    "enum": [
+                      "Full-Time",
+                      "Part-Time",
+                      "Freelance",
+                      "Internship",
+                      "Consultant",
+                      "Contract"
+                    ],
                     "description": "Employment type - used by Job post types only. Other post types ignore this field."
                   },
                   "auto_geocode": {
@@ -3649,7 +3923,10 @@
                   },
                   "auto_geocode": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Set to `1` to geocode the post's location. Requires the \"Pretty URLs with Google Maps\" site feature."
                   },
                   "post_meta_title": {
@@ -3695,12 +3972,22 @@
                   },
                   "post_job": {
                     "type": "string",
-                    "enum": ["Full-Time", "Part-Time", "Freelance", "Internship", "Consultant", "Contract"],
+                    "enum": [
+                      "Full-Time",
+                      "Part-Time",
+                      "Freelance",
+                      "Internship",
+                      "Consultant",
+                      "Contract"
+                    ],
                     "description": "Employment type - Job post types only."
                   },
                   "auto_image_import": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Set to `1` to fetch external image URLs in `post_image` into site storage. Supports JPG/PNG/GIF/WebP and SVG."
                   }
                 }
@@ -3776,16 +4063,57 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "q": { "type": "string" },
-                  "category": { "type": "string" },
-                  "data_id": { "type": "integer", "description": "Post type ID (strongly recommended)" },
-                  "user_id": { "type": "integer" },
-                  "page": { "type": "integer" },
-                  "limit": { "type": "integer" },
-                  "include_content": { "type": "boolean", "description": "Opt in to return `post_content` HTML body." },
-                  "include_post_seo": { "type": "boolean", "description": "Opt in to return `post_meta_*` SEO bundle." },
-                  "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
-                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." }
+                  "q": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "data_id": {
+                    "type": "integer",
+                    "description": "Post type ID (strongly recommended)"
+                  },
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "page": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "include_content": {
+                    "type": "integer",
+                    "description": "Opt in to return `post_content` HTML body.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_post_seo": {
+                    "type": "integer",
+                    "description": "Opt in to return `post_meta_*` SEO bundle.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_author_full": {
+                    "type": "integer",
+                    "description": "Opt in to return full `user` nested object instead of curated `author` summary.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_clicks": {
+                    "type": "integer",
+                    "description": "Opt in to return `user_clicks_schema.clicks` array.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  }
                 }
               }
             }
@@ -3814,14 +4142,30 @@
           "Portfolio Groups"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_author_full" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/include_content"
+          },
+          {
+            "$ref": "#/components/parameters/include_author_full"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          }
         ],
         "responses": {
           "200": {
@@ -3854,10 +4198,18 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_content" },
-          { "$ref": "#/components/parameters/include_author_full" },
-          { "$ref": "#/components/parameters/include_clicks" },
-          { "$ref": "#/components/parameters/include_photos" }
+          {
+            "$ref": "#/components/parameters/include_content"
+          },
+          {
+            "$ref": "#/components/parameters/include_author_full"
+          },
+          {
+            "$ref": "#/components/parameters/include_clicks"
+          },
+          {
+            "$ref": "#/components/parameters/include_photos"
+          }
         ],
         "responses": {
           "200": {
@@ -3945,7 +4297,10 @@
                   },
                   "auto_geocode": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Set to `1` to geocode the album's location. Requires the \"Pretty URLs with Google Maps\" site feature."
                   },
                   "group_name": {
@@ -4037,11 +4392,17 @@
                   },
                   "auto_geocode": {
                     "type": "integer",
-                    "enum": [0, 1]
+                    "enum": [
+                      0,
+                      1
+                    ]
                   },
                   "auto_image_import": {
                     "type": "integer",
-                    "enum": [0, 1]
+                    "enum": [
+                      0,
+                      1
+                    ]
                   },
                   "post_image": {
                     "type": "string",
@@ -4120,12 +4481,44 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "q": { "type": "string" },
-                  "data_id": { "type": "integer" },
-                  "include_content": { "type": "boolean", "description": "Opt in to return `group_desc` HTML body." },
-                  "include_author_full": { "type": "boolean", "description": "Opt in to return full `user` nested object instead of curated `author` summary." },
-                  "include_clicks": { "type": "boolean", "description": "Opt in to return `user_clicks_schema.clicks` array." },
-                  "include_photos": { "type": "boolean", "description": "Opt in to return `users_portfolio` full photo array." }
+                  "q": {
+                    "type": "string"
+                  },
+                  "data_id": {
+                    "type": "integer"
+                  },
+                  "include_content": {
+                    "type": "integer",
+                    "description": "Opt in to return `group_desc` HTML body.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_author_full": {
+                    "type": "integer",
+                    "description": "Opt in to return full `user` nested object instead of curated `author` summary.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_clicks": {
+                    "type": "integer",
+                    "description": "Opt in to return `user_clicks_schema.clicks` array.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_photos": {
+                    "type": "integer",
+                    "description": "Opt in to return `users_portfolio` full photo array.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  }
                 }
               }
             }
@@ -4359,13 +4752,27 @@
           "Post Types"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/include_code" },
-          { "$ref": "#/components/parameters/include_post_comment_settings" },
-          { "$ref": "#/components/parameters/include_review_notifications" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/include_code"
+          },
+          {
+            "$ref": "#/components/parameters/include_post_comment_settings"
+          },
+          {
+            "$ref": "#/components/parameters/include_review_notifications"
+          }
         ],
         "responses": {
           "200": {
@@ -4398,9 +4805,15 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_code" },
-          { "$ref": "#/components/parameters/include_post_comment_settings" },
-          { "$ref": "#/components/parameters/include_review_notifications" }
+          {
+            "$ref": "#/components/parameters/include_code"
+          },
+          {
+            "$ref": "#/components/parameters/include_post_comment_settings"
+          },
+          {
+            "$ref": "#/components/parameters/include_review_notifications"
+          }
         ],
         "responses": {
           "200": {
@@ -4496,12 +4909,19 @@
                   },
                   "keyword_search_filter": {
                     "type": "string",
-                    "enum": ["level_2", "level_3"],
+                    "enum": [
+                      "level_2",
+                      "level_3"
+                    ],
                     "description": "Post Keyword Search Options. `level_2` = default fields only (faster). `level_3` = default + custom fields (slower; sites with many posts/custom fields can be significantly slower). Default on Member Listings: `level_3`."
                   },
                   "enableLazyLoad": {
                     "type": "string",
-                    "enum": ["0", "1", "2"],
+                    "enum": [
+                      "0",
+                      "1",
+                      "2"
+                    ],
                     "description": "Pagination Display Options. `1` = Insta-Load Search Results (default on Member Listings), `0` = Standard Pagination, `2` = Hide Pagination."
                   },
                   "category_order_by": {
@@ -4520,12 +4940,18 @@
                   },
                   "category_ignore_search_priority": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "When sorting members, respect Membership Plan 'Search Priority'? `0` = Yes (respect plan priority, default), `1` = No (ignore plan priority)."
                   },
                   "post_type_cache_system": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "Enable search-results cache. `1` = Yes (recommended; subsequent matching searches load faster). `0` = No (always query DB).\n\n**Cannot be `1` when `category_order_by=random`** - admin UI disables cache in that case; sending `post_type_cache_system=1` with `category_order_by=random` is an invalid combination."
                   },
                   "category_sidebar": {
@@ -4538,12 +4964,19 @@
                   },
                   "sidebar_position_mobile": {
                     "type": "string",
-                    "enum": ["top", "bottom", "hide"],
+                    "enum": [
+                      "top",
+                      "bottom",
+                      "hide"
+                    ],
                     "description": "Sidebar position on mobile devices ONLY (desktop uses `menu_layout`/page-level defaults). `top` = above results, `bottom` = below results (default), `hide` = do not render sidebar on mobile."
                   },
                   "enable_search_results_map": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "Display Google Map option at top of search results pages. `1` = Yes, show the map pin icon (default on Member Listings). `0` = No. Requires the Google Maps site feature to be enabled for the map itself to load."
                   },
                   "category_header": {
@@ -5474,7 +5907,10 @@
                   },
                   "form_email_on": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "default": 0,
                     "description": "Send admin notification email on each submission. `0` = OFF (default when an agent creates a form - safer: spammy forms won't flood the admin inbox). `1` = ON. Admin UI defaults this to ON; agents default it to OFF unless user explicitly requests notifications."
                   },
@@ -5483,7 +5919,12 @@
                   },
                   "form_action_type": {
                     "type": "string",
-                    "enum": ["", "widget", "notification", "redirect"],
+                    "enum": [
+                      "",
+                      "widget",
+                      "notification",
+                      "redirect"
+                    ],
                     "default": "widget",
                     "description": "Post-submit behavior:\n\n- `widget` = Success Pop-Up (agent default on create)\n\n- `notification` = Inline Success Alert Banner\n\n- `redirect` = Redirect to URL (REQUIRES `form_target` - destination URL)\n\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing)\n\n**When set to `widget`/`notification`/`redirect`, the form's fields list MUST end with `ReCaptcha` -> `HoneyPot` -> `Button` (Submit) in that exact order.** Missing any of the three -> BD errors on submit, form won't function. See `createFormField`."
                   },
@@ -5551,12 +5992,20 @@
                   },
                   "form_email_on": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Send admin notification email on each submission. `0` = OFF, `1` = ON."
                   },
                   "form_action_type": {
                     "type": "string",
-                    "enum": ["", "widget", "notification", "redirect"],
+                    "enum": [
+                      "",
+                      "widget",
+                      "notification",
+                      "redirect"
+                    ],
                     "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL, `\"\"` = no behavior (internal-only forms). **If changing TO `redirect`, also set `form_target`. If changing FROM empty to any of `widget`/`notification`/`redirect` on an existing form, verify the fields list ends with `ReCaptcha` -> `HoneyPot` -> `Button` (in that order) - otherwise submits will error.**"
                   },
                   "form_target": {
@@ -5964,13 +6413,19 @@
             "name": "include_plan_config",
             "in": "query",
             "description": "Opt in to restore plan config fields: `sub_active`, `search_priority`, `auto_activate`, `status_after_upgrade`, `upgradable_membership`, `search_membership_permissions`, `photo_limit`, `style_limit`, `service_limit`, `location_limit`, all form/sidebar/email-template fields, `profile_layout`, `menu_name`, `data_settings`, `payment_default`, `hide_specialties`, `email_member`, `login_redirect`, `page_header`, `page_footer`, `display_ads`, `receive_messages`, `index_rule`, `nofollow_links`. Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "include_plan_display_flags",
             "in": "query",
             "description": "Opt in to restore profile-visibility toggles: `show_about`, `show_experience`, `show_education`, `show_background`, `show_affiliations`, `show_publications`, `show_awards`, `show_slogan`, `show_sofware`, `show_phone`, `seal_link`, `website_link`, `social_link`. Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -6008,13 +6463,19 @@
             "name": "include_plan_config",
             "in": "query",
             "description": "Opt in to restore plan config fields (limits, sidebars, forms, email templates, upgrade chain, display/payment settings). Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "include_plan_display_flags",
             "in": "query",
             "description": "Opt in to restore profile-visibility toggles (`show_about`, `show_experience`, `show_phone`, `seal_link`, `website_link`, `social_link`, etc.). Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -6157,72 +6618,114 @@
                   },
                   "sub_active": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Plan availability for NEW signups:\n- `1` = active (plan appears on public signup pages; new members can join)\n- `0` = inactive (plan hidden from new-signup flows; existing members on this plan keep it — grandfather behavior)\n\nUse this to retire a plan cleanly. Do NOT hack the signup widget markup to hide a plan."
                   },
                   "searchable": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Whether members on this plan appear in public member search results. `1`=visible in search, `0`=hidden. Use this to hide a membership tier from public listings without deactivating billing."
                   },
                   "hide_initial_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the one-time/initial-amount option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, the cycle is still available when an admin manually creates a subscription inside the BD admin area (admin-only)."
                   },
                   "hide_monthly_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the monthly option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_quarterly_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the quarterly option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_semiyearly_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the semi-yearly (6-month) option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_yearly_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the yearly option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_biennially_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the biennially (2-year) option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_triennially_amount": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Payment-cycle visibility toggle: hide the triennially (3-year) option from PUBLIC checkout pages. `0`=shown publicly (default), `1`=hidden publicly; when hidden, still available for admin-created subscriptions."
                   },
                   "hide_billing_links": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Visibility toggle for billing/transaction links in the member dashboard for this plan. `0`=show billing links (default), `1`=hide billing links (e.g. free plans or admin-managed-only plans where members shouldn't self-manage billing)."
                   },
                   "hide_parent_accounts": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Visibility toggle for parent-account elements when this plan supports sub-accounts. `0`=show, `1`=hide."
                   },
                   "hide_reviews_rating_options": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Visibility toggle for review rating controls on this plan's member profiles. `0`=show ratings UI, `1`=hide ratings UI."
                   },
                   "hide_specialties": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Visibility toggle for specialties/categories section on this plan's member profiles. `0`=show, `1`=hide."
                   },
                   "hide_notifications": {
                     "type": "integer",
-                    "enum": [0, 1],
+                    "enum": [
+                      0,
+                      1
+                    ],
                     "description": "Visibility toggle for notification UI in the member dashboard for this plan. `0`=show, `1`=hide."
                   },
                   "subscription_filename": {
@@ -6759,9 +7262,15 @@
           "Services"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/include_category_schema" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/include_category_schema"
+          }
         ],
         "responses": {
           "200": {
@@ -6794,7 +7303,9 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_category_schema" }
+          {
+            "$ref": "#/components/parameters/include_category_schema"
+          }
         ],
         "responses": {
           "200": {
@@ -8542,18 +9053,38 @@
           "Sidebars"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/property_operator" },
-          { "$ref": "#/components/parameters/order_column" },
-          { "$ref": "#/components/parameters/order_type" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/property_operator"
+          },
+          {
+            "$ref": "#/components/parameters/order_column"
+          },
+          {
+            "$ref": "#/components/parameters/order_type"
+          }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8571,13 +9102,21 @@
             "name": "sidebar_id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8593,7 +9132,13 @@
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8609,7 +9154,13 @@
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "type": "object" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
         }
       }
@@ -8623,18 +9174,38 @@
           "Locations"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/property_operator" },
-          { "$ref": "#/components/parameters/order_column" },
-          { "$ref": "#/components/parameters/order_type" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/property_operator"
+          },
+          {
+            "$ref": "#/components/parameters/order_column"
+          },
+          {
+            "$ref": "#/components/parameters/order_type"
+          }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8652,14 +9223,22 @@
             "name": "locaiton_id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" },
+            "schema": {
+              "type": "integer"
+            },
             "description": "City primary key (BD schema typo: `locaiton_id`, NOT `location_id`)"
           }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8678,13 +9257,27 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": ["locaiton_id"],
+                "required": [
+                  "locaiton_id"
+                ],
                 "properties": {
-                  "locaiton_id": { "type": "integer", "description": "City PK (BD typo - sic)" },
-                  "city_ln": { "type": "string" },
-                  "city_filename": { "type": "string", "description": "URL slug. Changing this breaks inbound URLs - create redirects." },
-                  "state_sn": { "type": "string" },
-                  "country_sn": { "type": "string" }
+                  "locaiton_id": {
+                    "type": "integer",
+                    "description": "City PK (BD typo - sic)"
+                  },
+                  "city_ln": {
+                    "type": "string"
+                  },
+                  "city_filename": {
+                    "type": "string",
+                    "description": "URL slug. Changing this breaks inbound URLs - create redirects."
+                  },
+                  "state_sn": {
+                    "type": "string"
+                  },
+                  "country_sn": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -8693,7 +9286,13 @@
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8707,18 +9306,38 @@
           "Locations"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/property_operator" },
-          { "$ref": "#/components/parameters/order_column" },
-          { "$ref": "#/components/parameters/order_type" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/property_operator"
+          },
+          {
+            "$ref": "#/components/parameters/order_column"
+          },
+          {
+            "$ref": "#/components/parameters/order_type"
+          }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8736,13 +9355,21 @@
             "name": "location_id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8761,13 +9388,26 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": ["location_id"],
+                "required": [
+                  "location_id"
+                ],
                 "properties": {
-                  "location_id": { "type": "integer" },
-                  "state_sn": { "type": "string" },
-                  "state_ln": { "type": "string" },
-                  "state_filename": { "type": "string", "description": "URL slug. Rename breaks inbound URLs - create redirects." },
-                  "country_sn": { "type": "string" }
+                  "location_id": {
+                    "type": "integer"
+                  },
+                  "state_sn": {
+                    "type": "string"
+                  },
+                  "state_ln": {
+                    "type": "string"
+                  },
+                  "state_filename": {
+                    "type": "string",
+                    "description": "URL slug. Rename breaks inbound URLs - create redirects."
+                  },
+                  "country_sn": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -8776,7 +9416,13 @@
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8790,18 +9436,38 @@
           "Locations"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/property" },
-          { "$ref": "#/components/parameters/property_value" },
-          { "$ref": "#/components/parameters/property_operator" },
-          { "$ref": "#/components/parameters/order_column" },
-          { "$ref": "#/components/parameters/order_type" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/property"
+          },
+          {
+            "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/property_operator"
+          },
+          {
+            "$ref": "#/components/parameters/order_column"
+          },
+          {
+            "$ref": "#/components/parameters/order_type"
+          }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8819,13 +9485,21 @@
             "name": "country_id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8844,12 +9518,27 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": ["country_id"],
+                "required": [
+                  "country_id"
+                ],
                 "properties": {
-                  "country_id": { "type": "integer" },
-                  "country_code": { "type": "string", "description": "ISO 3166-1 alpha-2 (e.g. `US`, `CA`, `GB`)" },
-                  "country_name": { "type": "string" },
-                  "active": { "type": "integer", "enum": [0, 1] }
+                  "country_id": {
+                    "type": "integer"
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "description": "ISO 3166-1 alpha-2 (e.g. `US`, `CA`, `GB`)"
+                  },
+                  "country_name": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  }
                 }
               }
             }
@@ -8858,7 +9547,13 @@
         "responses": {
           "200": {
             "description": "Success",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8882,13 +9577,19 @@
             "name": "include_content",
             "in": "query",
             "description": "Opt in to return the `content` (body HTML) field on each row. Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "include_code",
             "in": "query",
             "description": "Opt in to return `content_css`, `content_head`, `content_footer_html` on each row. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -8926,13 +9627,19 @@
             "name": "include_content",
             "in": "query",
             "description": "Opt in to return the `content` (body HTML) field. Default stripped.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "include_code",
             "in": "query",
             "description": "Opt in to return `content_css`, `content_head`, `content_footer_html`. Default stripped. Needed before `updateWebPage` edits to CSS/head/JS.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -9036,7 +9743,11 @@
                   },
                   "content_footer": {
                     "type": "string",
-                    "enum": ["", "members_only", "digital_products"],
+                    "enum": [
+                      "",
+                      "members_only",
+                      "digital_products"
+                    ],
                     "description": "**MISLEADING NAME - NOT page footer HTML.** Misnamed relic column; BD repurposed as the **page-access gate**:\n\n- `\"\"` (default) = Public For Everyone\n\n- `\"members_only\"` = Logged-in members only (non-members hit login/signup wall)\n\n- `\"digital_products\"` = Only buyers of digital-product items\n\nFiner rules (which members, which plans) live in other fields. Do NOT put HTML here. Page body -> `content`; scripts -> `content_footer_html`. No dedicated \"below-body HTML\" field - put below-body markup inside `content` itself."
                   },
                   "content_menu": {
@@ -9154,17 +9865,30 @@
                   },
                   "custom_html_placement": {
                     "type": "string",
-                    "enum": ["0", "1", "2", "3", "4"],
+                    "enum": [
+                      "0",
+                      "1",
+                      "2",
+                      "3",
+                      "4"
+                    ],
                     "description": "Render position of `content` HTML relative to dynamic search results. Only meaningful on `seo_type=profile_search_results` (and `data_category`); ignored on `content` pages.\n\n- `0` = Inside Tab (content + members in separate nav tabs)\n\n- `1` = Above Member Results (within results container, sidebar-width)\n\n- `2` = Below Member Results (within results container)\n\n- `3` = Above Body Content (full page width, spans sidebar+results)\n\n- `4` = Below Body Content (full page width, below sidebar+results) <- **recommended default for AI-generated SEO pages**\n\nFor boilerplate SEO intro/FAQ/local copy bolstering thin pages, `4` renders full-width below the live results without disrupting member-facing UX."
                   },
                   "enable_hero_section": {
                     "type": "string",
-                    "enum": ["0", "1", "2"],
+                    "enum": [
+                      "0",
+                      "1",
+                      "2"
+                    ],
                     "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "When `1`, suppresses the site-wide \"Below Header Banner Ad\" on THIS page only (useful when the hero visually replaces that slot). `0` (default) keeps the banner ad in its normal position."
                   },
                   "hero_image": {
@@ -9173,7 +9897,10 @@
                   },
                   "hero_background_image_size": {
                     "type": "string",
-                    "enum": ["mobile-ready", "standard"],
+                    "enum": [
+                      "mobile-ready",
+                      "standard"
+                    ],
                     "description": "Controls how the hero background image scales/crops across devices. `mobile-ready` (recommended) = responsive behavior tuned for mobile, `standard` = fixed-ratio behavior."
                   },
                   "hero_content_overlay_color": {
@@ -9182,7 +9909,19 @@
                   },
                   "hero_content_overlay_opacity": {
                     "type": "string",
-                    "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+                    "enum": [
+                      "0.0",
+                      "0.1",
+                      "0.2",
+                      "0.3",
+                      "0.4",
+                      "0.5",
+                      "0.6",
+                      "0.7",
+                      "0.8",
+                      "0.9",
+                      "1"
+                    ],
                     "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. Default `0.4`. EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
                   },
                   "hero_top_padding": {
@@ -9195,12 +9934,27 @@
                   },
                   "hero_column_width": {
                     "type": "string",
-                    "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                    "enum": [
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "10",
+                      "11",
+                      "12"
+                    ],
                     "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
-                    "enum": ["left", "center", "right"],
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ],
                     "description": "Horizontal alignment of the hero title/subtitle/content text block within its column. Default `center`."
                   },
                   "h1_font_color": {
@@ -9213,7 +9967,12 @@
                   },
                   "h1_font_weight": {
                     "type": "string",
-                    "enum": ["300", "400", "600", "800"],
+                    "enum": [
+                      "300",
+                      "400",
+                      "600",
+                      "800"
+                    ],
                     "description": "Main title (H1) font weight. `300`=Light, `400`=Normal (default), `600`=Bold, `800`=Extra Bold."
                   },
                   "h2_font_color": {
@@ -9226,7 +9985,12 @@
                   },
                   "h2_font_weight": {
                     "type": "string",
-                    "enum": ["300", "400", "600", "800"],
+                    "enum": [
+                      "300",
+                      "400",
+                      "600",
+                      "800"
+                    ],
                     "description": "Sub-title (H2) font weight. `300`=Light, `400`=Normal, `600`=Bold (default), `800`=Extra Bold."
                   },
                   "hero_content_font_color": {
@@ -9251,17 +10015,32 @@
                   },
                   "hero_link_target_blank": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "When `1`, opens the CTA link in a new tab (`target=\"_blank\"`). `0` (default) opens in the same tab."
                   },
                   "hero_link_size": {
                     "type": "string",
-                    "enum": ["", "btn-lg", "btn-xl"],
+                    "enum": [
+                      "",
+                      "btn-lg",
+                      "btn-xl"
+                    ],
                     "description": "CTA button size. MUST be exactly one of: `\"\"` (empty = Normal), `btn-lg` (Large), `btn-xl` (Extra Large). Any other value (e.g. a font-size number like `16`) is stored verbatim and rendered as a broken class — BD does not validate server-side."
                   },
                   "hero_link_color": {
                     "type": "string",
-                    "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
+                    "enum": [
+                      "primary",
+                      "info",
+                      "success",
+                      "warning",
+                      "danger",
+                      "default",
+                      "secondary"
+                    ],
                     "description": "CTA button color variant — attention level, not literal color. MUST be exactly one of: `primary`, `info`, `success`, `warning`, `danger`, `default`, `secondary`. Any other value (e.g. a hex `#ffffff`) is stored verbatim and rendered as a broken class like `btn-#ffffff` — BD does not validate server-side.\n\nChoose by attention level needed: `primary` (main CTA), `danger` (urgent/can't-miss), `warning` (attention), `success` (positive action), `info` (neutral-blue), `secondary` (theme secondary), `default` (low-emphasis gray). Actual rendered color comes from the site's theme palette."
                   },
                   "linked_post_type": {
@@ -9388,7 +10167,11 @@
                   },
                   "content_footer": {
                     "type": "string",
-                    "enum": ["", "members_only", "digital_products"],
+                    "enum": [
+                      "",
+                      "members_only",
+                      "digital_products"
+                    ],
                     "description": "**MISLEADING NAME - NOT page footer HTML.** Misnamed relic column; BD repurposed as the **page-access gate**:\n\n- `\"\"` (default) = Public For Everyone\n\n- `\"members_only\"` = Logged-in members only (non-members hit login/signup wall)\n\n- `\"digital_products\"` = Only buyers of digital-product items\n\nFiner rules (which members, which plans) live in other fields. Do NOT put HTML here. Page body -> `content`; scripts -> `content_footer_html`. No dedicated \"below-body HTML\" field - put below-body markup inside `content` itself."
                   },
                   "content_menu": {
@@ -9506,17 +10289,30 @@
                   },
                   "custom_html_placement": {
                     "type": "string",
-                    "enum": ["0", "1", "2", "3", "4"],
+                    "enum": [
+                      "0",
+                      "1",
+                      "2",
+                      "3",
+                      "4"
+                    ],
                     "description": "Render position of `content` HTML relative to dynamic search results. Only meaningful on `seo_type=profile_search_results` (and `data_category`); ignored on `content` pages.\n\n- `0` = Inside Tab (content + members in separate nav tabs)\n\n- `1` = Above Member Results (within results container, sidebar-width)\n\n- `2` = Below Member Results (within results container)\n\n- `3` = Above Body Content (full page width, spans sidebar+results)\n\n- `4` = Below Body Content (full page width, below sidebar+results) <- **recommended default for AI-generated SEO pages**\n\nFor boilerplate SEO intro/FAQ/local copy bolstering thin pages, `4` renders full-width below the live results without disrupting member-facing UX."
                   },
                   "enable_hero_section": {
                     "type": "string",
-                    "enum": ["0", "1", "2"],
+                    "enum": [
+                      "0",
+                      "1",
+                      "2"
+                    ],
                     "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "When `1`, suppresses the site-wide \"Below Header Banner Ad\" on THIS page only (useful when the hero visually replaces that slot). `0` (default) keeps the banner ad in its normal position."
                   },
                   "hero_image": {
@@ -9525,7 +10321,10 @@
                   },
                   "hero_background_image_size": {
                     "type": "string",
-                    "enum": ["mobile-ready", "standard"],
+                    "enum": [
+                      "mobile-ready",
+                      "standard"
+                    ],
                     "description": "Controls how the hero background image scales/crops across devices. `mobile-ready` (recommended) = responsive behavior tuned for mobile, `standard` = fixed-ratio behavior."
                   },
                   "hero_content_overlay_color": {
@@ -9534,7 +10333,19 @@
                   },
                   "hero_content_overlay_opacity": {
                     "type": "string",
-                    "enum": ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+                    "enum": [
+                      "0.0",
+                      "0.1",
+                      "0.2",
+                      "0.3",
+                      "0.4",
+                      "0.5",
+                      "0.6",
+                      "0.7",
+                      "0.8",
+                      "0.9",
+                      "1"
+                    ],
                     "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. Default `0.4`. EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
                   },
                   "hero_top_padding": {
@@ -9547,12 +10358,27 @@
                   },
                   "hero_column_width": {
                     "type": "string",
-                    "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                    "enum": [
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "10",
+                      "11",
+                      "12"
+                    ],
                     "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
                   },
                   "hero_alignment": {
                     "type": "string",
-                    "enum": ["left", "center", "right"],
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ],
                     "description": "Horizontal alignment of the hero title/subtitle/content text block within its column. Default `center`."
                   },
                   "h1_font_color": {
@@ -9565,7 +10391,12 @@
                   },
                   "h1_font_weight": {
                     "type": "string",
-                    "enum": ["300", "400", "600", "800"],
+                    "enum": [
+                      "300",
+                      "400",
+                      "600",
+                      "800"
+                    ],
                     "description": "Main title (H1) font weight. `300`=Light, `400`=Normal (default), `600`=Bold, `800`=Extra Bold."
                   },
                   "h2_font_color": {
@@ -9578,7 +10409,12 @@
                   },
                   "h2_font_weight": {
                     "type": "string",
-                    "enum": ["300", "400", "600", "800"],
+                    "enum": [
+                      "300",
+                      "400",
+                      "600",
+                      "800"
+                    ],
                     "description": "Sub-title (H2) font weight. `300`=Light, `400`=Normal, `600`=Bold (default), `800`=Extra Bold."
                   },
                   "hero_content_font_color": {
@@ -9603,17 +10439,32 @@
                   },
                   "hero_link_target_blank": {
                     "type": "string",
-                    "enum": ["0", "1"],
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
                     "description": "When `1`, opens the CTA link in a new tab (`target=\"_blank\"`). `0` (default) opens in the same tab."
                   },
                   "hero_link_size": {
                     "type": "string",
-                    "enum": ["", "btn-lg", "btn-xl"],
+                    "enum": [
+                      "",
+                      "btn-lg",
+                      "btn-xl"
+                    ],
                     "description": "CTA button size. MUST be exactly one of: `\"\"` (empty = Normal), `btn-lg` (Large), `btn-xl` (Extra Large). Any other value (e.g. a font-size number like `16`) is stored verbatim and rendered as a broken class — BD does not validate server-side."
                   },
                   "hero_link_color": {
                     "type": "string",
-                    "enum": ["primary", "info", "success", "warning", "danger", "default", "secondary"],
+                    "enum": [
+                      "primary",
+                      "info",
+                      "success",
+                      "warning",
+                      "danger",
+                      "default",
+                      "secondary"
+                    ],
                     "description": "CTA button color variant — attention level, not literal color. MUST be exactly one of: `primary`, `info`, `success`, `warning`, `danger`, `default`, `secondary`. Any other value (e.g. a hex `#ffffff`) is stored verbatim and rendered as a broken class like `btn-#ffffff` — BD does not validate server-side.\n\nChoose by attention level needed: `primary` (main CTA), `danger` (urgent/can't-miss), `warning` (attention), `success` (positive action), `info` (neutral-blue), `secondary` (theme secondary), `default` (low-emphasis gray). Actual rendered color comes from the site's theme palette."
                   },
                   "linked_post_type": {
@@ -10202,9 +11053,15 @@
           "Categories"
         ],
         "parameters": [
-          { "$ref": "#/components/parameters/limit" },
-          { "$ref": "#/components/parameters/page" },
-          { "$ref": "#/components/parameters/include_category_schema" }
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/include_category_schema"
+          }
         ],
         "responses": {
           "200": {
@@ -10237,7 +11094,9 @@
               "type": "integer"
             }
           },
-          { "$ref": "#/components/parameters/include_category_schema" }
+          {
+            "$ref": "#/components/parameters/include_category_schema"
+          }
         ],
         "responses": {
           "200": {
