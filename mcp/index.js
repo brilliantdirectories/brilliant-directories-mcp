@@ -1265,11 +1265,11 @@ function sanitizeScaffoldingInArgs(args) {
 }
 
 // Image-URL sanitizer — strips `?query` suffixes before forwarding to BD.
-// Real bug 2026-04-23: agent passed `post_image=...jpeg?w=1600` → BD's
-// auto_image_import baked the query into the stored filename → 404 at CDN.
-// Field descriptions now say "bare URL only", but agents drift. This is the
-// runtime belt (docs are the suspenders). Also trims whitespace in CSV lists
-// (multi-image albums) — BD doesn't trim, stray spaces silently fail imports.
+// BD's auto_image_import bakes any `?query` into the stored filename → the
+// imported file 404s at CDN. Field descriptions say "bare URL only" but
+// agents drift; this is the runtime belt (docs are the suspenders). Also
+// trims whitespace in CSV lists (multi-image albums) — BD doesn't trim,
+// stray spaces silently fail imports.
 //
 // SCOPED — do not add fields that aren't in BD's auto_image_import / form-urlencoded
 // image-write pipeline. The set below is every field we've confirmed BD processes
@@ -1296,9 +1296,13 @@ const IMAGE_CSV_URL_TOOLS = new Set(["createMultiImagePost", "updateMultiImagePo
 // Rich-text body fields where Froala emits <img> tags with fr-dib + fr-fil/fr-fir
 // classes. BD's frontend expects `img-rounded` on these images for the corner-
 // rounding the rest of the site uses; missing it leaves a single unrounded image
-// that visibly breaks the page's visual consistency. Force-add to every Froala-
-// style img tag on write so agents (and pasted Froala markup) stay consistent
-// with what the BD editor would have produced from the UI.
+// that visibly breaks the page's visual consistency.
+//
+// FAILSAFE — the canonical Froala image pattern in the corpus already includes
+// `img-rounded` (mcp-instructions.md: `class="fr-dib fr-fil img-rounded"`). This
+// auto-add exists for agents pasting raw Froala HTML or migrating content that
+// missed the class. Silent on purpose — match-the-platform plumbing, not agent-
+// decision territory; do NOT surface as a response echo.
 const RICH_TEXT_BODY_FIELDS = new Set(["post_content", "group_desc", "content"]);
 function ensureImgRoundedClass(html) {
   if (typeof html !== "string" || !html.includes("<img")) return html;
@@ -1388,8 +1392,8 @@ function validatePathParamIds(toolPath, args) {
 // validator rejects anything outside the declared set BEFORE forwarding to
 // BD — reject-don't-coerce: silent coercion to defaults masks the agent's
 // real intent and produces false-success responses. Discrete-range fields
-// (paddings, font sizes) source-of-truth: BD admin form `<select>` options
-// (verified live 2026-04-25). Mirrored in Worker's `src/index.ts`.
+// (paddings, font sizes) source-of-truth: BD admin form `<select>` options.
+// Mirrored in Worker's `src/index.ts`.
 const HERO_PADDING_STEPS = Array.from({ length: 21 }, (_, i) => String(i * 10)); // 0..200 step 10
 const H1_FONT_SIZE_STEPS = Array.from({ length: 51 }, (_, i) => String(30 + i)); // 30..80 step 1
 const H2_FONT_SIZE_STEPS = Array.from({ length: 41 }, (_, i) => String(20 + i)); // 20..60 step 1
@@ -1414,13 +1418,11 @@ const HERO_ENUM_FIELDS = {
 };
 const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
 
-// `sanitizeHeroCtaEnumsInArgs` was removed in v6.40.26. Earlier versions
-// silently coerced invalid hero_link_color (#ffffff → "primary") and
-// hero_link_size (numeric → "btn-lg"), which produced a false-success
-// failure mode: validator passed because the value was already coerced,
-// agent received status:success, but their actual intent was discarded.
-// Reject-don't-coerce — the validator below now rejects bad enum values
-// loudly so the agent gets a clear actionable error, never a silent change.
+// Reject-don't-coerce on hero enums. Silent coercion (e.g. `#ffffff` →
+// `"primary"`, numeric → `"btn-lg"`) is a false-success failure mode: the
+// validator passes because the value was already coerced, agent gets
+// status:success, their actual intent is discarded. Reject loudly so the
+// agent gets a clear actionable error instead of a silent change.
 function validateHeroEnumsInArgs(toolName, args) {
   if (!HERO_ENUM_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
   for (const [field, allowed] of Object.entries(HERO_ENUM_FIELDS)) {
@@ -1836,11 +1838,11 @@ const SLUG_TOOL_CONFIG = {
 /** Normalize a slug for comparison — match BD's URL router behavior.
  *  BD's `=` filter on slug columns is case-insensitive and trims whitespace,
  *  AND BD's public URL router treats `/foo`, `/Foo`, and `/FOO` as the same
- *  page (verified live 2026-04-25 — all 3 variants returned identical 376KB
- *  HTML for an existing category). So a duplicate-detection check must
- *  match case-insensitively + whitespace-trimmed; otherwise a "Restaurants"
- *  probe against existing "restaurants" would falsely report no collision
- *  and BD would create a routing-conflict duplicate. */
+ *  page (`/foo`, `/Foo`, `/FOO` all render the same record). A duplicate-
+ *  detection check must therefore match case-insensitively + whitespace-
+ *  trimmed; otherwise a "Restaurants" probe against existing "restaurants"
+ *  would falsely report no collision and BD would create a routing-conflict
+ *  duplicate. */
 function _normalizeSlug(s) {
   return String(s).trim().toLowerCase();
 }
@@ -2104,7 +2106,7 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
 // but the page renders no member results. Walk segments left-to-right;
 // each segment must match a slot at-or-after the previously locked floor.
 // Falls open with a soft warning on transient probe failure (same fail-open
-// pattern as slug-uniqueness probes per v6.40.63).
+// pattern as slug-uniqueness probes — block real rejects, not flakes).
 async function _validateProfileSearchResultsSegments(config, args, effectiveSeoType) {
   const seoType = String((effectiveSeoType !== undefined ? effectiveSeoType : args.seo_type) || "").toLowerCase();
   if (seoType !== "profile_search_results") return null;
@@ -3090,11 +3092,11 @@ async function main() {
         }
       }
 
-      // searchUsers — force structured-array output. BD's default is HTML
-      // markup which our shaper can't process; agents would receive a multi-KB
-      // HTML blob instead of records. Strip any output_type the agent passed
-      // and force array. Defense-in-depth — spec already removed the html
-      // option from the input schema.
+      // searchUsers — force structured-array output. BD's default is an HTML
+      // markup blob agents can't parse; force `array` so the wrapper always
+      // gets records. Spec already removed the html option from the input
+      // schema; this is defense-in-depth. BD-mandatory plumbing — do NOT
+      // surface as a response echo.
       if (name === "searchUsers" && args && typeof args === "object") {
         args.output_type = "array";
       }
@@ -3375,30 +3377,27 @@ async function main() {
         };
       }
 
-      // Auto-force `status=1` on createMultiImagePostPhoto. BD only ever uses
-      // status=1 for users_portfolio rows (album/gallery photos). Wrapper-
-      // managed unconditional overwrite — same pattern as content_active=1.
+      // Force `status=1` on createMultiImagePostPhoto. BD only ever uses
+      // status=1 for users_portfolio rows (album/gallery photos); other values
+      // don't render. Same pattern as content_active=1 above. BD-mandatory
+      // plumbing — do NOT surface as a response echo.
       if (name === "createMultiImagePostPhoto" && args && typeof args === "object") {
         args.status = 1;
       }
 
-      // Auto-force content_active=1 on createWebPage / updateWebPage.
+      // Force content_active=1 on createWebPage / updateWebPage.
       // BD's content_active has only one valid value (1 = live); 0 doesn't
-      // exist server-side. Always overwrite — even if an agent or old client
-      // passes a different value, we coerce to 1 so the write always lands.
-      // Removed from the input schema in v6.40.30 so agents don't see/think
-      // about the field at all.
+      // exist server-side. Removed from the input schema so agents don't see
+      // or think about it. Always overwrite — never `??=` or only-if-unset.
+      // This is BD-mandatory plumbing, not agent-decision territory; do NOT
+      // surface as a response echo (it's noise, not signal).
       //
-      // NOTE: date_updated auto-defaulting was attempted in v6.40.30 (UTC)
-      // and reverted in v6.40.31 — UTC produces wrong "Last Update" display
-      // for non-UTC sites. Doing it correctly requires resolving the site's
-      // timezone via getSiteInfo and is now scoped as a separate project
-      // alongside other system-internal timestamps across all BD resources.
-      // See KNOWN-SERVER-BUGS.md "TODO — Wrapper-managed system timestamps"
-      // section. Until that ships, agents pass `date_updated` themselves
-      // (corpus already requires it).
+      // date_updated stays untouched. Naive UTC defaulting breaks the "Last
+      // Update" display on non-UTC sites; correct fix needs per-site timezone
+      // resolution via getSiteInfo. Until that lands, agents pass date_updated
+      // themselves (corpus already requires it).
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
-        args.content_active = 1; // unconditional overwrite — never use ??= or only-if-unset patterns here
+        args.content_active = 1;
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique
