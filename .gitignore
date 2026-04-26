@@ -17,11 +17,11 @@ node_modules/
 # repo DOES track it (it's only gitignored from the inner GitHub repo).
 USE-GITHUB-HANDOFF.md
 
-# Internal bug tracker for server-side BD issues we're working around in the
-# corpus. Same rule as the handoff doc — tracked in Bitbucket, never shipped
-# to GitHub/npm. Delete this file entirely once all bugs listed are fixed
-# server-side (see "When bugs are fixed" at the bottom of the file itself).
-KNOWN-SERVER-BUGS.md
+# Internal-only working docs. Same rule as the handoff doc above —
+# tracked in Bitbucket, never shipped to GitHub/npm. Pattern matches
+# any internal-prefixed working file the team wants kept out of the
+# public repo.
+INTERNAL-*.md
 
 # Misc
 *.log
