@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.92] - 2026-04-26
+
+### Removed — Rule index from `mcp-instructions.md`
+
+v6.40.91 added a Rule index listing all 62 named rules at the top of the corpus. Side-Claude reviewed it and reversed his original suggestion to add it: with `### Rule: <Name>` H3 anchors already enforced throughout the document and inline `**Rule: <Name>**` cross-refs pointing at every relevant rule from its point of use, the index is ~1.5KB of repeat content optimizing for a navigation problem the headings already solved. Per the project's default-lean discipline ("every additional word costs per-request tokens, multiplied across every conversation"), the index doesn't earn its tokens.
+
+Removed in this release. Conventions block kept (genuine clarity win — states what was previously inferable). Conventions cross-ref bullet now points at how to find rules via string-search on the H3 anchors rather than at a non-existent index.
+
+### Why versioning the reversal
+
+npm's immutable-version policy means we can't republish v6.40.91 without the index. Clean v6.40.92 patch with the reasoning here is the honest path. Customers on `@latest` auto-pick this up on next `npx`.
+
 ## [6.40.91] - 2026-04-26
 
 ### Added — Conventions block + Rule index at top of `mcp-instructions.md`

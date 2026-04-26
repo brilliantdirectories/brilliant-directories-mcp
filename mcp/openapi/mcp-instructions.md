@@ -9,17 +9,11 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 ### Conventions
 
 - `**bold**` marks critical warnings or misleading-field-name flags
-- `**Rule: <Name>**` is a cross-reference to a named rule in this document; use string-search to locate
+- `**Rule: <Name>**` is a cross-reference to a rule in this document; rules use `### Rule: <Name>` headings — string-search the name to jump to it
 - `**Required:**` lists hard-required fields for a tool call
 - `**Use when:**` describes the intended trigger conditions for a tool
 - `**See also:**` lists related sibling tools in the same resource family
 - `**Returns:**` describes the response envelope shape
-
-### Rule index
-
-All named rules in this document, in document order. Each is anchored as `### Rule: <Name>` — string-search any name to jump to it.
-
-`Rule: Missing tool` · `Rule: Table to endpoint` · `Rule: Live production writes` · `Rule: Destructive last resort` · `Rule: Update schema open` · `Rule: PATCH semantics` · `Rule: CSV no spaces` · `Rule: HTTP error shapes` · `Rule: API key one-shot` · `Rule: Member Listings post type` · `Rule: Post-type structural lock` · `Rule: Post-type code fields` · `Rule: Post-type custom fields` · `Rule: Form creation recipe` · `Rule: Form field view flags` · `Rule: API key permissions` · `Rule: 4xx auto-recovery` · `Rule: Pagination` · `Rule: Lean read responses` · `Rule: users_meta writes` · `Rule: Lean write responses` · `Rule: Count-only idiom` · `Rule: Filter real columns` · `Rule: Filter operators` · `Rule: Silent-drop check` · `Rule: Empty-string filtering` · `Rule: Category SEO routing` · `Rule: Member profile SEO` · `Rule: Profile-photo detection` · `Rule: Filter by ID` · `Rule: Array-syntax filters` · `Rule: Field over hack` · `Rule: WebPage full-bleed` · `Rule: WebPage asset routing` · `Rule: Post-body formatting` · `Rule: Multi-image albums` · `Rule: URL slug rename` · `Rule: Site grounding` · `Rule: Public URL composition` · `Rule: Brand kit` · `Rule: Hero readability bundle` · `Rule: Hero gap-fix CSS` · `Rule: WebPage cache refresh` · `Rule: Image sourcing` · `Rule: Identity-confirming fields` · `Rule: Plan-gated image fields` · `Rule: Image URLs` · `Rule: Banned image sources` · `Rule: users_meta identity` · `Rule: EAV auto-route` · `Rule: Update timestamps` · `Rule: Member search SEO pages` · `Rule: Sidebars` · `Rule: Input sanitization` · `Rule: Pre-check natural keys` · `Rule: users_meta orphans` · `Rule: Enum silent-accept` · `Rule: Cache refresh` · `Rule: No scaffolding tags` · `Rule: Write-echo not canonical` · `Rule: Response type quirks` · `Rule: Sensitive fields`
 
 ### Rule: Missing tool
 
