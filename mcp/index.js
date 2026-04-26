@@ -2028,8 +2028,9 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
 // each segment must match a slot at-or-after the previously locked floor.
 // Falls open with a soft warning on transient probe failure (same fail-open
 // pattern as slug-uniqueness probes per v6.40.63).
-async function _validateProfileSearchResultsSegments(config, args) {
-  if (String(args.seo_type || "").toLowerCase() !== "profile_search_results") return null;
+async function _validateProfileSearchResultsSegments(config, args, effectiveSeoType) {
+  const seoType = String((effectiveSeoType !== undefined ? effectiveSeoType : args.seo_type) || "").toLowerCase();
+  if (seoType !== "profile_search_results") return null;
   if (typeof args.filename !== "string" || args.filename === "") return null;
 
   const segments = args.filename.split("/").filter(Boolean);
@@ -2094,7 +2095,7 @@ async function _validateProfileSearchResultsSegments(config, args) {
         return { ok: true, segment_warning: `profile_search_results segment validation could not run on '${args.filename}' — BD probes failed transiently. Page write allowed; verify the slug renders publicly post-write.` };
       }
       return {
-        error: `profile_search_results filename '${args.filename}' segment ${i + 1} ('${seg}') doesn't match any valid country/state/city/top-category/sub-category slug at this position. Slug segments must come from live BD lookups (listCountries / listStates / listCities / listTopCategories / listSubCategories) and follow the order country/state/city/top/sub. For arbitrary URL static pages, use seo_type=content instead.`,
+        error: `Slug '${args.filename}' isn't a valid profile_search_results page — segment ${i + 1} ('${seg}') doesn't map to any country/state/city/top-category/sub-category at this position (slug segments must match live BD lookups and follow the order country/state/city/top/sub). Surface this choice to the user before retrying: (a) keep the URL by changing seo_type to 'content' so this becomes a regular content page (different rendering — no member search results); or (b) keep search-results behavior by picking a slug that maps to real categories/locations. Do not pick on the user's behalf.`,
       };
     }
     validated.push({ slot: slots[matched], value: seg });
@@ -3339,10 +3340,19 @@ async function main() {
       if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
 
       // profile_search_results segment-binding guard. Catches silent-404
-      // slugs (segments don't map to real BD records). Only fires on
-      // createWebPage / updateWebPage with seo_type=profile_search_results.
+      // slugs (segments don't map to real BD records). Fires on createWebPage
+      // and on updateWebPage when filename is changing AND the post-update
+      // seo_type resolves to profile_search_results (incoming or current).
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
-        const segGuard = await _validateProfileSearchResultsSegments(config, args);
+        let effectiveSeoType = args.seo_type;
+        if (name === "updateWebPage" && effectiveSeoType === undefined && args.seo_id !== undefined && args.seo_id !== null) {
+          try {
+            const cur = await makeRequest(config, "GET", `/api/v2/list_seo/get/${encodeURIComponent(String(args.seo_id))}`, null, null);
+            const row = cur && cur.body && (Array.isArray(cur.body.message) ? cur.body.message[0] : cur.body.message);
+            if (row && typeof row === "object") effectiveSeoType = row.seo_type;
+          } catch { /* fetch failed; validator falls open via existing path */ }
+        }
+        const segGuard = await _validateProfileSearchResultsSegments(config, args, effectiveSeoType);
         if (segGuard && segGuard.error) {
           return { content: [{ type: "text", text: segGuard.error }], isError: true };
         }

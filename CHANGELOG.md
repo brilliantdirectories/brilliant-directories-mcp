@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.80] - 2026-04-26
+
+### Fixed — segment validator now fires on `updateWebPage` rename
+
+Validator was gated on `args.seo_type === "profile_search_results"`, which agents typically omit on `updateWebPage` (intending to keep the current value). Result: renames of existing search pages bypassed segment validation entirely. A typo'd or invalid rename committed silently and the public URL silent-404'd.
+
+Fix: on `updateWebPage` when `seo_type` is absent from args, fetch the current `list_seo` row and use its `seo_type` as the effective value. Validator fires when the post-update seo_type resolves to `profile_search_results` regardless of whether seo_type was passed in args. Skips entirely on actual seo_type swap to `content` (user explicitly opted out of search behavior).
+
+### Changed — segment-mismatch error now surfaces a dual-path conundrum to the user
+
+Previous error described the rule but didn't make the agent escalate. Updated wording explicitly tells the agent to surface the choice to the user before retrying: (a) keep the URL by changing `seo_type` to `content` (regular content page rendering); (b) keep search-results behavior by picking a slug that maps to real categories/locations. Closes with "Do not pick on the user's behalf."
+
+Both rendering modes are reachable from the same record (verified live: seo_type swap is data-safe, fully reversible, no field loss).
+
 ## [6.40.79] - 2026-04-26
 
 ### Fixed — `_slugProbeTable` misread BD's empty-result quirk as a probe failure
