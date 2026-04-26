@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.78] - 2026-04-26
+
+### Fixed — profile_search_results validator hit the wrong BD endpoints for state/city
+
+v6.40.77's segment validator probed `/api/v2/list_states/get` and `/api/v2/list_cities/get`. The actual BD endpoints are `/api/v2/location_states/get` and `/api/v2/location_cities/get` (the `listStates` / `listCities` MCP tools wrap them). Probes 404'd, returned `null`, and the validator hard-rejected legitimate state-only or city-only slugs like `california` with the generic "doesn't match any valid country/state/city/top-category/sub-category slug" error.
+
+Fix: point the validator at the real endpoints. State and city slots now resolve correctly. Top-cat (`list_professions`) and sub-cat (`list_services`) slots were already correct.
+
+### Fixed — fall-open accumulator was global instead of per-segment
+
+The fall-open ratio (probe-failures vs. probes-attempted) was tracked across all segments in the npm copy, so a transient probe failure on segment 1 could mask a deterministic slot-mismatch reject on segment 2. Reset per-segment now in both copies. Logic is also tightened: fall open only when EVERY probe attempt for the current segment failed, not just when accumulated failures cross the remaining-slot count.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.77] - 2026-04-26
 
 ### Added — profile_search_results segment-binding validator

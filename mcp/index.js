@@ -2055,24 +2055,27 @@ async function _validateProfileSearchResultsSegments(config, args) {
 
   const slots = ["country", "state", "city", "top", "sub"];
   let floor = 0;
-  let probeFailures = 0;
   const validated = [];
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     let matched = -1;
+    let segProbeFailures = 0;
+    let segProbeAttempts = 0;
     for (let s = floor; s < slots.length; s++) {
       let hit = false;
       let probeFailed = false;
+      segProbeAttempts++;
       try {
         if (slots[s] === "country") {
           hit = await tryCountry(seg);
+          if (countryProbeFailed) probeFailed = true;
         } else {
           let table, field;
-          if (slots[s] === "state")     { table = "list_states";      field = "state_filename"; }
-          else if (slots[s] === "city") { table = "list_cities";      field = "city_filename"; }
-          else if (slots[s] === "top")  { table = "list_professions"; field = "filename"; }
-          else if (slots[s] === "sub")  { table = "list_services";    field = "filename"; }
+          if (slots[s] === "state")     { table = "location_states";   field = "state_filename"; }
+          else if (slots[s] === "city") { table = "location_cities";   field = "city_filename"; }
+          else if (slots[s] === "top")  { table = "list_professions";  field = "filename"; }
+          else if (slots[s] === "sub")  { table = "list_services";     field = "filename"; }
           const rows = await _slugProbeTable(config, table, field, seg, 1);
           if (rows === null) probeFailed = true;
           else hit = rows.length > 0;
@@ -2080,13 +2083,14 @@ async function _validateProfileSearchResultsSegments(config, args) {
       } catch {
         probeFailed = true;
       }
-      if (probeFailed) probeFailures++;
+      if (probeFailed) segProbeFailures++;
       if (hit) { matched = s; break; }
     }
     if (matched < 0) {
-      // Fall open if EVERY probe attempt for this segment failed transiently
-      // (BD outage / per-key permission gating) — warn but don't block.
-      if (probeFailures >= (slots.length - floor)) {
+      // Fall open only if EVERY probe attempt for THIS segment failed
+      // transiently (BD outage / per-key permission gating). Per-segment
+      // counters — accumulating across segments would mask real rejects.
+      if (segProbeAttempts > 0 && segProbeFailures === segProbeAttempts) {
         return { ok: true, segment_warning: `profile_search_results segment validation could not run on '${args.filename}' — BD probes failed transiently. Page write allowed; verify the slug renders publicly post-write.` };
       }
       return {
