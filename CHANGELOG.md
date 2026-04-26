@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.87] - 2026-04-26
+
+### Changed — search URL pattern inlined in 9 spec field cross-refs
+
+v6.40.86 trimmed each `LANDSCAPE only` field description to a one-sentence cross-reference back to the canonical image URL rule. Field-level readers (agents that consult only the field description, not the full instructions corpus) lost the actionable sourcing step in that compaction. Added the search URL pattern (`https://www.pexels.com/search/<term>/?orientation=landscape`) inline so a field-level reader gets the executable step without following the cross-ref. Affects: `cover_photo` (×2), `post_image` (×3), multi-image `original_image_url` (×2), `hero_image` (×2). ~50 chars per field added; the canonical rule remains the single source of truth for the rest of the workflow + anti-patterns.
+
 ## [6.40.86] - 2026-04-26
 
 ### Fixed — landscape-image rule aligned with what agent runtimes can actually execute

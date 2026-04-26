@@ -1791,7 +1791,7 @@
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
@@ -2099,7 +2099,7 @@
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Cover photo URL. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
@@ -3766,7 +3766,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Default: Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request)."
+                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Default: Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request)."
                   },
                   "post_category": {
                     "type": "string",
@@ -3919,7 +3919,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Feature image URL. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "post_category": {
                     "type": "string",
@@ -4297,7 +4297,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Comma-separated list of image URLs to import as the album's photos (created at upload time as child `MultiImagePostPhoto` records). **LANDSCAPE only — never portrait/vertical; bare URLs, no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings (`?w=1600`, `?auto=compress`) get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage. After create, verify every URL landed — see this tool's post-create verification section. `createMultiImagePostPhoto` does NOT import externals and cannot patch a failed row."
+                    "description": "Comma-separated list of image URLs to import as the album's photos (created at upload time as child `MultiImagePostPhoto` records). **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URLs, no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings (`?w=1600`, `?auto=compress`) get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage. After create, verify every URL landed — see this tool's post-create verification section. `createMultiImagePostPhoto` does NOT import externals and cannot patch a failed row."
                   },
                   "post_tags": {
                     "type": "string",
@@ -4414,7 +4414,7 @@
                   },
                   "post_image": {
                     "type": "string",
-                    "description": "Comma-separated image URLs — APPENDS new photos (does NOT replace existing). **LANDSCAPE only — never portrait/vertical; bare URLs, no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Comma-separated image URLs — APPENDS new photos (does NOT replace existing). **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URLs, no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   }
                 }
               }
@@ -4644,7 +4644,7 @@
                   },
                   "original_image_url": {
                     "type": "string",
-                    "description": "Image URL for this photo row. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Note: `createMultiImagePostPhoto` does NOT import externals — records the URL as-is. For external URLs that must survive source outages, use `createMultiImagePost`'s bulk `post_image` CSV with `auto_image_import=1` instead."
+                    "description": "Image URL for this photo row. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Note: `createMultiImagePostPhoto` does NOT import externals — records the URL as-is. For external URLs that must survive source outages, use `createMultiImagePost`'s bulk `post_image` CSV with `auto_image_import=1` instead."
                   }
                 }
               }
@@ -9934,7 +9934,7 @@
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
+                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
                   },
                   "hero_background_image_size": {
                     "type": "string",
@@ -10358,7 +10358,7 @@
                   },
                   "hero_image": {
                     "type": "string",
-                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule for sourcing.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
+                    "description": "Hero background image. Accepts BD-hosted relative path (`/images/bg202.webp`) OR external URL (`https://cdn.example.com/banner.jpg`) — external URLs render hotlinked on WebPages, no `auto_image_import` needed. **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see image URL rule.** Query strings get truncated/mangled in BD's form-urlencoded parsing and the stored URL becomes invalid. Recommended dimensions: 1800 × 600 px."
                   },
                   "hero_background_image_size": {
                     "type": "string",
