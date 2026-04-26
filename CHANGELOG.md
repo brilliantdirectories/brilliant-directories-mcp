@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.85] - 2026-04-26
+
+### Fixed — landscape-image verification rule rewritten to use master asset dimensions
+
+Previous orientation rule told agents to verify landscape by reading `?w=NNNN&h=NNNN` from a Pexels photo's individual-page preview-image URL. Three independent test agents confirmed the same finding: Pexels normalizes filtered preview URLs to a fixed crop (typically `1260×750`) regardless of the master asset's true orientation. The check passes for every photo, including portrait masters that slipped past the search filter — false-positive landscape signal on every commit.
+
+Replaced with: read `<meta property="og:image:width">` and `<meta property="og:image:height">` from the photo page's `<head>`. These are the master asset dimensions, not a normalized crop. Agents now compare those values against `>= 1.3` ratio threshold (was `> 1`) — BD's hero/card crops chop near-square images badly, so a real wide aspect is required.
+
+### Added — explicit handling for orientation-rule edge cases
+
+The 3-minion adversarial test surfaced gaps the prior rule didn't address. Now spelled out:
+- **User-supplied Pexels URLs:** extract photo ID, drill the page, run the same `og:image` ratio check.
+- **User-supplied non-Pexels URLs:** image-sourcing ladder tier 1 wins; commit with `_orientation_warning: "landscape not verified — non-Pexels source"` so the user can spot-check.
+- **Batch submissions** (multi-image CSV): verify each URL independently; drop unverifiable URLs and submit the verified subset, name the dropped ones. Refuse the whole batch only if zero verify.
+- **Photo page unreachable** (404, network): treat as unverifiable; do NOT fall back to thumbnail/preview-URL dimensions.
+- **Identity-confirming fields** (`profile_photo`, `logo`): explicitly carved out — Pexels stock is forbidden for these regardless of orientation. Cross-references the image-sourcing ladder.
+
+### Changed — Pexels workflow tightened
+
+Replaced 3 vague steps ("pick a search term, choose safe-for-work, use large variant URL") with 4 deterministic ones aligned to the new verification method.
+
+### Changed — 9 spec field descriptions updated
+
+Every field marked "LANDSCAPE only" now references the `og:image` verification method inline so an agent reading just the field description gets the full rule. Affects: `cover_photo` (×2 — createUser + updateUser), `post_image` (×3 — createSingleImagePost + updateSingleImagePost + createMultiImagePost CSV), multi-image-photo `original_image_url` (×2 — createMultiImagePost CSV append + createMultiImagePostPhoto), `hero_image` (×2 — createWebPage + updateWebPage).
+
+### Closes — pre-existing silent landscape-violation bug
+
+Before this release, agents would commit portrait-orientation Pexels photos to landscape-required fields whenever the search filter let one slip through, because the per-photo check was rubber-stamping every image. Public BD pages would render with cropped/squished portrait heroes, broken article-card layouts, and broken Froala body-image floats. This release closes that — agents now have a deterministic master-asset check that actually catches portrait masters.
+
 ## [6.40.84] - 2026-04-26
 
 ### Fixed — `enable_hero_section` enum now enforced
