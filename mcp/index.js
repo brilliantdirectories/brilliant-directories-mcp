@@ -1395,6 +1395,7 @@ const H1_FONT_SIZE_STEPS = Array.from({ length: 51 }, (_, i) => String(30 + i));
 const H2_FONT_SIZE_STEPS = Array.from({ length: 41 }, (_, i) => String(20 + i)); // 20..60 step 1
 const HERO_CONTENT_FONT_SIZE_STEPS = Array.from({ length: 21 }, (_, i) => String(10 + i)); // 10..30 step 1
 const HERO_ENUM_FIELDS = {
+  enable_hero_section: ["0", "1", "2"],
   hero_link_color: ["primary", "info", "success", "warning", "danger", "default", "secondary"],
   hero_link_size: ["", "btn-lg", "btn-xl"],
   hero_link_target_blank: ["0", "1"],
@@ -2363,6 +2364,14 @@ async function reserveSiteUrlSlug(config, toolName, args) {
       : "";
   };
 
+  // Derive corresponding update-tool name for create-error suggestions.
+  // Used as a fallback when collision.table isn't in TABLE_TO_UPDATE_TOOL —
+  // e.g. SITE_NAMESPACE_TABLES grows but the static map doesn't keep pace.
+  // Without the fallback the error message embeds literal "undefined".
+  const correspondingUpdateTool = toolName.startsWith("create")
+    ? toolName.replace(/^create/, "update")
+    : toolName;
+
   // Single check (most paths) OR loop with auto-suffix (categories).
   const baseSlug = String(proposed);
   if (!cfg.autoSuffix) {
@@ -2371,7 +2380,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
       // Suggest the update-tool that OWNS the colliding record's table —
       // not the caller's resource type. createWebPage colliding with a
       // top category should suggest updateTopCategory, not updateWebPage.
-      const updateTool = TABLE_TO_UPDATE_TOOL[collision.table];
+      const updateTool = TABLE_TO_UPDATE_TOOL[collision.table] || correspondingUpdateTool;
       const action = toolName.startsWith("create")
         ? `Pick a different ${cfg.slugField}, or use ${updateTool} on the existing record (${collision.idField}=${collision.id}).`
         : `Pick a different ${cfg.slugField} for this record, or rename/delete the conflicting one first.`;

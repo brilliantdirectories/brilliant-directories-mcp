@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.84] - 2026-04-26
+
+### Fixed — `enable_hero_section` enum now enforced
+
+Spec declared `enum: ["0", "1", "2"]` on `enable_hero_section`, but the wrapper accepted any string. Stress test on v6.40.82 confirmed `"01"`, `"true"`, `"foo"` all forwarded to BD verbatim. The `_heroIsOn` predicate (`String(v) === "1" || "2"`) correctly returned false for invalid values, so hero-bundle autofill didn't fire — but the bad value landed at BD, BD's render layer treated it as falsy without telling the agent, and the public hero shipped broken with `success` status.
+
+Added `enable_hero_section: ["0", "1", "2"]` to `HERO_ENUM_FIELDS`. Wrapper now rejects upstream with the same shape as other hero enum violations.
+
+### Fixed — npm `TABLE_TO_UPDATE_TOOL` lookup falls back to `correspondingUpdateTool`
+
+When a slug-uniqueness check finds a collision, the wrapper builds an error like "filename 'X' already exists as web page (seo_id=Y). Use updateWebPage on the existing record." The wrapper looks up the relevant update tool from `TABLE_TO_UPDATE_TOOL`. Worker had a fallback (`|| correspondingUpdateTool`) for tables not in the static map; npm did not. If `SITE_NAMESPACE_TABLES` ever grows without `TABLE_TO_UPDATE_TOOL` keeping pace, npm's error would embed literal "undefined" instead of a tool name.
+
+Added the same fallback to `mcp/index.js`. Cosmetic latent bug closed; npm now matches Worker's error wording.
+
+### Fixed — spec contradicted wrapper on country-only profile_search_results slugs
+
+Spec descriptions for `createWebPage` + `updateWebPage` claimed "Country-only slug does NOT render for `profile_search_results`." Wrapper accepts country-only slugs (verified live in v6.40.78 stress test — `afghanistan` page rendered fine). Spec's claim was wrong.
+
+Replaced with accurate text: wrapper validates country slug derived from `country_name` (lowercase + spaces→hyphens), strict order with any subset valid (matches existing corpus rule). Removed the false "does NOT render" claim. Aligned with the corpus phrasing in mcp-instructions.md L532.
+
 ## [6.40.83] - 2026-04-26
 
 ### Added — corpus rule for disabling the hero (toggle-off, not teardown)
