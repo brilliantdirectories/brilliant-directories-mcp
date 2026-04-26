@@ -1501,10 +1501,16 @@ function applyHeroBundleAutofill(toolName, args, currentRecord) {
   }
   const filled = [];
   for (const [field, def] of Object.entries(HERO_BUNDLE_DEFAULTS)) {
-    if (args[field] === undefined || args[field] === null || args[field] === "") {
-      args[field] = def;
-      filled.push(field);
-    }
+    const incoming = args[field];
+    if (incoming !== undefined && incoming !== null && incoming !== "") continue;
+    // Don't overwrite a value the user previously customized on this record.
+    // BD preserves stored hero values across off→on toggles, so on a second
+    // transition the field already has the user's last-known value. Only
+    // fill when both args AND the current record have nothing.
+    const stored = currentRecord && typeof currentRecord === "object" ? currentRecord[field] : undefined;
+    if (stored !== undefined && stored !== null && stored !== "") continue;
+    args[field] = def;
+    filled.push(field);
   }
   return filled.length > 0 ? { autofilled: filled } : null;
 }

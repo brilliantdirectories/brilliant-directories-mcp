@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.82] - 2026-04-26
+
+### Fixed — hero bundle auto-fill no longer overwrites user customizations on second transition
+
+v6.40.81 auto-fill considered only the incoming `args` when deciding whether to fill a bundle field. Scenario that broke: user enables hero → wrapper auto-fills 9 defaults → user customizes (e.g. `h1_font_color="rgb(50, 100, 200)"`) → user toggles hero off → user toggles hero back on without passing the customized fields. v6.40.81 saw `args[h1_font_color]` empty, ran the second off→on transition, and overwrote the user's blue with `rgb(255, 255, 255)`. BD preserves stored hero values across toggle-back, so the customization was visible on the record but the wrapper clobbered it anyway.
+
+Fix: auto-fill now skips fields that have a non-empty value in EITHER `args` OR the current `list_seo` record. Only fills when both are empty (genuine fresh-transition case).
+
+Stress-test minion (v6.40.81 verification, "seo_type swap angle") flagged this on Test 4. All other 5/6 tests passed cleanly; this was the one ergonomics regression worth a hotfix.
+
 ## [6.40.81] - 2026-04-26
 
 ### Added — hero readability bundle auto-fill on `enable_hero_section` off→on transition
