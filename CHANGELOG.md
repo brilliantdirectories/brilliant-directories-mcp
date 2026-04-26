@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.86] - 2026-04-26
+
+### Fixed — landscape-image rule aligned with what agent runtimes can actually execute
+
+v6.40.85 swapped the rubber-stamp preview-URL check for `og:image:width`/`og:image:height` meta-tag verification. Live testing in agent runtimes confirmed the new method is also unreachable: markdown-extracting fetch tools (the path most MCP clients use for `web_fetch`) strip `<head>` content before the agent sees it, so the meta tags can't be read. Agents fell back to "trust the filter alone" or "use proven-landscape images already in BD storage" — neither matched the shipped rule.
+
+Replaced with the only path agents can actually execute: trust Pexels' server-side `?orientation=landscape` filter on the search URL, send the bare canonical photo URL, refuse to guess if the filter returns nothing usable. No per-photo verification step — the meta-tag check was theatre in agent runtimes.
+
+### Removed — duplicate "Workflow for Pexels fallback" block
+
+`mcp-instructions.md` carried a 6-line workflow block separate from the canonical image URL rule. It was a stale duplicate from before the v6.40.85 rewrite and still told agents to verify landscape by reading `?w=NNNN&h=NNNN` from preview URLs (the rubber-stamp v6.40.85 was meant to replace). Deleted entirely; the canonical rule now stands alone.
+
+### Changed — 9 spec field descriptions trimmed to a cross-reference
+
+Every field marked "LANDSCAPE only" previously inlined the full broken verification recipe (~250 tokens × 9 fields). Replaced each with one short sentence cross-referencing the canonical image URL rule: `LANDSCAPE only — never portrait/vertical; bare URL, no ?query, must end in .jpg/.jpeg/.png/.webp — see image URL rule for sourcing.` Affects: `cover_photo` (×2), `post_image` (×3), multi-image `original_image_url` (×2), `hero_image` (×2).
+
+### Fixed — `mcp/package-lock.json` version stamp realigned
+
+Pre-existing miss from v6.40.85 release: lockfile's top-level `version` and `packages.""` `version` were stuck at `6.40.8`. Bumped both to `6.40.86` alongside the other version stamps.
+
 ## [6.40.85] - 2026-04-26
 
 ### Fixed — landscape-image verification rule rewritten to use master asset dimensions
