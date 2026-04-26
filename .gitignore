@@ -29,3 +29,8 @@ Thumbs.db
 SCRATCH-*.md
 SCRATCH-*.txt
 SCRATCH-*.json
+
+# Pre-edit backups created during structural rewrites. Live in the repo
+# root (NOT inside mcp/) so they cannot ride the npm `files` whitelist.
+# Delete after the rewrite ships clean. Pattern: <name>.bak-v<X.Y.Z>
+*.bak-v*

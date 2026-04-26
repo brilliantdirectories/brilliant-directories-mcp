@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.89] - 2026-04-26
+
+### Changed — `mcp-instructions.md` restructured for stable rule anchors
+
+The instructions corpus had no markdown headings — 729 lines of bold-led rule paragraphs cross-referencing each other with spatial language ("see the rule above," "see below," "tier 3," etc.). Agents process the corpus as a single text blob and have no spatial awareness, so spatial cross-refs were unreliable — agents would skip a rule, infer the wrong target, or extrapolate from incorrect context.
+
+Restructured to give every rule a stable named anchor:
+
+- Added `## Tool Instructions` H2 at top with one-sentence opener.
+- Added 62 `### Rule: <Short Name>` H3 headings, one per top-level rule.
+- Replaced every spatial cross-ref with named cross-refs in the form `**Rule: <Short Name>**` — e.g., `see **Rule: Image URLs**`, `see **Rule: Identity-confirming fields**`, etc.
+- Final spatial-language sweep: zero matches for `above`, `below`, `next rule`, `previous rule`, `preceding`, `following rule`, `tier 2/3` (where ladder-positional), and similar document-structure cues.
+
+Rule body content was preserved verbatim. Diff vs the v6.40.88 backup confirms zero rule-text changes — only structural adds (H2 + 62 H3 + blank-line padding) and cross-ref expansions. Two minions ran in parallel for verification: one auditing technical correctness (heading hierarchy, name consistency, scrub completeness — verdict: READY TO SHIP) and one auditing rule-clarity ambiguities for forward planning (verdict: SHIP PHASE 1 AS-IS, ambiguities are v6.40.90+ work).
+
+### Why this matters for agents
+
+The corpus is consumed by every MCP client (Claude Desktop, Cursor, n8n, etc.) at session init. Stable named anchors let an agent string-match `Rule: <Name>` from anywhere in its context — including when re-loaded mid-task with different surrounding context. Spatial cues fail this — agents can't anchor "above" or "below" reliably to a single position in the corpus.
+
 ## [6.40.88] - 2026-04-26
 
 ### Changed — image-sourcing ladder opener tightened to remove ambiguity
