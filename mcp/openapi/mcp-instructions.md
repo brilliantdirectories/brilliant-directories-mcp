@@ -444,6 +444,8 @@ Treat these as a single atomic recipe, not a menu. If you're tempted to skip one
 
 **Do NOT re-apply defaults on updates that don't touch `enable_hero_section`.** If the hero is already on and the user is tweaking a single hero field, respect their existing color/overlay/padding values. Only the field(s) they explicitly asked about should change.
 
+**Disabling the hero — set `enable_hero_section=0`, period.** Stored bundle values are preserved server-side; re-enabling restores the user's last-known look instantly with no autofill. Do NOT loop `deleteUserMeta` / `updateUserMeta` to clear bundle fields on a disable request — that's destructive, slow, and not reversible. Only wipe values when the user explicitly says "wipe / reset / clear all hero values."
+
 **Hero gap-fix CSS rule - `seo_type=content` ONLY.** When a `content` page has hero enabled, BD inserts a ~40px white clearfix spacer between the hero and the first content section. Add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css` to close the gap. **Never add this rule on any other `seo_type`** - on `profile_search_results` / `data_category` / etc., the clearfix provides necessary spacing before the live search-results block; hiding it makes results butt-join the hero. Rule is page-type-scoped, period.
 
 **Cache refresh is automatic on `createWebPage` / `updateWebPage`.** Both tools server-side fire `refreshCache(scope=web_pages)` on success (including hero/EAV-field writes) and return `auto_cache_refreshed: true` in the response. No manual call needed. If the response shows `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.83] - 2026-04-26
+
+### Added — corpus rule for disabling the hero (toggle-off, not teardown)
+
+Audit found the corpus had no explicit "disabling the hero" rule. Spec field description said "stored values preserved for later toggle-back," but the corpus itself was silent — agents reading just the corpus had no signal that `enable_hero_section=0` was the safe path. Some agents could plausibly interpret "remove the hero" as looping `deleteUserMeta` across the 9 bundle fields, which is slow, destructive, and irreversible.
+
+Added one-sentence rule to `mcp-instructions.md` near the existing hero bundle section:
+
+> *"Disabling the hero — set `enable_hero_section=0`, period. Stored bundle values are preserved server-side; re-enabling restores the user's last-known look instantly with no autofill. Do NOT loop `deleteUserMeta` / `updateUserMeta` to clear bundle fields on a disable request — that's destructive, slow, and not reversible. Only wipe values when the user explicitly says 'wipe / reset / clear all hero values.'"*
+
+Wrapper code already does the right thing (no `deleteUserMeta` calls on disable; `enable_hero_section=0` is a single field flip — verified live). This is a corpus-only release closing the documentation gap.
+
 ## [6.40.82] - 2026-04-26
 
 ### Fixed — hero bundle auto-fill no longer overwrites user customizations on second transition
