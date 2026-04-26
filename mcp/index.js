@@ -2018,6 +2018,87 @@ function _validateSlugFormat(slug, fieldLabel, allowSlash) {
   return null;
 }
 
+// profile_search_results segment-binding validator. BD's dynamic router
+// resolves /seo_type=profile_search_results URLs only when each slug segment
+// maps to a real BD record at a position-valid hierarchy slot
+// (country/state/city/top/sub, strict order, any subset valid as long as
+// relative order is preserved). Without this guard the wrapper accepts
+// arbitrary slugs and BD silent-404s the public URL — agent gets `success`
+// but the page renders no member results. Walk segments left-to-right;
+// each segment must match a slot at-or-after the previously locked floor.
+// Falls open with a soft warning on transient probe failure (same fail-open
+// pattern as slug-uniqueness probes per v6.40.63).
+async function _validateProfileSearchResultsSegments(config, args) {
+  if (String(args.seo_type || "").toLowerCase() !== "profile_search_results") return null;
+  if (typeof args.filename !== "string" || args.filename === "") return null;
+
+  const segments = args.filename.split("/").filter(Boolean);
+  if (segments.length === 0) return null;
+
+  // Pre-fetch countries once (no country_filename column — derive slug from name)
+  let countries = null;
+  let countryProbeFailed = false;
+  const tryCountry = async (seg) => {
+    if (countries === null && !countryProbeFailed) {
+      try {
+        const r = await makeRequest(config, "GET", "/api/v2/list_countries/get", { limit: 250 }, null);
+        countries = (r && r.body && Array.isArray(r.body.message))
+          ? r.body.message.map((c) => String(c.country_name || "").toLowerCase().replace(/\s+/g, "-"))
+          : [];
+      } catch {
+        countryProbeFailed = true;
+        countries = [];
+      }
+    }
+    return countries.includes(seg.toLowerCase());
+  };
+
+  const slots = ["country", "state", "city", "top", "sub"];
+  let floor = 0;
+  let probeFailures = 0;
+  const validated = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    let matched = -1;
+    for (let s = floor; s < slots.length; s++) {
+      let hit = false;
+      let probeFailed = false;
+      try {
+        if (slots[s] === "country") {
+          hit = await tryCountry(seg);
+        } else {
+          let table, field;
+          if (slots[s] === "state")     { table = "list_states";      field = "state_filename"; }
+          else if (slots[s] === "city") { table = "list_cities";      field = "city_filename"; }
+          else if (slots[s] === "top")  { table = "list_professions"; field = "filename"; }
+          else if (slots[s] === "sub")  { table = "list_services";    field = "filename"; }
+          const rows = await _slugProbeTable(config, table, field, seg, 1);
+          if (rows === null) probeFailed = true;
+          else hit = rows.length > 0;
+        }
+      } catch {
+        probeFailed = true;
+      }
+      if (probeFailed) probeFailures++;
+      if (hit) { matched = s; break; }
+    }
+    if (matched < 0) {
+      // Fall open if EVERY probe attempt for this segment failed transiently
+      // (BD outage / per-key permission gating) — warn but don't block.
+      if (probeFailures >= (slots.length - floor)) {
+        return { ok: true, segment_warning: `profile_search_results segment validation could not run on '${args.filename}' — BD probes failed transiently. Page write allowed; verify the slug renders publicly post-write.` };
+      }
+      return {
+        error: `profile_search_results filename '${args.filename}' segment ${i + 1} ('${seg}') doesn't match any valid country/state/city/top-category/sub-category slug at this position. Slug segments must come from live BD lookups (listCountries / listStates / listCities / listTopCategories / listSubCategories) and follow the order country/state/city/top/sub. For arbitrary URL static pages, use seo_type=content instead.`,
+      };
+    }
+    validated.push({ slot: slots[matched], value: seg });
+    floor = matched + 1;
+  }
+  return { ok: true, segments_validated: validated };
+}
+
 /** Look up rows in one BD table whose `field` equals the slug. */
 async function _slugProbeTable(config, table, field, slug, limit) {
   try {
@@ -3236,8 +3317,22 @@ async function main() {
       }
       let _slugAdjusted = null;
       let _slugProbeWarning = null;
+      let _segmentsValidated = null;
+      let _segmentWarning = null;
       if (slugGuard && slugGuard.adjusted) _slugAdjusted = slugGuard.adjusted;
       if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
+
+      // profile_search_results segment-binding guard. Catches silent-404
+      // slugs (segments don't map to real BD records). Only fires on
+      // createWebPage / updateWebPage with seo_type=profile_search_results.
+      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
+        const segGuard = await _validateProfileSearchResultsSegments(config, args);
+        if (segGuard && segGuard.error) {
+          return { content: [{ type: "text", text: segGuard.error }], isError: true };
+        }
+        if (segGuard && segGuard.segments_validated) _segmentsValidated = segGuard.segments_validated;
+        if (segGuard && segGuard.segment_warning) _segmentWarning = segGuard.segment_warning;
+      }
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
@@ -3547,6 +3642,14 @@ async function main() {
       // know to verify post-write if uniqueness matters for their use case.
       if (_slugProbeWarning && result.body && typeof result.body === "object") {
         result.body._slug_probe_warning = _slugProbeWarning;
+      }
+      // profile_search_results segment-binding feedback — agent confirmation
+      // that each slug segment mapped to a real BD record (or transient warning).
+      if (_segmentsValidated && result.body && typeof result.body === "object") {
+        result.body._segments_validated = _segmentsValidated;
+      }
+      if (_segmentWarning && result.body && typeof result.body === "object") {
+        result.body._segment_warning = _segmentWarning;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.

@@ -527,9 +527,9 @@ Set the current time in every exposed timestamp field on every update. On create
 
 **Member Search Results SEO pages - thin-content remedy.** BD auto-generates dynamic search URLs for every location+category combo (e.g. `california/beverly-hills/plumbers`). Google penalizes thin pages (1-2 members). Convert to static via `createWebPage` with `seo_type="profile_search_results"` + `filename=<exact slug>` + custom SEO copy in `content`.
 
-Slug hierarchy (no leading slash, `/`-separated, any left-parent droppable): `country/state/city/top_cat/sub_cat`.
+Slug hierarchy: `country/state/city/top/sub` — strict order, any subset valid (skip any segment from any position). Examples: `country/state/city/sub`, `top/sub`, `country/state/top`, `state/sub`, `top` alone, `city` alone, `united-states` alone. No leading slash; `/`-separated.
 
-**CRITICAL: `filename` MUST be a real location/category slug BD's dynamic router recognizes.** Arbitrary/made-up slugs (`my-cool-page`, `foo-bar`) return HTTP 404 publicly even though the `list_seo` record is created successfully - BD has no dynamic page to override. Bare category slugs (`/strength-training`) and full hierarchies (`/california/los-angeles/personal-trainer`) both work; country-only slug (`united-states` alone) does NOT render. For arbitrary-URL static pages with no underlying category/location route, use `seo_type=content` instead.
+**CRITICAL: `filename` MUST be a real location/category slug BD's dynamic router recognizes** (wrapper validates this — see runtime guard). Arbitrary/made-up slugs (`my-cool-page`, `foo-bar`) return HTTP 404 publicly even though the `list_seo` record is created successfully - BD has no dynamic page to override. Bare category slugs (`/strength-training`) and full hierarchies (`/california/los-angeles/personal-trainer`) both work. For arbitrary-URL static pages with no underlying category/location route, use `seo_type=content` instead.
 
 Every slug segment must come from live lookups:
 

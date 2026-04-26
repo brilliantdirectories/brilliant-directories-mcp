@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.77] - 2026-04-26
+
+### Added — profile_search_results segment-binding validator
+
+Closes a verified silent-404 bug. Wave 2 stress test on v6.40.76 confirmed an agent could `createWebPage seo_type=profile_search_results filename=this-is-not-a-real-category-slug` and the wrapper accepted the create. Page exists in `list_seo`, public URL renders nothing, agent gets `success` and never knows.
+
+New runtime validator walks the slug left-to-right. Each segment must match a real BD record at a position-valid hierarchy slot (`country/state/city/top/sub`, strict order, any subset valid). First-match locks the slot, advances the floor — can't go backwards in hierarchy. Falls open with a soft warning if BD probes fail transiently (same fail-open pattern as slug-uniqueness probes).
+
+Catches: `losangelez/yoga` (typo'd city), `not-a-real-thing` (fabricated slug), `yoga/california` (wrong order). Allows: `california`, `united-states`, `california/los-angeles/yoga`, `top/sub`, `state/sub`, every legitimate any-subset-in-order shape.
+
+Response includes `_segments_validated` array on success — agent feedback confirming each segment's slot binding, free since we already did the lookups.
+
+### Fixed — corpus L530 / L532 slug hierarchy phrasing
+
+Corpus L530 said "any left-parent droppable" — wrong. Truth: any subset valid, relative order preserved. Both ends droppable, any middle segment droppable. Replaced with explicit examples (`country/state/city/sub`, `top/sub`, `country/state/top`, `state/sub`, single-segment shapes).
+
+Corpus L532 claimed country-only slugs don't render — wrong. Country-only slugs (`/united-states`) are valid `profile_search_results` URLs; BD's router renders them fine. Removed the false claim. Added one parenthetical noting the wrapper now enforces the "real slug" requirement at runtime.
+
+Mirrored byte-for-byte in `bd-mcp-proxy` Worker.
+
 ## [6.40.76] - 2026-04-25
 
 ### Fixed — surface 3 wrapper-reality gaps the corpus didn't capture
