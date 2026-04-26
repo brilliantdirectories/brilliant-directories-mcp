@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.88] - 2026-04-26
+
+### Changed — image-sourcing ladder opener tightened to remove ambiguity
+
+The opener of the image-sourcing ladder rule listed `logo`/`profile_photo` alongside `cover_photo` and `post_image` in the same comma list, then carved them back out two rules later. Side-Claude reading top-down inferred the carve-out applied less strongly than intended. Reworded the opener to scope itself to content images (`cover_photo`, `post_image`, hero, etc.) and added a one-sentence pointer to the dedicated identity-confirming rule for `profile_photo`/`logo`/social URLs.
+
+### Added — `x` and `tiktok` to the identity-confirming social roster
+
+`profile_photo`, `logo`, `website`, `facebook`, `linkedin`, `x`, `twitter`, `instagram`, `youtube`, `tiktok` — all bypass the tier-3 Pexels fallback. Tier-2 sourcing order (in the "subject's own web presence" rule) reordered to match the priority a user would actually scan: Facebook → LinkedIn → X → Instagram → YouTube → TikTok. Mirrors the same order in the no-Pexels carve-out rule below it.
+
 ## [6.40.87] - 2026-04-26
 
 ### Changed — search URL pattern inlined in 9 spec field cross-refs
