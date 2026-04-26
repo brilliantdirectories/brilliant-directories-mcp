@@ -557,6 +557,164 @@ try {
   warn(`Could not run validator mirror check: ${e.message}. Verify both source files exist at expected paths.`);
 }
 
+// CHECK 10: Mirror-constant parity between npm and Worker. CHECK 9 fingerprints
+// validator function bodies; this check fingerprints the configuration tables
+// agents' behavior depends on. Both files declare the same named constant; if
+// values diverge, agents using npx and agents using brilliantmcp.com see
+// different defaults / allow-lists / routing maps.
+//
+// Adding a new constant to mirror? Just add its name to MIRROR_CONSTANTS.
+// Targets only CONSTANTS — not function bodies (CHECK 9 covers those).
+//
+// Extractor supports: object literals `{...}`, array literals `[...]`,
+// `new Set(...)`, `new Map(...)`, `Array.from(...)`, regex literals, integer
+// scalars, simple string scalars. NOT supported (extractor returns null):
+// bare booleans / `null` / negative numbers / template literals, computed
+// initializers (`const X = compute()`). If both files return null for the
+// same constant the check warns "not found in EITHER" — that's the signal
+// to either remove the entry from MIRROR_CONSTANTS or to use a supported
+// shape. Not silently dropped.
+const MIRROR_CONSTANTS = [
+  "HERO_BUNDLE_DEFAULTS",
+  "HERO_ENUM_FIELDS",
+  "HERO_RGB_FIELDS",
+  "HERO_PADDING_STEPS",
+  "H1_FONT_SIZE_STEPS",
+  "H2_FONT_SIZE_STEPS",
+  "HERO_CONTENT_FONT_SIZE_STEPS",
+  "HERO_ENUM_TOOLS",
+  "TABLE_TO_ENDPOINT",
+  "SITE_NAMESPACE_TABLES",
+  "SLUG_RESERVED_FIRST_SEGMENTS",
+  "SLUG_CALLER_BUG_LITERALS",
+  "FILTER_OPERATOR_ALLOWED",
+  "MONEY_FIELDS",
+  "BOOLEAN_INT_FIELDS",
+  "DATETIME_14_FIELDS",
+  "IMAGE_SINGLE_URL_FIELDS",
+  "IMAGE_CSV_URL_TOOLS",
+  "AUTO_REFRESH_SCOPE",
+  "SLUG_AUTO_SUFFIX_MAX",
+  "SLUG_AUTO_SUFFIX_QUIET_THRESHOLD",
+  "RICH_TEXT_BODY_FIELDS",
+  "SCAFFOLDING_SENSITIVE_FIELDS",
+  "SCAFFOLDING_TOKENS",
+  "SLUG_TOOL_CONFIG",
+  "RGB_PATTERN",
+];
+// Constants that exist top-level in one file and function-local (or differently
+// scoped) in the other. The check skips these; verify by hand if you change
+// either copy. Document each entry's WHY here, not at the call site.
+const MIRROR_CONSTANTS_SKIP = new Set([
+  // npm declares HIDDEN_TOOLS function-local inside buildTools(); Worker
+  // declares it top-level. Same value (`new Set(["createUserMeta"])`).
+  "HIDDEN_TOOLS",
+  // npm declares TABLE_TO_UPDATE_TOOL function-local inside reserveSiteUrlSlug;
+  // Worker declares it function-local in its slug helper too. CHECK 9 covers
+  // the function bodies that contain it.
+  "TABLE_TO_UPDATE_TOOL",
+]);
+function extractTopLevelConstBody(src, name) {
+  // Match only column-0 `const NAME = ...` (top-level declarations).
+  const re = new RegExp("^const\\s+" + name.replace(/[$]/g, "\\$") + "(?:\\s*:\\s*[^=]+)?\\s*=\\s*", "m");
+  const m = re.exec(src);
+  if (!m) return null;
+  let i = m.index + m[0].length;
+  if (i >= src.length) return null;
+  const startChar = src[i];
+  // Scalar literal — read until terminating `;`
+  if (/[0-9"']/.test(startChar)) {
+    const semi = src.indexOf(";", i);
+    return semi < 0 ? null : src.slice(i, semi).trim();
+  }
+  // Regex literal
+  if (startChar === "/") {
+    let j = i + 1;
+    while (j < src.length) {
+      if (src[j] === "\\") { j += 2; continue; }
+      if (src[j] === "/") { j++; break; }
+      j++;
+    }
+    while (j < src.length && /[a-z]/.test(src[j])) j++;
+    return src.slice(i, j);
+  }
+  // new Set(...) / new Map(...) — capture from leading identifier
+  const start = i;
+  while (i < src.length && /[a-zA-Z_]/.test(src[i])) i++;
+  while (i < src.length && /\s/.test(src[i])) i++;
+  // Now expect [{(
+  let depth = 0;
+  let inStr = false;
+  let strCh = "";
+  let started = false;
+  for (; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (c === "\\") { i++; continue; }
+      if (c === strCh) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") { inStr = true; strCh = c; continue; }
+    if (c === "/" && src[i+1] === "/") {
+      const nl = src.indexOf("\n", i);
+      i = nl < 0 ? src.length : nl;
+      continue;
+    }
+    if (c === "/" && src[i+1] === "*") {
+      const ce = src.indexOf("*/", i);
+      i = ce < 0 ? src.length : ce + 1;
+      continue;
+    }
+    if ("[{(".includes(c)) { depth++; started = true; }
+    else if ("]})".includes(c)) {
+      depth--;
+      if (started && depth === 0) return src.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+function normalizeConstBody(s) {
+  if (!s) return null;
+  return s
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "")
+    .replace(/\bas\s+(any|const|string|number)\b/g, "")
+    .replace(/:\s*Record<[^>]+>/g, "")
+    .replace(/:\s*Set<[^>]+>/g, "")
+    .replace(/:\s*Array<[^>]+>/g, "")
+    .replace(/:\s*Map<[^>]+>/g, "")
+    .replace(/:\s*string\[\]/g, "")
+    .replace(/,(\s*[\]\}\)])/g, "$1") // strip trailing commas
+    .replace(/\s+/g, "")
+    .trim();
+}
+try {
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  for (const name of MIRROR_CONSTANTS) {
+    if (MIRROR_CONSTANTS_SKIP.has(name)) continue;
+    const npmBody = normalizeConstBody(extractTopLevelConstBody(npmSrc, name));
+    const workerBody = normalizeConstBody(extractTopLevelConstBody(workerSrc, name));
+    if (npmBody === null && workerBody === null) {
+      warn(`Mirror constant "${name}" not found at top-level in EITHER file. If renamed/removed, drop from MIRROR_CONSTANTS. If made function-local, add to MIRROR_CONSTANTS_SKIP with the WHY.`);
+      continue;
+    }
+    if (npmBody === null) {
+      err(`Mirror constant "${name}" exists at top-level in Worker but NOT in mcp/index.js. Either port it to npm, or add to MIRROR_CONSTANTS_SKIP if scope is intentional.`);
+      continue;
+    }
+    if (workerBody === null) {
+      err(`Mirror constant "${name}" exists at top-level in mcp/index.js but NOT in Worker. Port it or add to MIRROR_CONSTANTS_SKIP.`);
+      continue;
+    }
+    if (npmBody !== workerBody) {
+      err(`Mirror constant "${name}" VALUES DIVERGE between npm and Worker. Compare and align.`);
+    }
+  }
+} catch (e) {
+  warn(`Could not run constant mirror check: ${e.message}.`);
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
