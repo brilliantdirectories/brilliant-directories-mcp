@@ -46,7 +46,7 @@ If a tool you need from this lookup is missing from your loaded `tools/list`, th
 
 **Scope of "destructive":** any `delete*` op; any field that wipes related rows (`profession_id` change on `updateUser` wipes sub-category links; `images_action=remove_*`; `credit_action=deduct/override`); any bulk / schema-like edit with cascading effects.
 
-**Rule:**
+**Decision tree:**
 
 1. **Never silent-destructive.** Never choose the destructive path to make work feel cleaner. "Fix these pages" / "make them better" / "improve" / "clean up" are UPDATE requests, not delete-and-recreate requests.
 
@@ -96,6 +96,7 @@ This applies to EVERY CSV-bearing field on EVERY endpoint (create or update).
 **Exception:** inside a single option name, spaces are fine. `"Patient Care Tips,Medical Conditions"` is correct - the rule is strictly about the SEPARATOR, not the content.
 
 Capabilities worth knowing inherently (BD-specific, not typical REST):
+
 - External image URLs auto-fetch to local storage when `auto_image_import=1` on `createUser`/`updateUser`. Don't download client-side.
 - Categories and sub-categories auto-create by NAME on `createUser` - pass `profession_name` and `services` as strings, no pre-creation needed. On `updateUser`, add `create_new_categories=1` for the same behavior.
 - `services` supports `Parent=>Child` for sub-sub-category nesting in one call: `services="Honda=>2022,Toyota"`.
@@ -103,11 +104,13 @@ Capabilities worth knowing inherently (BD-specific, not typical REST):
 - Profile URLs are `<site>/<user.filename>` - `filename` is the full relative path; never prepend `/business/`, `/profile/`, etc.
 
 Member taxonomy (distinct from post types) - three tiers, three tool families. A member has EXACTLY ONE Top Category (`profession_id`) and MANY Sub / Sub-Sub Categories nested under it:
+
 - Top Categories -> `TopCategory*` tools (BD: "professions" / `list_professions`). One per member, set via `profession_id` or `profession_name`.
 - Sub + Sub-Sub Categories -> `SubCategory*` tools (BD: "services" / `list_services`). Multiple per member, all scoped under that member's single `profession_id`. Sub-subs via `master_id`.
 - Member↔sub links with pricing/specialty metadata -> `MemberSubCategoryLink*` (BD: `rel_services`). Without metadata, the user's `services` CSV field is enough.
 
 Post endpoint routing - post types split by `data_type` (call `listPostTypes` / `getPostType` first):
+
 - `data_type=4` -> `createMultiImagePost` (albums, galleries, Property, Product)
 - `data_type=9` or `20` -> `createSingleImagePost` (blog, event, job, coupon, video)
 - `data_type=10` is Member Listings (singleton, system-seeded) - not post-creatable via `createSingleImagePost`/`createMultiImagePost`, but its search-result page fields ARE editable via `updatePostType` (see **Rule: Member Listings post type**)
@@ -710,6 +713,7 @@ Writes are live and immediately visible on the public site. Confirm before any d
 Security & input sanitization (every write, every resource). BD stores input verbatim on API writes - BD's backend `protectUserInputs()` is NOT invoked on the API path, so THIS rule is the only sanitization layer. Render-time escaping is inconsistent across BD views. Reject writes that contain obvious injection payloads - asking the user to confirm if it looks intentional.
 
 **Pattern matching is case-insensitive for ALL patterns in this rule (not just <script>).** Before matching, HTML-entity-decode the value once (turn `&#60;script&#62;` into `<script>`, turn `&amp;#x6a;avascript:` into `javascript:`) and URL-decode once - an agent that matches only the raw form lets encoded payloads through. Reject patterns:
+
 - **Script/markup tags:** `<script>`, `</script>`, `<iframe>`, `<object>`, `<embed>`, `<svg ... on[a-z]+=` (SVG is a common XSS vector via handlers), standalone `<style>` blocks on non-widget/non-email-body fields.
 - **Inline event handlers - pattern-match, not list-match:** ANY `on[a-z]+=` attribute pattern (`onerror`, `onload`, `onclick`, `onmouseover`, `onfocus`, `onanimationend`, `ontoggle`, `onpointerdown`, `onwheel`, `onbeforeprint`, etc. - 100+ DOM handlers, all fire XSS). Do NOT maintain a fixed list; match the pattern.
 - **Dangerous URL schemes (in `href`, `src`, or any attribute):** `javascript:`, `data:text/html`, `data:application/`, `vbscript:`. Plain `data:image/*` (e.g. `data:image/png;base64,...`) is fine.
@@ -718,9 +722,10 @@ Security & input sanitization (every write, every resource). BD stores input ver
 
 Distinguish real content from attack shapes - "we DROP by the office at 5pm" is fine (no TABLE after DROP); "DROP the dose by half" is fine; `'; DROP TABLE users_data; --` is not. Legal copy ("Plaintiff vs Defendant"), ampersands ("R&D", "Smith & Jones"), email addresses, and CMS HTML with `<span>`/`<div>`/`<table>` all pass.
 
-Field-strictness split:
+**Field-strictness split:**
+
 - **Plain-text fields** - reject ANY HTML tags: `first_name`, `last_name`, `company`, `email`, `phone_number`, URL fields (`website`/`facebook`/`twitter`/`linkedin`/`instagram`), SEO meta (`title`/`meta_desc`/`meta_keywords`/`facebook_title`/`facebook_desc`), menu labels, form/widget/menu/email internal names, review name/title, tag name.
-**HTML-allowed fields - allow safe HTML but still block the dangerous patterns listed in this rule.**
+- **HTML-allowed fields** - allow safe HTML but still block the dangerous patterns listed in this rule.
 
 **Fields:**
 
@@ -737,6 +742,9 @@ Field-strictness split:
 Class attributes allowed; inline `style=""` allowed IF it doesn't contain any CSS-injection pattern.
 
 Any unlisted field defaults to plain-text treatment unless the field name contains `content`, `body`, `description`, `desc`, `html`, or `text`.
+
+**Exceptions to the HTML-allowed rules:**
+
 - **Email body exception:** `<style>` blocks ARE allowed inside `email_body` - legitimate inlined email CSS. Still reject CSS-injection patterns inside.
 - **Widget exception:** `widget_data`, `widget_style`, `widget_javascript` are exempt from all the patterns in this rule. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. `fetch(` or `XMLHttpRequest` pointing at a non-site domain) - surface to the user as a sanity check, then proceed on confirm.
 

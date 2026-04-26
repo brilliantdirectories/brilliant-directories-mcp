@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.90] - 2026-04-26
+
+### Fixed — `mcp-instructions.md` markdown polish
+
+A markdown audit on the v6.40.89 restructure surfaced five non-blocking issues. All addressed:
+
+- **Restored bullet marker on line 723** (now line ~723 in v6.40.89 numbering): the "HTML-allowed fields" entry was a sibling of "Plain-text fields" but its `- ` marker was lost, so it rendered as a continuation paragraph of the previous bullet. Wrapped both as proper sibling list items under a bolded `**Field-strictness split:**` lead.
+- **Fixed orphaned bullets at line 740-741** (Email body exception, Widget exception): they appeared after a standalone prose paragraph with no blank line and no parent list context, leaving them dangling. Wrapped under a new `**Exceptions to the HTML-allowed rules:**` lead with a blank line separator.
+- **Renamed bare `**Rule:**` sub-label inside Destructive last resort rule to `**Decision tree:**`** — the bare label conflicted visually and semantically with the new `**Rule: <Name>**` cross-ref convention; an LLM scanning for refs could misread it.
+- **Added blank lines before 4 colon-terminated list intros** (Capabilities worth knowing inherently, Member taxonomy, Post endpoint routing, Pattern matching reject patterns) — CommonMark tolerates the no-blank-line shape but it's brittle for some parsers and the directive style guide already mandates it.
+- **Added trailing newline at EOF** — POSIX standard. File previously ended without LF.
+
+Zero rule content changed. Verification minion confirmed `MARKDOWN 100% CLEAN` after fixes.
+
 ## [6.40.89] - 2026-04-26
 
 ### Changed — `mcp-instructions.md` restructured for stable rule anchors
