@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.81] - 2026-04-26
+
+### Added — hero readability bundle auto-fill on `enable_hero_section` off→on transition
+
+When `enable_hero_section` flips off→on (createWebPage with `1`/`2`, or updateWebPage where incoming is `1`/`2` and current is `0`/unset), wrapper auto-fills 9 bundle fields with the canonical readable defaults from the corpus:
+
+- `hero_top_padding=100`
+- `hero_bottom_padding=100`
+- `hero_column_width=5`
+- `hero_content_overlay_color=rgb(0, 0, 0)`
+- `hero_content_overlay_opacity=0.5`
+- `hero_content_font_color=rgb(255, 255, 255)`
+- `hero_content_font_size=18`
+- `h1_font_color=rgb(255, 255, 255)`
+- `h2_font_color=rgb(255, 255, 255)`
+
+User-supplied values pass through untouched. Filled fields echoed in `_hero_bundle_autofilled`. On no-transition updates (hero already on, or hero staying off), no auto-fill fires.
+
+`hero_image` is required on transition — no safe default exists. Wrapper rejects with a message pointing at the image-sourcing ladder (user URL → subject's web presence → Pexels stock).
+
+Closes a silent-drift class flagged in production: agent enables hero, sets 1-2 fields, response says 200 OK, public page renders an unreadable hero (BD's per-field defaults are 10px text, 0.4 transparent overlay, 0px padding — the corpus calls these out as broken).
+
+### Fixed — spec descriptions now align with the canonical bundle
+
+5 hero field descriptions in `bd-api.json` documented BD's misleading per-field defaults without flagging that the wrapper auto-fills the bundle values on transition. Updated:
+
+- `hero_top_padding`: BD default 70 → wrapper auto-fills 100
+- `hero_bottom_padding`: BD default 60 → wrapper auto-fills 100
+- `hero_column_width`: BD default 8 → wrapper auto-fills 5
+- `hero_content_overlay_opacity`: BD default 0.4 → wrapper auto-fills 0.5
+- `hero_content_font_size`: BD default 10 → wrapper auto-fills 18
+
+Each now opens with the BD field default and immediately points at the bundle. `enable_hero_section` itself now lists the full bundle inline so an agent reading just the gate field gets the recipe.
+
+`h1_font_color`, `h2_font_color`, `hero_content_font_color`, `hero_content_overlay_color` now also reference the bundle from their own descriptions (previously cross-referenced from the corpus only).
+
 ## [6.40.80] - 2026-04-26
 
 ### Fixed — segment validator now fires on `updateWebPage` rename

@@ -1439,6 +1439,76 @@ function validateHeroEnumsInArgs(toolName, args) {
   return null;
 }
 
+// Hero readability bundle. When `enable_hero_section` transitions from
+// off (0/unset) to on (1/2), BD's field-level defaults render an unreadable
+// hero (10px text, 0.4 transparent overlay, 0px padding, etc). The corpus
+// rule at mcp-instructions.md "Hero section readability safe-defaults"
+// names a 9-field recipe that overrides those defaults with values that
+// actually look readable. Agents drift on this constantly — they enable
+// the hero, set 1-2 fields they care about, and the response says 200 OK
+// while the public hero renders broken. Validator below auto-fills any
+// omitted bundle field with the canonical default on hero transition,
+// echoing what was filled in `_hero_bundle_autofilled`. User-supplied
+// values pass through untouched. `hero_image` is required (no default —
+// reject if a hero is being enabled without an image).
+const HERO_BUNDLE_DEFAULTS = {
+  hero_top_padding: "100",
+  hero_bottom_padding: "100",
+  hero_column_width: "5",
+  hero_content_overlay_color: "rgb(0, 0, 0)",
+  hero_content_overlay_opacity: "0.5",
+  hero_content_font_color: "rgb(255, 255, 255)",
+  hero_content_font_size: "18",
+  h1_font_color: "rgb(255, 255, 255)",
+  h2_font_color: "rgb(255, 255, 255)",
+};
+
+function _heroIsOn(v) {
+  if (v === undefined || v === null) return false;
+  const s = String(v);
+  return s === "1" || s === "2";
+}
+
+// Returns one of:
+//   { error: <message> }                                  — hero turning on without hero_image
+//   { autofilled: [<field names>] }                       — bundle gaps were filled
+//   null                                                  — no-op (no transition, or already complete)
+// Mutates `args` in place: missing bundle fields are set to canonical defaults.
+function applyHeroBundleAutofill(toolName, args, currentRecord) {
+  if (toolName !== "createWebPage" && toolName !== "updateWebPage") return null;
+  if (!args || typeof args !== "object") return null;
+  const incomingHero = args.enable_hero_section;
+  // On createWebPage, transition is whenever incoming is on.
+  // On updateWebPage, transition is incoming on AND current is off/unset.
+  let isTransition = false;
+  if (toolName === "createWebPage") {
+    isTransition = _heroIsOn(incomingHero);
+  } else {
+    if (incomingHero === undefined) return null;
+    if (!_heroIsOn(incomingHero)) return null;
+    const currentHero = currentRecord && typeof currentRecord === "object" ? currentRecord.enable_hero_section : undefined;
+    isTransition = !_heroIsOn(currentHero);
+  }
+  if (!isTransition) return null;
+  // hero_image is required on transition. No safe default — reject so the
+  // agent supplies one (or falls back to seo_type=content if no image).
+  const incomingImage = args.hero_image;
+  const currentImage = currentRecord && typeof currentRecord === "object" ? currentRecord.hero_image : undefined;
+  const haveImage = (typeof incomingImage === "string" && incomingImage !== "") ||
+                    (typeof currentImage === "string" && currentImage !== "");
+  if (!haveImage) {
+    return { error: `Cannot enable hero section without hero_image. Pass hero_image=<URL> in this same call. If the user didn't supply one, walk the image-sourcing ladder (user URL → subject's own web presence → Pexels stock fallback for generic topic-page heroes) and pass the chosen URL. To leave the hero off, set enable_hero_section=0.` };
+  }
+  const filled = [];
+  for (const [field, def] of Object.entries(HERO_BUNDLE_DEFAULTS)) {
+    if (args[field] === undefined || args[field] === null || args[field] === "") {
+      args[field] = def;
+      filled.push(field);
+    }
+  }
+  return filled.length > 0 ? { autofilled: filled } : null;
+}
+
 // Free-form RGB color fields on createWebPage / updateWebPage. BD's hero
 // templates expect `rgb(R, G, B)` literally — hex codes (#ffffff), named
 // colors (white), and rgba(...) all break the CSS variable interpolation
@@ -3339,18 +3409,22 @@ async function main() {
       if (slugGuard && slugGuard.adjusted) _slugAdjusted = slugGuard.adjusted;
       if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
 
-      // profile_search_results segment-binding guard. Catches silent-404
-      // slugs (segments don't map to real BD records). Fires on createWebPage
-      // and on updateWebPage when filename is changing AND the post-update
-      // seo_type resolves to profile_search_results (incoming or current).
+      // profile_search_results segment-binding guard + hero bundle autofill.
+      // Both need the current `list_seo` row on updateWebPage (for effective
+      // seo_type and current enable_hero_section). One fetch, both consumers.
+      let _heroBundleAutofilled = null;
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         let effectiveSeoType = args.seo_type;
-        if (name === "updateWebPage" && effectiveSeoType === undefined && args.seo_id !== undefined && args.seo_id !== null) {
+        let currentRecord = null;
+        if (name === "updateWebPage" && args.seo_id !== undefined && args.seo_id !== null) {
           try {
             const cur = await makeRequest(config, "GET", `/api/v2/list_seo/get/${encodeURIComponent(String(args.seo_id))}`, null, null);
             const row = cur && cur.body && (Array.isArray(cur.body.message) ? cur.body.message[0] : cur.body.message);
-            if (row && typeof row === "object") effectiveSeoType = row.seo_type;
-          } catch { /* fetch failed; validator falls open via existing path */ }
+            if (row && typeof row === "object") {
+              currentRecord = row;
+              if (effectiveSeoType === undefined) effectiveSeoType = row.seo_type;
+            }
+          } catch { /* fetch failed; validators fall open via existing paths */ }
         }
         const segGuard = await _validateProfileSearchResultsSegments(config, args, effectiveSeoType);
         if (segGuard && segGuard.error) {
@@ -3358,6 +3432,12 @@ async function main() {
         }
         if (segGuard && segGuard.segments_validated) _segmentsValidated = segGuard.segments_validated;
         if (segGuard && segGuard.segment_warning) _segmentWarning = segGuard.segment_warning;
+
+        const heroResult = applyHeroBundleAutofill(name, args, currentRecord);
+        if (heroResult && heroResult.error) {
+          return { content: [{ type: "text", text: heroResult.error }], isError: true };
+        }
+        if (heroResult && heroResult.autofilled) _heroBundleAutofilled = heroResult.autofilled;
       }
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
@@ -3676,6 +3756,12 @@ async function main() {
       }
       if (_segmentWarning && result.body && typeof result.body === "object") {
         result.body._segment_warning = _segmentWarning;
+      }
+      // Hero readability bundle autofill — agent feedback listing which
+      // bundle fields the wrapper filled with canonical defaults on a
+      // hero off→on transition. User-supplied values are not listed here.
+      if (_heroBundleAutofilled && result.body && typeof result.body === "object") {
+        result.body._hero_bundle_autofilled = _heroBundleAutofilled;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.

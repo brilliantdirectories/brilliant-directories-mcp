@@ -9922,7 +9922,7 @@
                       "1",
                       "2"
                     ],
-                    "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
+                    "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**On hero off→on transition (`0`/unset → `1`/`2`), wrapper auto-fills the hero readability bundle** — `hero_top_padding=100`, `hero_bottom_padding=100`, `hero_column_width=5`, `hero_content_overlay_color=rgb(0, 0, 0)`, `hero_content_overlay_opacity=0.5`, `hero_content_font_color=rgb(255, 255, 255)`, `hero_content_font_size=18`, `h1_font_color=rgb(255, 255, 255)`, `h2_font_color=rgb(255, 255, 255)` — for any of those 9 fields you OMITTED. BD's per-field defaults render an unreadable hero (10px text, 0.4 transparent overlay, 0px padding); the bundle is the canonical readable recipe. User-supplied values pass through untouched. Filled fields are echoed in `_hero_bundle_autofilled`. **`hero_image` is required** on transition — wrapper rejects if missing (no safe default; walk the image-sourcing ladder). On no-transition updates (hero already on), no auto-fill fires.\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
@@ -9946,7 +9946,7 @@
                   },
                   "hero_content_overlay_color": {
                     "type": "string",
-                    "description": "Semi-transparent color layer between hero background image and text, for legibility over busy images. **RGB format ONLY** - `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) NOT accepted. Combine with `hero_content_overlay_opacity` to control strength."
+                    "description": "Semi-transparent color layer between hero background image and text, for legibility over busy images. **RGB format ONLY** - `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) NOT accepted. Combine with `hero_content_overlay_opacity` to control strength. Wrapper auto-fills `rgb(0, 0, 0)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_content_overlay_opacity": {
                     "type": "string",
@@ -9963,15 +9963,15 @@
                       "0.9",
                       "1"
                     ],
-                    "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. Default `0.4`. EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
+                    "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. BD field default `0.4` is too transparent — wrapper auto-fills `0.5` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`). EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
                   },
                   "hero_top_padding": {
                     "type": "string",
-                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200` (i.e. `0`, `10`, `20`, ..., `200`). Default `70`."
+                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. BD field default `70` — wrapper auto-fills `100` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_bottom_padding": {
                     "type": "string",
-                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. Default `60`."
+                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. BD field default `60` — wrapper auto-fills `100` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_column_width": {
                     "type": "string",
@@ -9987,7 +9987,7 @@
                       "11",
                       "12"
                     ],
-                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
+                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70%, `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block. BD field default `8` — wrapper auto-fills `5` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_alignment": {
                     "type": "string",
@@ -10000,7 +10000,7 @@
                   },
                   "h1_font_color": {
                     "type": "string",
-                    "description": "Main title (H1) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field - these `h1_*` fields control ONLY the hero's H1 styling."
+                    "description": "Main title (H1) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field - these `h1_*` fields control ONLY the hero's H1 styling. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "h1_font_size": {
                     "type": "string",
@@ -10018,7 +10018,7 @@
                   },
                   "h2_font_color": {
                     "type": "string",
-                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field."
+                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "h2_font_size": {
                     "type": "string",
@@ -10036,11 +10036,11 @@
                   },
                   "hero_content_font_color": {
                     "type": "string",
-                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY - e.g. `rgb(0,0,0)`."
+                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY - e.g. `rgb(0,0,0)`. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_content_font_size": {
                     "type": "string",
-                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. `10` is BD's default but renders too small for hero paragraph copy; use `15`-`18`."
+                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. BD field default `10` is too small for hero paragraph copy — wrapper auto-fills `18` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_section_content": {
                     "type": "string",
@@ -10346,7 +10346,7 @@
                       "1",
                       "2"
                     ],
-                    "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
+                    "description": "Hero banner master switch:\n\n- `0` = disabled (all other `hero_*`/`h1_font_*`/`h2_font_*` ignored at render; stored values preserved for later toggle-back)\n\n- `1` = enabled all devices\n\n- `2` = enabled desktop, hidden mobile\n\n**On hero off→on transition (`0`/unset → `1`/`2`), wrapper auto-fills the hero readability bundle** — `hero_top_padding=100`, `hero_bottom_padding=100`, `hero_column_width=5`, `hero_content_overlay_color=rgb(0, 0, 0)`, `hero_content_overlay_opacity=0.5`, `hero_content_font_color=rgb(255, 255, 255)`, `hero_content_font_size=18`, `h1_font_color=rgb(255, 255, 255)`, `h2_font_color=rgb(255, 255, 255)` — for any of those 9 fields you OMITTED. BD's per-field defaults render an unreadable hero (10px text, 0.4 transparent overlay, 0px padding); the bundle is the canonical readable recipe. User-supplied values pass through untouched. Filled fields are echoed in `_hero_bundle_autofilled`. **`hero_image` is required** on transition — wrapper rejects if missing (no safe default; walk the image-sourcing ladder). On no-transition updates (hero already on), no auto-fill fires.\n\n**Homepage benign** - `seo_type=home` ignores hero fields entirely regardless of value. BD stores but never renders on homepage; skip all `hero_*` fields on homepage updates."
                   },
                   "hero_hide_banner_ad": {
                     "type": "string",
@@ -10370,7 +10370,7 @@
                   },
                   "hero_content_overlay_color": {
                     "type": "string",
-                    "description": "Semi-transparent color layer between hero background image and text, for legibility over busy images. **RGB format ONLY** - `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) NOT accepted. Combine with `hero_content_overlay_opacity` to control strength."
+                    "description": "Semi-transparent color layer between hero background image and text, for legibility over busy images. **RGB format ONLY** - `rgb(0,0,0)` or `rgb(255,255,255)`. Hex (`#000000`) NOT accepted. Combine with `hero_content_overlay_opacity` to control strength. Wrapper auto-fills `rgb(0, 0, 0)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_content_overlay_opacity": {
                     "type": "string",
@@ -10387,15 +10387,15 @@
                       "0.9",
                       "1"
                     ],
-                    "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. Default `0.4`. EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
+                    "description": "Opacity of `hero_content_overlay_color` layer, 0.1 increments from `0.0` (transparent) to `1` (opaque). Admin UI labels 0-10. BD field default `0.4` is too transparent — wrapper auto-fills `0.5` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`). EAV-routed by the wrapper — pass on `updateWebPage` directly, no manual `updateUserMeta` needed."
                   },
                   "hero_top_padding": {
                     "type": "string",
-                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200` (i.e. `0`, `10`, `20`, ..., `200`). Default `70`."
+                    "description": "Top padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. BD field default `70` — wrapper auto-fills `100` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_bottom_padding": {
                     "type": "string",
-                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. Default `60`."
+                    "description": "Bottom padding inside the hero banner, in pixels. Accepts multiples of 10 from `0` to `200`. BD field default `60` — wrapper auto-fills `100` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_column_width": {
                     "type": "string",
@@ -10411,7 +10411,7 @@
                       "11",
                       "12"
                     ],
-                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70% (default), `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block."
+                    "description": "Hero text-content column width as Bootstrap 12-col span. `3`=25%, `4`=30%, `5`=40%, `6`=50%, `7`=60%, `8`=70%, `9`=75%, `10`=80%, `11`=90%, `12`=100%. Narrower = more side padding around the text block. BD field default `8` — wrapper auto-fills `5` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_alignment": {
                     "type": "string",
@@ -10424,7 +10424,7 @@
                   },
                   "h1_font_color": {
                     "type": "string",
-                    "description": "Main title (H1) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field - these `h1_*` fields control ONLY the hero's H1 styling."
+                    "description": "Main title (H1) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H1 text itself comes from the page's `h1` field - these `h1_*` fields control ONLY the hero's H1 styling. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "h1_font_size": {
                     "type": "string",
@@ -10442,7 +10442,7 @@
                   },
                   "h2_font_color": {
                     "type": "string",
-                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field."
+                    "description": "Sub-title (H2) font color in the hero. RGB format ONLY - e.g. `rgb(255,255,255)`. The H2 text itself comes from the page's `h2` field. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "h2_font_size": {
                     "type": "string",
@@ -10460,11 +10460,11 @@
                   },
                   "hero_content_font_color": {
                     "type": "string",
-                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY - e.g. `rgb(0,0,0)`."
+                    "description": "Font color for the additional hero content block rendered below H1/H2 (the `hero_section_content` field). RGB format ONLY - e.g. `rgb(0,0,0)`. Wrapper auto-fills `rgb(255, 255, 255)` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_content_font_size": {
                     "type": "string",
-                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. `10` is BD's default but renders too small for hero paragraph copy; use `15`-`18`."
+                    "description": "Font size in pixels for the additional hero content block (`hero_section_content`). Accepts integer values from `10` to `30`. BD field default `10` is too small for hero paragraph copy — wrapper auto-fills `18` on hero off→on transition (part of the hero readability bundle — see `enable_hero_section`)."
                   },
                   "hero_section_content": {
                     "type": "string",
