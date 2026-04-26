@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.93] - 2026-04-26
+
+### Changed — bolded `**OMIT**` prefix on 3 spec fields where omission is mandatory
+
+`breadcrumb`, `org_template`, `page_render_widget` (×2 each — `createWebPage` + `updateWebPage`) all already started with `OMIT —` at the front of their description text. Side-Claude's v6.40.92 review flagged that the warning was visually buried even though it led the prose, because other warnings in the spec use bold (e.g. `**LANDSCAPE only**`, `**Bare URL only**`). Wrapped each `OMIT` in bold so the do-not-pass signal is visually consistent with other critical warnings throughout the spec.
+
+No content change beyond the markdown emphasis. Six byte-identical edits.
+
 ## [6.40.92] - 2026-04-26
 
 ### Removed — Rule index from `mcp-instructions.md`

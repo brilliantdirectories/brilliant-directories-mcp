@@ -9764,7 +9764,7 @@
                   },
                   "breadcrumb": {
                     "type": "string",
-                    "description": "OMIT — BD auto-generates the breadcrumb trail. Never set this yourself; a manual value overrides BD's generated trail and breaks the page."
+                    "description": "**OMIT** — BD auto-generates the breadcrumb trail. Never set this yourself; a manual value overrides BD's generated trail and breaks the page."
                   },
                   "content": {
                     "type": "string",
@@ -9890,7 +9890,7 @@
                   },
                   "org_template": {
                     "type": "integer",
-                    "description": "OMIT — internal layout reference. No public lookup endpoint; setting an arbitrary value can render the page against a nonexistent layout."
+                    "description": "**OMIT** — internal layout reference. No public lookup endpoint; setting an arbitrary value can render the page against a nonexistent layout."
                   },
                   "allowed_products": {
                     "type": "string",
@@ -10098,7 +10098,7 @@
                   },
                   "page_render_widget": {
                     "type": "string",
-                    "description": "OMIT — internal widget reference for `seo_type=custom_widget_page` only. No public widget-ID lookup; setting on other page types breaks rendering."
+                    "description": "**OMIT** — internal widget reference for `seo_type=custom_widget_page` only. No public widget-ID lookup; setting on other page types breaks rendering."
                   }
                 }
               }
@@ -10188,7 +10188,7 @@
                   },
                   "breadcrumb": {
                     "type": "string",
-                    "description": "OMIT — BD auto-generates the breadcrumb trail. Never set this yourself; a manual value overrides BD's generated trail and breaks the page."
+                    "description": "**OMIT** — BD auto-generates the breadcrumb trail. Never set this yourself; a manual value overrides BD's generated trail and breaks the page."
                   },
                   "content": {
                     "type": "string",
@@ -10314,7 +10314,7 @@
                   },
                   "org_template": {
                     "type": "integer",
-                    "description": "OMIT — internal layout reference. No public lookup endpoint; setting an arbitrary value can render the page against a nonexistent layout."
+                    "description": "**OMIT** — internal layout reference. No public lookup endpoint; setting an arbitrary value can render the page against a nonexistent layout."
                   },
                   "allowed_products": {
                     "type": "string",
@@ -10522,7 +10522,7 @@
                   },
                   "page_render_widget": {
                     "type": "string",
-                    "description": "OMIT — internal widget reference for `seo_type=custom_widget_page` only. No public widget-ID lookup; setting on other page types breaks rendering."
+                    "description": "**OMIT** — internal widget reference for `seo_type=custom_widget_page` only. No public widget-ID lookup; setting on other page types breaks rendering."
                   }
                 }
               }
