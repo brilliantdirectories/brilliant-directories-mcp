@@ -10,17 +10,11 @@ node_modules/
 .vscode/
 .idea/
 
-# Internal dev-onboarding doc for Bitbucket-cloning teammates.
-# This file lives inside the folder (so devs find it immediately when they
-# open the Bitbucket-cloned copy) but should NEVER ship to GitHub / npm —
-# it's BD-internal guidance, not public documentation. Bitbucket's parent
-# repo DOES track it (it's only gitignored from the inner GitHub repo).
-USE-GITHUB-HANDOFF.md
-
-# Internal-only working docs. Same rule as the handoff doc above —
-# tracked in Bitbucket, never shipped to GitHub/npm. Pattern matches
-# any internal-prefixed working file the team wants kept out of the
-# public repo.
+# Internal-only working docs (dev onboarding, todo lists, etc.).
+# These live inside the folder so devs find them immediately when they
+# clone from Bitbucket, but should NEVER ship to GitHub / npm — they're
+# BD-internal guidance, not public documentation. Bitbucket's parent
+# repo DOES track them (only gitignored from the inner GitHub repo).
 INTERNAL-*.md
 
 # Misc
