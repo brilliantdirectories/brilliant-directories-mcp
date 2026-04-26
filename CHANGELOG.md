@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.79] - 2026-04-26
+
+### Fixed — `_slugProbeTable` misread BD's empty-result quirk as a probe failure
+
+BD's REST API returns HTTP 400 with `{status: "error", message: "<table> not found"}` when a property-filtered `/get` finds zero rows. The wrapper's slug-uniqueness probe (`_slugProbeTable`) treated any non-2xx response as a probe failure and returned `null`, which the caller surfaced as `_slug_probe_warning: all 5 namespace probes failed` — and fell open, allowing duplicate-slug writes to commit silently.
+
+Confirmed live via instrumented Worker tail: every uniqueness probe against a unique slug returned 400 + "list_seo not found" / "list_professions not found" / etc. The wrapper read 400 → null → "transient failure" on every probe. The "all 5 failed" warning fired on essentially every multi-segment write. The slug-uniqueness guard had been non-functional in production.
+
+Same quirk also affected the segment-binding validator's state/city/top/sub probes (they share the same primitive). Legitimate "this slug doesn't exist at this slot" results were being read as probe failures, occasionally surfacing `_segment_warning` on clean creates.
+
+Fix: in `_slugProbeTable`, when the response is HTTP 400 with `{status: "error", message: /.* not found$/}`, treat as zero rows (return `[]`). Genuine probe failures (5xx, network throw, JSON parse fail, unrelated 4xx like 401/403) still return `null` so the caller can fall open with a warning when uniqueness genuinely cannot be verified.
+
+Symmetrically applied in npm and Worker. The npm copy was previously absorbing 400-quirk responses into `[]` accidentally (because `Array.isArray("string") === false`), but was also silently absorbing 401/403/500 the same way — meaning auth or outage failures were being read as "no collision found" and letting duplicates commit. Both copies now distinguish the BD empty-result quirk from real failures explicitly.
+
 ## [6.40.78] - 2026-04-26
 
 ### Fixed — profile_search_results validator hit the wrong BD endpoints for state/city

@@ -2118,6 +2118,18 @@ async function _slugProbeTable(config, table, field, slug, limit) {
       { property: field, property_value: String(slug), property_operator: "=", limit: limit || 5 },
       null
     );
+    // BD's empty-result quirk: a property-filtered /get with zero matches
+    // returns HTTP 400 with `{status: "error", message: "<table> not found"}`.
+    // That's NOT a probe failure — it's a confirmed "no rows." Treat as [].
+    // Genuine probe failures (5xx, network, parse fail, unrelated 4xx) still
+    // return null so the caller can fall open with a warning.
+    if (result && result.status === 400 &&
+        result.body && result.body.status === "error" &&
+        typeof result.body.message === "string" &&
+        / not found$/.test(result.body.message)) {
+      return [];
+    }
+    if (result && result.status >= 400) return null;
     const rows = result && result.body && Array.isArray(result.body.message) ? result.body.message : [];
     // Client-side filter mirrors BD's case-insensitive + whitespace-trimmed
     // matching. Without normalization here, a row BD returned (because BD's
