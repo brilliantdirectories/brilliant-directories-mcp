@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.91] - 2026-04-26
+
+### Added — Conventions block + Rule index at top of `mcp-instructions.md`
+
+Side-Claude review of v6.40.90 surfaced two genuine clarity wins, both adds (no rule changes):
+
+- **Conventions block** under H3 `### Conventions`: short list explaining `**bold**` = warning, `**Rule: <Name>**` = cross-ref, `Required:`, `Use when:`, `See also:`, `Returns:` semantics. Conventions were inferable but not stated; cold agents and non-Claude models had to pattern-match without confirmation.
+- **Rule index** under H3 `### Rule index`: all 62 named rules in document order on one scannable line, each as `\`Rule: <Name>\``. Lets agents see the full rule surface at a glance before scanning tool descriptions; single string-search jumps to any rule's anchor.
+
+### Changed — EAV auto-route rule lede leads with reassurance
+
+Reworded the lede on `### Rule: EAV auto-route` to put "**You don't need to know which is which**" up front, ahead of the technical explanation. Cold agents reading the rule for the first time would see the technical detail first and infer they need to manually identify EAV fields and call `updateUserMeta` separately — they don't, the wrapper handles it. Reassurance now leads, technical context follows. Rule body content unchanged otherwise.
+
+### Changed — `profile_photo` / `logo` orientation language clarified
+
+Existing carve-out ("orientation rule doesn't apply") was correct but terse. Expanded inline parenthetical to spell out what's acceptable: "square is typical and preferred for both; portrait or landscape acceptable when that's the only verified source available." When scraping a real entity's profile photo from their own web presence, agents should accept whatever they find from a verified source — landscape isn't a requirement and portrait isn't disqualifying. The Pexels-stock ban for these fields is unchanged.
+
+### Deferred — most other findings to Phase 2
+
+Side-Claude's review surfaced ~30 additional improvements, but the majority are spec/tool-description work (table forms for asset routing, code-group decomposition, taxonomy recap centralization, repeat-content extraction, etc.) — Phase 2 territory. Captured as a queue for the spec restructure.
+
 ## [6.40.90] - 2026-04-26
 
 ### Fixed — `mcp-instructions.md` markdown polish
