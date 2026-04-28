@@ -1772,6 +1772,7 @@ const DATETIME_14_FIELDS = new Set([
   "date_updated", "date_added", "date_created", "date",
   "signup_date", "last_login",
   "post_live_date", "post_start_date", "post_expire_date",
+  "lead_matched", "lead_updated",
 ]);
 function validateDatetime14InArgs(args) {
   if (!args || typeof args !== "object") return null;
@@ -1784,6 +1785,76 @@ function validateDatetime14InArgs(args) {
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// System-timestamp auto-default infrastructure (PR 1: helpers only, registry
+// empty until PR 2 populates it).
+//
+// Why this exists: Phase 1 audit (2026-04-29) confirmed BD's behavior on
+// system timestamps is inconsistent across endpoints — some auto-fill cleanly
+// (`createReview.review_added`), some leave the column zero (`createTag.created_at`),
+// some stamp Eastern time labeled as `+00:00` (`createLead.date_added`), and
+// `revision_timestamp` / `modtime` / `widget.date_updated` are NEVER bumped on
+// `update*` calls across every table verified — they freeze at create time.
+//
+// Wrapper-side strategy: for each (tool, field) entry in SYSTEM_TIMESTAMP_FIELDS,
+// auto-populate `args[field]` with the current UTC time in the declared format
+// before forwarding to BD. Sends the value on the wire so BD has no opportunity
+// to mislabel TZ or skip the bump on update. Agent's explicit value (if any)
+// is preserved (backfill paths). PR 2 populates the registry per Phase 2 buckets.
+//
+// Mirrored byte-for-byte from Worker `brilliant-directories-mcp-hosted/src/index.ts`.
+// Keep in sync.
+// ---------------------------------------------------------------------------
+
+const SYSTEM_TIMESTAMP_FIELDS = {
+  // Populated in PR 2 from Phase 2 bucket assignments. Empty for PR 1.
+  // Example (will land in PR 2):
+  //   updateWebPage: [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
+};
+
+// Site-timezone resolver with module-scope cache. Currently returns "UTC"
+// unconditionally — the wrapper sends UTC timestamps universally per Phase 1.5
+// verification (BD's write parsers accept 14-char UTC on every endpoint tested).
+// Cache structure exists for future use if a per-site-tz mode is ever needed.
+const _siteTzCache = new Map();
+const _SITE_TZ_TTL_MS = 10 * 60 * 1000;
+function getSiteTimezoneCached(domain, _apiKey) {
+  const cached = _siteTzCache.get(domain);
+  if (cached && Date.now() - cached.fetchedAt < _SITE_TZ_TTL_MS) return cached.tz;
+  const tz = "UTC";
+  _siteTzCache.set(domain, { tz, fetchedAt: Date.now() });
+  return tz;
+}
+
+// Format current time as 14-char `YYYYMMDDHHmmss` in UTC.
+function _formatNow14Utc() {
+  const d = new Date();
+  const p = (n, w = 2) => String(n).padStart(w, "0");
+  return `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`;
+}
+
+// Format current time as 19-char `YYYY-MM-DD HH:mm:ss` in UTC.
+function _formatNow19Utc() {
+  const d = new Date();
+  const p = (n, w = 2) => String(n).padStart(w, "0");
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+}
+
+// Wrapper-side timestamp auto-defaulter. For every (field, format) declared
+// in SYSTEM_TIMESTAMP_FIELDS[toolName], fill args[field] with current UTC if
+// agent omitted it. Never overwrites a present value — backfill paths still
+// work. Mutates args in place and also returns it for fluent callers.
+function autoDefaultSystemTimestamps(toolName, args) {
+  const entries = SYSTEM_TIMESTAMP_FIELDS[toolName];
+  if (!entries || !args || typeof args !== "object") return args;
+  for (const { field, format } of entries) {
+    const v = args[field];
+    if (v !== undefined && v !== null && v !== "") continue;
+    args[field] = format === "14" ? _formatNow14Utc() : _formatNow19Utc();
+  }
+  return args;
 }
 
 // ---------------------------------------------------------------------------

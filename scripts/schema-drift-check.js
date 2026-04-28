@@ -459,6 +459,10 @@ const MIRROR_FUNCTIONS = [
   "ensureImgRoundedClass",
   "applyImgRoundedToBodyFields",
   "sanitizeScaffoldingInArgs",
+  "getSiteTimezoneCached",
+  "autoDefaultSystemTimestamps",
+  "_formatNow14Utc",
+  "_formatNow19Utc",
 ];
 // validateUsersMetaRead is intentionally excluded — npm inlines the same
 // logic in dispatch instead of factoring into a named function. Not a
@@ -614,6 +618,7 @@ const MIRROR_CONSTANTS = [
   "MONEY_FIELDS",
   "BOOLEAN_INT_FIELDS",
   "DATETIME_14_FIELDS",
+  "SYSTEM_TIMESTAMP_FIELDS",
   "IMAGE_SINGLE_URL_FIELDS",
   "IMAGE_CSV_URL_TOOLS",
   "AUTO_REFRESH_SCOPE",

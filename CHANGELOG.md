@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.28] - 2026-04-29
+
+### Fixed — `createLeadMatch.lead_matched` and `lead_updated` data-corruption hazard
+
+Phase 1.5 timestamp-format verification (live test against `find-fitness-pros.directoryup.com`) found these two fields had no entry in `validateDatetime14InArgs` — agents could send `2020-01-01 00:00:00` (19-char) or ISO19+TZ formats and BD would silently truncate to the first 14 chars (`2020-01-01 00:`), corrupting the stored timestamp. Same protective pattern the other 8 fields already had. Added both fields to `DATETIME_14_FIELDS` allow-list in Worker (`brilliant-directories-mcp-hosted/src/index.ts:2293`) and npm (`mcp/index.js:1771`).
+
+### Added — System-timestamp auto-default helpers (PR 1 of timestamp-rollout project)
+
+Helpers ship in PR 1 with empty registry; PR 2 populates per-tool entries. No agent-visible behavior change yet.
+
+New mirrored exports in both Worker and npm:
+
+- `SYSTEM_TIMESTAMP_FIELDS` — registry of `{toolName: [{field, format}]}` entries describing which timestamps the wrapper owns. Empty in PR 1.
+- `getSiteTimezoneCached(domain, apiKey)` — module-scope TTL cache (10 min). Currently returns `"UTC"` unconditionally per Phase 1.5 finding (BD's write parsers accept 14-char UTC universally). Cache structure exists for future per-site-tz mode.
+- `_formatNow14Utc()` / `_formatNow19Utc()` — pure helpers returning current time as `YYYYMMDDHHmmss` and `YYYY-MM-DD HH:mm:ss`.
+- `autoDefaultSystemTimestamps(toolName, args)` — for each `(field, format)` entry in `SYSTEM_TIMESTAMP_FIELDS[toolName]`, fills `args[field]` with current UTC if agent omitted. Never overwrites a present value (backfill paths preserved).
+
+Drift-check (`scripts/schema-drift-check.js`) updated:
+
+- `MIRROR_FUNCTIONS`: added `getSiteTimezoneCached`, `autoDefaultSystemTimestamps`, `_formatNow14Utc`, `_formatNow19Utc`.
+- `MIRROR_CONSTANTS`: added `SYSTEM_TIMESTAMP_FIELDS`.
+
+### Context
+
+Builds toward closing the deferred "Wrapper-managed system timestamps" project (`INTERNAL-FINAL-MCP-TODOS.md` section 3). Phase 1 audit confirmed BD's behavior is inconsistent across endpoints — some auto-fill cleanly, some leave columns zero, some stamp Eastern as `+00:00`, and `revision_timestamp` / `modtime` / `widget.date_updated` are NEVER bumped on `update*` calls (verified across web_page, form, widget, user). Wrapper will own these on the wire so BD has no opportunity to mislabel TZ or skip the bump on update.
+
+PR 2 lands the per-tool registry entries + Bucket-B field-description sentences. PR 3 retitles the corpus rule to `Rule: System timestamps` and audits `WRITE_KEEP_SETS`.
+
 ## [6.41.27] - 2026-04-28
 
 ### Added — `website_id` listed in `Rule: Site grounding` field enumeration
