@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.19] - 2026-04-28
+
+### Fixed — Pexels URLs in `email_body`: enforce optimized query string, ban master shapes
+
+Test email had a 1MB 6k-pixel master PNG hero (`pexels-photo-18499502.png?cs=srgb&dl=...&fm=jpg`) alongside correctly-optimized card images. The optimized URL for that same photo (`?auto=compress&cs=tinysrgb&w=1200`) returns 200 — agent just didn't try it first. Replaced the previous "size with `?w=<2× display width>`" paragraph with a stricter rule: every Pexels URL must end with `?auto=compress&cs=tinysrgb&w=1200` (works on both `.jpeg` and `.png`); URLs with `dl=`/`fm=`/attribution params and bare canonicals are forbidden regardless of 200 status; if the optimized URL fails, swap the photo, never downgrade the URL shape. Generalized to other stock CDNs.
+
 ## [6.41.18] - 2026-04-28
 
 ### Fixed — never disclose image sources in user-visible content
