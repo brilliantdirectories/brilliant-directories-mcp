@@ -1788,8 +1788,7 @@ function validateDatetime14InArgs(args) {
 }
 
 // ---------------------------------------------------------------------------
-// System-timestamp auto-default infrastructure (PR 1: helpers only, registry
-// empty until PR 2 populates it).
+// System-timestamp wire-injection infrastructure.
 //
 // Why this exists: Phase 1 audit (2026-04-29) confirmed BD's behavior on
 // system timestamps is inconsistent across endpoints — some auto-fill cleanly
@@ -1799,62 +1798,129 @@ function validateDatetime14InArgs(args) {
 // `update*` calls across every table verified — they freeze at create time.
 //
 // Wrapper-side strategy: for each (tool, field) entry in SYSTEM_TIMESTAMP_FIELDS,
-// auto-populate `args[field]` with the current UTC time in the declared format
-// before forwarding to BD. Sends the value on the wire so BD has no opportunity
-// to mislabel TZ or skip the bump on update. Agent's explicit value (if any)
-// is preserved (backfill paths). PR 2 populates the registry per Phase 2 buckets.
+// write the current site-local time in the declared format directly into bodyParams
+// AFTER the args→params dispatch loop. These fields are NOT in input schema —
+// agents never see them, never pass them. Wire-level injection means:
+//
+//   - BD always receives a fresh, correctly-formatted site-tz timestamp on the wire.
+//   - No TZ confusion (agent's local-tz interpretation can't leak in).
+//   - No freeze-on-update bug (we send the bump even when BD wouldn't).
+//   - Zero ambiguity: agents have no override path; the field exists only on
+//     the wire, controlled by this one registry.
 //
 // Mirrored byte-for-byte from Worker `brilliant-directories-mcp-hosted/src/index.ts`.
 // Keep in sync.
 // ---------------------------------------------------------------------------
 
 const SYSTEM_TIMESTAMP_FIELDS = {
-  // Populated in PR 2 from Phase 2 bucket assignments. Empty for PR 1.
-  // Example (will land in PR 2):
-  //   updateWebPage: [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
+  // Bucket-D fix: BD freezes `revision_timestamp` (and similar) on update across
+  // every table verified live. Wrapper sends the bump on every write so cache-bust
+  // / change-detection / audit-log callers can trust the column.
+  createWebPage:           [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
+  updateWebPage:           [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
+  createWidget:            [{ field: "date_updated", format: "19" }, { field: "revision_timestamp", format: "19" }],
+  updateWidget:            [{ field: "date_updated", format: "19" }, { field: "revision_timestamp", format: "19" }],
+  createForm:              [{ field: "revision_timestamp", format: "19" }],
+  updateForm:              [{ field: "revision_timestamp", format: "19" }],
+  createFormField:         [{ field: "revision_timestamp", format: "19" }],
+  updateFormField:         [{ field: "revision_timestamp", format: "19" }],
+  createMenu:              [{ field: "revision_timestamp", format: "19" }],
+  updateMenu:              [{ field: "revision_timestamp", format: "19" }],
+  createMenuItem:          [{ field: "revision_timestamp", format: "19" }],
+  updateMenuItem:          [{ field: "revision_timestamp", format: "19" }],
+  createTopCategory:       [{ field: "revision_timestamp", format: "19" }],
+  updateTopCategory:       [{ field: "revision_timestamp", format: "19" }],
+  createSubCategory:       [{ field: "revision_timestamp", format: "19" }],
+  updateSubCategory:       [{ field: "revision_timestamp", format: "19" }],
+  createDataType:          [{ field: "revision_timestamp", format: "19" }],
+  updateDataType:          [{ field: "revision_timestamp", format: "19" }],
+  updatePostType:          [{ field: "revision_timestamp", format: "19" }],
+  createMultiImagePost:    [{ field: "revision_timestamp", format: "19" }],
+  updateMultiImagePost:    [{ field: "revision_timestamp", format: "19" }],
+  createMultiImagePostPhoto: [{ field: "revision_timestamp", format: "19" }],
+  updateMultiImagePostPhoto: [{ field: "revision_timestamp", format: "19" }],
+  createSingleImagePost:   [{ field: "revision_timestamp", format: "19" }],
+  updateSingleImagePost:   [{ field: "revision_timestamp", format: "19" }],
+  createEmailTemplate:     [{ field: "revision_timestamp", format: "19" }],
+  updateEmailTemplate:     [{ field: "revision_timestamp", format: "19" }],
+  createLeadMatch:         [{ field: "lead_matched", format: "14" }, { field: "lead_updated", format: "14" }],
+  updateLeadMatch:         [{ field: "lead_updated", format: "14" }],
+  updateUser:              [{ field: "modtime", format: "19" }],
 };
 
-// Site-timezone resolver with module-scope cache. Currently returns "UTC"
-// unconditionally — the wrapper sends UTC timestamps universally per Phase 1.5
-// verification (BD's write parsers accept 14-char UTC on every endpoint tested).
-// Cache structure exists for future use if a per-site-tz mode is ever needed.
+// Site-timezone resolver with module-scope cache. All wrapper-owned timestamps
+// render in this site's local time so values stored in BD match what the
+// customer's admin UI will display — no UTC↔local skew. TTL: 10 minutes.
+// Fallback to "UTC" only on `getSiteInfo` fetch failure (warn logged).
 const _siteTzCache = new Map();
 const _SITE_TZ_TTL_MS = 10 * 60 * 1000;
-function getSiteTimezoneCached(domain, _apiKey) {
-  const cached = _siteTzCache.get(domain);
+async function getSiteTimezoneCached(baseUrl, apiKey) {
+  const cacheKey = baseUrl;
+  const cached = _siteTzCache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < _SITE_TZ_TTL_MS) return cached.tz;
-  const tz = "UTC";
-  _siteTzCache.set(domain, { tz, fetchedAt: Date.now() });
+  // Normalize: ensure base ends without trailing slash, has protocol.
+  let normalized = baseUrl;
+  if (!/^https?:\/\//i.test(normalized)) normalized = `https://${normalized}`;
+  normalized = normalized.replace(/\/+$/, "");
+  let tz = "UTC";
+  try {
+    const resp = await fetch(`${normalized}/api/v2/site_info/get`, {
+      method: "GET",
+      headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+    });
+    if (resp.ok) {
+      const body = await resp.json();
+      const fetched = body?.message?.timezone;
+      if (typeof fetched === "string" && fetched.length > 0) tz = fetched;
+      else console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo returned no timezone, falling back to UTC`);
+    } else {
+      console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo HTTP ${resp.status}, falling back to UTC`);
+    }
+  } catch (err) {
+    console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo failed (${err?.message || err}), falling back to UTC`);
+  }
+  _siteTzCache.set(cacheKey, { tz, fetchedAt: Date.now() });
   return tz;
 }
 
-// Format current time as 14-char `YYYYMMDDHHmmss` in UTC.
-function _formatNow14Utc() {
-  const d = new Date();
-  const p = (n, w = 2) => String(n).padStart(w, "0");
-  return `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}`;
+// Format current time as 14-char `YYYYMMDDHHmmss` in the given IANA timezone.
+function _formatNow14InTz(tz) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (t) => parts.find(p => p.type === t)?.value || "00";
+  const hh = get("hour") === "24" ? "00" : get("hour");
+  return `${get("year")}${get("month")}${get("day")}${hh}${get("minute")}${get("second")}`;
 }
 
-// Format current time as 19-char `YYYY-MM-DD HH:mm:ss` in UTC.
-function _formatNow19Utc() {
-  const d = new Date();
-  const p = (n, w = 2) => String(n).padStart(w, "0");
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+// Format current time as 19-char `YYYY-MM-DD HH:mm:ss` in the given IANA timezone.
+function _formatNow19InTz(tz) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (t) => parts.find(p => p.type === t)?.value || "00";
+  const hh = get("hour") === "24" ? "00" : get("hour");
+  return `${get("year")}-${get("month")}-${get("day")} ${hh}:${get("minute")}:${get("second")}`;
 }
 
-// Wrapper-side timestamp auto-defaulter. For every (field, format) declared
-// in SYSTEM_TIMESTAMP_FIELDS[toolName], fill args[field] with current UTC if
-// agent omitted it. Never overwrites a present value — backfill paths still
-// work. Mutates args in place and also returns it for fluent callers.
-function autoDefaultSystemTimestamps(toolName, args) {
+// Wrapper-side wire-injector. For every (field, format) declared in
+// SYSTEM_TIMESTAMP_FIELDS[toolName], write the current site-local time directly
+// into bodyParams. Always overwrites — these fields are not in input schema,
+// so agents have no override path. Caller passes the resolved tz string; this
+// function does not fetch.
+function autoDefaultSystemTimestamps(toolName, bodyParams, tz) {
   const entries = SYSTEM_TIMESTAMP_FIELDS[toolName];
-  if (!entries || !args || typeof args !== "object") return args;
+  if (!entries || !bodyParams || typeof bodyParams !== "object") return bodyParams;
   for (const { field, format } of entries) {
-    const v = args[field];
-    if (v !== undefined && v !== null && v !== "") continue;
-    args[field] = format === "14" ? _formatNow14Utc() : _formatNow19Utc();
+    bodyParams[field] = format === "14" ? _formatNow14InTz(tz) : _formatNow19InTz(tz);
   }
-  return args;
+  return bodyParams;
 }
 
 // ---------------------------------------------------------------------------
@@ -3757,6 +3823,15 @@ async function main() {
           // or a body param not in the spec - send as body
           bodyParams[key] = val;
         }
+      }
+
+      // System-timestamp wire-injection: tools listed in SYSTEM_TIMESTAMP_FIELDS
+      // get their wrapper-owned timestamps written to bodyParams in site-local
+      // time. Only runs on writes (GET has no body) and only when a registry
+      // entry exists. The tz fetch is cached per-baseUrl (10 min TTL).
+      if (toolDef.method !== "GET" && SYSTEM_TIMESTAMP_FIELDS[name]) {
+        const tz = await getSiteTimezoneCached(config.apiUrl, config.apiKey);
+        autoDefaultSystemTimestamps(name, bodyParams, tz);
       }
 
       // Apply the translated users_meta filter pairs as array-syntax

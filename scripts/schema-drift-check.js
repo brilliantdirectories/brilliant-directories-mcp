@@ -461,8 +461,8 @@ const MIRROR_FUNCTIONS = [
   "sanitizeScaffoldingInArgs",
   "getSiteTimezoneCached",
   "autoDefaultSystemTimestamps",
-  "_formatNow14Utc",
-  "_formatNow19Utc",
+  "_formatNow14InTz",
+  "_formatNow19InTz",
 ];
 // validateUsersMetaRead is intentionally excluded — npm inlines the same
 // logic in dispatch instead of factoring into a named function. Not a

@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.29] - 2026-04-29
+
+### Added — PR 2: Wrapper-managed system timestamps live (Bucket-D fix)
+
+The deferred "Wrapper-managed system timestamps" project (`INTERNAL-FINAL-MCP-TODOS.md` section 3) is now active. PR 1 (v6.41.28) shipped the helpers; PR 2 wires them into the dispatch path with a populated registry.
+
+**What's new:**
+
+- `SYSTEM_TIMESTAMP_FIELDS` registry now populated with ~30 (tool, field) entries covering every BD table where Phase 1 confirmed the wrapper should own the timestamp on the wire. Includes all `update*` tools where BD freezes `revision_timestamp` (web_page, widget, form, formField, menu, menuItem, topCategory, subCategory, dataType, postType, multiImagePost, multiImagePostPhoto, singleImagePost, emailTemplate, leadMatch, user/`modtime`).
+- `getSiteTimezoneCached` now actually fetches the site's IANA timezone from `getSiteInfo` and caches per-baseUrl with a 10-minute TTL. Fallback to `UTC` only on fetch failure (warn logged).
+- `_formatNow14InTz` / `_formatNow19InTz` render current time in the site's timezone using `Intl.DateTimeFormat("en-CA")`. Output always parses as a valid BD timestamp.
+- `autoDefaultSystemTimestamps(toolName, bodyParams, tz)` writes each registered field directly into `bodyParams` after the args→params dispatch loop, before `toFormBody` serialization. Wire-level injection — agent never sees the field, never has to set it.
+
+**What this fixes:**
+
+- BD's freeze-on-update bug: `revision_timestamp` (and similar) are now bumped on every `update*` for every affected table, regardless of BD's server-side behavior. Cache-bust / change-detection / audit-log callers can finally trust these columns.
+- BD's TZ-mislabel bug: wrapper sends a single coherent site-local timestamp on the wire; agent's local-tz interpretation can't leak in, BD can't mislabel it.
+- WebPage `date_updated` was previously **wrapper-required from agent** — now wrapper-owned and stripped from input schema. Agent never has to set it again.
+- LeadMatch `lead_matched` and `lead_updated` were previously **agent-required by spec** — now wrapper-owned and stripped from input schema (PR 1's validator coverage stays for any direct API caller).
+
+**Spec changes:**
+
+- Stripped from input schema (and from `required` arrays where present): `createWebPage.date_updated`, `updateWebPage.date_updated`, `createLeadMatch.lead_matched`, `createLeadMatch.lead_updated`. Agents never see these fields.
+- Canonical format sentence applied to remaining Bucket-B fields (agent-set, optional, for backfill): `createUser.signup_date`/`last_login`, `createSingleImagePost.post_live_date`/`post_start_date`/`post_expire_date`, `createMemberSubCategoryLink.date`, `createUserPhoto.date_added`. Sentence: *"Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."*
+
+**Mirror discipline:** Worker (`brilliant-directories-mcp-hosted/src/index.ts`) and npm (`mcp/index.js`) edits are byte-identical except for TS annotations. Drift check tracks `_formatNow14InTz` / `_formatNow19InTz` (renamed from `_formatNow14Utc` / `_formatNow19Utc`). All five new helpers in `MIRROR_FUNCTIONS`; `SYSTEM_TIMESTAMP_FIELDS` in `MIRROR_CONSTANTS`. Drift-check exits clean.
+
+PR 3 (next): retitle `Rule: Update timestamps` → `Rule: System timestamps` in the corpus, audit `WRITE_KEEP_SETS` so every write echoes the timestamps the wrapper just wrote, document the sibling-field read-formatter inconsistency.
+
 ## [6.41.28] - 2026-04-29
 
 ### Fixed — `createLeadMatch.lead_matched` and `lead_updated` data-corruption hazard

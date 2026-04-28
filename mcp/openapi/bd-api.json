@@ -1656,7 +1656,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "User signup date. Format: `YYYYMMDDHHmmss` (14-digit, no separators - e.g. `20260419143022`). Auto-filled by BD on create - omit unless backfilling legacy signup dates during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1829,7 +1829,7 @@
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` (14-digit, no separators). Auto-maintained by BD on each login - omit unless backfilling historical data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -1980,7 +1980,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "User signup date. Format: `YYYYMMDDHHmmss` (14-digit, no separators - e.g. `20260419143022`). Auto-filled by BD on create - omit unless backfilling legacy signup dates during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -2137,7 +2137,7 @@
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` (14-digit, no separators). Auto-maintained by BD on each login - omit unless backfilling historical data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -3409,12 +3409,10 @@
                 "required": [
                   "lead_id",
                   "user_id",
-                  "lead_matched",
                   "lead_status",
                   "match_price",
                   "lead_token",
-                  "lead_matched_by",
-                  "lead_updated"
+                  "lead_matched_by"
                 ],
                 "properties": {
                   "lead_id": {
@@ -3422,9 +3420,6 @@
                   },
                   "user_id": {
                     "type": "integer"
-                  },
-                  "lead_matched": {
-                    "type": "string"
                   },
                   "lead_status": {
                     "type": "integer",
@@ -3446,9 +3441,6 @@
                     "type": "string"
                   },
                   "lead_matched_by": {
-                    "type": "string"
-                  },
-                  "lead_updated": {
                     "type": "string"
                   },
                   "lead_points": {
@@ -3812,15 +3804,15 @@
                   },
                   "post_live_date": {
                     "type": "string",
-                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` (14-digit). Usually auto-set; override only for import/migration."
+                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Usually auto-set on create; override only for import/migration."
                   },
                   "post_start_date": {
                     "type": "string",
-                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss`."
+                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
                   },
                   "post_video": {
                     "type": "string",
@@ -7710,7 +7702,7 @@
                   },
                   "date": {
                     "type": "string",
-                    "description": "Format: YYYYMMDDHHmmss"
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
                   },
                   "avg_price": {
                     "type": "number"
@@ -7932,7 +7924,7 @@
                   },
                   "date_added": {
                     "type": "string",
-                    "description": "Format: YYYYMMDDHHmmss"
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
                   }
                 }
               }
@@ -8180,7 +8172,7 @@
                   },
                   "date_added": {
                     "type": "string",
-                    "description": "Format: YYYYMMDDHHmmss"
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
                   }
                 }
               }
@@ -9818,8 +9810,7 @@
                 "type": "object",
                 "required": [
                   "seo_type",
-                  "filename",
-                  "date_updated"
+                  "filename"
                 ],
                 "properties": {
                   "seo_type": {
@@ -9999,10 +9990,6 @@
                   "allowed_products": {
                     "type": "string",
                     "description": "Comma-separated plan/product IDs (empty = all plans)"
-                  },
-                  "date_updated": {
-                    "type": "string",
-                    "description": "Last-update timestamp driving admin-UI \"Last Update\" display. Format: `YYYYMMDDHHmmss` (14-digit, no separators - e.g. `20260214232533`).\n\n**Required on every `createWebPage` / `updateWebPage` call** - always set to CURRENT timestamp at call time (unless backfilling historical migration data). BD does NOT auto-populate; omitting it leaves the admin UI showing blank/stale."
                   },
                   "updated_by": {
                     "type": "string",
@@ -10237,8 +10224,7 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "seo_id",
-                  "date_updated"
+                  "seo_id"
                 ],
                 "properties": {
                   "seo_id": {
@@ -10423,10 +10409,6 @@
                   "allowed_products": {
                     "type": "string",
                     "description": "Comma-separated plan/product IDs (empty = all plans)"
-                  },
-                  "date_updated": {
-                    "type": "string",
-                    "description": "Last-update timestamp driving admin-UI \"Last Update\" display. Format: `YYYYMMDDHHmmss` (14-digit, no separators - e.g. `20260214232533`).\n\n**Required on every `createWebPage` / `updateWebPage` call** - always set to CURRENT timestamp at call time (unless backfilling historical migration data). BD does NOT auto-populate; omitting it leaves the admin UI showing blank/stale."
                   },
                   "updated_by": {
                     "type": "string",
