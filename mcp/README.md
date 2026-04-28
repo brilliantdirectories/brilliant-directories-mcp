@@ -392,19 +392,20 @@ For BD automation in the OpenAI ecosystem, use **Codex Desktop**. ChatGPT itself
 
 #### Codex Desktop setup
 
-Open Codex Desktop → **File** → **Settings** → **MCP Servers** → **+ Add Server**.
+**1. Download Codex Desktop** from <a href="https://openai.com/codex/" target="_blank" rel="noopener noreferrer">openai.com/codex</a> and install it.
+
+**2. Open Codex Desktop** → **File** → **Settings** → **MCP Servers** → **+ Add Server**.
 
 A "Connect to a custom MCP" form opens with two tabs: **STDIO** and **Streamable HTTP**. Either works — pick one.
 
 **🚀 Easy (Streamable HTTP — no install required):**
 
-Click the **Streamable HTTP** tab, then fill the fields:
+Click the **Streamable HTTP** tab. Fill ONLY these fields:
 
 | Field | Value |
 |---|---|
 | Name | `Brilliant Directories` (or any label) |
 | URL | `https://brilliantmcp.com/mcp` |
-| Bearer token env var | *leave blank* |
 | Headers — Key 1 | `x-api-key` |
 | Headers — Value 1 | your BD API key |
 
@@ -415,13 +416,13 @@ Click **+ Add header** to add the second row:
 | Headers — Key 2 | `x-bd-site-url` |
 | Headers — Value 2 | `https://www.your-site.com` |
 
-Headers from environment variables — leave blank. Click **Save**.
+**Leave these fields empty (don't touch them):** `Bearer token env var`, `Headers from environment variables`. Click **Save**.
 
 **🛠️ Advanced (STDIO — runs on your machine, needs Node.js):**
 
 > ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> if you don't have it.
 
-Click the **STDIO** tab, then fill the fields:
+Click the **STDIO** tab. Fill ONLY these fields:
 
 | Field | Value |
 |---|---|
@@ -439,9 +440,13 @@ Click **+ Add argument** between each of the rows below:
 | Arguments — Row 5 | `--url` |
 | Arguments — Row 6 | `https://www.your-site.com` |
 
-Environment variables, passthrough, and working directory — leave blank. Click **Save**.
+**Leave these fields empty (don't touch them):** `Environment variables`, `Environment variable passthrough`, `Working directory`. Click **Save**.
 
-**Test the connection:** in a new Codex chat, ask *"list my first 5 members on my BD site"*. Tools invoke, data comes back.
+**3. Fully quit and reopen Codex Desktop.** Codex loads MCP servers only at fresh launch — saving the form is not enough.
+
+> **"Fully quit" means more than closing the window.** On Windows: right-click the Codex icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Codex** → **Quit Codex**. Then relaunch.
+
+**4. Test the connection:** in a new Codex chat, ask *"list my first 5 members on my BD site"*. Tools invoke, data comes back.
 
 ---
 

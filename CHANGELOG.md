@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.95] - 2026-04-28
+
+### Added — Codex Desktop README: Step 1 download link + Step 3 fully-quit-and-reopen
+
+Two missing steps surfaced by user testing of the v6.40.94 setup instructions:
+
+- **Step 1 download link** to <a href="https://openai.com/codex/" target="_blank" rel="noopener noreferrer">openai.com/codex</a> for users who don't have Codex Desktop installed yet. v6.40.94 jumped straight to "open Codex Desktop" without saying where to get it.
+- **Step 3 fully-quit-and-reopen** to match the discipline already documented for Claude Desktop, Cursor, Windsurf — Codex (like every MCP-capable client) loads MCP servers only at fresh launch. Saving the form is not enough; closing the window keeps the app running in the system tray. Includes platform-specific tray-quit instructions on Windows and `Cmd+Q` on Mac.
+
+### Changed — Codex Desktop "leave blank" wording consolidated
+
+v6.40.94 had three separate "leave blank" notes scattered across the Codex section ("Bearer token env var — leave blank", "Headers from environment variables — leave blank", "Environment variables, passthrough, and working directory — leave blank"). Replaced each with a single explicit `**Leave these fields empty (don't touch them):**` line listing the exact field names per tab. Same content, less visual noise, no ambiguity about which fields to skip.
+
 ## [6.40.94] - 2026-04-28
 
 ### Added — OpenAI Codex Desktop setup section in README
