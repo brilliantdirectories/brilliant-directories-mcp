@@ -276,7 +276,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Verify `<img>` sources return 200 before embedding (if runtime can fetch).** Broken images are permanent in delivered email — clients cache 404s on first open. Without fetch capability: stick to canonical Pexels URLs (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`) and images confirmed on the subject's own web presence per **Rule: Image sourcing**. Avoid guessed BD-hosted paths or URLs from older context.
 
-**Every Pexels URL in `email_body` MUST end with `?auto=compress&cs=tinysrgb&w=1200`** — every placement, both `.jpeg` and `.png`. Reject URLs with `dl=`, `fm=`, attribution params, or no query string. If the optimized URL fails, swap the photo — never downgrade the URL shape. Same for other stock CDNs.
+**Size Pexels images with `?w=<2× display width>` — emails are hotlinked.** Recipients fetch on open. `?w=1200` for 600px hero, `?w=300` for 150px thumbnail. Same pattern as inline body per **Rule: Image URLs**.
 
 **On `<img>` use `max-width:100%`, never `max-width:600px` or any pixel value.** BD's global template already constrains body to 600px; a pixel `max-width` on the image either duplicates the cap or, on retina/high-DPI clients, forces upscaling that blurs. Pattern: `style="width:100%; max-width:100%; height:auto; display:block;"`. Same applies to section `<table>` widths — use `width="100%"` + `style="width:100%;"`, never a pixel value.
 

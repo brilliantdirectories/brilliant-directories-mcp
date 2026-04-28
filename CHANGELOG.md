@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.21] - 2026-04-28
+
+### Reverted — Pexels query-string rule (v6.41.19 + v6.41.20) rolled back
+
+User reported a downstream "json error" Codex was hitting against the live Worker after v6.41.20. Diagnostic was inconclusive (Worker source isn't in any git repo, can't compare against prior deployed bundles). Reverting the Pexels rule to its pre-v6.41.19 state to isolate whether the corpus change was a factor — restores the original `?w=<2× display width>` sizing line.
+
+If the error persists after v6.41.21 ships, the root cause is upstream of corpus changes (Codex config, Cloudflare 1016 DNS, etc.) and the stricter rule can be re-introduced once that's resolved.
+
 ## [6.41.20] - 2026-04-28
 
 ### Changed — Pexels rule trimmed 608 → 290 chars
