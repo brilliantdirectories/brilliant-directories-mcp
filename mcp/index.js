@@ -876,6 +876,33 @@ function applyPlanLean(body, includeFlags) {
 
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 
+// --- Email Template lean shaper -------------------------------------------
+// Applies to listEmailTemplates / getEmailTemplate. The heavy field is
+// `email_body` — full HTML of the template, can be tens of KB per row.
+// Live measurement on a fresh test site (6 templates): email_body was 89%
+// of the response payload, avg 8KB per row, max 11KB. Lean default omits
+// it; `include_body=1` restores. Same pattern as WebPage `include_content`.
+
+const EMAIL_TEMPLATE_LEAN_INCLUDE_FLAGS = ["include_body"];
+
+function applyEmailTemplateLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const includeBody = !!includeFlags.include_body;
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (!includeBody) delete row.email_body;
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
+const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
+
 // --- REVIEWS (list/get/searchReviews) -------------------------------------
 //
 // Reviews have 9 flat scalar fields — no nested buckets to strip. The one
@@ -3032,6 +3059,7 @@ async function main() {
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
       const isPlanReadTool = PLAN_READ_TOOLS.has(name);
+      const isEmailTemplateReadTool = EMAIL_TEMPLATE_READ_TOOLS.has(name);
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
@@ -3045,9 +3073,11 @@ async function main() {
                 ? WEB_PAGE_LEAN_INCLUDE_FLAGS
                 : isPlanReadTool
                   ? PLAN_LEAN_INCLUDE_FLAGS
-                  : isReviewReadTool
-                    ? REVIEW_LEAN_INCLUDE_FLAGS
-                    : null;
+                  : isEmailTemplateReadTool
+                    ? EMAIL_TEMPLATE_LEAN_INCLUDE_FLAGS
+                    : isReviewReadTool
+                      ? REVIEW_LEAN_INCLUDE_FLAGS
+                      : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -3734,6 +3764,7 @@ async function main() {
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
+        else if (isEmailTemplateReadTool) result.body = applyEmailTemplateLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }

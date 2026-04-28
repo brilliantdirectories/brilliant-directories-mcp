@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.24] - 2026-04-28
+
+### Added — `listEmailTemplates` / `getEmailTemplate` lean-by-default; opt back in with `include_body=1`
+
+Live measurement on a fresh test site (6 templates): `email_body` was **89% of the response payload**, avg ~8 KB per row, max ~11 KB. At `limit=25` that scales to ~200 KB of HTML the agent rarely needs when enumerating templates ("which templates exist?", "what's their subject?", "which ones fire on which trigger?"). Same pattern as `listWebPages` / `getWebPage` already use for `content`.
+
+**New behavior:** both reads strip `email_body` from each row by default. All identity/metadata fields stay (`email_id`, `email_name`, `email_subject`, `email_type`, `category_id`, `notemplate`, `triggers`, etc.). Set `include_body=1` to restore the HTML — required when the agent needs to read or edit the actual template body. Writes (create/update/delete) unaffected.
+
+Mirrored across all transports: Worker (`brilliant-directories-mcp-hosted/src/index.ts`), npm (`mcp/index.js`), spec (`mcp/openapi/bd-api.json`), drift check (`scripts/schema-drift-check.js`). Drift check exits clean.
+
 ## [6.41.23] - 2026-04-28
 
 ### Added — fixed-pixel `<td>` cells need both `width=""` attribute AND inline `style` width

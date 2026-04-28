@@ -5569,6 +5569,19 @@
           },
           {
             "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "include_body",
+            "in": "query",
+            "description": "Opt in to return the full `email_body` HTML. Default stripped — `email_body` is the heaviest field on the row (~8 KB avg, up to tens of KB) and is rarely needed when enumerating templates.",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
+            }
           }
         ],
         "responses": {
@@ -5583,7 +5596,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of emailtemplate records. Read-only.\n\n**Use when:** enumerating the site's transactional/marketing email templates before editing. Common audit: before bulk updating \"from\" addresses or footers.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getEmailTemplate` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of emailtemplate records. Read-only.\n\n**Use when:** enumerating the site's transactional/marketing email templates before editing. Common audit: before bulk updating \"from\" addresses or footers.\n\n**Lean-by-default:** `email_body` (the HTML body, the heaviest field per row) is stripped. All identity/metadata fields (`email_id`, `email_name`, `email_subject`, `email_type`, `category_id`, `notemplate`, etc.) are always kept. Set `include_body=1` to restore.\n\n**Pagination:** cursor-based (`limit`, `page`). See top-level pagination rule for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See top-level filter rule for reliable operators (`=` only), silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getEmailTemplate` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object minus `email_body` unless `include_body=1`.\n\n"
       }
     },
     "/api/v2/email_templates/get/{email_id}": {
@@ -5601,6 +5614,19 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "include_body",
+            "in": "query",
+            "description": "Opt in to return the full `email_body` HTML. Default stripped — `email_body` is the heaviest field on the row. Set `include_body=1` when you actually need the HTML to edit it.",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
+            }
           }
         ],
         "responses": {
@@ -5615,7 +5641,7 @@
             }
           }
         },
-        "description": "Fetch a single emailtemplate record. Read-only.\n\n**Use when:** fetching one template's HTML body and subject for edit.\n\n**Required:** `email_id`.\n\n**See also:** `listEmailTemplates` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single emailtemplate record. Read-only.\n\n**Use when:** fetching one template's HTML body and subject for edit.\n\n**Required:** `email_id`.\n\n**Lean-by-default:** `email_body` is stripped. Set `include_body=1` to restore it (always do this when you need to edit the HTML).\n\n**See also:** `listEmailTemplates` (enumerate many).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Record omits `email_body` unless `include_body=1`. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/email_templates/create": {

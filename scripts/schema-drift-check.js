@@ -116,6 +116,7 @@ const CATEGORY_READ_TOOLS = new Set([
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
+const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
 const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
 
 // BD column-name note — if any future CHECK validates PLAN membership
@@ -248,6 +249,7 @@ checkFamily("CATEGORY_READ_TOOLS", CATEGORY_READ_TOOLS);
 checkFamily("POST_TYPE_READ_TOOLS", POST_TYPE_READ_TOOLS);
 checkFamily("WEB_PAGE_READ_TOOLS", WEB_PAGE_READ_TOOLS);
 checkFamily("PLAN_READ_TOOLS", PLAN_READ_TOOLS);
+checkFamily("EMAIL_TEMPLATE_READ_TOOLS", EMAIL_TEMPLATE_READ_TOOLS);
 checkFamily("REVIEW_READ_TOOLS", REVIEW_READ_TOOLS);
 checkFamily("USERS_META_WRITES", USERS_META_WRITES);
 checkFamily("USERS_META_FILTER_READS", USERS_META_FILTER_READS);
