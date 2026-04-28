@@ -5632,7 +5632,7 @@
                   },
                   "email_body": {
                     "type": "string",
-                    "description": "Content-only HTML — BD wraps it in the document scaffold. Open with any content tag (`<p>`, `<table>`, `<div>`, `<h1>`/`<h2>`, `<img>`, etc.). Inline `style=\"\"` only (no `<style>` blocks — Outlook strips them). Gradients need a fallback `background-color:` first. Supports `%%%merge_tag%%%` tokens and `[widget=Name]` shortcodes. See **Rule: Email template recipe**."
+                    "description": "Content-only HTML — BD wraps it in the document scaffold. Open with any content tag (`<p>`, `<table>`, `<div>`, `<h1>`/`<h2>`, `<img>`, etc.). Inline `style=\"\"` only — no `<style>` blocks (Outlook strips them) and no `class=\"\"` (emails have no site stylesheet). Gradients need a fallback `background-color:` first. Supports `%%%merge_tag%%%` tokens and `[widget=Name]` shortcodes. See **Rule: Email template recipe**."
                   },
                   "email_type": {
                     "type": "string"

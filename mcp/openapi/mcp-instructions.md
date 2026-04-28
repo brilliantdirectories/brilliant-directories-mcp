@@ -260,9 +260,9 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 ### Rule: Email template recipe
 
-**`email_body` is content-only — BD provides the page wrapper.** BD renders every template inside a parent `<td>` cell with the full document scaffold (doctype + html/head/body) already in place. Open `email_body` with whatever content tag fits — `<p>`, `<table>`, `<div>`, `<h1>`/`<h2>`/etc., `<img>`, mixed structure, anything you'd put inside a body. Skip the document scaffold itself; including it double-wraps and breaks rendering.
+**`email_body` is content-only — BD provides the page wrapper.** BD renders every template inside a parent `<td>` cell with the full document scaffold (doctype + html/head/body) already in place. Open `email_body` with whatever content tag fits — `<p>`, `<table>`, `<div>`, `<h1>`/`<h2>`/etc., `<img>`, mixed structure, anything you'd put inside a rendered email. Skip the document scaffold itself; including it double-wraps and breaks rendering. Images follow **Rule: Image URLs** the same way they do in `post_content` — Pexels stock is allowed for decorative imagery.
 
-**No `<style>` blocks — inline `style=""` only.** Outlook strips `<style>` and ignores most external rules. Move every styling declaration onto the element via the `style` attribute.
+**Inline `style=""` only — no `<style>` blocks, no `class=""`.** Outlook strips `<style>` and ignores most external rules; emails have no site-wide stylesheet, so class names match nothing. Every styling declaration lives on the element via the `style` attribute.
 
 **Backgrounds need a fallback color.** Outlook ignores `background: linear-gradient(...)`. Always pair gradients with a solid `background-color:` declared FIRST so Outlook falls back cleanly. Example: `style="background-color:#0A2540; background:linear-gradient(135deg,#0A2540,#1E5BC6);"`. Outlook reads only the first declaration; modern clients use the gradient.
 

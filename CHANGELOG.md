@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.0] - 2026-04-28
+
+### Changed — `Rule: Email template recipe` extended: images allowed (Pexels OK), no `class=""`, last residual `body` word removed
+
+Three small clarifications agents could otherwise be over-cautious about:
+
+- **Images allowed in `email_body` the same way as in `post_content`.** Added explicit cross-reference to **Rule: Image URLs** + the analog to post body content, plus the call-out that Pexels stock is allowed for decorative imagery. Without this, an agent reading the email-template rule (which previously didn't mention images at all) could hesitate to embed `<img>` tags or pull from Pexels.
+- **No `class=""` either — not just no `<style>` blocks.** Emails have no site stylesheet, so class names match nothing. Previously the rule only said "no `<style>` blocks — inline `style=""` only," which implied but didn't state that classes don't work. Tightened to: `Inline style="" only — no <style> blocks, no class="".` Same point made in the `email_body` spec field description.
+- **Final "body" word stripped from body-content discussion.** Replaced "anything you'd put inside a body" with "anything you'd put inside a rendered email" — closes the last residual semantic-confusion door from the v6.40.99 positive-framing reframe.
+
 ## [6.40.99] - 2026-04-28
 
 ### Changed — `Rule: Email template recipe` reframed positively to prevent over-cautious heading suppression
