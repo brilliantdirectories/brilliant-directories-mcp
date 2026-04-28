@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.96] - 2026-04-28
+
+### Changed — README continuity audit: Codex Desktop fully standardized + tray-quit explainer added everywhere
+
+User review of v6.40.95 caught several convention mismatches in the new Codex Desktop section vs. the rest of the README. Audited all 6 client sections (Claude Desktop, Claude Code, Codex Desktop, Windsurf, Cline, Cursor) for continuity. Fixes:
+
+**Codex Desktop section:**
+
+- **Easy-path tagline now matches the rest of the README.** Was `🚀 Easy (Streamable HTTP — no install required)` — read like "the whole client doesn't need installing." Changed to `🚀 Easy (Streamable HTTP — recommended, no Node.js install required)` to match the exact phrasing used in Claude Desktop, Windsurf, and Cline sections.
+- **Node.js install warning expanded to the canonical full walkthrough** (nodejs.org → which installer button to click → DOUBLE-CLICK to run → reboot → verify with `node --version`). Now byte-identical to the warning used in Claude Desktop, Claude Code, Windsurf, and Cline Advanced paths. v6.40.95 had a one-line "needs Node.js if you don't have it" which set the same `spawn npx ENOENT` trap with fewer breadcrumbs.
+- **Failure-mode phrasing standardized.** Was `Codex will show "no MCP servers"`; changed to `the AI will show "no MCP servers"` to match every other section's canonical wording.
+- **"Leave empty" notes inlined into setup tables.** Previous version had two scattered "Leave these fields empty" sentences after each table. Replaced with explicit table rows for every Codex on-screen field — `Bearer token env var`, `Headers from environment variables`, `Environment variables`, `Environment variable passthrough`, `Working directory` — each marked `*leave empty — don't touch*` inline. User now reads every field once, top-to-bottom, in the order Codex displays them.
+- **Multi-site management pro-tip added** (matches the equivalent pro-tip already in the Cursor section).
+
+**Tray-quit explainer added to Windsurf, Cline, Cursor sections:**
+
+The `> **"Fully quit" means more than closing the window.** On Windows: right-click the <App> icon in the system tray... On Mac: Cmd+Q...` callout was previously only present in Claude Desktop and Codex Desktop sections. Added to Windsurf (after step 6), Cline (replacing the conditional "if tools don't show up"), and Cursor (after the Cursor Directory install step — anchors all 5 Cursor-section paths). Same Windows-tray-persistence trap applies to every Electron-based client; users hit the same failure mode regardless of app.
+
+**Cline restart wording strengthened:**
+
+Was `Reload the Cline panel, or close/reopen VS Code, if tools don't show up` — phrased as conditional. Now mandatory: `**Fully quit and reopen VS Code.** Cline loads MCP servers only at fresh launch — toggling on or reloading the panel is not enough.` Plus the tray-quit explainer.
+
+### Why this matters
+
+Documentation continuity reduces the support-question rate. Every section now reads the same way: same Easy/Advanced taglines, same Node.js warning, same "Fully quit and reopen + tray-quit explainer" pattern. Users jumping between sections via the table of contents see the same conventions repeated, which is the goal — README sections are designed to be read in isolation, so identical patterns across them mean identical user mental model regardless of which client they pick.
+
 ## [6.40.95] - 2026-04-28
 
 ### Added — Codex Desktop README: Step 1 download link + Step 3 fully-quit-and-reopen

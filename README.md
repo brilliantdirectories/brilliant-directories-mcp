@@ -398,55 +398,54 @@ For BD automation in the OpenAI ecosystem, use **Codex Desktop**. ChatGPT itself
 
 A "Connect to a custom MCP" form opens with two tabs: **STDIO** and **Streamable HTTP**. Either works — pick one.
 
-**🚀 Easy (Streamable HTTP — no install required):**
+**🚀 Easy (Streamable HTTP — recommended, no Node.js install required):**
 
-Click the **Streamable HTTP** tab. Fill ONLY these fields:
+Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 
-| Field | Value |
+| Field (as shown in Codex) | Value |
 |---|---|
-| Name | `Brilliant Directories` (or any label) |
-| URL | `https://brilliantmcp.com/mcp` |
-| Headers — Key 1 | `x-api-key` |
-| Headers — Value 1 | your BD API key |
+| **Name** | `Brilliant Directories` (or any label) |
+| **URL** | `https://brilliantmcp.com/mcp` |
+| **Bearer token env var** | *leave empty — don't touch* |
+| **Headers** — Key | `x-api-key` |
+| **Headers** — Value | your BD API key |
+| *Click **+ Add header** to add the second row* | |
+| **Headers** — Key (row 2) | `x-bd-site-url` |
+| **Headers** — Value (row 2) | `https://www.your-site.com` |
+| **Headers from environment variables** | *leave empty — don't touch* |
 
-Click **+ Add header** to add the second row:
-
-| Field | Value |
-|---|---|
-| Headers — Key 2 | `x-bd-site-url` |
-| Headers — Value 2 | `https://www.your-site.com` |
-
-**Leave these fields empty (don't touch them):** `Bearer token env var`, `Headers from environment variables`. Click **Save**.
+Click **Save**.
 
 **🛠️ Advanced (STDIO — runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> if you don't have it.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
-Click the **STDIO** tab. Fill ONLY these fields:
+Click the **STDIO** tab. Fill the form top-to-bottom:
 
-| Field | Value |
+| Field (as shown in Codex) | Value |
 |---|---|
-| Name | `Brilliant Directories` (or any label) |
-| Command to launch | `npx` |
-| Arguments — Row 1 | `-y` |
+| **Name** | `Brilliant Directories` (or any label) |
+| **Command to launch** | `npx` |
+| **Arguments** — Row 1 | `-y` |
+| *Click **+ Add argument** between each row below* | |
+| **Arguments** — Row 2 | `brilliant-directories-mcp@latest` |
+| **Arguments** — Row 3 | `--api-key` |
+| **Arguments** — Row 4 | your BD API key |
+| **Arguments** — Row 5 | `--url` |
+| **Arguments** — Row 6 | `https://www.your-site.com` |
+| **Environment variables** | *leave empty — don't touch* |
+| **Environment variable passthrough** | *leave empty — don't touch* |
+| **Working directory** | *leave empty — don't touch* |
 
-Click **+ Add argument** between each of the rows below:
-
-| Field | Value |
-|---|---|
-| Arguments — Row 2 | `brilliant-directories-mcp@latest` |
-| Arguments — Row 3 | `--api-key` |
-| Arguments — Row 4 | your BD API key |
-| Arguments — Row 5 | `--url` |
-| Arguments — Row 6 | `https://www.your-site.com` |
-
-**Leave these fields empty (don't touch them):** `Environment variables`, `Environment variable passthrough`, `Working directory`. Click **Save**.
+Click **Save**.
 
 **3. Fully quit and reopen Codex Desktop.** Codex loads MCP servers only at fresh launch — saving the form is not enough.
 
 > **"Fully quit" means more than closing the window.** On Windows: right-click the Codex icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Codex** → **Quit Codex**. Then relaunch.
 
 **4. Test the connection:** in a new Codex chat, ask *"list my first 5 members on my BD site"*. Tools invoke, data comes back.
+
+> **Pro tip — multi-site management:** repeat this setup with a different **Name** and credentials per BD site you manage (e.g. `brilliant-directories-main` / `brilliant-directories-staging` / `brilliant-directories-client-acme`). Codex loads each as a separate MCP server. You can then tell Codex things like *"on brilliant-directories-main, list the top categories"* or *"copy these 3 email templates from brilliant-directories-main to brilliant-directories-staging"* — Codex routes each tool call to the correct site. Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
 
 ---
 
@@ -503,6 +502,8 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 6. **Fully quit and reopen Windsurf.**
 
+   > **"Fully quit" means more than closing the window.** On Windows: right-click the Windsurf icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Windsurf** → **Quit Windsurf**. Then relaunch.
+
 ---
 
 ### Cline (VS Code extension)
@@ -553,7 +554,9 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
 
 6. Back in the MCP Servers panel, confirm `brilliant-directories` appears — toggle it **on** if not already.
-7. Reload the Cline panel, or close/reopen VS Code, if tools don't show up.
+7. **Fully quit and reopen VS Code.** Cline loads MCP servers only at fresh launch — toggling on or reloading the panel is not enough.
+
+   > **"Fully quit" means more than closing the window.** On Windows: right-click the VS Code icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Code** → **Quit Visual Studio Code**. Then relaunch.
 
 ---
 
@@ -591,6 +594,8 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 4. Click **Install**.
 5. **Fully quit and reopen Cursor.**
+
+   > **"Fully quit" means more than closing the window.** On Windows: right-click the Cursor icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**. Then relaunch.
 6. Tools appear in **Settings → Tools & MCP**.
 
 > **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-81245`, `brilliant-directories-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"* or *"copy these 3 email templates from brilliant-directories-60031 to brilliant-directories-81245"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
