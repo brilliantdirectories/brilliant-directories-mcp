@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.26] - 2026-04-28
+
+### Changed — README: split Make.com from Zapier; document Make's MCP Client beta
+
+Make.com shipped an MCP Client (Open Beta) that connects to remote MCP servers — see https://apps.make.com/mcp-client. Previous README lumped Make and Zapier together with HTTP-only guidance, predating Make's MCP Client release.
+
+Split into two sections:
+
+- **Make.com** — full setup steps (Module → New MCP Server → URL `https://brilliantmcp.com` → API Key field). Flagged the known limitation: Make's UI exposes only one token field but our Worker requires both `X-Api-Key` and `X-BD-Site-URL` custom headers; recommend testing the connection before building production scenarios. Fallback path (HTTP module + both headers against BD's REST API) preserved underneath. Linked to Make's own docs.
+- **Zapier** — unchanged content, now its own section. Same single-token blocker; same Webhooks-by-Zapier fallback.
+
+Compatibility matrix gained a Make.com row with ⚠️ "untested at scale" status to be honest about the auth-shape uncertainty without overpromising.
+
 ## [6.41.25] - 2026-04-28
 
 ### Fixed — three coupled surfaces v6.41.24 missed when introducing email-template lean shaping

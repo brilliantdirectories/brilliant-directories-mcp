@@ -59,7 +59,8 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
   - [Cline (VS Code extension)](#cline-vs-code-extension)
   - [Cursor](#cursor)
   - [n8n](#n8n)
-  - [Make / Zapier](#make--zapier)
+  - [Make.com](#makecom)
+  - [Zapier](#zapier)
   - [curl / any HTTP client](#curl--any-http-client)
 - [What you can ask the AI](#what-you-can-ask-the-ai)
 - [Updates are automatic](#updates-are-automatic)
@@ -682,11 +683,34 @@ n8n generates a node for every BD operation automatically. Prompts for your BD s
 
 ---
 
-### Make / Zapier
+### Make.com
 
-**Make:** Create a custom app using the OpenAPI spec, or use the HTTP module with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*`.
+Make.com ships an **MCP Client** app (currently Open Beta) that connects to remote MCP servers — see <a href="https://apps.make.com/mcp-client" target="_blank" rel="noopener noreferrer">Make's MCP Client docs</a>. To connect it to our Worker:
 
-**Zapier:** The "MCP Client by Zapier" app only supports OAuth / Bearer Token — it has no custom-headers field, so it cannot authenticate against our Worker.
+1. Add the **MCP Client** module to your scenario, click **Create a connection**.
+2. Click **+ New MCP Server** (we're not yet on Make's verified-servers list).
+3. **URL:** `https://brilliantmcp.com`
+4. **API Key / Access token:** your 32-char BD API key.
+5. Save.
+
+⚠️ **Known limitation as of Make's beta release:** the MCP Client UI exposes a single token field. Our Worker requires **two** custom headers (`X-Api-Key` AND `X-BD-Site-URL`). If Make sends only the API key, the Worker will reject with `Missing X-BD-Site-URL header`. Test the connection before building production scenarios — if it fails, fall back to the HTTP path below.
+
+**Fallback path (works today, every BD operation):** use Make's standard **HTTP** module against `https://www.your-site.com/api/v2/*` with these headers:
+
+```
+X-Api-Key: <your 32-char BD API key>
+X-BD-Site-URL: https://www.your-site.com
+```
+
+This hits BD's REST API directly. Skips MCP entirely; every endpoint reachable.
+
+You can also build a custom Make app from our [OpenAPI spec](#openapi-spec) (link below) for a more polished UX.
+
+---
+
+### Zapier
+
+The "MCP Client by Zapier" app only supports OAuth / Bearer Token — no custom-headers field, so it cannot authenticate against our Worker (same single-token limitation as Make).
 
 Use one of these paths instead:
 - **BD's existing Zapier app** (if it covers what you need) — same underlying API, same API key.
@@ -813,6 +837,7 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 | **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
 | **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
 | **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
+| **Make.com MCP Client** (Open Beta) | ⚠️ | Untested at scale | Make's MCP Client UI exposes a single API-Key field; our Worker requires two custom headers. Test the connection first; if it fails, use Make's HTTP module with both headers against the BD REST API. See [Make.com setup](#makecom). |
 | **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
 | **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex Desktop works — see [OpenAI section](#openai-codex-desktop). |
 | **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
