@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.5] - 2026-04-28
+
+### Added — Froala draggable-section rule + `notemplate` enum corrected + 600px wrapper note
+
+Significant BD platform behaviors that came to light during testing, all bundled:
+
+**1. Each section is its own 100%-width top-level `<table>`.** BD's email editor (Froala) treats sibling top-level `<table>` elements as draggable section units. An email wrapped in one outer table is one immovable block — users can't reorder hero / spotlight / footer / etc. Agent must output each logical section as a separate top-level `<table width="100%">`.
+
+**2. `notemplate` enum corrected from `[0, 1]` to `[0, 1, 2, 3, 4]` with full meanings:**
+- `0` = template + logo left
+- `2` = template + logo center (**default — use unless user specifies otherwise or it's plaintext-only**)
+- `3` = template + logo right
+- `4` = template, no logo
+- `1` = no template, plaintext-only (no wrapper, no width constraint)
+
+Spec was wrong before — only documented 2 of 5 valid values. Fixed in both the read-side schema and the `createEmailTemplate` request body schema (used by `updateEmailTemplate` too via shared field). Operation-description `**Enums:**` line in `createEmailTemplate` updated to match.
+
+**3. Don't double-wrap on `notemplate ∈ {0, 2, 3, 4}`.** When the template wrapper is active (any value except `1`), BD already wraps `email_body` in a 600px-wide containing table. Agent's section tables should be 100% width — they fill BD's wrapper automatically. Adding an agent-side `max-width:600px` wrapper would double-constrain. `notemplate=1` ships HTML unwrapped (no wrapper, no width), which is why the rich-section pattern only applies when the template is on.
+
+### Changed — preheader rule trimmed from ~330 to ~155 chars
+
+v6.41.4 enumerated the email-dev hidden-preheader technique (`display:none`, `max-height:0; overflow:hidden`, `font-size:1px collapse tricks`) before telling agents not to use it. An agent capable of writing email HTML already knows what a preheader is. Trimmed to the three things the agent needs to act on: what's blocked (hidden preheader `<div>`), why (BD strips `display:none`), and the action.
+
+### Changed — three conservative trims on the email rule
+
+Removing pure restatements without information loss:
+
+- Outlook framing: dropped `"the rules below all flow from it"` (meta-comment about rule structure, not actionable)
+- Content-only: dropped `"anything you'd put inside a rendered email"` (the explicit content-tag list immediately before it covered this)
+- Inline-only: dropped `"Every styling declaration lives on the element via the style attribute"` (restates the bullet's first sentence)
+- Hotlinking: dropped `"recipients fetch them on open"` (restates "hotlinked")
+
 ## [6.41.4] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` blocks the hidden-preheader pattern

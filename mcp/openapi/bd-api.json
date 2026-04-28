@@ -853,8 +853,12 @@
             "type": "integer",
             "enum": [
               0,
-              1
-            ]
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Template + logo wrapper mode. `0` = template + logo left; `2` = template + logo center (default — use unless user specifies otherwise or it's a plaintext email); `3` = template + logo right; `4` = template, no logo; `1` = no template or logo (plaintext-only). When this is anything other than `1`, BD's global template already wraps `email_body` in a 600px-wide constraining table — do NOT add your own outer max-width wrapper in that case."
           },
           "content_type": {
             "type": "string"
@@ -5666,8 +5670,12 @@
                     "type": "integer",
                     "enum": [
                       0,
-                      1
-                    ]
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "Template + logo wrapper mode. `0` = template + logo left; `2` = template + logo center (default — use unless user specifies otherwise or it's a plaintext email); `3` = template + logo right; `4` = template, no logo; `1` = no template or logo (plaintext-only). When this is anything other than `1`, BD's global template already wraps `email_body` in a 600px-wide constraining table — do NOT add your own outer max-width wrapper in that case."
                   },
                   "content_type": {
                     "type": "string"
@@ -5696,7 +5704,7 @@
             }
           }
         },
-        "description": "Create a new emailtemplate record. Writes live data.\n\n**Use when:** adding a new transactional/marketing template. Rare - most BD email templates are built into the admin UI.\n\n**Required:** `email_name`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `email_name`. Duplicates cause the wrong template to fire on transactional triggers. Do a **server-side filter-find**: `listEmailTemplates property=email_name property_value=<proposed> property_operator==`. Zero rows = name free; >=1 row = taken. **Do NOT paginate unfiltered lists looking for the name** - on sites with many templates that burns rate limit for nothing. If taken: reuse via `updateEmailTemplate`, OR ask the user, OR pick an alternate `email_name` and re-check. Never silently create a duplicate.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0`, `1`; `unsubscribe_link`: `0`, `1`.\n\n**Parameter interactions:**\n\n- `email_subject` and `email_body` can use template tokens (e.g. `%%%website_name%%%`, recipient field tokens)\n\n- `email_body` supports HTML\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**On create: `email_name` is the only required field.** Subject and body are optional at create time - you can create a template stub and fill in `email_subject` / `email_body` via `updateEmailTemplate` later. This lets you programmatically scaffold templates before customizing them via the admin UI.\n\n"
+        "description": "Create a new emailtemplate record. Writes live data.\n\n**Use when:** adding a new transactional/marketing template. Rare - most BD email templates are built into the admin UI.\n\n**Required:** `email_name`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `email_name`. Duplicates cause the wrong template to fire on transactional triggers. Do a **server-side filter-find**: `listEmailTemplates property=email_name property_value=<proposed> property_operator==`. Zero rows = name free; >=1 row = taken. **Do NOT paginate unfiltered lists looking for the name** - on sites with many templates that burns rate limit for nothing. If taken: reuse via `updateEmailTemplate`, OR ask the user, OR pick an alternate `email_name` and re-check. Never silently create a duplicate.\n\n**Enums:** `signature`: `0`, `1`; `notemplate`: `0` (template + logo left) / `2` (template + logo center, default) / `3` (template + logo right) / `4` (template, no logo) / `1` (no template, plaintext-only); `unsubscribe_link`: `0`, `1`.\n\n**Parameter interactions:**\n\n- `email_subject` and `email_body` can use template tokens (e.g. `%%%website_name%%%`, recipient field tokens)\n\n- `email_body` supports HTML\n\n**See also:** `updateEmailTemplate` (modify existing).\n\n**On create: `email_name` is the only required field.** Subject and body are optional at create time - you can create a template stub and fill in `email_subject` / `email_body` via `updateEmailTemplate` later. This lets you programmatically scaffold templates before customizing them via the admin UI.\n\n"
       }
     },
     "/api/v2/email_templates/update": {
