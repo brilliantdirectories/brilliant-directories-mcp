@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.94] - 2026-04-28
+
+### Added — OpenAI Codex Desktop setup section in README
+
+Codex Desktop is verified working with both transports:
+
+- **Streamable HTTP** against `https://brilliantmcp.com/mcp` with `x-api-key` + `x-bd-site-url` headers (recommended — no install)
+- **STDIO** via the npm package with `--api-key` + `--url` CLI args
+
+Setup is via Codex Desktop's GUI: **File → Settings → MCP Servers → + Add Server**. README documents both tabs of the "Connect to a custom MCP" form with field-by-field tables, including the explicit `+ Add header` / `+ Add argument` button steps between rows.
+
+### Changed — clarified OpenAI client support reality
+
+Replaced the prior "Codex CLI / Codex Cloud" framing in README with the current accurate landscape:
+
+- ✅ **Codex Desktop** — full MCP, both transports
+- ❌ **ChatGPT (web / desktop / mobile)** — no MCP connector support in consumer ChatGPT
+
+Removed the stale Codex CLI / Codex Cloud / TOML config block. The `~/.codex/config.toml` path is no longer the recommended setup; the Desktop GUI is.
+
+### Why this is meaningful
+
+Codex Desktop is a heavyweight client (OpenAI's flagship dev tool). Adding it expands the supported-clients matrix from "Anthropic + dev tools" to include OpenAI's main desktop app — without any code changes on the BD MCP side. The dual-transport architecture handled it.
+
 ## [6.40.93] - 2026-04-26
 
 ### Changed — bolded `**OMIT**` prefix on 3 spec fields where omission is mandatory

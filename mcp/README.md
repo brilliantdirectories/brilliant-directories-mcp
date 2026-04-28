@@ -54,7 +54,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
     - [Using Claude extension inside Cursor](#using-the-claude-extension-inside-cursor)
-  - [OpenAI (ChatGPT / Codex)](#openai-chatgpt--codex)
+  - [OpenAI (Codex Desktop)](#openai-codex-desktop)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
   - [Cursor](#cursor)
@@ -381,44 +381,67 @@ The CLI writes the same JSON to `~/.claude.json` for you — same end result as 
 
 ---
 
-### OpenAI (ChatGPT / Codex)
-
-OpenAI's MCP support is narrow. The honest landscape:
+### OpenAI (Codex Desktop)
 
 | OpenAI surface | Supported? |
 |---|---|
-| ChatGPT web / desktop / mobile | ❌ No — no MCP support; Custom GPT Actions cap at 30 ops (BD MCP has many more than 30) |
-| Codex Cloud app | ❌ No — partial/evolving MCP support |
-| **Codex CLI** (terminal) | ✅ **Yes — full MCP** |
+| **Codex Desktop** (the desktop app) | ✅ **Yes — full MCP, both transports** |
+| ChatGPT web / desktop / mobile | ❌ No — no MCP connector support in consumer ChatGPT |
 
-For full BD automation in the OpenAI ecosystem, use **Codex CLI**.
+For BD automation in the OpenAI ecosystem, use **Codex Desktop**. ChatGPT itself can't speak MCP yet; for GUI alternatives if you don't want Codex, use Claude Desktop / Cursor / Windsurf / Cline.
 
-For GUI alternatives, use Claude Desktop / Cursor / Windsurf / Cline instead — all MCP-native with no op cap.
+#### Codex Desktop setup
 
-#### Codex CLI setup (the only supported OpenAI path)
+Open Codex Desktop → **File** → **Settings** → **MCP Servers** → **+ Add Server**.
 
-Requires Node 18+ and a ChatGPT Plus/Pro/Business/Edu/Enterprise account for sign-in.
+A "Connect to a custom MCP" form opens with two tabs: **STDIO** and **Streamable HTTP**. Either works — pick one.
 
-**1. Install + sign in:**
+**🚀 Easy (Streamable HTTP — no install required):**
 
-```bash
-npm install -g @openai/codex
-codex
-```
+Click the **Streamable HTTP** tab, then fill the fields:
 
-Follow the browser sign-in prompt on first run. `Ctrl+C` to exit after sign-in.
+| Field | Value |
+|---|---|
+| Name | `Brilliant Directories` (or any label) |
+| URL | `https://brilliantmcp.com/mcp` |
+| Bearer token env var | *leave blank* |
+| Headers — Key 1 | `x-api-key` |
+| Headers — Value 1 | your BD API key |
 
-**2. Edit config** at `~/.codex/config.toml` (Mac/Linux) or `%USERPROFILE%\.codex\config.toml` (Windows). Codex uses **TOML, not JSON**:
+Click **+ Add header** to add the second row:
 
-```toml
-[mcp_servers.brilliant-directories]
-command = "npx"
-args = ["-y", "--prefer-online", "brilliant-directories-mcp@latest", "--api-key", "ENTER_API_KEY", "--url", "https://www.your-site.com"]
-```
+| Field | Value |
+|---|---|
+| Headers — Key 2 | `x-bd-site-url` |
+| Headers — Value 2 | `https://www.your-site.com` |
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
+Headers from environment variables — leave blank. Click **Save**.
 
-**3. Run `codex`.** Ask it *"list my first 5 members on my BD site"* — tools invoke, data comes back.
+**🛠️ Advanced (STDIO — runs on your machine, needs Node.js):**
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> if you don't have it.
+
+Click the **STDIO** tab, then fill the fields:
+
+| Field | Value |
+|---|---|
+| Name | `Brilliant Directories` (or any label) |
+| Command to launch | `npx` |
+| Arguments — Row 1 | `-y` |
+
+Click **+ Add argument** between each of the rows below:
+
+| Field | Value |
+|---|---|
+| Arguments — Row 2 | `brilliant-directories-mcp@latest` |
+| Arguments — Row 3 | `--api-key` |
+| Arguments — Row 4 | your BD API key |
+| Arguments — Row 5 | `--url` |
+| Arguments — Row 6 | `https://www.your-site.com` |
+
+Environment variables, passthrough, and working directory — leave blank. Click **Save**.
+
+**Test the connection:** in a new Codex chat, ask *"list my first 5 members on my BD site"*. Tools invoke, data comes back.
 
 ---
 
@@ -781,7 +804,7 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 | **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
 | **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
 | **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
-| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex CLI works — see [OpenAI section](#openai-chatgpt--codex). |
+| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex Desktop works — see [OpenAI section](#openai-codex-desktop). |
 | **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
 
 > **Why Zapier doesn't work and how to know if a client will:** the blocker is always "can this client send custom HTTP headers to an MCP server?" If the UI shows a **Custom Headers** / **Multiple Headers** / **HTTP Headers** field — you're good, plug in our two headers. If the UI only offers OAuth or Bearer Token — that client cannot reach our Worker today. We evaluate OAuth/Bearer support on request.
