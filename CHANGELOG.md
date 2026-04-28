@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.12] - 2026-04-28
+
+### Changed — `Rule: Email template recipe` trimmed 31% (5028 → 3454 chars), zero meaning lost
+
+End-of-session prose-density pass on the email rule. After 13 iterations across the day (v6.41.0 → v6.41.11), the rule had accumulated conversational/explanatory phrases that didn't carry an action. Cut every such phrase; kept every constraint, example, and cross-ref.
+
+**Structural change:** the v6.41.11 paragraph 3 had grown to 990 chars carrying 7 distinct rules (section pattern + width attrs + 600px wrapper + notemplate default + user-phrases + plaintext exception + immutability). Split into two paragraphs by concern: section structure (paragraph 3) and `notemplate` field (paragraph 4). One concept per paragraph, faster scan.
+
+**Wording trims (representative, not exhaustive):**
+- "Design every template to that constraint" — restated the lead
+- "as the body container" — redundant after BD-provides-scaffold established
+- "any agent-added wrapper" → "any wrapper" (agent-context implied)
+- "richly-styled section pattern doesn't apply there" → "section pattern does NOT apply"
+- "do not promise the user that..." (action-shape implied)
+- "Use it freely on buttons, cards, avatars, etc." (the permission is enough)
+- "On any section, card, hero, or other element where you want a..." → "every gradient/image background"
+- "The standard inbox-preview-text pattern doesn't survive; whatever you'd put there is wasted bytes" → just "BD strips display:none server-side"
+
+**Zero rules removed. Zero constraints loosened.** Every imperative still imperative, every example still concrete, every cross-ref intact.
+
 ## [6.41.11] - 2026-04-28
 
 ### Changed — `category_id` description and operation `Enums:` line trimmed
