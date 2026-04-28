@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.4] - 2026-04-28
+
+### Added — `Rule: Email template recipe` blocks the hidden-preheader pattern
+
+Added one paragraph: BD strips hidden elements (`display:none`, `max-height:0`, `font-size:1px`, etc.) server-side, so the standard email-developer "hidden preheader text for inbox preview" pattern doesn't survive — agents shouldn't include it. Verified during testing: an agent invented the preheader `<div>` correctly per industry convention, but the wasted bytes don't reach the recipient on BD's platform.
+
+Without this rule, capable email-dev agents will keep generating preheader divs out of habit. Each `<div style="display:none; max-height:0; overflow:hidden; font-size:1px; line-height:1px; color:#eef4f4;">...</div>` is ~150 bytes of pure stripped output per template.
+
 ## [6.41.3] - 2026-04-28
 
 ### Added — Pexels image sizing for emails
