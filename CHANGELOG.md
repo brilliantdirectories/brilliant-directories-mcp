@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.10] - 2026-04-28
+
+### Fixed — CRITICAL: wrapper was hard-rejecting `notemplate=2/3/4` despite spec enum `[0,1,2,3,4]`
+
+A Codex agent operating live reported: `notemplate must be 0 or 1` — the wrapper rejected the very `notemplate=2` value that v6.40.99-onwards documented as the recommended default. Root cause: `notemplate` was on the `BOOLEAN_INT_FIELDS` allow-list in both `mcp/index.js` (npm) and `src/index.ts` (Worker). The `validateBooleanIntInArgs` validator treated it as a `0`/`1` boolean and rejected anything else upstream of BD.
+
+**Removed `"notemplate"` from `BOOLEAN_INT_FIELDS` in both mirrored files** (npm + Worker, byte-aligned). The field is a 5-value enum (`0/1/2/3/4`) per BD's actual product, not a boolean.
+
+Continuity check post-fix:
+- ✅ Zero `notemplate` references remaining in npm code
+- ✅ Zero `notemplate` references remaining in Worker code
+- ✅ Spec enum `[0, 1, 2, 3, 4]` in all 3 spec field locations (read-side schema + create request + update request)
+- ✅ Corpus rule cross-references the spec field correctly
+- ✅ Drift-check exit 0
+- ✅ JSON validates
+- ✅ npm `node --check` clean
+
+### Added — `border-radius` is allowed + backgrounds-beyond-solid-colors broadened
+
+Two clarity adds to `Rule: Email template recipe`:
+
+1. **`border-radius` IS allowed.** Added explicit permission to the inline-style rule. Was implicit; an agent reading "Outlook-safe email HTML" might over-cautiously avoid `border-radius` thinking it violates the rule. Outlook (Word renderer) ignores it and shows square corners; modern clients render the rounded corners. Use freely on buttons, cards, avatars.
+
+2. **"Backgrounds beyond solid colors need a solid `background-color:` fallback"** — was previously narrowed to "Gradient backgrounds." Reality: Outlook also ignores `background-image: url(...)` and other non-solid `background:` shorthand. The same `background-color: <solid> FIRST, then background:<gradient or image>` pattern applies to all of them. Generalized the rule.
+
+### Added — `category_id` enum corrected from undocumented integer to `[0, 1, 3, 4, 15, 16]` with default + system-category guidance
+
+The `category_id` field on email templates was previously typed as `integer` with no enum and no description. BD has 6 valid values:
+
+- `0` = My Saved Templates (**default for agent-created templates** — the user-facing slot)
+- `1` = Customer Service (system-managed master defaults)
+- `3` = System Email (system-managed master defaults)
+- `4` = Lead Emails (system-managed master defaults)
+- `15` = Billing (system-managed master defaults)
+- `16` = Newsletter Emails (system-populated from past newsletter campaign sends)
+
+Values `1`/`3`/`4`/`15` hold BD's master-default templates that users customize via the admin UI; `16` is auto-populated from sent newsletter campaigns. Agents should not create new templates under any of these. Spec field updated in both schema locations (read-side schema + `createEmailTemplate` request body); operation `**Enums:**` line updated to surface the default + system-category warning inline.
+
 ## [6.41.9] - 2026-04-28
 
 ### Added — Three Codex live-session findings: `notemplate` immutability, user-phrase mapping, "section of the email" wording

@@ -1705,7 +1705,7 @@ const BOOLEAN_INT_FIELDS = new Set([
   "hide_parent_accounts", "hide_quarterly_amount", "hide_reviews_rating_options",
   "hide_semiyearly_amount", "hide_specialties", "hide_top_right",
   "hide_triennially_amount", "hide_yearly_amount",
-  "limit_available", "menu_active", "notemplate",
+  "limit_available", "menu_active",
   "post_type_cache_system",
   "recommend", "searchable", "send_email_notifications",
   "send_lead_email_notification", "show_form", "signature",
