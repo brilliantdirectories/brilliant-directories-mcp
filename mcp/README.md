@@ -392,7 +392,7 @@ For BD automation in the OpenAI ecosystem, use **Codex Desktop**. ChatGPT itself
 
 #### Codex Desktop setup
 
-**1. Download Codex Desktop** from <a href="https://openai.com/codex/" target="_blank" rel="noopener noreferrer">openai.com/codex</a> and install it.
+**1. Download Codex Desktop** from <a href="https://chatgpt.com/codex/get-started/" target="_blank" rel="noopener noreferrer">chatgpt.com/codex/get-started</a> and install it.
 
 **2. Open Codex Desktop** → **File** → **Settings** → **MCP Servers** → **+ Add Server**.
 

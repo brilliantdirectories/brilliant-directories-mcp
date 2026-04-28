@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.97] - 2026-04-28
+
+### Changed — Codex Desktop Step 1 download link
+
+Pointed Step 1 at OpenAI's proper Codex getting-started flow (`chatgpt.com/codex/get-started`) instead of the marketing landing page (`openai.com/codex`). The getting-started page lists the actual desktop app download alongside the CLI option, so users land directly on the install path.
+
 ## [6.40.96] - 2026-04-28
 
 ### Changed — README continuity audit: Codex Desktop fully standardized + tray-quit explainer added everywhere
