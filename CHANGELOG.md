@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.15] - 2026-04-28
+
+### Added — `Rule: Email template recipe` surfaces admin edit URL after create/update
+
+After every successful `createEmailTemplate` or `updateEmailTemplate`, agents should now return the BD admin edit URL for the affected template. Pattern: `<BD_API_URL>/admin/emailTemplates.php?faction=edit&email=<email_id>` — takes the user straight to the email in their own admin area to visually review, tweak, send a test, or open the Froala editor for fine-tuning, without another tool call. Closes the loop between programmatic creation and user-facing review.
+
+Uses the `email_id` from the API response and the configured `BD_API_URL` (the user's own site root, since each customer admin lives at their site domain).
+
 ## [6.41.14] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` adds image-width discipline
