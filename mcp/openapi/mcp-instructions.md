@@ -282,7 +282,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **`email_name` format — lowercase, hyphens, no spaces.** BD uses it as identifier and lookup key; spaces or mixed case break matching. Pattern: `welcome-email`, `password-reset`, `lead-notification-admin`. Pre-check per **Rule: Pre-check natural keys**.
 
-**After every successful `createEmailTemplate` or `updateEmailTemplate`, surface the BD admin edit URL to the user.** Pattern: `<BD_API_URL>/admin/emailTemplates.php?faction=edit&email=<email_id>`. Takes them straight to the email in THEIR admin area to visually review/tweak, send a test, or open the Froala editor for fine-tuning. Use the `email_id` from the create/update response and the configured `BD_API_URL` (the user's own site root).
+**After every successful `createEmailTemplate` or `updateEmailTemplate`, surface the BD admin edit URL to the user.** Pattern: `https://ww2.managemydirectory.com/admin/emailTemplates.php?faction=edit&email=<email_id>`. The host is fixed — every BD customer admin lives on `ww2.managemydirectory.com`; do NOT substitute `BD_API_URL` (the customer-facing site root). Use the `email_id` from the create/update response. Takes the user straight to the email in their admin to visually review/tweak, send a test, or open the Froala editor for fine-tuning.
 
 ### Rule: API key permissions
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.16] - 2026-04-28
+
+### Fixed — admin edit URL host corrected to `ww2.managemydirectory.com`
+
+v6.41.15 wrote the admin URL pattern as `<BD_API_URL>/admin/...` based on a misread of "their admin area." Every BD customer admin actually lives on the centralized **`ww2.managemydirectory.com`**, not the customer's site root. Customer site domains serve the public directory; the admin is hosted centrally. Anchored the host as a literal in the rule with an explicit "do NOT substitute `BD_API_URL`" warning so future agents don't make the same swap.
+
+Pattern now: `https://ww2.managemydirectory.com/admin/emailTemplates.php?faction=edit&email=<email_id>`.
+
 ## [6.41.15] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` surfaces admin edit URL after create/update
