@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.23] - 2026-04-28
+
+### Added — fixed-pixel `<td>` cells need both `width=""` attribute AND inline `style` width
+
+Existing rule covered the outer `<table width="100%" style="width:100%;">` pattern. Multi-column layouts (e.g. a 600px section split into two 288px cells) need the same dual declaration on each `<td>`: `<td width="288" style="width:288px;">`. Outlook's Word renderer reads the HTML attribute first, modern clients use the CSS — single-declaration cells render inconsistently across the two engines. Appended one sentence to the existing section-tables paragraph so the dual-declaration rule lives in one place.
+
 ## [6.41.22] - 2026-04-28
 
 ### Restored — Pexels query-string rule (originally v6.41.19/20)
