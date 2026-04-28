@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.18] - 2026-04-28
+
+### Fixed — never disclose image sources in user-visible content
+
+Codex shipped an email body containing a recipient-visible "Stock photos via Pexels" credit line. Pexels usage is an internal sourcing convention that lives in agent-side rules; recipients/visitors are not the audience for it. The leak is bad form on three levels: it exposes "AI-generated content" signals (no human writing marketing copy credits stock photos), it surfaces internal tooling vocabulary, and it adds visual clutter that has nothing to do with the content's purpose.
+
+Added a hard rule to `Rule: Image sourcing` (the canonical home for image-related directives — applies platform-wide, not just emails): no "Stock photos via Pexels," no "Image courtesy of...," no "via Unsplash/Pixabay/etc.," no source credits, no internal sourcing commentary anywhere a recipient or site visitor will read it. Covers every body/content field — `email_body`, `post_content`, `group_desc`, WebPage `content`, `about_me`, hero copy, captions.
+
+Sourcing is an agent-side workflow, never recipient-facing copy.
+
 ## [6.41.17] - 2026-04-28
 
 ### Added — admin edit URL now scoped via `&newsite=<website_id>` tenant param
