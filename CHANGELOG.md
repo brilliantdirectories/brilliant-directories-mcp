@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.1] - 2026-04-28
+
+### Added — `Rule: Email template recipe` now hints at `<img>` URL verification (capability-aware)
+
+One-paragraph addition with two failure-mode-aware paths:
+
+- **Runtime can fetch URLs** → HEAD/GET each `<img>` source, skip non-200s.
+- **Runtime can't fetch** → stick to canonical Pexels URLs (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`) and BD-hosted assets just read in this same conversation; avoid URLs copied from older context.
+
+Why: broken `<img>` tags are permanent in delivered email — once a recipient's client caches a 404 on first open, no fix reaches them. Real failure mode hit during testing (agent embedded a guessed BD-hosted profile-image URL that 404'd; only caught after the fact via curl). Capability-aware framing means agents without HTTP fetch read the fallback path and aren't tripped up by guidance they can't execute.
+
+`createEmailTemplate.email_body` spec field description now also mentions the verification step inline so field-level readers see it without following the cross-ref.
+
 ## [6.41.0] - 2026-04-28
 
 ### Changed — `Rule: Email template recipe` extended: images allowed (Pexels OK), no `class=""`, last residual `body` word removed
