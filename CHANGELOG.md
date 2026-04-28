@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.9] - 2026-04-28
+
+### Added — Three Codex live-session findings: `notemplate` immutability, user-phrase mapping, "section of the email" wording
+
+A Codex agent operating BD live reported three real gaps in the v6.41.8 rule. All shipped:
+
+1. **`notemplate` immutability on `updateEmailTemplate`** — BD silently ignores attempts to change `notemplate` after create. If a template was created with the wrong wrapper mode (e.g., `notemplate=1` plaintext but the user now wants the Template Center wrapped version), `updateEmailTemplate notemplate=2` does nothing and the agent could promise a change that never lands. Real silent-failure mode. Now documented: "create a replacement template with the correct `notemplate` value and migrate the body content; do not promise the user that an `updateEmailTemplate notemplate=...` call will work."
+
+2. **User-phrase → `notemplate=2` mapping.** The previous rule said "default to `2` unless user specifies otherwise," but that left ambiguous what to do when a user EXPLICITLY says "template center" / "BD template" / "use the site email template" / "branded email." The agent might pick `2` correctly but then ALSO add an outer 600px wrapper because the user-said-template framing primes wrapper-thinking. Now explicit: "User phrases that map to `notemplate=2`: ... On any of these, create with `notemplate=2` and write only inner content sections — do NOT add a full email wrapper, background table, or 600px outer container." Preempts the "user-said-template-so-add-a-wrapper" double-wrap.
+
+3. **"Each section of the email"** — v6.41.8 said "Each section is its own top-level `<table>`" but "section" without an explicit anchor read abstractly. Tightened to "Each section of the email."
+
 ## [6.41.8] - 2026-04-28
 
 ### Changed — `Rule: Email template recipe` four clarity fixes from cold-eyes audit
