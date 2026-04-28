@@ -323,7 +323,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 ### Rule: Lean read responses
 
-**Row weight - lean-by-default with opt-in `include_*` flags** across 6 resource families. Only opt in when the task actually needs that nested data.
+**Row weight - lean-by-default with opt-in `include_*` flags** across 7 resource families. Only opt in when the task actually needs that nested data.
 
 **Users** (`listUsers` / `getUser` / `searchUsers`, ~2KB lean row): core columns + `revenue` + `image_main_file` + `filename_hidden` + `total_clicks` + `total_photos` always returned. Flags:
 
@@ -359,6 +359,10 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 - `include_content=1` - restores `content` (body HTML).
 - `include_code=1` - restores `content_css`, `content_head`, `content_footer_html`. Needed before `updateWebPage` edits to CSS/head/footer JS so you have the current value to modify.
 
+**Email templates** (`listEmailTemplates` / `getEmailTemplate`): all identity/metadata fields always returned (`email_id`, `email_name`, `email_subject`, `email_type`, `triggers`, `category_id`, `notemplate`, `signature`, `unsubscribe_link`, etc.). Strips: `email_body` (full HTML, ~8KB avg per row, up to tens of KB). Flags:
+
+- `include_body=1` - restores `email_body`. Required when reading template HTML to edit it.
+
 **Reviews** (`listReviews` / `getReview` / `searchReviews`): 9 flat scalar fields; `review_description` is the only unbounded one (no BD-side length cap — member rants, pasted novels, lawsuit text all possible). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
 
 - `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on search results, or full-content export. Skip at `limit=100` on moderation sweeps — stick to lean and re-fetch the handful of reviews you care about with `getReview` + this flag.
@@ -369,7 +373,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 ### Rule: Lean write responses
 
-**Write responses are ALWAYS lean.** Every `create*` / `update*` across users, posts (single + multi), post types, top + sub categories, web pages, and widgets returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object, no raw widget_data/widget_style/widget_javascript. The `include_*` flags do NOT apply to write responses — they only work on `get*` / `list*` / `search*`. If you need the full record after a write, call the matching `get*` with whatever `include_*` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
+**Write responses are ALWAYS lean.** Every `create*` / `update*` across users, posts (single + multi), post types, top + sub categories, web pages, widgets, membership plans, and email templates returns a minimal keep-set: primary key + identity fields (name / filename / title) + status. No nested schemas, no HTML body, no code templates, no embedded user object, no raw widget_data/widget_style/widget_javascript, no full `email_body`. The `include_*` flags do NOT apply to write responses — they only work on `get*` / `list*` / `search*`. If you need the full record after a write, call the matching `get*` with whatever `include_*` flags you actually need. Do NOT re-GET by default — the lean write echo is enough to confirm the write landed and to tell the user what changed.
 
 Other endpoints (leads, tags, menus, etc.) return full rows - budget context with `limit=5` for those if you only need a few fields.
 

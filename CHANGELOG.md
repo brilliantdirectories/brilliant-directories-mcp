@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.25] - 2026-04-28
+
+### Fixed — three coupled surfaces v6.41.24 missed when introducing email-template lean shaping
+
+Post-ship audit caught three misses from v6.41.24 (introduced `include_body` lean shape for `listEmailTemplates` / `getEmailTemplate`). Reads worked correctly; the *adjacent* surfaces that lean shaping always touches were not updated:
+
+1. **`Rule: Lean read responses` opening line** still said "across 6 resource families" — bumped to 7.
+2. **No dedicated email-template block** in `Rule: Lean read responses`. Every other lean family (Users, Posts, Categories, Post types, Web pages, Reviews) has a block listing what's always-kept and what's stripped + the include flag(s). Added the email-template block matching the same shape.
+3. **`WRITE_KEEP_SETS` had no entries for `createEmailTemplate` / `updateEmailTemplate`** in either Worker or npm. Result was create/update echoes the freshly-saved `email_body` (~8KB), defeating the lean philosophy. Added keep-set `["email_id","email_name","email_subject","email_type","category_id","notemplate"]` to BOTH files. Also added email-templates to the resource list in `Rule: Lean write responses`.
+
+### Tooling — Step 0.7 audit checklist baked into publish protocol
+
+Added a 14-item audit checklist to `feedback_publish_protocol.md` for any release that introduces a new lean shaper. Codifies the surfaces a clean-looking lean implementation always misses on first pass: rule paragraph header counts, the per-family block in `Rule: Lean read responses`, write keep-sets, drift script tracking. Future releases that add a new resource to lean shaping must walk this checklist before commit so this class of post-ship audit can't recur.
+
 ## [6.41.24] - 2026-04-28
 
 ### Added — `listEmailTemplates` / `getEmailTemplate` lean-by-default; opt back in with `include_body=1`
