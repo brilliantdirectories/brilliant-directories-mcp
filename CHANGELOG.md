@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.2] - 2026-04-28
+
+### Added — `Rule: Email template recipe` opens with the framing principle + terminology audit
+
+**Framing sentence at top of rule:** `**Aim for Outlook-safe email HTML.** Outlook is the most popular email client AND the most restrictive — if a template displays correctly in Outlook, Apple Mail / Gmail / etc. render it fine too. Design every template to that constraint; the rules below all flow from it.`
+
+Why: the rule already explained "no `<style>` blocks because Outlook strips them" and "gradients need a background-color fallback because Outlook ignores them," but never named the underlying principle that makes those constraints make sense. Without the framing sentence, the bullets read like arbitrary restrictions; with it, they read as one coherent strategy. "Email HTML" is the idiomatic industry term for HTML constrained to email-client compatibility — frames the agent's mental model as "this is its own domain."
+
+**Terminology audit — four word swaps for AI-interpretation precision:**
+
+- **"finicky renderer" → "most restrictive"** — "finicky" is colloquial; "restrictive" is the actual technical claim and uses the same vocabulary class as constraint-language elsewhere in the corpus.
+- **"page wrapper" → "document scaffold"** in the bullet header — the rule's body already calls it the "document scaffold" with the parenthetical `(doctype + html/head/body)`. Two terms for one concept were diluting clarity. Now consistent.
+- **"ignores most external rules" → "ignores most rules outside the inline `style` attribute"** — "external" was ambiguous (could read as "stylesheet on a CDN"). Replaced with the concrete location an agent can act on.
+- **"Backgrounds need a fallback color" → "Gradient backgrounds need a solid fallback color"** — narrows the rule to gradients (which is what the body actually addresses) instead of all backgrounds. Solid backgrounds don't need fallbacks; the rule was over-broad.
+
+No semantic changes to what's allowed or forbidden. Pure terminology tightening for stronger agent comprehension.
+
 ## [6.41.1] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` now hints at `<img>` URL verification (capability-aware)
