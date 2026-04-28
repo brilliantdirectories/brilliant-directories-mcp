@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.22] - 2026-04-28
+
+### Restored — Pexels query-string rule (originally v6.41.19/20)
+
+The "json error" that triggered the v6.41.21 revert was a downstream DNS issue (Codex's MCP config still pointed at the old `findfitnesspros.com` domain after migration to `find-fitness-pros.directoryup.com`). Probed the Worker against the new domain — full happy path returns clean JSON, no Cloudflare 1016. The Pexels rule was never the cause; restoring the v6.41.20 surgical wording.
+
 ## [6.41.21] - 2026-04-28
 
 ### Reverted — Pexels query-string rule (v6.41.19 + v6.41.20) rolled back
