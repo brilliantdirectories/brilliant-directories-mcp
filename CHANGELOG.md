@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.7] - 2026-04-28
+
+### Changed — `notemplate` enum line in `createEmailTemplate` operation description tightened to imperative
+
+Previous wording: `notemplate: 0 (template + logo left) / 2 (template + logo center, default) / 3 (template + logo right) / 4 (template, no logo) / 1 (no template, plaintext-only)`. Reading "default" parenthetically as "the BD admin UI's default selection" rather than "the agent's default action" was a real risk — agents might skip emitting the field entirely. Strengthened to: `default to 2 (template + logo center) unless the user specifies otherwise or wants plaintext-only — other values: 0 (logo left) / 3 (logo right) / 4 (template, no logo) / 1 (no template, plaintext-only)`. Imperative voice ("default to") and explicit exception clauses.
+
 ## [6.41.6] - 2026-04-28
 
 ### Changed — section tables use both `width="100%"` AND `style="width:100%;"` (belt-and-suspenders)
