@@ -461,6 +461,19 @@ const MIRROR_FUNCTIONS = [
 // validateUsersMetaRead is intentionally excluded — npm inlines the same
 // logic in dispatch instead of factoring into a named function. Not a
 // drift bug, just a code-organization difference.
+//
+// Verified-equivalent dialect noise. After manually diffing both files and
+// confirming a fingerprint delta is purely TS/JS dialect (e.g. `(args as any).x`
+// drops one `args.` access vs npm's `args.x`; collapsed CJK normalization vs
+// expanded `if/===` chain), record the noise floor here so the warning stays
+// quiet until NEW drift appears beyond the documented delta. Each entry maps
+// fingerprint key -> [npm, worker] expected counts.
+const VERIFIED_EQUIVALENT_DRIFT = {
+  validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
+  validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
+  sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
+  _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
+};
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
 const WORKER_PATH = path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts");
 function extractFunctionBody(source, fnName) {
@@ -540,16 +553,24 @@ try {
     }
     const npmFp = structuralFingerprint(npmBody);
     const workerFp = structuralFingerprint(workerBody);
+    const verified = VERIFIED_EQUIVALENT_DRIFT[fn] || {};
     const diffs = [];
     for (const k of Object.keys(npmFp)) {
-      if (npmFp[k] !== workerFp[k]) diffs.push(`${k} npm=${npmFp[k]} worker=${workerFp[k]}`);
+      if (npmFp[k] === workerFp[k]) continue;
+      // Skip if this exact npm/worker pair was manually verified as dialect
+      // noise. If counts have changed beyond the recorded baseline, fall
+      // through and warn — that's NEW drift on top of known noise.
+      if (verified[k] && verified[k][0] === npmFp[k] && verified[k][1] === workerFp[k]) continue;
+      diffs.push(`${k} npm=${npmFp[k]} worker=${workerFp[k]}`);
     }
     if (diffs.length > 0) {
       // Warn (not error) — JS-vs-TS dialect noise produces some unavoidable
       // false positives. Maintainer should eyeball the diff and confirm it's
       // not a real divergence before publishing. Real bug-class drift (e.g.
       // a fix that added 3 ifs to one file only) shows up as obvious large
-      // deltas; cosmetic dialect drift is small (1-2 in eq3, accesses).
+      // deltas; cosmetic dialect drift is small (1-2 in eq3, accesses). If
+      // confirmed dialect noise, record in VERIFIED_EQUIVALENT_DRIFT above
+      // to silence on future runs.
       warn(`Mirror validator "${fn}" structurally DIVERGED (${diffs.join(", ")}). VERIFY: open both files and confirm this is dialect noise (TS \`as any\` casts, type annotations) and not a fix that landed in only one file.`);
     }
   }

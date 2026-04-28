@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.13] - 2026-04-28
+
+### Fixed — `updateEmailTemplate` now exposes all `createEmailTemplate` fields
+
+Codex Desktop hit `updateEmailTemplate` and could not change `notemplate` (or `category_id`, `email_name`, `email_from`, `priority`, `signature` enum, `content_type`, `unsubscribe_link` enum, `website`) on an existing template — those properties were not declared in the spec body, so the SDK Zod-rejected them client-side before the call left the agent. BD itself accepts every one of these on update (its source schema reuses the same `email_templates` object for both create and update).
+
+**Fix:** mirrored all 13 `createEmailTemplate` properties onto `updateEmailTemplate` with identical descriptions and enums. Update body now exposes: `email_id` (still the only required field), `email_name`, `email_subject`, `email_body`, `email_type`, `triggers`, `website`, `email_from`, `priority`, `signature`, `category_id`, `notemplate`, `content_type`, `unsubscribe_link`. Description block updated to reflect parity and lists the same enum values. `category_id` description on update notes the create-only restriction (only `0` allowed on create — `1`/`3`/`4`/`15`/`16` are system-populated).
+
+**Corpus follow-up:** dropped the unverified "**`notemplate` is immutable on `updateEmailTemplate`** (BD silently ignores changes); to switch modes, create a replacement template and migrate body" line from `Rule: Email template recipe`. Replaced with a one-liner confirming mutability. The original immutability claim had no test evidence in the repo and contradicted BD's source schema; user explicitly asserted "they support the same things perfectly aligned."
+
+### Tooling — drift-check `VERIFIED_EQUIVALENT_DRIFT` allowlist
+
+Recurring 4 dialect-noise warnings on every drift run had drowned out new drift. After manually diffing both copies of each warned-about validator and confirming functional equivalence, recorded the noise floor in a new `VERIFIED_EQUIVALENT_DRIFT` map keyed by function name and fingerprint key. The check now subtracts the verified baseline before warning, so future drift surfaces only NEW divergence on top of known TS/JS dialect overhead. Future-proof: counts must match the recorded baseline EXACTLY — any shift (even by one) falls through and warns.
+
+Verified-equivalent entries:
+
+- `validateFilterValuesInArgs` — worker uses `(args as any).x` cast; drift-check counts one fewer `args.` access
+- `validateFilterOperatorInArgs` — same `(args as any).x` pattern
+- `sanitizeScaffoldingInArgs` — worker has fewer `return` early-exit points
+- `_validateSlugFormat` — worker collapses CJK script-grouping inline (`scriptName = "CJK"` directly) instead of npm's post-pass `if/===` chain that maps Hiragana/Katakana/Han to "CJK" in a separate step
+
+Drift check now exits clean: `[OK] No drift detected. Safe to publish.`
+
 ## [6.41.12] - 2026-04-28
 
 ### Changed — `Rule: Email template recipe` trimmed 31% (5028 → 3454 chars), zero meaning lost
