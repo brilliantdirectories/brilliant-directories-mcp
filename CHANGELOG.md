@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.14] - 2026-04-28
+
+### Added — `Rule: Email template recipe` adds image-width discipline
+
+Codex was emitting `<img style="max-width:600px">` inside email bodies. BD's global template already constrains the body to 600px, so a pixel `max-width` on the image either duplicates the cap (no-op clutter) or, on retina/high-DPI clients, forces upscaling that blurs the source. Same anti-pattern can appear on section `<table>` widths.
+
+**New paragraph in the rule:** "On `<img>` use `max-width:100%`, never `max-width:600px` or any pixel value." With the canonical pattern `style="width:100%; max-width:100%; height:auto; display:block;"`, plus a note that section tables follow the same `width="100%"` + `style="width:100%;"` rule (no pixel widths).
+
+Pairs with the existing rule paragraph that forbids agent-added max-width wrappers around the body.
+
 ## [6.41.13] - 2026-04-28
 
 ### Fixed — `updateEmailTemplate` now exposes all `createEmailTemplate` fields

@@ -278,6 +278,8 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Size Pexels images with `?w=<2× display width>` — emails are hotlinked.** Recipients fetch on open. `?w=1200` for 600px hero, `?w=300` for 150px thumbnail. Same pattern as inline body per **Rule: Image URLs**.
 
+**On `<img>` use `max-width:100%`, never `max-width:600px` or any pixel value.** BD's global template already constrains body to 600px; a pixel `max-width` on the image either duplicates the cap or, on retina/high-DPI clients, forces upscaling that blurs. Pattern: `style="width:100%; max-width:100%; height:auto; display:block;"`. Same applies to section `<table>` widths — use `width="100%"` + `style="width:100%;"`, never a pixel value.
+
 **`email_name` format — lowercase, hyphens, no spaces.** BD uses it as identifier and lookup key; spaces or mixed case break matching. Pattern: `welcome-email`, `password-reset`, `lead-notification-admin`. Pre-check per **Rule: Pre-check natural keys**.
 
 ### Rule: API key permissions
