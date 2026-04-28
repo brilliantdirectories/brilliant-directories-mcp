@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.27] - 2026-04-28
+
+### Added — `website_id` listed in `Rule: Site grounding` field enumeration
+
+BD shipped `website_id` on `getSiteInfo` today (verified live: returns `60029` on the test site). Spec already documented it in v6.41.17, but the corpus's `Rule: Site grounding` paragraph enumerated every other returned field except this one. Added `website_id` (tenant ID for centralized-admin URLs) to the field list — single insertion, 4 words, no separate sentence. The admin URL rule already pointed agents at `getSiteInfo (message.website_id)`; this closes the cross-reference so an agent reading "what does getSiteInfo give me" sees `website_id` listed alongside the other fields.
+
 ## [6.41.26] - 2026-04-28
 
 ### Changed — README: split Make.com from Zapier; document Make's MCP Client beta
