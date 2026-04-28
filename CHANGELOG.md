@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.20] - 2026-04-28
+
+### Changed — Pexels rule trimmed 608 → 290 chars
+
+v6.41.19 paragraph still had bloat (file-size anecdote, `.jpeg`/`.png` parenthetical, "regardless of 200 status" qualifier). All directives preserved; explanatory filler removed.
+
 ## [6.41.19] - 2026-04-28
 
 ### Fixed — Pexels URLs in `email_body`: enforce optimized query string, ban master shapes
