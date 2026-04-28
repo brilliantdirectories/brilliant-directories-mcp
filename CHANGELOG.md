@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.99] - 2026-04-28
+
+### Changed — `Rule: Email template recipe` reframed positively to prevent over-cautious heading suppression
+
+v6.40.98 shipped the email-template rule with a "do NOT include `<!DOCTYPE>`/`<html>`/`<head>`/`<body>`" enumerated forbid-list. Real risk flagged on review: an agent reading `<head>` next to `<body>` in a forbid-list adjacent to body-content discussion could plausibly infer that ALL `<h*>` heading tags are also forbidden — suppressing legitimate `<h1>`/`<h2>` use in email body content. Pure agent-compliance bug, not a content bug.
+
+Reframed positively in both the corpus rule and the `createEmailTemplate.email_body` spec field description:
+
+- **Open** with explicit permission listing the content tags agents can use, including `<h1>`/`<h2>` named explicitly so the heading semantic is unambiguous.
+- **Then** frame the constraint as "skip the document scaffold" — single grouped phrase, no enumerated tag list near body discussion.
+- Other constraints (no `<style>` blocks, gradient fallback) unchanged from v6.40.98 — those don't risk the same misreading.
+
 ## [6.40.98] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` covering body chrome, inline styles, gradient fallbacks, and `email_name` format

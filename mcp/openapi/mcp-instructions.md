@@ -260,7 +260,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 ### Rule: Email template recipe
 
-**`email_body` opens at content tags — no page chrome.** BD wraps every template inside a parent `<td>` with `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` already provided. Including them double-wraps and breaks rendering. Open directly with `<p>`, `<table>`, `<div>`, `<h2>`, etc.
+**`email_body` is content-only — BD provides the page wrapper.** BD renders every template inside a parent `<td>` cell with the full document scaffold (doctype + html/head/body) already in place. Open `email_body` with whatever content tag fits — `<p>`, `<table>`, `<div>`, `<h1>`/`<h2>`/etc., `<img>`, mixed structure, anything you'd put inside a body. Skip the document scaffold itself; including it double-wraps and breaks rendering.
 
 **No `<style>` blocks — inline `style=""` only.** Outlook strips `<style>` and ignores most external rules. Move every styling declaration onto the element via the `style` attribute.
 
