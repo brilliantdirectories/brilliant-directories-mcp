@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.11] - 2026-04-28
+
+### Changed — `category_id` description and operation `Enums:` line trimmed
+
+The v6.41.10 description bloated to ~405 chars enumerating each system category by name (Customer Service, System Email, Lead Emails, Billing, Newsletter Emails) plus separate sentences for the master-defaults vs sent-campaigns origin. Agent only needs three actionable things: default on create, no-create list, update is unrestricted.
+
+- **`category_id` description**: 405 → 197 chars (51% reduction). New: `Template category. On create: default to 0 (My Saved Templates); other values (1/3/4/15/16) are system-populated — do NOT create under them. update is unrestricted in any category.`
+- **Operation `Enums:` line**: 487 → 313 chars (36% reduction). Same content density, less explanatory prose. Removed inline "BD master-default categories" / "system-populated from past newsletter campaign sends" sub-explanations — the agent doesn't need to know the SOURCE of each system slot, just that those values are forbidden on `create`.
+
+Same actionable rules, less noise.
+
 ## [6.41.10] - 2026-04-28
 
 ### Fixed — CRITICAL: wrapper was hard-rejecting `notemplate=2/3/4` despite spec enum `[0,1,2,3,4]`
