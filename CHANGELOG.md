@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.6] - 2026-04-28
+
+### Changed — section tables use both `width="100%"` AND `style="width:100%;"` (belt-and-suspenders)
+
+v6.41.5 specified `style="width:100%;"` (inline CSS only) on each top-level section `<table>` in `email_body`. Updated to `<table width="100%" style="width:100%;">` — both the HTML width attribute and the inline CSS width. Older Outlook (2007/2010, Word-renderer-based) reads the HTML attribute more reliably than CSS; modern clients use the CSS. Both together = maximum compatibility across the email-client landscape with negligible char cost (~12 chars per section table).
+
 ## [6.41.5] - 2026-04-28
 
 ### Added — Froala draggable-section rule + `notemplate` enum corrected + 600px wrapper note
