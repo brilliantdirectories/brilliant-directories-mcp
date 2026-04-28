@@ -270,6 +270,8 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Verify `<img>` sources before embedding — if your runtime can fetch URLs, HEAD/GET each one and skip non-200s.** Broken images are permanent in delivered email (clients cache 404s on first open). No fetch capability? Stick to canonical Pexels stock URLs (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`) for decorative imagery and images you confirmed live on the subject's own web presence — website, profile page, verified socials — per **Rule: Image sourcing**. Avoid guessed BD-hosted paths or URLs copied from older context.
 
+**Email is hotlinked — size Pexels images with `?w=` for performance.** Emails embed images by URL, not by import; recipients fetch them on open. Append `?w=<2× display width>` to Pexels URLs (e.g. `?w=1200` for a 600px-wide hero, `?w=300` for a 150px thumbnail) so each recipient downloads a right-sized asset instead of the full-resolution master. Same pattern as inline body images per **Rule: Image URLs**.
+
 **`email_name` format — lowercase, hyphens, no spaces.** BD uses it as both unique identifier and internal lookup key; spaces and mixed case break referential matching. Pattern: `welcome-email`, `password-reset`, `lead-notification-admin`. Pre-check before `createEmailTemplate` per **Rule: Pre-check natural keys**.
 
 ### Rule: API key permissions

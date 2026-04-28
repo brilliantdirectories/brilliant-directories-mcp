@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.3] - 2026-04-28
+
+### Added — Pexels image sizing for emails
+
+One paragraph added to `Rule: Email template recipe`: `**Email is hotlinked — size Pexels images with ?w= for performance.** Emails embed images by URL, not by import; recipients fetch them on open. Append ?w=<2× display width> to Pexels URLs (e.g. ?w=1200 for a 600px-wide hero, ?w=300 for a 150px thumbnail) so each recipient downloads a right-sized asset instead of the full-resolution master. Same pattern as inline body images per **Rule: Image URLs**.`
+
+Why: emails are structurally identical to inline Froala body content — both hotlink Pexels URLs directly to the rendering surface. The corpus already documents the `?w=` retina pattern for `post_content` / `group_desc` body images, but the email rule didn't surface it. Without this guidance, an agent could embed a full-resolution 4-8 MB Pexels master in an email body — bloating delivery size, slowing recipient open times, and risking Gmail's 102 KB clip threshold. Hero image at `?w=1200` runs ~30-200 KB; that's the right shape for email.
+
 ## [6.41.2] - 2026-04-28
 
 ### Added — `Rule: Email template recipe` opens with the framing principle + terminology audit
