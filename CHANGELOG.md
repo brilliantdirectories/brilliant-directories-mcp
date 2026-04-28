@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.17] - 2026-04-28
+
+### Added — admin edit URL now scoped via `&newsite=<website_id>` tenant param
+
+The centralized BD admin (`ww2.managemydirectory.com`) needs a tenant scope to load the right customer's email template. URL pattern updated to: `https://ww2.managemydirectory.com/admin/emailTemplates.php?faction=edit&email=<email_id>&newsite=<website_id>`.
+
+`website_id` source documented in `getSiteInfo` — added to the response shape (`message.website_id`) and a new field-semantic line: *"the site's tenant ID (integer). Used for centralized-admin URL composition (e.g. `&newsite=<website_id>` on `ww2.managemydirectory.com/admin/...` links). Cache per session."*
+
+`getSiteInfo` is already a "call once and cache" tool by its existing rule, so the `website_id` lookup adds zero extra cost — agents already have the value cached when they need it for the admin link. The email-template rule now points to that source explicitly.
+
+(BD is pushing the `website_id` field on `getSiteInfo` today — safe to document now since corpus + spec land together with the API change.)
+
 ## [6.41.16] - 2026-04-28
 
 ### Fixed — admin edit URL host corrected to `ww2.managemydirectory.com`
