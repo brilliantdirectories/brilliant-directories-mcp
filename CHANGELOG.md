@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.8] - 2026-04-28
+
+### Changed — `Rule: Email template recipe` four clarity fixes from cold-eyes audit
+
+Three independent verification minions read the email rule in v6.41.7 and tested for clarity, comprehension, and edge-case ambiguity:
+
+- **Comprehension test (10 questions):** scored 10/10. Agent correctly inferred section-table pattern doesn't apply to `notemplate=1`, applied `?w=` 2× rule consistently across hero/avatar/thumbnail, refused to embed unverified URLs.
+- **Constraint inventory (extract every imperative):** found 31 distinct constraints, 27 rated crystal-clear (87%), 4 rated mostly-clear with all 4 ambiguities tracing to corpus cross-refs the audit prompt didn't include (test artifact, not a real production issue).
+- **Cold-eyes editor (find ambiguity):** 8 findings, 3 worth fixing, 5 false positives or over-engineered.
+
+Fixes shipped in this release:
+
+1. **`<table>` removed from `email_body` opener-tag list.** Was a real contradiction — paragraph 2 listed `<table>` as a valid opener, paragraph 3 forbade wrapping the whole email in one outer table. An agent could read paragraph 2 as permission to use a single outer `<table>` wrapper. Reworded paragraph 2 to say "open with content directly (`<p>`, `<div>`, headings, `<img>`, or — most often — the section tables described below)."
+2. **Preheader rule strengthened from informational to imperative.** Was: `**No hidden preheader <div> — BD strips display:none server-side.**` Changed to: `**Do NOT include a hidden preheader <div> — BD strips display:none server-side.**` Closes the gap where confident email-dev agents emit a preheader out of habit.
+3. **`notemplate` default added to corpus rule.** The spec field description has the "default to `2`" guidance, but the corpus rule didn't repeat it inline. Now: `notemplate ∈ {0, 2, 3, 4}` — **default to `2`** unless the user specifies otherwise or asks for plaintext`.
+4. **Section-table rule reframed for maximum agent clarity.** Was: "do NOT wrap the whole email in one outer table." Tightened in two passes:
+   - First pass added "with nothing wrapping around them (no outer `<table>`, no `<div>`, no container of any kind)" — closed the wrapper-loophole but required an agent to parse three clauses to synthesize the rule.
+   - Second pass made the constraint declarative and testable: `**Each section is its own top-level <table> in email_body — no parent element of any kind wraps these tables.**` Direct lead, single rule, "no parent element of any kind" rules out tables, divs, spans, anything else without enumeration. Plus explicit `Output shape:` line showing the literal HTML pattern: `<table width="100%" style="width:100%;">...</table>` repeated as siblings.
+
+### Deferred — 5 audit findings not addressed
+
+- **Cross-refs to `Rule: Image URLs`, `Rule: Image sourcing`, `Rule: Pre-check natural keys` lack inline content** — agents have the full corpus loaded in production; cross-refs are correct. False positive in production context (test prompt only shipped one rule).
+- **Pexels-with-fetch verification ambiguity** — wording is fine; over-verification is harmless.
+- **Gradient "first declaration" framing technically imprecise** — but 13/13 minion gradients across all tests followed the pattern correctly. Output evidence outweighs theoretical concern.
+- **Non-Pexels image size guidance** — over-engineering; never observed as a real failure mode.
+- **Terminology drift "section" vs "logical section" vs "sibling table"** — all three understood identically by every minion. False positive.
+
 ## [6.41.7] - 2026-04-28
 
 ### Changed — `notemplate` enum line in `createEmailTemplate` operation description tightened to imperative
