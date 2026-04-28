@@ -258,6 +258,16 @@ Without every requirement in this rule, BD errors on submit and the form won't f
 
 Never reach for CSS `display:none`, template string-manipulation, or JS hiding when a flag exists - the flags are the supported, audit-safe path and survive BD template re-generation.
 
+### Rule: Email template recipe
+
+**`email_body` opens at content tags — no page chrome.** BD wraps every template inside a parent `<td>` with `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` already provided. Including them double-wraps and breaks rendering. Open directly with `<p>`, `<table>`, `<div>`, `<h2>`, etc.
+
+**No `<style>` blocks — inline `style=""` only.** Outlook strips `<style>` and ignores most external rules. Move every styling declaration onto the element via the `style` attribute.
+
+**Backgrounds need a fallback color.** Outlook ignores `background: linear-gradient(...)`. Always pair gradients with a solid `background-color:` declared FIRST so Outlook falls back cleanly. Example: `style="background-color:#0A2540; background:linear-gradient(135deg,#0A2540,#1E5BC6);"`. Outlook reads only the first declaration; modern clients use the gradient.
+
+**`email_name` format — lowercase, hyphens, no spaces.** BD uses it as both unique identifier and internal lookup key; spaces and mixed case break referential matching. Pattern: `welcome-email`, `password-reset`, `lead-notification-admin`. Pre-check before `createEmailTemplate` per **Rule: Pre-check natural keys**.
+
 ### Rule: API key permissions
 
 **API key permissions are per-endpoint, toggled in BD Admin -> Developer Hub on the key.** A 403 "API Key does not have permission to access this endpoint" means THIS key is missing THIS endpoint.
@@ -758,7 +768,7 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 
 **Exceptions to the HTML-allowed rules:**
 
-- **Email body exception:** `<style>` blocks ARE allowed inside `email_body` - legitimate inlined email CSS. Still reject CSS-injection patterns inside.
+- **Email body — no `<style>` blocks.** Outlook strips them. Use inline `style=""` attributes only. See **Rule: Email template recipe** for full email-client constraints.
 - **Widget exception:** `widget_data`, `widget_style`, `widget_javascript` are exempt from all the patterns in this rule. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. `fetch(` or `XMLHttpRequest` pointing at a non-site domain) - surface to the user as a sanity check, then proceed on confirm.
 
 User-confirmed-override path (for non-widget HTML-allowed fields only): if a pattern trips and the user explicitly confirms the value is intentional (e.g. a legitimate SQL tutorial blog post containing "UNION SELECT ... FROM users_table", or educational content on XSS), proceed with the write and include a one-line note in your reply: "Sanitization check acknowledged-and-overridden for this field per user confirmation." Never silently skip the check - always surface and confirm.

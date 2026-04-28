@@ -807,7 +807,8 @@
             "type": "integer"
           },
           "email_name": {
-            "type": "string"
+            "type": "string",
+            "description": "Internal name for this template. Lowercase, hyphens, no spaces — see **Rule: Email template recipe**."
           },
           "email_type": {
             "type": "string"
@@ -818,7 +819,7 @@
           },
           "email_body": {
             "type": "string",
-            "description": "HTML + merge tags + widget embeds"
+            "description": "HTML + merge tags + widget embeds. See **Rule: Email template recipe** for body conventions (no page chrome, inline styles only, gradient fallbacks)."
           },
           "date_created": {
             "type": "string",
@@ -5623,7 +5624,7 @@
                 "properties": {
                   "email_name": {
                     "type": "string",
-                    "description": "Internal name for this email template (used by `[email-template name=...]` references and admin lookups)."
+                    "description": "Internal name for this email template (used by `[email-template name=...]` references and admin lookups). **Lowercase, hyphens, no spaces** (e.g. `welcome-email`, `password-reset`, `lead-notification-admin`) — see **Rule: Email template recipe**."
                   },
                   "email_subject": {
                     "type": "string",
@@ -5631,7 +5632,7 @@
                   },
                   "email_body": {
                     "type": "string",
-                    "description": "HTML body + merge tags. Supports `%%%merge_tag%%%` tokens. `<style>` blocks allowed (legitimate inline email CSS)."
+                    "description": "HTML body — start at content tags (`<p>`, `<table>`, `<div>`, etc.). Do NOT include `<!DOCTYPE>`/`<html>`/`<head>`/`<body>` (BD wraps in its own template). No `<style>` blocks — inline `style=\"\"` only (Outlook strips `<style>`). Gradients need a fallback `background-color:` first. Supports `%%%merge_tag%%%` tokens and `[widget=Name]` shortcodes. See **Rule: Email template recipe**."
                   },
                   "email_type": {
                     "type": "string"
@@ -5723,7 +5724,7 @@
                   },
                   "email_body": {
                     "type": "string",
-                    "description": "HTML body of the email. Supports %%%merge_tokens%%% and [widget=Name] shortcodes."
+                    "description": "HTML body of the email. Supports `%%%merge_tokens%%%` and `[widget=Name]` shortcodes. See **Rule: Email template recipe** for body conventions (no page chrome, inline styles only, gradient fallbacks)."
                   },
                   "email_type": {
                     "type": "string"

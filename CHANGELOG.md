@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.40.98] - 2026-04-28
+
+### Added — `Rule: Email template recipe` covering body chrome, inline styles, gradient fallbacks, and `email_name` format
+
+New corpus rule capturing four BD email-template conventions agents currently have to infer:
+
+- **`email_body` opens at content tags** — BD wraps the template inside a parent `<td>` with `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` already provided. Including those tags double-wraps and breaks rendering. Open directly with `<p>`, `<table>`, `<div>`, etc.
+- **No `<style>` blocks — inline `style=""` only.** Outlook strips `<style>` and ignores most external rules. Every styling declaration goes onto the element via `style=""`.
+- **Gradient backgrounds need a fallback color first.** Outlook ignores `background: linear-gradient(...)`. Always pair with a solid `background-color:` declared FIRST so Outlook falls back cleanly: `style="background-color:#0A2540; background:linear-gradient(135deg,#0A2540,#1E5BC6);"`.
+- **`email_name` format — lowercase, hyphens, no spaces.** BD uses it as both unique identifier and internal lookup key; spaces and mixed case break referential matching. Pattern: `welcome-email`, `password-reset`, `lead-notification-admin`.
+
+### Changed — `Rule: Input sanitization` email exception walked back
+
+Previously: `**Email body exception:** <style> blocks ARE allowed inside email_body`. That contradicts Outlook reality. Updated to: `**Email body — no <style> blocks.** Outlook strips them. Use inline style="" attributes only.` Cross-references the new email-template recipe rule for full client-compat constraints.
+
+### Changed — three `email_body` and `email_name` spec field descriptions cross-ref the new rule
+
+`createEmailTemplate.email_name`, `createEmailTemplate.email_body`, `updateEmailTemplate.email_body`, and the read-side `email_name`/`email_body` schema entries all now point at **Rule: Email template recipe** and surface the key constraints inline.
+
 ## [6.40.97] - 2026-04-28
 
 ### Changed — Codex Desktop Step 1 download link
