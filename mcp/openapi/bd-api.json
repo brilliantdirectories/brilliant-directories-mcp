@@ -1655,7 +1655,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -1828,7 +1828,7 @@
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -1979,7 +1979,7 @@
                   },
                   "signup_date": {
                     "type": "string",
-                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
+                    "description": "User signup date. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. BD auto-fills on create — omit unless backfilling legacy signup dates during import/migration."
                   },
                   "profession_id": {
                     "type": "integer",
@@ -2136,7 +2136,7 @@
                   },
                   "last_login": {
                     "type": "string",
-                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
+                    "description": "Timestamp of user's last login. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. BD updates on each login — omit unless backfilling historical data during import/migration."
                   },
                   "filename": {
                     "type": "string",
@@ -3803,15 +3803,15 @@
                   },
                   "post_live_date": {
                     "type": "string",
-                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Usually auto-set on create; override only for import/migration."
+                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. Usually auto-set on create; override only for import/migration."
                   },
                   "post_start_date": {
                     "type": "string",
-                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
+                    "description": "Scheduled publish date — when the post becomes visible on the public site. Set a future timestamp to schedule (like WordPress's future-publish); set a past timestamp for immediate visibility. REQUIRED on Event post types (marks when the event begins); optional but commonly used on blog/article/news post types for scheduled publishing. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value."
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value."
                   },
                   "post_video": {
                     "type": "string",
@@ -3969,15 +3969,15 @@
                   },
                   "post_live_date": {
                     "type": "string",
-                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
+                    "description": "Creation date stored on the post. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value."
                   },
                   "post_start_date": {
                     "type": "string",
-                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
+                    "description": "Scheduled publish date — when the post becomes visible on the public site. Set a future timestamp to schedule (like WordPress's future-publish); set a past timestamp for immediate visibility. REQUIRED on Event post types (marks when the event begins); optional but commonly used on blog/article/news post types for scheduled publishing. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value."
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value."
                   },
                   "post_video": {
                     "type": "string",
@@ -7702,7 +7702,7 @@
                   },
                   "date": {
                     "type": "string",
-                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. Optional — omit unless backfilling historical data."
                   },
                   "avg_price": {
                     "type": "number"
@@ -7765,7 +7765,7 @@
                   },
                   "date": {
                     "type": "string",
-                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. Optional — omit unless backfilling historical data."
                   }
                 }
               }
@@ -8169,7 +8169,7 @@
                   },
                   "date_added": {
                     "type": "string",
-                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value. Optional — omit unless backfilling historical data."
+                    "description": "Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. Optional — omit unless backfilling historical data."
                   }
                 }
               }

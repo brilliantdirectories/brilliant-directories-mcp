@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.35] - 2026-04-28
+
+### Changed — `post_start_date` semantic clarified, Bucket-B canonical sentence tightened (no behavior change)
+
+`post_start_date` (createSingleImagePost / updateSingleImagePost) was described as event-only but it's BD's scheduled-publish field for ANY post type — set a future timestamp to schedule a blog/article/news post for future visibility (WordPress-style future-publish). Description now leads with the scheduled-publish capability and keeps Event post types as a special case.
+
+Tightened canonical site-tz sentence on all 13 Bucket-B field descriptions. The `(14-digit, no separators — e.g. \`20260429180530\`)` parenthetical was redundant — `\`YYYYMMDDHHmmss\`` already conveys the format unambiguously. Saves ~62 chars per field × 13 fields = ~800 chars of repeated boilerplate.
+
+New canonical sentence: `Format: \`YYYYMMDDHHmmss\` in the site's timezone. BD silently truncates other formats, corrupting the value.`
+
+Affected fields: signup_date, last_login (createUser + updateUser), post_live_date / post_start_date / post_expire_date (createSingleImagePost + updateSingleImagePost), createMemberSubCategoryLink.date, updateMemberSubCategoryLink.date.
+
 ## [6.41.34] - 2026-04-28
 
 ### Changed — Wrapper now owns `revision_timestamp` on create AND update across every wrapper-managed table (closes BD's Eastern-time leak)
