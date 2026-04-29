@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.44] - 2026-04-30
+
+### Fixed — `order_column` validity rule added to corpus (real-world miss caught by user)
+
+User reported: an agent called `listUsers` with `{order_column: "date_added", order_type: "DESC"}` and got `{status: error, total: 0}`. Confirmed live: `date_added` is not a column on `users_data` — the create-time column on that table is `signup_date`. Same query with `signup_date` returns 46 rows correctly.
+
+Worse: BD's invalid-`order_column` response is **inconsistent across tables**:
+- `listUsers` and `listSingleImagePosts` → `status: error, total: 0`
+- `listLeads` → `status: success, total: 2` (silently drops the sort, returns unsorted)
+- `listUsers` with truly bogus column name → `status: success, total: 46` (silently drops)
+
+Updated `Rule: Pagination` envelope notes to call out the constraint:
+
+> `order_column` must be a REAL column on the underlying table — same constraint as filter `property`. Wrong column name returns `{status: error, total: 0}` on most tables, OR silently drops the sort on others. If unsure, verify via `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields`.
+
+Logged the BD-side inconsistency in `INTERNAL-FINAL-MCP-TODOS.md` as a Phase 3 ask: pick one behavior (clean error OR silent-drop) and apply uniformly across all `list*` endpoints. Either is fine; the inconsistency is the bug.
+
+No code change. Drift check clean.
+
 ## [6.41.43] - 2026-04-30
 
 ### Fixed — Two CSV-format rules contradicted each other; clarified WRITE vs FILTER layer
