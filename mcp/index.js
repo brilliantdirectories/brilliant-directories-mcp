@@ -963,11 +963,11 @@ const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"])
 const WRITE_KEEP_SETS = {
   // Users
   createUser: ["user_id","first_name","last_name","company","email","filename","active","status","subscription_id","profession_id"],
-  updateUser: ["user_id","first_name","last_name","company","email","filename","active","status","subscription_id","profession_id"],
+  updateUser: ["user_id","first_name","last_name","company","email","filename","active","status","subscription_id","profession_id","modtime"],
 
   // Single-image posts
-  createSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image"],
-  updateSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image"],
+  createSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image","revision_timestamp"],
+  updateSingleImagePost: ["post_id","post_title","post_filename","post_type","user_id","post_status","data_id","data_type","system_name","data_name","post_image","revision_timestamp"],
 
   // Multi-image posts
   createMultiImagePost: ["group_id","group_name","group_filename","user_id","group_status","data_id","data_type","system_name","data_name","revision_timestamp"],
@@ -987,8 +987,8 @@ const WRITE_KEEP_SETS = {
   updateSubCategory: ["service_id","name","filename","profession_id","master_id","revision_timestamp"],
 
   // Web pages
-  createWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
-  updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","revision_timestamp"],
+  createWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","date_updated","revision_timestamp"],
+  updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","date_updated","revision_timestamp"],
 
   // Widgets — full echo includes widget_data/widget_style/widget_javascript
   // which can be 200KB+ on large widgets (e.g. Admin - Froala Editor Scripts
@@ -998,8 +998,8 @@ const WRITE_KEEP_SETS = {
   updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
   createMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
   updateMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
-  createEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate"],
-  updateEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate"],
+  createEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
+  updateEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the

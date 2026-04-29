@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.30] - 2026-04-29
+
+### Changed — PR 3: corpus rewrite + WRITE_KEEP_SETS audit (timestamp project closeout)
+
+Closes the wrapper-managed system timestamps project end-to-end. PR 1 shipped helpers, PR 2 wired the registry and stripped Bucket-C fields from input schemas. PR 3 finishes by aligning the corpus and the write-response echoes with the new contract.
+
+**Corpus rule rewrite (`Rule: Update timestamps` → `Rule: System timestamps`):**
+
+- New rule documents the wrapper-owned contract: `revision_timestamp`, `date_updated`, `modtime` are all wrapper-owned now; agents do nothing.
+- Brief warning about BD's read-side render-format inconsistency across sibling fields on the same record (`post_live_date` ISO vs `post_start_date` 14-char on the same `getSingleImagePost` row) — agents shouldn't compute durations across mixed-format fields.
+- Bucket-B agent-set fields (`signup_date`, `last_login`, `post_live_date`/`post_start_date`/`post_expire_date`, `member_sub_category_link.date`, `user_photo.date_added`) listed with the canonical site-tz format sentence.
+
+**`WRITE_KEEP_SETS` audit:**
+
+Every keep-set now echoes the wrapper-owned timestamps it applies, so agents see the freshly-written values in create/update responses without a follow-up GET. Specific changes (mirrored Worker + npm):
+
+- `updateUser`: added `modtime`
+- `createSingleImagePost` / `updateSingleImagePost`: added `revision_timestamp`
+- `createWebPage` / `updateWebPage`: added `date_updated` (`revision_timestamp` was already there)
+- `createEmailTemplate` / `updateEmailTemplate`: added `revision_timestamp`
+
+Other keep-sets (Widget, MultiImagePost, TopCategory, SubCategory, MultiImagePostPhoto, etc.) already echoed the relevant timestamps from prior changes.
+
+**Internal todo file:** section 3 (`Wrapper-managed system timestamps`) flipped to SHIPPED with full per-table breakdown of registry entries and the resolved sub-items.
+
+Drift check exits clean. Worker `tsc --noEmit` clean.
+
 ## [6.41.29] - 2026-04-29
 
 ### Added — PR 2: Wrapper-managed system timestamps live (Bucket-D fix)

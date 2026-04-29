@@ -653,28 +653,20 @@ Do NOT call `updateUserMeta` directly for these — use the parent tool. Fields 
 
 Be SURGICAL - only delete meta rows where `database_id` exactly matches the deleted page's `seo_id`; NEVER bulk-delete across other `database_id` values or other `database` table values.
 
-### Rule: Update timestamps
+### Rule: System timestamps
 
-**Timestamps - treat as REQUIRED on every update, even though BD doesn't enforce them.** BD does NOT auto-populate `revision_timestamp` or `date_updated` on update (live-verified: an `updateWidget` call that omits both leaves them at their prior values even though the rest of the record changed). If an agent skips them, admin-UI "Last Update" displays stay stale, "recently updated" sorts lie, cache invalidation can misfire, and audit trails become unreliable.
+**System timestamps (`revision_timestamp`, `date_updated`, `modtime`) are wrapper-owned — agent does nothing.** The MCP wrapper resolves the site's timezone (`getSiteInfo.timezone`), renders the current time in that tz, and writes the field directly to the wire on every applicable `create*` / `update*`. Agents never see these fields in input schemas, never pass them, never have to think about them. Cache-busting, "Last Update" displays, audit trails — all reliable.
 
-**Always include them in every `update*` payload.** The tool schema doesn't list these fields explicitly, but the MCP wrapper forwards unlisted keys verbatim, so sending them works.
+**Sibling-field render-format inconsistency (read-side only).** BD's read-back formatters aren't consistent across fields on the same record — e.g. `post_live_date` returns as ISO (`2026-04-28T17:23:40+00:00`) while `post_start_date` returns as 14-char (`20260428172340`) on the same `getSingleImagePost` row. Don't compute durations or sort across mixed-format timestamp fields without normalizing first. This is a BD read-formatter quirk, not a wrapper concern.
 
-**Formats:**
+**Bucket-B agent-set fields (rare, backfill only).** A small set of timestamps still belong to the agent — only when the agent has a specific reason to set a non-current value (historical backfill, migration import, scheduled events). These remain in the input schema with the canonical format sentence on each:
 
-- `revision_timestamp` -> `YYYY-MM-DD HH:mm:ss` (dashes + colons, e.g. `2026-04-20 19:34:51`). Universal across widgets, forms, email templates, top categories, sub-categories, post types, membership plans, users_meta, AND list_seo WebPages.
-- `date_updated` -> resource-dependent:
-  - Widgets: `YYYY-MM-DD HH:mm:ss` (same as revision_timestamp).
-  - list_seo WebPages: `YYYYMMDDHHmmss` (no separators, e.g. `20260420193451`).
-  - Same field name, different formats - verify against the GET response.
-- `date_added` on users_meta -> `YYYYMMDDHHmmss`.
+- `createUser.signup_date` / `last_login` — backfill legacy member data.
+- `createSingleImagePost.post_live_date` / `post_start_date` / `post_expire_date` — campaign / event scheduling.
+- `createMemberSubCategoryLink.date` — historical association timestamps.
+- `createUserPhoto.date_added` — backfill.
 
-**Which fields per resource:**
-
-- Widgets - both (both dashes-and-colons).
-- WebPages - both (`revision_timestamp` plus `date_updated`, each in its own format per the **Formats** sub-section in this rule).
-- Forms, email templates, categories, sub-categories, post types, membership plans, users_meta - `revision_timestamp` only.
-
-Set the current time in every exposed timestamp field on every update. On create, BD usually seeds initial timestamps server-side, but passing them explicitly is safe and recommended.
+Format for all Bucket-B fields: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats to 14 chars, corrupting the value.
 
 ### Rule: Member search SEO pages
 
