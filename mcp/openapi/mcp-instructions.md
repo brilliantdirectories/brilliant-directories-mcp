@@ -482,7 +482,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 - Single-value operator + CSV → `Operator "X" does not accept CSV values; use "in" or "not_in"`
 - `between` reversed range → `received reversed range "5,1"; pass values in low,high order`
 - `between` wrong cardinality → `requires exactly 2 values`
-- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`
+- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`. **Bidirectional `%foo%` is also rejected** with the same misleading "missing wildcard" error — BD's WAF strips one of the `%` chars before the validator sees it. Use single-anchor `foo%` (starts-with) or `%foo` (ends-with). For substring search, run both queries and union client-side, OR use the `_` single-char wildcard which survives the WAF intact.
 - Unknown operator → `Unrecognized filter operator "X"`
 
 **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
@@ -599,6 +599,8 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 ### Rule: URL slug rename
 
 **URL slug on rename — posts + albums only.** `post_filename` / `group_filename` are writable; renames don't regenerate them. Slugify the new title and compare to the current slug — if <50% tokens overlap, suggest two follow-ups (do NOT execute without approval): update the slug, and `createRedirect old_filename=<old_slug> new_filename=<new_slug>`. Stay silent on typo fixes or title tweaks that keep the same keywords. Before `createRedirect`, filter `listRedirects property=old_filename&property_value=<old_slug>&property_operator==` — if a row exists, update it instead of creating a second one. (BD blocks `old==new`; don't bother pre-checking.) Always verify the slug actually changed via `get*` after the update — if BD returned `success` but the slug is unchanged, the MCP client is on a stale tool schema that dropped the field; reconnect, don't create a redirect pointing at a 404. Rule excludes WebPage slugs — those are locked to page type.
+
+**Top/Sub category rename — bound-page guard fires on first match only.** `updateTopCategory` / `updateSubCategory` rename rejects when ANY `seo_type=profile_search_results` page contains the old slug as a path segment. The error names ONE blocking page; if multiple pages share that segment, fixing one and retrying will hit the next. **Pre-flight all bound pages BEFORE attempting the rename.** Run two filtered LIKE queries (bidirectional `%foo%` is rejected — see **Rule: Filter operators**): `listWebPages property=filename property_value=<slug>% property_operator=like` (right-anchor) AND `listWebPages property=filename property_value=%<slug> property_operator=like` (left-anchor); union the results client-side. On a real directory site this typically surfaces 5-10 pillar + city-spoke pages bound to one sub-category slug. Address all of them in one pass (rename each page's filename + create a redirect for each), then attempt the category rename. Going one-at-a-time burns rate limit and creates a half-renamed taxonomy mid-flight.
 
 ### Rule: Site grounding
 

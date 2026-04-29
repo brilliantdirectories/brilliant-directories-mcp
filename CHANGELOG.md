@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.47] - 2026-04-30
+
+### Added — Two corpus updates from cold-agent deep-dive (verified live)
+
+**LIKE bidirectional `%foo%` rejection.** Verified live: `property_operator=like property_value=%strength-training%` is rejected with the misleading error `requires a SQL wildcard (% or _)` — the validator strips one of the `%` chars before counting. Single-anchor `foo%` and `%foo` both work. Updated `Rule: Filter operators` validation list with the gotcha + workaround (two queries union client-side, OR use the `_` wildcard which survives intact).
+
+**Multi-bound-page rename caveat.** Verified live: 6 pages on the test site contain `strength-training` as a path segment (1 pillar + 5 city spokes). `updateSubCategory` bound-page guard reports ONE offending page per attempt; fixing it and retrying hits the next. Updated `Rule: URL slug rename` with a pre-flight pattern: union right-anchor + left-anchor LIKE queries to surface ALL bound pages before starting the rename, address them in one pass, then rename the category.
+
+### Triaged — Other findings
+
+- **`listLeadMatches` empty-state quirk** — Claude reported it was fixed (now returns standard envelope). VERIFIED LIVE: still returns `{status: error, message: "lead_matches not found"}`. Corpus is correct as-is. No change.
+- **`matchLead` "Nothing to Match" failure modes** — real but `matchLead` already in tool catalog with prose; lower priority. Logged in `INTERNAL-FINAL-MCP-TODOS.md` as a future enhancement (better error decomposition: distinguish missing geo vs sentinel `top_id=-1` vs no eligible members).
+- **createUser auto-creates taxonomy by name** — corpus already covers it (Create vs update asymmetry rule). Phase 3 wishlist item: `profession_name_must_exist=1` flag or `_warning` echo on auto-create.
+- **`order_column=date_added`** — already shipped in v6.41.44/45.
+- **`users_data.services` dual representation** — already shipped in v6.41.46.
+
+No code change. Drift check clean.
+
 ## [6.41.46] - 2026-04-30
 
 ### Added — `users_data.services` dual-representation trap documented
