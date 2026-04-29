@@ -1842,37 +1842,37 @@ function validateDatetime14InArgs(args) {
 const TIMESTAMP_TABLE_RULES = [
   { create: "createWebPage", update: "updateWebPage", fields: [
     { field: "date_updated",        format: "14", when: "both" },
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
   { create: "createWidget", update: "updateWidget", fields: [
     { field: "date_updated",        format: "14", when: "both" },
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
-  { create: "createForm",         update: "updateForm",         fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createFormField",    update: "updateFormField",    fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createMenu",         update: "updateMenu",         fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createMenuItem",     update: "updateMenuItem",     fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createTopCategory",  update: "updateTopCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createSubCategory",  update: "updateSubCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createDataType",     update: "updateDataType",     fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createForm",         update: "updateForm",         fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createFormField",    update: "updateFormField",    fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createMenu",         update: "updateMenu",         fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createMenuItem",     update: "updateMenuItem",     fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createTopCategory",  update: "updateTopCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createSubCategory",  update: "updateSubCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
+  { create: "createDataType",     update: "updateDataType",     fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
   { update: "updatePostType",                                   fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createMembershipPlan", update: "updateMembershipPlan", fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createMembershipPlan", update: "updateMembershipPlan", fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
 
   { create: "createSingleImagePost", update: "updateSingleImagePost", fields: [
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
   { create: "createMultiImagePost", update: "updateMultiImagePost", fields: [
     { field: "date_updated",        format: "14", when: "both" },
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
   { create: "createMultiImagePostPhoto", update: "updateMultiImagePostPhoto", fields: [
     { field: "photo_date_added",   format: "14", when: "create" },
     { field: "photo_date_updated", format: "14", when: "both" },
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
   { create: "createEmailTemplate", update: "updateEmailTemplate", fields: [
     { field: "date_created",       format: "14", when: "create" },
-    { field: "revision_timestamp", format: "19", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "both" },
   ]},
   { create: "createTag", update: "updateTag", fields: [
     { field: "created_at", format: "19", when: "create" },

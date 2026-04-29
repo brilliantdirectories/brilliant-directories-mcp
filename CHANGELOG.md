@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.34] - 2026-04-28
+
+### Changed — Wrapper now owns `revision_timestamp` on create AND update across every wrapper-managed table (closes BD's Eastern-time leak)
+
+Live probe (BD admin manual widget create) confirmed BD's MySQL `current_timestamp()` DEFAULT runs in BD's host timezone (Eastern) regardless of the site's configured timezone. Every previously-update-only `revision_timestamp` was leaking ET on create, then snapping to site-tz on the next update. Inconsistent + wrong.
+
+Flipped 12 registry entries from `when: "update"` → `when: "both"` so the wrapper writes site-tz on EVERY write, no exceptions:
+
+- createWebPage / updateWebPage: revision_timestamp
+- createWidget / updateWidget: revision_timestamp
+- createForm / updateForm, createFormField / updateFormField, createMenu / updateMenu, createMenuItem / updateMenuItem, createTopCategory / updateTopCategory, createSubCategory / updateSubCategory, createDataType / updateDataType, createMembershipPlan / updateMembershipPlan: revision_timestamp
+- createSingleImagePost / updateSingleImagePost: revision_timestamp
+- createMultiImagePost / updateMultiImagePost: revision_timestamp
+- createMultiImagePostPhoto / updateMultiImagePostPhoto: revision_timestamp
+- createEmailTemplate / updateEmailTemplate: revision_timestamp
+
+Unchanged (intentional `update`-only):
+- updatePostType: no createPostType in our catalog
+- updateLead, updateReview: BD-PHP fills these on create natively per Phase A probe (separate behavior class)
+- updateUser.modtime, updateUserMeta.revision_timestamp: BD-PHP fills modtime/revision on create
+
+Set-once `when: "create"` semantics preserved for fields that should NOT bump on update (lead_matched, date_created on email templates, photo_date_added, created_at on tags/tag_groups/tag_relationships, smart_list_created, date_added on userPhoto). Those continue to write once on create and stay static forever.
+
+Result: every wrapper-managed timestamp is site-tz on every write. No ET leakage anywhere in wrapper-owned territory. Mirrored byte-identically across Worker (`brilliant-directories-mcp-hosted/src/index.ts`) and npm (`mcp/index.js`).
+
 ## [6.41.33] - 2026-04-28
 
 ### Changed — Bucket-B canonical sentence byte-aligned across all SingleImagePost date fields (no behavior change)
