@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.45] - 2026-04-30
+
+### Added — Safe time-ordering columns per table in `Rule: Pagination`
+
+Cold-agent simulation report flagged that `signup_date` and `modtime` should be explicitly listed as safe sort columns for `users_data` (since `date_added` is the tempting wrong name that fails). Expanded the `order_column` warning into a per-table reference table covering `users_data`, `data_posts`, `list_seo`, and `leads` — agents now have a quick lookup for known-good time columns without having to call `getUserFields` etc. unless going off-list.
+
+Other items from the same simulation report triaged as non-actionable:
+- "Duplicate Senior Fitness sub-categories on test site" — corpus already documents BD doesn't enforce `name` uniqueness; live data quirk on test site, not a corpus issue.
+- "Junk `mx-tc-*` rows in `list_professions`" — leftover stress-test data on test site; not a corpus concern.
+- "`tool_search` loading model awkward / huge descriptions" — MCP-client UX concern; tool descriptions are the agent contract and can't be tiered without breaking the spec.
+
+No code change. Drift check clean.
+
 ## [6.41.44] - 2026-04-30
 
 ### Fixed — `order_column` validity rule added to corpus (real-world miss caught by user)
