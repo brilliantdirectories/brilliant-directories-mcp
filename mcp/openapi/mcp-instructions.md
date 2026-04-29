@@ -383,7 +383,7 @@ Other endpoints (leads, tags, menus, etc.) return full rows - budget context wit
 
 **Envelope:**
 
-- `total`, `current_page`, `total_pages` arrive as STRINGS - cast before arithmetic.
+- `total` arrives as a STRING; `current_page` and `total_pages` arrive as numbers. Cast `total` before arithmetic.
 - Stop condition: `current_page >= total_pages`, NOT `next_page === ""` (non-empty on last page is normal).
 - Default sort on most `list*` is modtime-ish, NOT by primary key - pass `order_column` for deterministic order.
 
@@ -427,9 +427,9 @@ Example: 118 members at `limit=10` = 12 calls.
 **Multi-condition AND is not currently supported through this wrapper** (queued fix). Today's narrowing must be a SINGLE filter per call. If the user's intent needs `(A=1 AND B=2)`, pick whichever condition is more selective for the filtered call, then filter the second condition client-side from the results.
 
 **Pre-narrow checks for common requests:**
-- "How many X?" — `limit=1`, return `total`. One call, done. Don't fetch all rows.
+- **"How many X?" — `limit=1` returns the full count in the `total` field.** One row of payload, one call. Works on every `list*` endpoint. Combine with filters to count subsets: `listUsers limit=1 property=active property_value=2 property_operator=eq` returns the count of active members in one call. `total` is a STRING — cast before arithmetic. **Use this for ANY count question** — never fetch all rows just to count them.
 - "Top N by Y" — if Y is a sortable column, use `order_column=Y order_type=DESC limit=N`. If Y is a derived/computed metric (member count, revenue), narrow the fan-out first per **Rule: Filter operators**.
-- "Find rows where X is unset" — use `is_not_null` (knowing it false-positives on empty strings) plus client-side trim. Until `is_set`/`is_not_set` lands.
+- "Find rows where X is set/populated" — use `is_not_null` on columns where unset = real NULL (e.g. `users_data.logo`); on empty-string-storing columns (`list_seo.h2`, many text fields) it false-positives empty rows, so paginate and trim client-side. "Find rows where X is unset" — `is_null` is currently broken; paginate and filter client-side.
 - "Recent activity" — date-pivot operators (`signup_date gte`, `last_login gte`, etc.) on the appropriate timestamp column.
 
 **Token-budget guidance.** A typical `listUsers` row is 2-5 KB lean (more with `include_*` flags). 1,000 rows ≈ 3-5 MB of context. Most agent context windows can't hold that AND the conversation. Default to filtering, summarize after each batch, or page-and-discard.
@@ -438,20 +438,18 @@ Example: 118 members at `limit=10` = 12 calls.
 
 **Filter properties (`property` / `property_value` / `property_operator`) must reference a REAL persisted column - never guess, never filter on DERIVED response fields.** This is the one case where the universal "schema-is-documentation" rule (write any field you see on GET) does NOT extend to FILTER: writes accept unlisted real columns, filters do not.
 
-**Known derived fields silently unfilterable** (appear on GET responses but are computed/joined server-side, not columns on the underlying table):
+**Known derived fields are unfilterable** (appear on GET responses but are computed/joined server-side, not columns on the underlying table — filtering returns `total: 0` regardless of the value):
 
 - `listUsers` (complete verified set): `full_name`, `status`, `user_location`, `image_main_file`, `card_info`, `revenue`, `subscription_schema`, `profession_schema`, `photos_schema`, `services_schema`, `tags`, `user_clicks_schema`, `transactions`
 - Similar derived-field patterns exist on posts/leads/reviews
 
 If unsure what's filterable, call the fields endpoint for the authoritative column list: `getUserFields`, `getSingleImagePostFields`, `getMultiImagePostFields`, `getPostTypeCustomFields`.
 
-**Silent-drop detection (critical sanity check):** BD returns `status: success` with the FULL unfiltered `total` when the filter is silently dropped (bad operator, unknown column, derived field, unsupported value-shape). After every filtered call, compare filtered `total` vs. a known unfiltered `total` - if equal, your filter was dropped and you have the full table.
-
-The error envelope `{status: "error", message: "<X> not found", total: 0}` fires for bad `property` NAME, bad cursor, bad `order_column`, LIKE-with-wildcards (see **Rule: Filter operators**), AND legitimate empty results - all indistinguishable; treat as "zero or malformed." Observed `<X>` variants: `user`, `record`, `data_categories`, internal table names.
+**Empty-result envelope** (verified live through the wrapper): unknown column NAME, derived/computed field, and legitimate "no match" all collapse into `{status: "success", message: [], total: 0, current_page: 1, total_pages: 0, next_page: ""}` — indistinguishable from each other. Treat `total: 0` as "either filter dropped or genuinely empty"; cross-check column names against `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` if you suspect a typo. Bad operators, CSV-shape mismatches, and unknown `property_operator` values are caught by the wrapper validator and return `status: error` with a descriptive message — see **Rule: Filter operators**.
 
 ### Rule: Filter operators
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition AND.
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call; multi-condition AND is not currently supported through this wrapper (intersect client-side from two filtered calls).
 
 **Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params before the request reaches PHP — symbol forms are unreachable on this endpoint. Word-form aliases survive the WAF.
 
@@ -472,7 +470,7 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 | `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
 | `is_not_null` | value param ignored | `property=logo&property_operator=is_not_null` |
 
-**CSV format:** comma-separated, plain values. Spaces around values are tolerated (`1, 2, 3` works). Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) for `in`/`not_in`/`between` — array-syntax is reserved for multi-condition AND across DIFFERENT operators (see below).
+**CSV format:** comma-separated, plain values. Spaces around values are tolerated (`1, 2, 3` works). Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — the wrapper expects scalar `property_value` strings only.
 
 **Case sensitivity:**
 - **Operator names: case-insensitive.** `eq`, `EQ`, `Eq` all work — BD normalizes case server-side. Same for every operator. Lowercase is canonical for readability.
@@ -489,8 +487,6 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 - `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`
 - Unknown operator → `Unrecognized filter operator "X"`
 
-**Multi-condition AND** via array syntax. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]`. Mix any working operators freely.
-
 **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
 
 **No native OR across different fields.** `in` is OR within one field's values. For `A=X OR B=Y` across two fields, make two filtered calls and merge client-side.
@@ -499,15 +495,16 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 
 **Currently broken server-side — do not use, will be fixed in upcoming BD push:**
 
-- `is_null` (all forms) — returns `status: error, message: "<table> not found"` on tables with NULL rows where the operator should match. Workaround: paginate and filter client-side until BD fixes.
+- `is_null` — wrapper rejects with `Unrecognized filter operator` because BD's underlying handler returns `status: error, "<table> not found"` instead of matching NULL rows. Workaround: paginate and filter client-side until BD fixes.
+- `is_not_null` does literal SQL `IS NOT NULL`, NOT directory-UI "is populated". On empty-string columns (`list_seo.h2`, many `users_data` text fields) it false-positives every empty-string row. Use only on columns where unset = real NULL (e.g. `users_data.logo`).
 
 ### Rule: Silent-drop check
 
-**Silent-drop sanity check.** BD returns `status: success` with the FULL unfiltered `total` when a filter is silently dropped (bad operator, unknown column, derived field, `is_null` without the empty `property_value=`, broken operators in **Rule: Filter operators**). After every filtered call, compare filtered `total` vs. a known unfiltered `total` — if equal, your filter was dropped.
+**`total: 0` is ambiguous through this wrapper.** Unknown column NAME, derived/computed field, and legitimate "no match" all return the same `{status: success, message: [], total: 0}` envelope. If a filtered call returns 0 and you expected matches, verify the `property` is a real persisted column via `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` before concluding the table is empty. Bad operator name, CSV-shape mismatch, and other validator-catchable issues return `status: error` (no ambiguity).
 
 ### Rule: Empty-string filtering
 
-**Finding empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL). `is_null` matches only real NULLs; empty strings won't match. For empty-string hunts, paginate with `limit=10` and filter client-side. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
+**Finding empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL). `is_null` is currently rejected by the wrapper, and `is_not_null` does literal SQL (matches empty strings as "populated"). For empty-string hunts, paginate with `limit=100` and filter client-side. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
 
 ### Rule: Category SEO routing
 

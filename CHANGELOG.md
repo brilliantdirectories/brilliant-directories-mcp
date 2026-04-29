@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.39] - 2026-04-30
+
+### Fixed — Corpus filter rules audited live against deployed wrapper, drifted claims corrected
+
+Lawyer-contract audit ran against the deployed v6.41.38 wrapper. Several corpus claims didn't match live behavior — corrected. PR 5166's hardening collapsed several error envelopes that the corpus still described from the pre-hardening era.
+
+**Fact corrections in `mcp/openapi/mcp-instructions.md`:**
+
+- **Pagination type mismatch** — corpus said `total` + `current_page` + `total_pages` all arrive as STRINGS. Live verification: only `total` is a string; `current_page` and `total_pages` are real numbers. Updated to the actual mixed-type shape.
+- **Silent-drop on bad column** — corpus claimed BD returns `status:success` with FULL unfiltered `total` when filter dropped silently. Live behavior post-PR-5166: returns `total:0, message:[]` (filter respected as zero-match). Old heuristic ("compare filtered vs unfiltered total to detect drop") no longer works — rewrote `Rule: Filter real columns` and `Rule: Silent-drop check` to match.
+- **Bad property name response shape** — corpus said `{status:error, message:"<X> not found", total:0}`. Live: `{status:success, message:[], total:0}`. Rewrote.
+- **`is_null` rejection point** — corpus said BD returns `"<table> not found"`. Live: wrapper validator rejects with `Unrecognized filter operator` before BD ever sees the call. Updated.
+- **"Find rows where X is unset"** — old recipe said use `is_not_null`. That returns POPULATED rows, not unset. Inverted; noted `is_null` is broken so true unset-hunts must paginate client-side until B4/B5 lands.
+- **Array-syntax self-contradiction** — corpus advertised `property[]=...&property_value[]=...&property_operator[]=...` in two places while denying it in a third. Stripped both advertisements; one consistent voice now: "one operator per call, intersect client-side."
+- **Empty-string filtering pagination size** — bumped suggested `limit=10` → `limit=100` (more efficient given the count trick now exists).
+
+**Promoted the count trick** in `Rule: Narrow before fetching`:
+
+> "How many X?" — `limit=1` returns the full count in the `total` field. Works on every `list*` endpoint. Combine with filters to count subsets in one call. **Use this for ANY count question — never fetch all rows just to count them.**
+
+**`is_not_null` literal-SQL semantic gap** — added to "currently broken server-side" subsection (was missing). False-positives on empty strings (`list_seo.h2` returns 70 not 50).
+
+### Internal — TODO renamed Phase 2 → Phase 3
+
+`INTERNAL-FINAL-MCP-TODOS.md` operator wishlist renamed Phase 2 → Phase 3 (Phase 1 = symbol-form fixes shipped earlier; Phase 2 = the wrapper allowlist + corpus rule rewrite that just shipped in v6.41.36-38; Phase 3 = the BD-side new operators + wrapper enhancements). New audit-minion findings block added with three wrapper opportunities surfaced today.
+
+No code change in this release. Corpus + version stamps only. Drift check clean.
+
 ## [6.41.38] - 2026-04-30
 
 ### Added — `Rule: Narrow before fetching` corpus rule (decision logic for when to use filter operators)
