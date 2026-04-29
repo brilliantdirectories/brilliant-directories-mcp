@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.46] - 2026-04-30
+
+### Added — `users_data.services` dual-representation trap documented
+
+Cold-agent deep-dive flagged: `users_data.services` field can hold either CSV of integer IDs (`"3,4,5"`) OR a single Sub Category name string (`"Weight Loss"`) depending on how the row was originally written. Verified live: User 64 has integer CSV, User 27 has name string. Same column, two shapes — silently breaks any agent code that assumes one shape.
+
+Added a paragraph to the existing "Write-time params ECHO on reads" section explaining the dual-representation, recommending `services_schema` (via `include_services=1`) as canonical read path, and recommending integer IDs on writes.
+
+### Logged — bound-page guard is asymmetric (Phase 3 wrapper enhancement)
+
+Same deep-dive verified that the wrapper rejects category renames that would orphan a `seo_type=profile_search_results` page (good), but ACCEPTS creating a fresh `profile_search_results` page bound to a non-existent category slug (silent orphan-magnet). Live test created `seo_id=154` (`filename=this-category-does-not-exist`) and `seo_id=155` (fake hierarchy slug) without warning. Logged in `INTERNAL-FINAL-MCP-TODOS.md` as a Phase 3 wrapper-side ask: either validate slug-against-category-hierarchy on create OR surface a `_warning: "no matching category for slug"` echo so agents can self-correct.
+
+Other findings from the deep-dive triaged as already-covered (`order_column` rule covered in v6.41.44/45; `LIKE` examples already in operator table) or non-corpus (test data leakage on test site).
+
+No code change. Drift check clean.
+
 ## [6.41.45] - 2026-04-30
 
 ### Added — Safe time-ordering columns per table in `Rule: Pagination`

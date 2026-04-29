@@ -944,6 +944,8 @@ These have no legitimate place in BD content. If your reasoning produced one, re
 
 Write-time params ECHO on reads. Fields like `profession_name`, `services`, `credit_action`, `credit_amount`, `member_tag_action`, `member_tags`, `create_new_categories`, `auto_image_import` appear on read responses when they were set on a recent write - they are NOT canonical state, just residual input from the last write. Canonical state lives elsewhere: `profession_id` + `profession_schema` (top category), `services_schema` (sub-categories), `credit_balance` (current balance as dollar-formatted string like `"$35.00"`), `tags` array (current tags). Don't build logic that reads these echo fields as truth.
 
+**`users_data.services` dual-representation trap.** The raw `services` field stores whatever the last write sent — either CSV of integer IDs (`"3,4,5"`) OR a single Sub Category name (`"Weight Loss"`) OR a CSV of names — depending on whether `createUser`/`updateUser` was called with IDs or names. Verified live: User 64 has `services: "3,4,5,16,17,18"`, User 27 has `services: "Weight Loss"`. Same column, two shapes. **Always read sub-categories via `services_schema` (with `include_services=1` on `getUser`/`listUsers`)** — the hydrate resolves to canonical `[{service_id, name, ...}]` regardless of how `services` was written. On WRITES, prefer integer IDs to keep the field machine-parseable for downstream consumers.
+
 ### Rule: Response type quirks
 
 **Response typing quirks to defend against:**
