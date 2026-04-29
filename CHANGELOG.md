@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.37] - 2026-04-30
+
+### Fixed — Corpus rule no longer promises multi-condition AND that the wrapper doesn't currently support
+
+v6.41.36's `Rule: Filter operators` rewrite included an example showing multi-condition AND across different fields via array-syntax (`property[]=...&property_operator[]=...`). Live verification through the deployed wrapper showed the validator stringifies array-valued operators (`["lt","eq"]` → `"[\"lt\",\"eq\"]"`) and rejects them as unknown — agents trying the documented pattern would burn cycles getting consistent rejections.
+
+Replaced the multi-condition AND example with the honest current state: "not currently supported through this wrapper — make two filtered calls and intersect client-side." Pointer to `INTERNAL-FINAL-MCP-TODOS.md` where the wrapper-validator fix and the full Phase 2 operator wishlist are queued.
+
+No behavior change. Single-field multi-value queries (`in`, `not_in`, `between`) still work as documented.
+
 ## [6.41.36] - 2026-04-30
 
 ### Changed — Filter operator allowlist + corpus rule rewrite (verified live against BD's PR 5166 hardening)

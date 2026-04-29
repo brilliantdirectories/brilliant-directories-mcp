@@ -441,13 +441,7 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 - **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
 - **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
 
-**Multi-condition AND** uses array-syntax — index-aligned across all three params:
-```
-?property[]=first_name&property_value[]=Sa_&property_operator[]=like
-&property[]=active&property_value[]=2&property_operator[]=eq
-&property[]=user_id&property_value[]=100,200&property_operator[]=between
-```
-This is one call returning rows matching ALL three conditions. Mix any operators freely; CSV-supporting operators still take CSV inside their `property_value[]` slot.
+**Multi-condition AND across different fields is NOT currently supported** through this wrapper — the validator only accepts a single operator per call. For two-field queries (e.g. `active=2 AND user_id<100`), make two filtered calls and intersect client-side. Single-field multi-value queries work via `in` / `not_in` / `between` as documented above. Wrapper-level fix queued in `INTERNAL-FINAL-MCP-TODOS.md`.
 
 **Validation behavior — clean errors, no silent fallback:**
 
