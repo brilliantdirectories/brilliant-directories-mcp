@@ -663,8 +663,7 @@ Be SURGICAL - only delete meta rows where `database_id` exactly matches the dele
 
 - `createUser.signup_date` / `last_login` — backfill legacy member data.
 - `createSingleImagePost.post_live_date` / `post_start_date` / `post_expire_date` — campaign / event scheduling.
-- `createMemberSubCategoryLink.date` — historical association timestamps.
-- `createUserPhoto.date_added` — backfill.
+- `createMemberSubCategoryLink.date` / `updateMemberSubCategoryLink.date` — historical association timestamps.
 
 Format for all Bucket-B fields: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats to 14 chars, corrupting the value.
 
@@ -691,7 +690,6 @@ Before create, check existence: `listWebPages property=filename property_value=<
 - `custom_html_placement=4`
 - `form_name="Member Search Result"` (sidebar - NOT "Member Profile Page", which is for member profile pages)
 - `menu_layout=3` (Left Slim)
-- `date_updated=<current YYYYMMDDHHmmss timestamp>` - BD does NOT auto-populate; always set to now on every write
 - `updated_by` (optional audit label like "AI Agent" or "API")
 - `enable_hero_section=1` + a content-relevant Pexels hero image + apply the hero safe-defaults bundle from **Rule: Hero readability bundle** (atomic — every value, every write). Most end-users won't know to ask for a hero; it's the default because thin-SEO pages underperform without one. Source the image per **Rule: Image sourcing** (Pexels large variant URL; never picsum/placekitten/random generators). Set `hero_image` to the chosen URL. (Cache flush is automatic post-write.) User can opt out with `enable_hero_section=0` if they prefer a plain page.
 

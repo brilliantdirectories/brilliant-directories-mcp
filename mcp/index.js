@@ -1797,16 +1797,23 @@ function validateDatetime14InArgs(args) {
 // `revision_timestamp` / `modtime` / `widget.date_updated` are NEVER bumped on
 // `update*` calls across every table verified — they freeze at create time.
 //
-// Wrapper-side strategy: for each (tool, field) entry in SYSTEM_TIMESTAMP_FIELDS,
-// write the current site-local time in the declared format directly into bodyParams
-// AFTER the args→params dispatch loop. These fields are NOT in input schema —
-// agents never see them, never pass them. Wire-level injection means:
+// Wrapper-side strategy: for each (tool, field) entry derived from
+// TIMESTAMP_TABLE_RULES, write the current site-tz time (resolved via
+// getSiteTimezoneCached → getSiteInfo, 10-min TTL, UTC fallback) in the
+// declared format directly into bodyParams AFTER the args→params dispatch loop.
+// These fields are NOT in input schema — agents never see them, never pass
+// them. Wire-level injection means:
 //
-//   - BD always receives a fresh, correctly-formatted site-tz timestamp on the wire.
-//   - No TZ confusion (agent's local-tz interpretation can't leak in).
-//   - No freeze-on-update bug (we send the bump even when BD wouldn't).
+//   - BD receives a fresh, correctly-formatted timestamp pinned to the site's
+//     own timezone (matches what BD admin "Last Update" displays).
+//   - No agent-tz leakage; no freeze-on-update bug.
 //   - Zero ambiguity: agents have no override path; the field exists only on
 //     the wire, controlled by this one registry.
+//
+// If a backfill / migration use case ever needs an agent override path for a
+// specific field, expose it as a separate explicit Bucket-B field in the spec
+// — don't try to make this helper dual-purpose. Clean separation: input schema
+// is the agent contract; this helper is the wire-level invariant.
 //
 // Mirrored byte-for-byte from Worker `brilliant-directories-mcp-hosted/src/index.ts`.
 // Keep in sync.
@@ -3632,10 +3639,8 @@ async function main() {
       // This is BD-mandatory plumbing, not agent-decision territory; do NOT
       // surface as a response echo (it's noise, not signal).
       //
-      // date_updated stays untouched. Naive UTC defaulting breaks the "Last
-      // Update" display on non-UTC sites; correct fix needs per-site timezone
-      // resolution via getSiteInfo. Until that lands, agents pass date_updated
-      // themselves (corpus already requires it).
+      // date_updated for web pages is wrapper-owned via TIMESTAMP_TABLE_RULES
+      // (site-tz, both create+update). Agents never pass it.
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         args.content_active = 1;
       }

@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.32] - 2026-04-28
+
+### Changed — Description prose aligned with wrapper-owned timestamp contract (no behavior change)
+
+Three internal audit rounds plus two wire-parity audits surfaced 21 description-prose drift items where the agent-facing text contradicted what the wrapper actually does on the wire. None of these affect runtime behavior — the wrapper logic, registry, helpers, validators, and dispatch hooks are unchanged from v6.41.31. Pure prose alignment so what an agent reads in `tools/list` matches what the wrapper actually does.
+
+**Operation-description prose (the most agent-impacting class — wire-served `tools/list` would tell agents to set fields the wrapper already owns):**
+
+- `createWebPage` — removed `date_updated` from `**Required fields:**` line and the `BD does not auto-populate` parenthetical. Removed `date_updated=<current YYYYMMDDHHmmss>` from the embedded profile_search_results workflow defaults block.
+- `updateWebPage` — removed `date_updated` from `**Required fields:**` line and the `stale timestamp breaks admin-UI "Last Update" sort + cache invalidation` parenthetical. Removed `date_updated=<current>` from the embedded profile_search_results defaults reference.
+- `createReview` — top-level prose said `Required: user_id` but schema requires both `user_id` and `review_email`; field-level note already noted this. Prose now matches schema.
+- `createMembershipPlan` — top-level prose said `Required: subscription_name, subscription_type, profile_type` but schema requires only `subscription_name, profile_type`; the `subscription_type` field's own description already says "Omit on create." Prose now matches schema.
+- `createLeadMatch` — top-level prose listed `lead_matched` and `lead_updated` as required (both wrapper-owned, removed from input schema). Prose required list reduced to schema-actual: `lead_id, user_id, lead_status, match_price, lead_token, lead_matched_by`.
+
+**Field-level descriptions:**
+
+- `createUserPhoto.date_added` — last wrapper-owned field still in any input schema; stripped (matches v6.41.31 registry intent).
+- `updateSingleImagePost.post_live_date` / `post_start_date` / `post_expire_date` — were carrying bare `Format: YYYYMMDDHHmmss.` placeholders. Now carry the canonical site-tz sentence used on every other Bucket-B field (matches their create-side counterparts).
+- `updateMemberSubCategoryLink.date` — was `{type:string}` with no description while `createMemberSubCategoryLink.date` had the canonical sentence. Now mirrors create.
+- `createSubCategory.filename` — was `{type:string}` with no description while `updateSubCategory.filename` had a rich orphan-warning. Added slug-uniqueness description (the create-side risk; update-side keeps its orphan warning).
+- `UserPhoto.date_added` (response schema) — dropped misleading `Format: YYYYMMDDHHmmss` claim on a response field (input format ≠ response format; BD's read-formatters render their own shape).
+
+**Corpus rule (`mcp-instructions.md`) cleanups:**
+
+- `Rule: Member search SEO pages` — removed the obsolete `date_updated=<current YYYYMMDDHHmmss timestamp> - BD does NOT auto-populate; always set to now on every write` directive. Wrapper has owned `date_updated` since v6.41.29; agents physically can't pass it (stripped from input schema). The directive contradicted the System timestamps rule 38 lines above.
+- `Rule: System timestamps` Bucket-B list — removed `createUserPhoto.date_added`. v6.41.31 reclassified it to wrapper-owned; the bullet was a stale carry-over from when it was Bucket-B.
+- `Rule: System timestamps` Bucket-B list — generalized `createMemberSubCategoryLink.date` bullet to cover `updateMemberSubCategoryLink.date` (both sides now carry the canonical sentence).
+
+**Worker + npm wrapper inline comments (no logic change):**
+
+- `src/index.ts` ~line 2312 / `mcp/index.js` ~line 1800 — `System-timestamp wire-injection infrastructure` header block said wrapper writes "current UTC time"; replaced with site-tz semantics (resolved via `getSiteTimezoneCached` → `getSiteInfo`, 10-min TTL, UTC fallback only on fetch failure). Worker and npm now byte-aligned on this header.
+- `src/index.ts` ~line 4154 / `mcp/index.js` ~line 3635 — content_active dispatch hook said `date_updated stays untouched. Naive UTC defaulting breaks the "Last Update" display on non-UTC sites; correct fix needs per-site timezone resolution via getSiteInfo. Until that lands, agents pass date_updated themselves.` That caveat was true pre-v6.41.31 but obsolete since site-tz resolution shipped. Replaced with one line: `date_updated for web pages is wrapper-owned via TIMESTAMP_TABLE_RULES (site-tz, both create+update). Agents never pass it.`
+
+**Internal alignment:**
+
+- `INTERNAL-FINAL-MCP-TODOS.md` line 156 — `createWidget.date_updated` claimed `(19-char)`; corrected to `(14-char)` matching registry + WRITE_KEEP_SETS truth.
+- Same file, section 11 item 5 — `Rule: Update timestamps - timezone undefined` deferred-fix item marked RESOLVED v6.41.30 (superseded by `Rule: System timestamps` + the wrapper-managed registry).
+- Same file line 701 — old rule name `Rule: Update timestamps` updated to current `Rule: System timestamps`.
+- Same file line 147 / 153 — `SYSTEM_TIMESTAMP_FIELDS registry` references corrected to clarify that `TIMESTAMP_TABLE_RULES` is the source-of-truth array (the per-table DRY structure introduced in v6.41.31) and `SYSTEM_TIMESTAMP_FIELDS` is the IIFE-generated lookup consumed at dispatch.
+- `scripts/schema-drift-check.js` lines 153-154 — `WRITE_KEEP_SETS` for `createWebPage` and `updateWebPage` were missing `date_updated` (the Worker + npm copies both had it from v6.41.30). Drift script's own mirror is now aligned.
+
+### Verification
+
+- `node scripts/schema-drift-check.js` → `[OK] No drift detected. Safe to publish.`
+- `JSON.parse(bd-api.json)` → valid
+- Three internal audit rounds (on-disk-only) closed clean by end of round 3
+- Two wire-parity audits (deployed `tools/list` vs on-disk) caught the operation-description prose drift the on-disk audits missed by design (they audited the on-disk spec but didn't compare against what the deployed Worker serves)
+
 ## [6.41.31] - 2026-04-29
 
 ### Changed — Timestamp registry refactored to per-table rules + schema-grounded ground truth
