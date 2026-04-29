@@ -6651,7 +6651,8 @@
                       "paid",
                       "free",
                       "claim"
-                    ]
+                    ],
+                    "description": "Plan monetization model. Documented values: `paid`, `free`, `claim`. **BD does NOT validate server-side** — values outside this set are stored verbatim with undefined render behavior (live observed: `\"individual\"` accepted on prior writes). Stick to documented values."
                   },
                   "monthly_amount": {
                     "type": "number"
@@ -8387,11 +8388,12 @@
                     "type": "string"
                   },
                   "group_tag_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Tag group this tag belongs to (from `listTagGroups`). **BD does NOT enforce FK** — passing `0` or a nonexistent group_tag_id is silently accepted and produces an orphan tag (live observed). Verify the group exists before passing."
                   },
                   "added_by": {
                     "type": "integer",
-                    "description": "User ID"
+                    "description": "User ID of the admin creating the tag. **BD does NOT enforce FK** — any integer is accepted, including nonexistent user_ids (live observed: `197609` stored when max user_id was 69). Pass a real admin user_id from `listUsers`."
                   }
                 }
               }

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.48] - 2026-04-30
+
+### Added — Silent-accept enum/FK warnings on three fields (verified live)
+
+Cold-agent data-health audit verified three more places where BD silently accepts off-canonical values, then stores them. Same class as `active=99` and `listing_type="PIRATE"`. Wrapper-side enforcement queued in Phase 3; for now the spec descriptions warn agents.
+
+- **`createMembershipPlan.profile_type`** — doc enum `paid|free|claim`. Live: 6 plans on test site stored `profile_type="individual"` (off-canonical, accepted, rendering behavior undefined). Added "BD does NOT validate server-side" caveat to the field description.
+- **`createTag.group_tag_id`** — was just `{type: integer}`. Live: tag id=6 has `group_tag_id=0` (no matching `tag_groups` row) — orphan accepted. Added FK-not-enforced warning + "verify group exists before passing."
+- **`createTag.added_by`** — was just `"User ID"`. Live: tag id=6 has `added_by=197609` (max user_id on site is 69). Added FK-not-enforced warning + "pass a real admin user_id from `listUsers`."
+
+### Triaged — items already addressed or out of scope
+
+Cold-agent report flagged `order_column=date_added`, `LIKE %foo%`, multi-bound-page rename guard, `matchLead` "Nothing to Match" as "still unaddressed in the wrapper." All four are corpus-side documented in v6.41.44 / v6.41.47 — they're BD-side behaviors the wrapper can't unilaterally override without creating drift from BD's REST API. Corpus teaches the workaround; that's the right layer.
+
+Other findings (em-dash slug encoding, Pet Services cross-vertical, double-URL-encoded websites, duplicate emails, test-data pollution) are data-quality observations on the test site, not corpus issues.
+
+Logged a new Phase 3 wishlist item in `INTERNAL-FINAL-MCP-TODOS.md`: wrapper-side enum + FK enforcement for the silent-accept class — would benefit `profile_type`, `tag.group_tag_id/added_by`, and likely a sweep of other FK fields once the validator pattern is in place.
+
+No code change. Drift check clean.
+
 ## [6.41.47] - 2026-04-30
 
 ### Added — Two corpus updates from cold-agent deep-dive (verified live)
