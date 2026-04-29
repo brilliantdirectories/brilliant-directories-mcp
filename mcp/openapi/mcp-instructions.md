@@ -316,7 +316,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 **Pagination (all `list*` / `search*` endpoints).**
 
-- `limit` = records per page, default 25, server-capped at 100. Values >100 silently clamped (verified: `limit=150` returned 100 rows + cursor).
+- `limit` = records per page, default 25, server-capped at 100. Values >100 silently clamped.
 - `page` = opaque base64 cursor from previous response's `next_page` (format `base64_encode("{n}*_*{limit}")`). Pass back verbatim; **never decode or construct**. Numeric `page=2` decodes to garbage and server silently resets to page 1 -> you loop page 1 forever.
 - `per_page` is silently ignored.
 - When `page` is sent, `limit` is IGNORED (size is baked into the token). To change page size, start over with `limit=N` and no `page`.
@@ -363,9 +363,9 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_body=1` - restores `email_body`. Required when reading template HTML to edit it.
 
-**Reviews** (`listReviews` / `getReview` / `searchReviews`): 9 flat scalar fields; `review_description` is the only unbounded one (no BD-side length cap — member rants, pasted novels, lawsuit text all possible). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
+**Reviews** (`listReviews` / `getReview` / `searchReviews`): 9 flat scalar fields; `review_description` is the only unbounded field (no BD-side length cap). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
 
-- `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on search results, or full-content export. Skip at `limit=100` on moderation sweeps — stick to lean and re-fetch the handful of reviews you care about with `getReview` + this flag.
+- `include_full_text=1` - restores full `review_description`. Use for single-record inspection or full-content export; skip on moderation sweeps and re-fetch individual reviews with `getReview` instead.
 
 ### Rule: users_meta writes
 
@@ -398,43 +398,34 @@ Example: 118 members at `limit=10` = 12 calls.
 
 ### Rule: Narrow before fetching
 
-**Always probe the dataset size before paginating, and prefer narrowing filters over walking the full table.** A site can have millions of rows. Walking unfiltered is slow, eats context tokens, burns rate limit, and usually answers a more specific question than the user actually asked.
+**Probe size before paginating; prefer filters over walking the full table.** Sites can have millions of rows.
 
-**The probe-and-decide pattern:**
+**Probe:** call `list*` with `limit=1`, read `total` (string — cast to int).
 
-1. **Cheap probe.** Call the `list*` tool with `limit=1` and read the `total` field. One row, full count. Cast `total` to int — it's a string.
-2. **Decide based on `total`:**
-   - **`total ≤ 25`** — fetch with `limit=25` in one call.
-   - **`total ≤ 100`** — paginate at `limit=25` (default). 4 calls max. Acceptable cost.
-   - **`total ≤ 500`** — paginate at `limit=25`. Up to 20 calls. Use only if every row is genuinely needed; otherwise narrow with filters first.
-   - **`total > 500`** — STOP. Narrow with filters first (see below). If the user genuinely needs all rows, name the cost upfront: "this site has 12,400 members; paginating takes ~500 calls and dominates context — narrow by category/status/location instead?".
-   - **`total > 5,000`** — never paginate without explicit confirmation. Bulk export is a job for filtered batches, not full sweeps.
-3. **`limit` guidance** (matches spec recommendation): `limit=25` is the default and good for most uses. `limit=10` for scanning/filter loops where you'll discard most rows. `limit=5` for sampling. **Don't use `limit=100`** unless you've measured the row size and know the response fits — heavy `include_*` flags auto-cap at 25 anyway.
-4. **Narrow with operators** (see **Rule: Filter operators** for the full list). Common narrowing axes per resource:
-   - `listUsers` — `active=2` (live members only), `profession_id=N` (one category), `subscription_id=N` (one plan), `signup_date gte=YYYYMMDDHHmmss` (recent signups), `state_code=CA` / `country_code=US` (geo)
-   - `listSingleImagePosts` / `listMultiImagePosts` — `data_id=N` (one post type), `user_id=N` (one author), `post_status=1` (published only), `post_live_date gte=...` (recent)
-   - `listLeads` / `listLeadMatches` — `lead_status=N`, `lead_matched_by=admin_id`, date-pivot via `lead_updated`
-   - `listWebPages` — `seo_type=content` / `seo_type=profile_search_results`
-   - `listReviews` — `review_status=2` (accepted), `user_id=N` (one member's reviews)
+**Decide by `total`:**
+- `≤ 25` — fetch in one call.
+- `≤ 100` — paginate at `limit=25`.
+- `≤ 500` — paginate only if every row is needed; otherwise narrow first.
+- `> 500` — STOP. Narrow with filters. If user truly needs all rows, name the cost: "this site has 12,400 members; paginating takes ~500 calls — narrow by category/status/location instead?".
+- `> 5,000` — never paginate without explicit confirmation.
 
-**When to ask the user vs filter on best guess:**
+**`limit` guidance:** `25` default. `10` for scan/filter loops. `5` for sampling. Avoid `100` unless row size is known — heavy `include_*` flags auto-cap at 25.
 
-- **Filter on best guess** if the user's intent already implies a narrow scope ("show me active members in California" → `active=2 AND state_code=CA`, no need to ask).
-- **Ask the user** when intent is ambiguous and the table is big. Examples:
-  - User: *"export all the members"* on a 50,000-member site → ask: "all 50,000? Or just active members? Just one plan? Last 12 months?"
-  - User: *"audit the posts"* on a site with 30 post types → ask which post type or scope.
-  - User: *"find duplicate emails"* on a 100k-member site → confirm before running cross-table joins client-side.
-- **Don't ask** if the answer is obvious or the cost is small. Asking on a 200-row table burns more user time than the fetch itself.
+**Narrowing axes** (operators per **Rule: Filter operators**):
+- `listUsers` — `active=2`, `profession_id=N`, `subscription_id=N`, `signup_date gte=YYYYMMDDHHmmss`, `state_code=CA` / `country_code=US`
+- `listSingleImagePosts` / `listMultiImagePosts` — `data_id=N`, `user_id=N`, `post_status=1`, `post_live_date gte=...`
+- `listLeads` — `status=N` (NOT `lead_status` — silent-drops); date-pivot via `revision_timestamp` or `date_added` (`lead_updated` does not exist). `listLeadMatches` — `lead_id=N`, `user_id=N`, `lead_matched_by=admin_id`
+- `listWebPages` — `seo_type=content` / `seo_type=profile_search_results`
+- `listReviews` — `review_status=2`, `user_id=N`
 
-**Multi-condition AND is not currently supported through this wrapper** (queued fix). Today's narrowing must be a SINGLE filter per call. If the user's intent needs `(A=1 AND B=2)`, pick whichever condition is more selective for the filtered call, then filter the second condition client-side from the results.
+**Ask vs guess:** filter on best guess when intent already narrows ("active members in California" → `active=2`, intersect `state_code=CA` client-side). Ask when intent is ambiguous on a big table (`"export all members"` on 50k rows → confirm scope). Don't ask on small tables.
 
-**Pre-narrow checks for common requests:**
-- **"How many X?" — `limit=1` returns the full count in the `total` field.** One row of payload, one call. Works on every `list*` endpoint. Combine with filters to count subsets: `listUsers limit=1 property=active property_value=2 property_operator=eq` returns the count of active members in one call. `total` is a STRING — cast before arithmetic. **Use this for ANY count question** — never fetch all rows just to count them.
-- "Top N by Y" — if Y is a sortable column, use `order_column=Y order_type=DESC limit=N`. If Y is a derived/computed metric (member count, revenue), narrow the fan-out first per **Rule: Filter operators**.
-- "Find rows where X is set/populated" — use `is_not_null` on columns where unset = real NULL (e.g. `users_data.logo`); on empty-string-storing columns (`list_seo.h2`, many text fields) it false-positives empty rows, so paginate and trim client-side. "Find rows where X is unset" — `is_null` is currently broken; paginate and filter client-side.
-- "Recent activity" — date-pivot operators (`signup_date gte`, `last_login gte`, etc.) on the appropriate timestamp column.
+**Common patterns:**
+- "Top N by Y" — sortable column: `order_column=Y order_type=DESC limit=N`. Derived metric (member count, revenue): narrow the fan-out per **Rule: Filter operators**.
+- "Where X is populated" — `is_not_null` on real-NULL columns (e.g. `users_data.logo`); empty-string columns false-positive — paginate and trim client-side. "Where X is unset" — `is_null` broken; paginate and filter client-side.
+- "Recent activity" — date-pivot operators on the appropriate timestamp column.
 
-**Token-budget guidance.** A typical `listUsers` row is 2-5 KB lean (more with `include_*` flags). 1,000 rows ≈ 3-5 MB of context. Most agent context windows can't hold that AND the conversation. Default to filtering, summarize after each batch, or page-and-discard.
+**Token budget:** typical `listUsers` row is 2-5 KB lean. 1,000 rows ≈ 3-5 MB. Default to filtering, summarize per batch, or page-and-discard.
 
 ### Rule: Filter real columns
 
@@ -447,13 +438,13 @@ Example: 118 members at `limit=10` = 12 calls.
 
 If unsure what's filterable, call the fields endpoint for the authoritative column list: `getUserFields`, `getSingleImagePostFields`, `getMultiImagePostFields`, `getPostTypeCustomFields`.
 
-**Empty-result envelope** (verified live through the wrapper): unknown column NAME, derived/computed field, and legitimate "no match" all collapse into `{status: "success", message: [], total: 0, current_page: 1, total_pages: 0, next_page: ""}` — indistinguishable from each other. Treat `total: 0` as "either filter dropped or genuinely empty"; cross-check column names against `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` if you suspect a typo. Bad operators, CSV-shape mismatches, and unknown `property_operator` values are caught by the wrapper validator and return `status: error` with a descriptive message — see **Rule: Filter operators**.
+**Empty-result envelope** (verified): unknown column, derived field, and legitimate "no match" all return `{status: "success", message: [], total: 0, current_page: 1, total_pages: 0, next_page: ""}`. Treat `total: 0` as ambiguous — see **Rule: Silent-drop check**.
 
 ### Rule: Filter operators
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call; multi-condition AND is not currently supported through this wrapper (intersect client-side from two filtered calls).
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call.
 
-**Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params before the request reaches PHP — symbol forms are unreachable on this endpoint. Word-form aliases survive the WAF.
+**Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params; symbol forms never reach PHP. Word-form aliases survive.
 
 **Verified working operators (live 2026-04-30):**
 
@@ -479,7 +470,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 - **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
 - **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
 
-**Multi-condition AND across different fields is NOT currently supported** through this wrapper — the validator only accepts a single operator per call. For two-field queries (e.g. `active=2 AND user_id<100`), make two filtered calls and intersect client-side. Single-field multi-value queries work via `in` / `not_in` / `between` as documented above. Wrapper-level fix queued in `INTERNAL-FINAL-MCP-TODOS.md`.
+**Multi-condition AND across different fields not supported** — validator accepts one operator per call. For `(A=X AND B=Y)`, make two filtered calls and intersect client-side. Single-field multi-value works via `in` / `not_in` / `between`.
 
 **Validation behavior — clean errors, no silent fallback:**
 
@@ -491,7 +482,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
 
-**No native OR across different fields.** `in` is OR within one field's values. For `A=X OR B=Y` across two fields, make two filtered calls and merge client-side.
+**Cross-field OR** — make two filtered calls and merge client-side.
 
 **Architecture:** `property_operator` is honored ONLY on `/get` (list) endpoints. `/search` (POST) silently ignores it (keyword-only via `q=`). `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
 
@@ -506,7 +497,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Empty-string filtering
 
-**Finding empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL). `is_null` is currently rejected by the wrapper, and `is_not_null` does literal SQL (matches empty strings as "populated"). For empty-string hunts, paginate with `limit=100` and filter client-side. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
+**Empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL): paginate with `limit=100` and filter client-side. `is_null` is rejected; `is_not_null` matches empty strings as populated. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
 
 ### Rule: Category SEO routing
 

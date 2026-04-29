@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.41] - 2026-04-30
+
+### Fixed — Two corpus narrowing-axis examples were wrong (silent-drop on bad column names)
+
+Verification minion probed each example in `Rule: Narrow before fetching` against the live deployed wrapper. Two failed:
+
+- **`listLeads` filter column** — corpus said `lead_status=N`. Real column is `status`. Wrong name → silent-drop. Fixed to `status=N`.
+- **`listLeads` date-pivot column** — corpus said `lead_updated`. Column does not exist. Wrong name → silent-drop. Fixed to `revision_timestamp` or `date_added`.
+
+Other 12 examples verified working as documented.
+
+### Changed — Corpus filter rules tightened (~3,615 chars removed)
+
+Lean-audit minion stripped repetition, anecdotes, and parenthetical bloat across 9 sites in `mcp-instructions.md`:
+
+- `Rule: Pagination` — dropped verified-clamp parenthetical
+- `Rule: Lean read responses / Reviews` — removed anecdote prose
+- `Rule: Narrow before fetching` — collapsed multi-paragraph explanations to terse imperative; removed redundancies covered elsewhere
+- `Rule: Filter real columns / Empty-result envelope` — replaced duplicated paragraph with cross-reference
+- `Rule: Filter operators` — tightened opener, WAF parenthetical, multi-condition restatement, "no native OR" clause
+- `Rule: Empty-string filtering` — removed cross-rule restatement
+
+No semantic changes. Voice is now consistent with the rest of the corpus.
+
+### Internal — TODO cleanup
+
+`INTERNAL-FINAL-MCP-TODOS.md` operator section reduced from changelog-style (everything that ever happened) to forward-looking work queue. Removed shipped items (PR 5166 hardening landed, wrapper allowlist updated, audit-minion findings fixed, etc.). Section now captures only:
+1. `is_null` server-side fix needed
+2. `is_not_null` semantic gap (Phase 3 wishlist B1 covers it)
+3. Lowercase-operator parser inconsistency (`BETWEEN` accepted)
+4. Verification checklist for the next BD push
+
+Drift check clean. No code change.
+
 ## [6.41.40] - 2026-04-30
 
 ### Fixed — `Rule: Narrow before fetching` thresholds aligned with spec's own `limit=25` recommendation
