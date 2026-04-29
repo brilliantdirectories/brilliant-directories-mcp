@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.31] - 2026-04-29
+
+### Changed — Timestamp registry refactored to per-table rules + schema-grounded ground truth
+
+**The big finding:** MySQL declares `revision_timestamp` and `modtime` as `ON UPDATE current_timestamp()`, but BD's PHP layer does NOT trigger that auto-bump on UPDATEs. Verified by direct REST POST/PUT against `list_seo` (no wrapper, no body change → revision_timestamp stayed frozen). Earlier wrapper versions (v6.41.28-30) sent these on the wire and stress tests passed — but the tests were measuring the wrapper's effect, not BD's native behavior. So wrapper continues to own them; just now backed by direct evidence.
+
+**New per-table source of truth:** `TIMESTAMP_TABLE_RULES` array. Each entry declares table, tool names (create/update), and per-field `when` semantics (`create` set-once, `update` bump-only, `both` write-on-every-write). The flat `SYSTEM_TIMESTAMP_FIELDS` lookup is generated at module load. DRY: one block per BD table replaces dozens of per-tool tuples.
+
+**New entries added per Phase A live probe (2026-04-29) covering all 32 tables:**
+
+- `subscription_types.revision_timestamp` (createMembershipPlan + updateMembershipPlan)
+- `users_reviews.review_updated` + `revision_timestamp` (updateReview only — BD-PHP fills both on create)
+- `leads.revision_timestamp` (updateLead only — BD-PHP fills on create)
+- `tags.created_at` + `updated_at` (BD leaves zero — wrapper fills)
+- `tag_groups.created_at` + `updated_at` (same)
+- `rel_tags.created_at` (createTagRelationship only)
+- `smart_lists.smart_list_created` (createSmartList only)
+- `email_templates.date_created` (create-only — BD leaves empty)
+- `users_portfolio.photo_date_added` (create-only) + `photo_date_updated` (both)
+- `users_portfolio_groups.date_updated` (both — BD leaves empty)
+- `users_meta.revision_timestamp` (updateUserMeta only)
+- `users_photo.date_added` (create only — BD leaves null)
+
+**Format fix:** `data_widgets.date_updated` corrected from 19-char to 14-char (varchar(255) packs as 14-char per BD convention; user-confirmed).
+
+**Drift check:** `MIRROR_CONSTANTS` swapped `SYSTEM_TIMESTAMP_FIELDS` (now generated, would always show as different bytes) for `TIMESTAMP_TABLE_RULES` (the static source-of-truth in both files).
+
+**Process discipline note:** spent significant time today thinking the schema's `ON UPDATE current_timestamp()` clauses meant BD auto-handled timestamps. Live probes proved otherwise. Tracker file at `INTERNAL-FINAL-MCP-TODOS.md` and the inline registry comments now make the actual behavior the source of truth, not the schema declaration.
+
 ## [6.41.30] - 2026-04-29
 
 ### Changed — PR 3: corpus rewrite + WRITE_KEEP_SETS audit (timestamp project closeout)

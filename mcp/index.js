@@ -1812,41 +1812,112 @@ function validateDatetime14InArgs(args) {
 // Keep in sync.
 // ---------------------------------------------------------------------------
 
-const SYSTEM_TIMESTAMP_FIELDS = {
-  // Bucket-D fix: BD freezes `revision_timestamp` (and similar) on update across
-  // every table verified live. Wrapper sends the bump on every write so cache-bust
-  // / change-detection / audit-log callers can trust the column.
-  createWebPage:           [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
-  updateWebPage:           [{ field: "date_updated", format: "14" }, { field: "revision_timestamp", format: "19" }],
-  createWidget:            [{ field: "date_updated", format: "19" }, { field: "revision_timestamp", format: "19" }],
-  updateWidget:            [{ field: "date_updated", format: "19" }, { field: "revision_timestamp", format: "19" }],
-  createForm:              [{ field: "revision_timestamp", format: "19" }],
-  updateForm:              [{ field: "revision_timestamp", format: "19" }],
-  createFormField:         [{ field: "revision_timestamp", format: "19" }],
-  updateFormField:         [{ field: "revision_timestamp", format: "19" }],
-  createMenu:              [{ field: "revision_timestamp", format: "19" }],
-  updateMenu:              [{ field: "revision_timestamp", format: "19" }],
-  createMenuItem:          [{ field: "revision_timestamp", format: "19" }],
-  updateMenuItem:          [{ field: "revision_timestamp", format: "19" }],
-  createTopCategory:       [{ field: "revision_timestamp", format: "19" }],
-  updateTopCategory:       [{ field: "revision_timestamp", format: "19" }],
-  createSubCategory:       [{ field: "revision_timestamp", format: "19" }],
-  updateSubCategory:       [{ field: "revision_timestamp", format: "19" }],
-  createDataType:          [{ field: "revision_timestamp", format: "19" }],
-  updateDataType:          [{ field: "revision_timestamp", format: "19" }],
-  updatePostType:          [{ field: "revision_timestamp", format: "19" }],
-  createMultiImagePost:    [{ field: "revision_timestamp", format: "19" }],
-  updateMultiImagePost:    [{ field: "revision_timestamp", format: "19" }],
-  createMultiImagePostPhoto: [{ field: "revision_timestamp", format: "19" }],
-  updateMultiImagePostPhoto: [{ field: "revision_timestamp", format: "19" }],
-  createSingleImagePost:   [{ field: "revision_timestamp", format: "19" }],
-  updateSingleImagePost:   [{ field: "revision_timestamp", format: "19" }],
-  createEmailTemplate:     [{ field: "revision_timestamp", format: "19" }],
-  updateEmailTemplate:     [{ field: "revision_timestamp", format: "19" }],
-  createLeadMatch:         [{ field: "lead_matched", format: "14" }, { field: "lead_updated", format: "14" }],
-  updateLeadMatch:         [{ field: "lead_updated", format: "14" }],
-  updateUser:              [{ field: "modtime", format: "19" }],
-};
+// ---------------------------------------------------------------------------
+// Per-table timestamp rules — DRY source of truth.
+//
+// Each entry: { tools: { create, update }, fields: [{ field, format, when }] }
+// where `when` is one of:
+//   "create"    — wrapper writes on create only (set-once: lead_matched, date_created, created_at)
+//   "update"    — wrapper writes on update only (BD's DEFAULT fills on create, but BD doesn't bump on update)
+//   "both"      — wrapper writes on both create and update (BD doesn't fill OR bump)
+//
+// Source of truth: live BD probes 2026-04-29 verifying actual create + update
+// behavior on every table. Schema declarations (`ON UPDATE current_timestamp()`)
+// are NOT reliable — BD's PHP layer doesn't trigger MySQL's auto-bump.
+//
+// Format key:
+//   "14" → varchar(14) packed `YYYYMMDDHHmmss`
+//   "19" → datetime/timestamp `YYYY-MM-DD HH:MM:SS`
+//
+// Mirrored byte-for-byte from Worker `brilliant-directories-mcp-hosted/src/index.ts`.
+// ---------------------------------------------------------------------------
+
+const TIMESTAMP_TABLE_RULES = [
+  { create: "createWebPage", update: "updateWebPage", fields: [
+    { field: "date_updated",        format: "14", when: "both" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createWidget", update: "updateWidget", fields: [
+    { field: "date_updated",        format: "14", when: "both" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createForm",         update: "updateForm",         fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createFormField",    update: "updateFormField",    fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createMenu",         update: "updateMenu",         fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createMenuItem",     update: "updateMenuItem",     fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createTopCategory",  update: "updateTopCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createSubCategory",  update: "updateSubCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createDataType",     update: "updateDataType",     fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { update: "updatePostType",                                   fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+  { create: "createMembershipPlan", update: "updateMembershipPlan", fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
+
+  { create: "createSingleImagePost", update: "updateSingleImagePost", fields: [
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createMultiImagePost", update: "updateMultiImagePost", fields: [
+    { field: "date_updated",        format: "14", when: "both" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createMultiImagePostPhoto", update: "updateMultiImagePostPhoto", fields: [
+    { field: "photo_date_added",   format: "14", when: "create" },
+    { field: "photo_date_updated", format: "14", when: "both" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createEmailTemplate", update: "updateEmailTemplate", fields: [
+    { field: "date_created",       format: "14", when: "create" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createTag", update: "updateTag", fields: [
+    { field: "created_at", format: "19", when: "create" },
+    { field: "updated_at", format: "19", when: "both" },
+  ]},
+  { create: "createTagGroup", update: "updateTagGroup", fields: [
+    { field: "created_at", format: "19", when: "create" },
+    { field: "updated_at", format: "19", when: "both" },
+  ]},
+  { create: "createTagRelationship", fields: [
+    { field: "created_at", format: "19", when: "create" },
+  ]},
+  { create: "createSmartList", fields: [
+    { field: "smart_list_created", format: "19", when: "create" },
+  ]},
+  { update: "updateReview", fields: [
+    { field: "review_updated",     format: "14", when: "update" },
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { update: "updateLead", fields: [
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createLeadMatch", update: "updateLeadMatch", fields: [
+    { field: "lead_matched", format: "14", when: "create" },
+    { field: "lead_updated", format: "14", when: "both" },
+  ]},
+  { update: "updateUser", fields: [
+    { field: "modtime", format: "19", when: "update" },
+  ]},
+  { update: "updateUserMeta", fields: [
+    { field: "revision_timestamp", format: "19", when: "update" },
+  ]},
+  { create: "createUserPhoto", fields: [
+    { field: "date_added", format: "14", when: "create" },
+  ]},
+];
+
+// Lookup table generated from TIMESTAMP_TABLE_RULES at module load.
+const SYSTEM_TIMESTAMP_FIELDS = (() => {
+  const out = {};
+  for (const rule of TIMESTAMP_TABLE_RULES) {
+    if (rule.create) {
+      const fields = rule.fields.filter(f => f.when === "create" || f.when === "both").map(f => ({ field: f.field, format: f.format }));
+      if (fields.length > 0) out[rule.create] = fields;
+    }
+    if (rule.update) {
+      const fields = rule.fields.filter(f => f.when === "update" || f.when === "both").map(f => ({ field: f.field, format: f.format }));
+      if (fields.length > 0) out[rule.update] = fields;
+    }
+  }
+  return out;
+})();
 
 // Site-timezone resolver with module-scope cache. All wrapper-owned timestamps
 // render in this site's local time so values stored in BD match what the
