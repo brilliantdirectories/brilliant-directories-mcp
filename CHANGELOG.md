@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.43] - 2026-04-30
+
+### Fixed — Two CSV-format rules contradicted each other; clarified WRITE vs FILTER layer
+
+Top-level "CSV fields" rule said `"A, B, C"` with spaces is forbidden (BD doesn't trim, spaces become persisted data — silent data-linkage failures). `Rule: Filter operators` said spaces around values ARE tolerated (`1, 2, 3` works). Both are true at their respective layers but agents reading them looked contradictory.
+
+Verified live and clarified:
+
+- **Top-level rule** scoped explicitly to WRITES (stored CSV fields like `feature_categories`, `services`, `post_category`, `triggers`, etc.). Cross-references the filter-operator rule for the read-side behavior.
+- **Filter-operator rule** documents verified live behavior: spaces tolerated, leading/trailing commas tolerated, empty elements silently skipped, **mixed-type values silently dropped without warning** (e.g. `in 1,abc,3` returns 2 rows). Cross-references the top-level rule for write-side strictness.
+
+Live verification probes captured the full filter-CSV tolerance matrix on `find-fitness-pros.directoryup.com`. No semantic operator changes — just rule contradictions resolved.
+
+No code change. Drift check clean.
+
 ## [6.41.42] - 2026-04-30
 
 ### Restored — Four discoverability/accuracy hints over-trimmed in v6.41.41

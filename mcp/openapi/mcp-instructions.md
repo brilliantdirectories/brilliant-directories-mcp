@@ -91,9 +91,11 @@ Single narrow exception: the post-type code-group all-or-nothing save rule on `u
 
 ### Rule: CSV no spaces
 
-**CSV fields: ALWAYS comma-only, NO spaces - universal rule across every field that stores a comma-separated list.** When you write a CSV value (e.g. `feature_categories`, `services`, `post_category`, `data_settings`, `triggers`, comma-separated tag/user ID lists, `stock_libraries`, etc.), write it as `"A,B,C"` - NEVER `"A, B, C"` with spaces after commas.
+**CSV fields on WRITES: ALWAYS comma-only, NO spaces.** When writing a stored CSV value (e.g. `feature_categories`, `services`, `post_category`, `data_settings`, `triggers`, comma-separated tag/user ID lists, `stock_libraries`, `users_to_match`), write `"A,B,C"` — NEVER `"A, B, C"` with spaces.
 
-**Why:** BD splits on the raw `,` character WITHOUT trimming whitespace. `"A, B, C"` gets stored internally as three options: `"A"`, `" B"` (leading space), `" C"` (leading space). Downstream consumers that look up values (URL filters like `?category[]=B`, `post_category` matches on posts, option-key lookups, dropdown renderers) treat the clean and space-prefixed values as DIFFERENT strings - a post tagged with the space-prefixed value becomes invisible to filters that use the clean value, causing silent data-linkage failures.
+**Why:** BD splits on raw `,` WITHOUT trimming. `"A, B, C"` stores as `"A"`, `" B"`, `" C"` — downstream filters/lookups treat the clean and space-prefixed forms as different strings. Silent data-linkage failures.
+
+**This is the WRITE rule. Filter-operator CSV (`in` / `not_in` / `between` on `list*` reads) DOES tolerate spaces** — see **Rule: Filter operators**. The two layers handle CSV differently.
 
 This applies to EVERY CSV-bearing field on EVERY endpoint (create or update).
 
@@ -465,7 +467,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 | `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
 | `is_not_null` | value param ignored | `property=logo&property_operator=is_not_null` |
 
-**CSV format:** comma-separated, plain values. Spaces around values are tolerated (`1, 2, 3` works). Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — the wrapper expects scalar `property_value` strings only.
+**CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — wrapper expects scalar string. **WRITES are stricter** — see top-level CSV rule for stored-CSV fields where spaces become persisted data.
 
 **Case sensitivity:**
 - **Operator names: case-insensitive.** `eq`, `EQ`, `Eq` all work — BD normalizes case server-side. Same for every operator. Lowercase is canonical for readability.
