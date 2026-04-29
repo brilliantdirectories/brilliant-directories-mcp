@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.40] - 2026-04-30
+
+### Fixed — `Rule: Narrow before fetching` thresholds aligned with spec's own `limit=25` recommendation
+
+v6.41.38's threshold tiers were too aggressive (claimed `total ≤ 50 → fetch all with limit=100`). The spec already recommends `limit=25` as default, `limit=10` for scanning, `limit=5` for sampling — and heavy `include_*` flags auto-cap at 25. Misaligned with the corpus's own conservative posture, and 100 lean rows can still be 200-500 KB of context.
+
+Retuned tiers:
+- `total ≤ 25` — fetch all with `limit=25` in one call.
+- `total ≤ 100` — paginate at default 25, max 4 calls.
+- `total ≤ 500` — paginate at 25, up to 20 calls. Filter first if every row not strictly needed.
+- `total > 500` — narrow first; name the cost.
+- `total > 5,000` — explicit confirmation required (was 10,000).
+
+Added explicit `limit` guidance step matching the spec recommendation. Don't use `limit=100` unless you've measured the row size.
+
+No code change. Corpus + version stamps only. Drift check clean.
+
 ## [6.41.39] - 2026-04-30
 
 ### Fixed — Corpus filter rules audited live against deployed wrapper, drifted claims corrected

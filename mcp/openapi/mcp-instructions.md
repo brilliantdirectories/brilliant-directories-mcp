@@ -402,13 +402,15 @@ Example: 118 members at `limit=10` = 12 calls.
 
 **The probe-and-decide pattern:**
 
-1. **Cheap probe.** Call the `list*` tool with `limit=1` (NOT `limit=100`) and read the `total` field. One row, full count. Cast `total` to int — it's a string.
+1. **Cheap probe.** Call the `list*` tool with `limit=1` and read the `total` field. One row, full count. Cast `total` to int — it's a string.
 2. **Decide based on `total`:**
-   - **`total ≤ 50`** — fetch everything. `limit=100` returns it all in one call. No filter needed.
-   - **`total ≤ 500`** — paginate. ~5-10 calls. Acceptable cost.
-   - **`total > 500`** — STOP. Don't paginate blindly. Narrow with filters first (see below). If the user really needs all rows, name the cost out loud first ("this site has 12,400 members; pulling all of them takes ~125 calls and ~30 seconds — narrow by category/status/location instead?").
-   - **`total > 10,000`** — never paginate without explicit confirmation. Even read-only sweeps can hit rate limits.
-3. **Narrow with operators** (see **Rule: Filter operators** for the full list). Common narrowing axes per resource:
+   - **`total ≤ 25`** — fetch with `limit=25` in one call.
+   - **`total ≤ 100`** — paginate at `limit=25` (default). 4 calls max. Acceptable cost.
+   - **`total ≤ 500`** — paginate at `limit=25`. Up to 20 calls. Use only if every row is genuinely needed; otherwise narrow with filters first.
+   - **`total > 500`** — STOP. Narrow with filters first (see below). If the user genuinely needs all rows, name the cost upfront: "this site has 12,400 members; paginating takes ~500 calls and dominates context — narrow by category/status/location instead?".
+   - **`total > 5,000`** — never paginate without explicit confirmation. Bulk export is a job for filtered batches, not full sweeps.
+3. **`limit` guidance** (matches spec recommendation): `limit=25` is the default and good for most uses. `limit=10` for scanning/filter loops where you'll discard most rows. `limit=5` for sampling. **Don't use `limit=100`** unless you've measured the row size and know the response fits — heavy `include_*` flags auto-cap at 25 anyway.
+4. **Narrow with operators** (see **Rule: Filter operators** for the full list). Common narrowing axes per resource:
    - `listUsers` — `active=2` (live members only), `profession_id=N` (one category), `subscription_id=N` (one plan), `signup_date gte=YYYYMMDDHHmmss` (recent signups), `state_code=CA` / `country_code=US` (geo)
    - `listSingleImagePosts` / `listMultiImagePosts` — `data_id=N` (one post type), `user_id=N` (one author), `post_status=1` (published only), `post_live_date gte=...` (recent)
    - `listLeads` / `listLeadMatches` — `lead_status=N`, `lead_matched_by=admin_id`, date-pivot via `lead_updated`
