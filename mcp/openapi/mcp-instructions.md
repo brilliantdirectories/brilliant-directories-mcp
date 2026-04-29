@@ -396,6 +396,44 @@ Other endpoints (leads, tags, menus, etc.) return full rows - budget context wit
 
 Example: 118 members at `limit=10` = 12 calls.
 
+### Rule: Narrow before fetching
+
+**Always probe the dataset size before paginating, and prefer narrowing filters over walking the full table.** A site can have millions of rows. Walking unfiltered is slow, eats context tokens, burns rate limit, and usually answers a more specific question than the user actually asked.
+
+**The probe-and-decide pattern:**
+
+1. **Cheap probe.** Call the `list*` tool with `limit=1` (NOT `limit=100`) and read the `total` field. One row, full count. Cast `total` to int — it's a string.
+2. **Decide based on `total`:**
+   - **`total ≤ 50`** — fetch everything. `limit=100` returns it all in one call. No filter needed.
+   - **`total ≤ 500`** — paginate. ~5-10 calls. Acceptable cost.
+   - **`total > 500`** — STOP. Don't paginate blindly. Narrow with filters first (see below). If the user really needs all rows, name the cost out loud first ("this site has 12,400 members; pulling all of them takes ~125 calls and ~30 seconds — narrow by category/status/location instead?").
+   - **`total > 10,000`** — never paginate without explicit confirmation. Even read-only sweeps can hit rate limits.
+3. **Narrow with operators** (see **Rule: Filter operators** for the full list). Common narrowing axes per resource:
+   - `listUsers` — `active=2` (live members only), `profession_id=N` (one category), `subscription_id=N` (one plan), `signup_date gte=YYYYMMDDHHmmss` (recent signups), `state_code=CA` / `country_code=US` (geo)
+   - `listSingleImagePosts` / `listMultiImagePosts` — `data_id=N` (one post type), `user_id=N` (one author), `post_status=1` (published only), `post_live_date gte=...` (recent)
+   - `listLeads` / `listLeadMatches` — `lead_status=N`, `lead_matched_by=admin_id`, date-pivot via `lead_updated`
+   - `listWebPages` — `seo_type=content` / `seo_type=profile_search_results`
+   - `listReviews` — `review_status=2` (accepted), `user_id=N` (one member's reviews)
+
+**When to ask the user vs filter on best guess:**
+
+- **Filter on best guess** if the user's intent already implies a narrow scope ("show me active members in California" → `active=2 AND state_code=CA`, no need to ask).
+- **Ask the user** when intent is ambiguous and the table is big. Examples:
+  - User: *"export all the members"* on a 50,000-member site → ask: "all 50,000? Or just active members? Just one plan? Last 12 months?"
+  - User: *"audit the posts"* on a site with 30 post types → ask which post type or scope.
+  - User: *"find duplicate emails"* on a 100k-member site → confirm before running cross-table joins client-side.
+- **Don't ask** if the answer is obvious or the cost is small. Asking on a 200-row table burns more user time than the fetch itself.
+
+**Multi-condition AND is not currently supported through this wrapper** (queued fix). Today's narrowing must be a SINGLE filter per call. If the user's intent needs `(A=1 AND B=2)`, pick whichever condition is more selective for the filtered call, then filter the second condition client-side from the results.
+
+**Pre-narrow checks for common requests:**
+- "How many X?" — `limit=1`, return `total`. One call, done. Don't fetch all rows.
+- "Top N by Y" — if Y is a sortable column, use `order_column=Y order_type=DESC limit=N`. If Y is a derived/computed metric (member count, revenue), narrow the fan-out first per **Rule: Filter operators**.
+- "Find rows where X is unset" — use `is_not_null` (knowing it false-positives on empty strings) plus client-side trim. Until `is_set`/`is_not_set` lands.
+- "Recent activity" — date-pivot operators (`signup_date gte`, `last_login gte`, etc.) on the appropriate timestamp column.
+
+**Token-budget guidance.** A typical `listUsers` row is 2-5 KB lean (more with `include_*` flags). 1,000 rows ≈ 3-5 MB of context. Most agent context windows can't hold that AND the conversation. Default to filtering, summarize after each batch, or page-and-discard.
+
 ### Rule: Filter real columns
 
 **Filter properties (`property` / `property_value` / `property_operator`) must reference a REAL persisted column - never guess, never filter on DERIVED response fields.** This is the one case where the universal "schema-is-documentation" rule (write any field you see on GET) does NOT extend to FILTER: writes accept unlisted real columns, filters do not.

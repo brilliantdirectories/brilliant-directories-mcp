@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.38] - 2026-04-30
+
+### Added — `Rule: Narrow before fetching` corpus rule (decision logic for when to use filter operators)
+
+v6.41.36 documented HOW operators work; this rule documents WHEN agents should reach for them. On sites with millions of rows (BD's directory tier scale), unfiltered `list*` walks burn rate limits, eat agent context tokens, and usually answer a more specific question than the user actually asked.
+
+New rule covers:
+
+- **Probe-and-decide pattern** — `limit=1` first to read `total`, then decide based on size: ≤50 fetch all, ≤500 paginate, >500 narrow first, >10,000 explicit user confirmation required
+- **Common narrowing axes per resource** — concrete filter examples for `listUsers`, `listSingleImagePosts`, `listMultiImagePosts`, `listLeads`, `listLeadMatches`, `listWebPages`, `listReviews`
+- **When to ask the user vs filter on best guess** — examples + heuristics ("don't ask on a 200-row table; ask on a 50,000-member export")
+- **Pre-narrow recipes** for common requests ("how many X?", "top N by Y", "find unset X", "recent activity")
+- **Token-budget guidance** — typical row sizes per resource so agents understand the context cost of pulling N rows
+
+No code change. Pure corpus addition between `Rule: Pagination` and `Rule: Filter real columns`. Drift check clean.
+
 ## [6.41.37] - 2026-04-30
 
 ### Fixed — Corpus rule no longer promises multi-condition AND that the wrapper doesn't currently support
