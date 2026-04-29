@@ -3807,11 +3807,11 @@
                   },
                   "post_start_date": {
                     "type": "string",
-                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
+                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
                   },
                   "post_video": {
                     "type": "string",
@@ -3973,11 +3973,11 @@
                   },
                   "post_start_date": {
                     "type": "string",
-                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
+                    "description": "Publish / start date. REQUIRED for Event post types (marks when the event begins). Optional for others. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators). BD silently truncates other formats, corrupting the value."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss` in the site's timezone (14-digit, no separators — e.g. `20260429180530`). BD silently truncates other formats to 14 chars, corrupting the value."
                   },
                   "post_video": {
                     "type": "string",

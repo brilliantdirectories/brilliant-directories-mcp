@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.33] - 2026-04-28
+
+### Changed — Bucket-B canonical sentence byte-aligned across all SingleImagePost date fields (no behavior change)
+
+Post-publish wire audit on v6.41.32 surfaced one cosmetic byte-variance: `createSingleImagePost.post_start_date`, `createSingleImagePost.post_expire_date`, and their update-side counterparts (4 occurrences total) carried an abbreviated form of the canonical site-tz sentence, missing the inline `e.g. 20260429180530` example and the `to 14 chars` truncation qualifier. Substantively equivalent (site-tz pinning, 14-digit rule, truncation warning, corruption warning all present), but not byte-identical to the long form used on every other Bucket-B field.
+
+Normalized all 4 occurrences to the long-form canonical: `Format: \`YYYYMMDDHHmmss\` in the site's timezone (14-digit, no separators — e.g. \`20260429180530\`). BD silently truncates other formats to 14 chars, corrupting the value.`
+
+Result: 13 byte-identical canonical sentences across the Bucket-B set. Drift-check candidate for future enforcement (currently a manual convention, easy to drift on the next field added).
+
 ## [6.41.32] - 2026-04-28
 
 ### Changed — Description prose aligned with wrapper-owned timestamp contract (no behavior change)
