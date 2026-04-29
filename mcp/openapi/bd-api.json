@@ -300,18 +300,25 @@
       "property_operator": {
         "name": "property_operator",
         "in": "query",
-        "description": "Filter operator: =, LIKE, >, <, >=, <= (use property_operator[] for multiple)",
+        "description": "Filter operator. Use word-form aliases (`<`, `>`, `<>`, `%` are WAF-stripped, symbol forms unreachable). Single-value: `eq`, `ne`/`neq`, `lt`, `lte`, `gt`, `gte`, `like`, `not_like`. CSV multi-value: `in`, `not_in` (`property_value=1,2,3`), `between` (`property_value=low,high` exactly 2 values). Value-ignored: `is_not_null`. For multi-condition AND across different fields use `property[]` + `property_value[]` + `property_operator[]` array-syntax. See **Rule: Filter operators** for full shape examples and validation behavior.",
         "schema": {
           "type": "string",
           "enum": [
-            "=",
-            "LIKE",
-            ">",
-            "<",
-            ">=",
-            "<="
+            "eq",
+            "ne",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "in",
+            "not_in",
+            "between",
+            "like",
+            "not_like",
+            "is_not_null"
           ],
-          "default": "="
+          "default": "eq"
         }
       },
       "order_column": {

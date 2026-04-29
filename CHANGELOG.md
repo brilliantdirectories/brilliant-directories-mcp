@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.36] - 2026-04-30
+
+### Changed — Filter operator allowlist + corpus rule rewrite (verified live against BD's PR 5166 hardening)
+
+BD's filter-operator subsystem landed Round 3 hardening (PR 5166) and surfaced multiple infra-layer behaviors that were not previously documented. Verified live 2026-04-30 against `find-fitness-pros.directoryup.com`. No silent corruption — BD now returns clean errors for malformed input.
+
+**Wrapper allowlist updated** (`FILTER_OPERATOR_ALLOWED` in Worker `src/index.ts` + npm `mcp/index.js`, byte-mirrored). Was: `{=, LIKE, >, <, >=, <=}` — allowed broken symbol forms, blocked every working word-form alias. Now: `{eq, ne, neq, lt, lte, gt, gte, =, !=, in, not_in, between, like, not_like, LIKE, is_not_null}`. Validator is case-insensitive (BD normalizes case server-side).
+
+**Corpus `Rule: Filter operators` rewritten** with verified table of working operators, value-shape examples per operator, multi-condition AND array-syntax example, and case-sensitivity notes (operators + string-equality values both case-insensitive).
+
+**Spec `property_operator` parameter description and enum updated** to match: word-form aliases listed first, multi-value operators (`in`, `not_in`, `between`) called out with shape, value-ignored operator (`is_not_null`) noted.
+
+**Excluded — currently broken server-side, agents must paginate + filter client-side until BD fixes:**
+- `is_null` — returns `status: error, message: "<table> not found"` on tables with NULL rows where it should match. Reported.
+
+**Excluded — WAF infra layer:**
+- Symbol forms `<`, `>`, `<>`, `%` are stripped from URL params before PHP sees them. Word-form aliases (`lt`, `gt`, `like` with `_`) are canonical.
+
+**Phase 2 wishlist** (BD-side enhancements, not shipped): `is_set` / `is_not_set` (closes empty-string vs NULL gap), `since_days` / `until_days` (date-range shorthand), `starts_with` / `ends_with` (works around `%` stripping), `length_eq` / `length_lt` / `length_gt` (slug-length audits). Tracked in `INTERNAL-FINAL-MCP-TODOS.md`.
+
 ## [6.41.35] - 2026-04-28
 
 ### Changed — `post_start_date` semantic clarified, Bucket-B canonical sentence tightened (no behavior change)

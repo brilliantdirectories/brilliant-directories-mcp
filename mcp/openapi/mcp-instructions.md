@@ -415,26 +415,59 @@ The error envelope `{status: "error", message: "<X> not found", total: 0}` fires
 
 **Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`, or array-syntax (`property[]=...&property_value[]=...&property_operator[]=...`) for multi-condition AND.
 
-**Works (verified live across 10 list endpoints):**
+**Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params before the request reaches PHP — symbol forms are unreachable on this endpoint. Word-form aliases survive the WAF.
 
-- `=` — exact match. Case-insensitive on strings.
-- `!=` — not equal. **Use `!=`, NOT `<>` (see broken list).**
-- `>`, `>=` — numeric comparison.
-- `in` / `not_in` — OR-on-values, one field, CSV. `property_value=Sample,Michael&property_operator=in`. Unmatched values silently skipped.
-- `LIKE` / `not_like` — `%` wildcards. URL-encode `%` as `%25`. Without wildcards `LIKE` acts as `=`.
-- `between` — CSV only: `property_value=lo,hi&property_operator=between`. Array-syntax errors.
-- `is_null` / `is_not_null` — **`property_value=` MUST be present as an empty parameter.** `property=logo&property_value=&property_operator=is_null`. Omitting the param silent-drops to unfiltered dataset.
-- **Multi-condition AND** via array syntax. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]`. Mix any working operators freely — e.g. `first_name LIKE 'Sa%' AND active=2 AND user_id BETWEEN 100,200` is one call.
-- **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator==` returns rows with unset FK.
+**Verified working operators (live 2026-04-30):**
 
-**Broken server-side — DO NOT USE:**
+| Operator | Value shape | Example query string |
+|---|---|---|
+| `eq` | single value | `property=user_id&property_value=5&property_operator=eq` |
+| `ne` / `neq` | single value | `property=active&property_value=3&property_operator=ne` |
+| `lt` | single numeric value | `property=user_id&property_value=100&property_operator=lt` |
+| `lte` | single numeric value | `property=user_id&property_value=100&property_operator=lte` |
+| `gt` | single numeric value | `property=user_id&property_value=100&property_operator=gt` |
+| `gte` | single numeric value | `property=user_id&property_value=100&property_operator=gte` |
+| `in` | **CSV** (`a,b,c`) | `property=user_id&property_value=1,2,3&property_operator=in` |
+| `not_in` | **CSV** (`a,b,c`) | `property=active&property_value=3,4,5&property_operator=not_in` |
+| `between` | **CSV exactly 2** (`low,high`) | `property=user_id&property_value=100,200&property_operator=between` |
+| `like` | single value with `_` wildcard | `property=email&property_value=jane_@example.com&property_operator=like` |
+| `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
+| `is_not_null` | value param ignored | `property=logo&property_operator=is_not_null` |
 
-- `<`, `<=`, `<>` — silently act as `=` (verified across 10 endpoints). For upper-bound numeric ranges use `between lo,hi`. For inequality use `!=`. **`<>` is especially dangerous: `active <> 3` returns ONLY `active=3` rows, the exact opposite of intent.**
-- Word-form aliases `lt`, `gt`, `lte`, `gte` — silently fall back to `=`. Symbols (`>`, `>=`) are canonical.
+**CSV format:** comma-separated, plain values. Spaces around values are tolerated (`1, 2, 3` works). Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) for `in`/`not_in`/`between` — array-syntax is reserved for multi-condition AND across DIFFERENT operators (see below).
+
+**Case sensitivity:**
+- **Operator names: case-insensitive.** `eq`, `EQ`, `Eq` all work — BD normalizes case server-side. Same for every operator. Lowercase is canonical for readability.
+- **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
+- **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
+
+**Multi-condition AND** uses array-syntax — index-aligned across all three params:
+```
+?property[]=first_name&property_value[]=Sa_&property_operator[]=like
+&property[]=active&property_value[]=2&property_operator[]=eq
+&property[]=user_id&property_value[]=100,200&property_operator[]=between
+```
+This is one call returning rows matching ALL three conditions. Mix any operators freely; CSV-supporting operators still take CSV inside their `property_value[]` slot.
+
+**Validation behavior — clean errors, no silent fallback:**
+
+- Single-value operator + CSV → `Operator "X" does not accept CSV values; use "in" or "not_in"`
+- `between` reversed range → `received reversed range "5,1"; pass values in low,high order`
+- `between` wrong cardinality → `requires exactly 2 values`
+- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`
+- Unknown operator → `Unrecognized filter operator "X"`
+
+**Multi-condition AND** via array syntax. Index-aligned: `property[i]` + `property_value[i]` + `property_operator[i]`. Mix any working operators freely.
+
+**Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
 
 **No native OR across different fields.** `in` is OR within one field's values. For `A=X OR B=Y` across two fields, make two filtered calls and merge client-side.
 
 **Architecture:** `property_operator` is honored ONLY on `/get` (list) endpoints. `/search` (POST) silently ignores it (keyword-only via `q=`). `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
+
+**Currently broken server-side — do not use, will be fixed in upcoming BD push:**
+
+- `is_null` (all forms) — returns `status: error, message: "<table> not found"` on tables with NULL rows where the operator should match. Workaround: paginate and filter client-side until BD fixes.
 
 ### Rule: Silent-drop check
 

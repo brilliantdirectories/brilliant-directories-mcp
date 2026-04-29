@@ -1684,14 +1684,34 @@ function validateFilterValuesInArgs(args) {
 // generated tool schema strips enum constraints from string properties, so
 // runtime enforcement is the only line of defense. Reject with the documented
 // enum so the agent can switch to a supported operator (`LIKE`, range ops).
-const FILTER_OPERATOR_ALLOWED = new Set(["=", "LIKE", ">", "<", ">=", "<="]);
+// Verified live 2026-04-30 against find-fitness-pros.directoryup.com. BD's WAF
+// strips `<`, `>`, `<>`, `%` from URL params before PHP sees them, so symbol
+// inequality forms are unreachable on this endpoint — word-form aliases are
+// canonical. `=` and `!=` survive the WAF and are accepted server-side; kept
+// for back-compat. `is_null` is BD-broken (returns "<table> not found" on rows
+// that should match) — excluded until BD fixes; agents fall back to client-side
+// pagination per the corpus rule. PR 5166 hardening: BD now returns clean
+// errors for unknown operators, CSV-on-single-value, between range/cardinality
+// violations, and like-without-wildcard — no more silent fallback to `=`.
+const FILTER_OPERATOR_ALLOWED = new Set([
+  "eq", "ne", "neq", "lt", "lte", "gt", "gte",
+  "=", "!=",
+  "in", "not_in",
+  "between",
+  "like", "not_like", "LIKE",
+  "is_not_null",
+]);
 function validateFilterOperatorInArgs(args) {
   if (!args || typeof args !== "object") return null;
   const check = (label, val) => {
     if (val === undefined || val === null || val === "") return null;
     const s = String(val);
-    if (!FILTER_OPERATOR_ALLOWED.has(s)) {
-      return `${label}='${s}' is not a supported filter operator. BD silently substitutes unsupported operators with '=' semantics, returning the wrong result set with no warning. Allowed: =, LIKE, >, <, >=, <=. For 'not equal', filter for the value you DO want, or fetch a wider set and filter client-side.`;
+    // BD's operator parser is case-insensitive — match the same way to avoid
+    // rejecting `EQ` / `Between` etc. that BD itself accepts.
+    const lower = s.toLowerCase();
+    const ok = FILTER_OPERATOR_ALLOWED.has(s) || FILTER_OPERATOR_ALLOWED.has(lower);
+    if (!ok) {
+      return `${label}='${s}' is not a supported filter operator. Allowed (case-insensitive): eq, ne/neq, lt, lte, gt, gte, in, not_in, between, like, not_like, is_not_null. Symbol forms <, >, <>, % are stripped by BD's WAF — use word-form aliases. is_null is currently broken server-side; paginate and filter client-side until BD ships the fix.`;
     }
     return null;
   };
