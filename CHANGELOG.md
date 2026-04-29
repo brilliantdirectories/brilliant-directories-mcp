@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.49] - 2026-04-30
+
+### Fixed — DANGEROUS corpus regression: array-syntax compound filters were taught as canonical but the wrapper rejects them
+
+Final regression sweep flagged a real contradiction. `Rule: Filter operators` (rewritten in v6.41.37) correctly says multi-condition AND across different fields is NOT currently supported through the wrapper. But four other places in the corpus — including the load-bearing `Rule: users_meta identity` 2-of-3 safety guard — still actively recommended `property[]=...&property_value[]=...&property_operator[]=...` as the canonical shape.
+
+Verified live through the deployed v6.41.48 wrapper:
+- JSON-array form (`property: ["database","database_id"]`) → wrapper Zod rejects: `expected string, received array`
+- Bracket-key form (`property[]`) → wrapper's 2-of-3 safety guard returns `you sent: none` because the literal `[]` suffix isn't recognized as a property name
+- BD-direct accepts the array-syntax fine, but agents on the MCP transport never reach BD-direct
+
+The danger: agents following the corpus's STRONGEST safety rule (`Rule: users_meta identity` — applies to every users_meta read/update/DELETE) burn calls hitting the safety guard error and may fall back to single-field queries that produce cross-table contamination — the exact failure mode the rule is meant to prevent.
+
+**Fixed four corpus sites:**
+
+1. **`Rule: Array-syntax filters` (line 545)** renamed to `Rule: Compound filters` — now teaches the two patterns that actually work: (A) first-class compound filter args on `listUserMeta` (`{database, database_id, key}` as top-level params), (B) single filter + client-side intersect for everything else (join-table pre-checks). Explicitly documents that array-syntax doesn't reach BD through this wrapper.
+
+2. **`Rule: users_meta identity` (line 696)** — the load-bearing safety rule. Replaced the array-syntax recommendation with the first-class params shape (`listUserMeta {database: "users_data", database_id: 1, key: "instagram"}`). Verified live this returns the correct scoped row set.
+
+3. **Pair-uniqueness pre-check pattern (line 890)** — was recommending `property[]=lead_id&property_value[]=X&property[]=user_id...`. Replaced with single-field filter on most-selective field + client-side check of remaining conditions. Explicit example for `createLeadMatch`, `createTagRelationship`, `createMemberSubCategoryLink`.
+
+4. **`Rule: users_meta orphans` (line 904)** — orphan cleanup workflow had the same array-syntax recommendation; now points at the first-class params path matching `Rule: users_meta identity`.
+
+The new Phase 3 wishlist item logged earlier covers the wrapper-side fix: validator should accept JSON-array `property_operator` and forward as `property[]=` to BD's REST API. Until then, the corpus correctly directs agents to the working patterns.
+
+No code change. Drift check clean.
+
 ## [6.41.48] - 2026-04-30
 
 ### Added — Silent-accept enum/FK warnings on three fields (verified live)

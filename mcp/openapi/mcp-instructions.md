@@ -542,9 +542,15 @@ Apply the SEO-intent -> WebPage routing rule across `createTopCategory` / `updat
 
 **Ranking-by-membership warning (N+1 fan-out):** there is no server-side `ORDER BY member_count` on categories. "Top N categories by member count" on a site with K categories requires `K × listUsers limit=1 property=profession_id&property_value=<id>` calls. If K > 20, tell the user the scope upfront and ask whether to narrow (e.g. active categories only, or top-level only) before fanning out.
 
-### Rule: Array-syntax filters
+### Rule: Compound filters
 
-**Multi-condition array-syntax filters are supported.** Send conditions as repeated array params in the URL: `property[]=<field1>&property_value[]=<val1>&property_operator[]==&property[]=<field2>&property_value[]=<val2>&property_operator[]==`. Arrays are index-aligned (first of each trio = first condition, second = second, etc.) and combined with AND. Applies to join-table pre-checks (`createLeadMatch` lead_id+user_id, `createTagRelationship` tag_id+object_id+tag_type_id, `createMemberSubCategoryLink` user_id+service_id) and users_meta compound-key lookups (database+database_id+key). Single-condition form still works unchanged: `property=<field>&property_value=<val>&property_operator==`.
+**Compound filters across two or more fields are not supported through this wrapper as a single `list*` call.** The wrapper validator rejects array-shaped `property` / `property_value` / `property_operator` and the bracket-key `property[]` form returns a 2-of-3 safety-guard error on `listUserMeta`. Two working patterns:
+
+**Pattern A — first-class compound filters** (only on `listUserMeta`, which exposes `database` / `database_id` / `key` as top-level params): pass the targeting fields directly as args, no `property`/`property_value` needed. Example: `listUserMeta {database: "users_data", database_id: 1}` — returns all meta rows for that user. Add `key` for a single field: `{database: "users_data", database_id: 1, key: "instagram"}`. This is the canonical shape for users_meta scoped reads — see **Rule: users_meta identity**.
+
+**Pattern B — single filter + client-side intersect** (everything else, including join-table pre-checks): make one call with the most-selective single-field filter, then narrow client-side. For pair-uniqueness pre-checks (`createLeadMatch` lead_id+user_id, `createTagRelationship` tag_id+object_id+tag_type_id, `createMemberSubCategoryLink` user_id+service_id): filter on whichever field has lower cardinality, then check the other field on the returned rows. Example: pre-check user 64 isn't already linked to service 3 → `listMemberSubCategoryLinks property=user_id property_value=64 property_operator=eq` (returns ~6 rows), client-side check `service_id == 3`.
+
+**Why two filtered calls + intersect, not the array-syntax some BD docs mention:** the wrapper's input-schema validator catches the Pattern A→B mismatch before the call leaves the agent, returning `expected string, received array` or the 2-of-3 safety guard. BD-direct REST may accept array-syntax but agents on the MCP transport don't reach BD-direct. Wrapper-level fix queued in `INTERNAL-FINAL-MCP-TODOS.md`.
 
 ### Rule: Field over hack
 
@@ -687,7 +693,7 @@ Applies to all image fields, all contexts.
 
 **Safety rules (read, update, especially DELETE):**
 
-- **ALWAYS** filter/match on BOTH `database` AND `database_id` together via server-side multi-condition array syntax — never `database_id` alone. Shape: `property[]=database&property_value[]=<parent_table>&property_operator[]==&property[]=database_id&property_value[]=<parent_id>&property_operator[]==`. Add a `key` triple for a specific field. One call, exact scope, no cross-table noise.
+- **ALWAYS** scope by BOTH `database` AND `database_id` together — never `database_id` alone. On `listUserMeta` / `getUserMeta` / `updateUserMeta` / `deleteUserMeta`, pass them as TOP-LEVEL args (first-class params, NOT inside `property`/`property_value`): `listUserMeta {database: "users_data", database_id: 1}`. Add `key` for a single field: `{database: "users_data", database_id: 1, key: "instagram"}`. The wrapper enforces this via the 2-of-3 safety guard — single-field calls are rejected. One call, exact scope, no cross-table noise.
 - **NEVER** loop-delete by `database_id` alone - this WILL delete unrelated records on other tables.
 - If a single-field query is ever unavoidable, CLIENT-SIDE filter results by `database` match before acting — belt-and-suspenders for the destructive path.
 
@@ -881,7 +887,7 @@ Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, 
 
 **Standard pre-check: server-side filter-find, NOT paginate-and-search.** Before every create on these resources:
 
-1. Call the corresponding `list*` with `property=<field>&property_value=<proposed>&property_operator==` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): send all conditions server-side in one call using array syntax - `property[]=lead_id&property_value[]=<X>&property_operator[]==&property[]=user_id&property_value[]=<Y>&property_operator[]==` (conditions AND'd). Same shape for tag relationships (3-field) and user↔sub-category links (2-field). One round trip, no client-side intersect needed.
+1. Call the corresponding `list*` with `property=<field>&property_value=<proposed>&property_operator=eq` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): filter server-side on the most-selective field, then check the other condition(s) client-side on the returned rows. Example pre-check before `createLeadMatch lead_id=X user_id=Y`: `listLeadMatches property=lead_id property_value=X property_operator=eq` (returns rows for that lead — typically a small set), then client-side check `user_id == Y`. Same shape for `createTagRelationship` (filter `tag_id`, then check `object_id` and `tag_type_id` client-side) and `createMemberSubCategoryLink` (filter `user_id`, check `service_id`). Compound array-syntax filters are not supported through this wrapper — see **Rule: Compound filters**.
 2. If a match exists: reuse the existing ID, update instead, ask the user, OR (for name-based) pick an alternate and re-check.
 3. Only if zero rows, proceed with create.
 
@@ -895,7 +901,7 @@ Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, 
 
 **Cleanup workflow after any parent delete:**
 
-1. `listUserMeta` scoped by BOTH `database_id=<parent id>` AND `database=<parent table>` using array syntax in one call: `property[]=database&property_value[]=<parent_table>&property_operator[]==&property[]=database_id&property_value[]=<parent_id>&property_operator[]==`. Returns only the orphan rows for this parent with no cross-table noise.
+1. `listUserMeta` scoped by BOTH `database_id=<parent id>` AND `database=<parent table>` via top-level args (first-class params, not `property`/`property_value`): `listUserMeta {database: "<parent_table>", database_id: <parent_id>}`. Returns only the orphan rows for this parent with no cross-table noise. The wrapper's 2-of-3 safety guard rejects single-field calls.
 2. For each matching row: `deleteUserMeta(meta_id, database=<parent_table>, database_id=<id>)` - all three required.
 
 **Delete tools where this cleanup applies:**
