@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.42] - 2026-04-30
+
+### Restored — Four discoverability/accuracy hints over-trimmed in v6.41.41
+
+The lean-audit pass cut ~3,615 chars from corpus filter rules. Self-review afterward flagged 4 specific cuts that hurt agent accuracy or rule discoverability:
+
+1. **`include_full_text` use cases** — restored "keyword-in-body verification on `searchReviews` results." Distinct from inspection or export, this is the canonical case for resolving truncated keyword hits.
+2. **Count trick promoted back to standalone bullet** in `Rule: Narrow before fetching`. `limit=1` + `total` is THE answer to any count question; burying it inside a generic "common patterns" list made it scannable-miss.
+3. **Typo-suspicion hint** restored in `Rule: Filter real columns` empty-result envelope — agents seeing `total: 0` should verify column names against `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` before assuming the table is empty.
+4. **Why-context on "one operator per call"** restored in `Rule: Filter operators` opener — the agent now sees the workaround (two filtered calls + intersect) inline instead of needing to scan further into the rule.
+
+Net: ~3,400 chars still removed from v6.41.40, with the navigation/accuracy hints back. No semantic changes to operator behavior or validation. Drift check clean.
+
 ## [6.41.41] - 2026-04-30
 
 ### Fixed — Two corpus narrowing-axis examples were wrong (silent-drop on bad column names)

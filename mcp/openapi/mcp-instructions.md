@@ -365,7 +365,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 **Reviews** (`listReviews` / `getReview` / `searchReviews`): 9 flat scalar fields; `review_description` is the only unbounded field (no BD-side length cap). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
 
-- `include_full_text=1` - restores full `review_description`. Use for single-record inspection or full-content export; skip on moderation sweeps and re-fetch individual reviews with `getReview` instead.
+- `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on `searchReviews` results, or full-content export; skip on moderation sweeps and re-fetch individual reviews with `getReview` instead.
 
 ### Rule: users_meta writes
 
@@ -401,6 +401,8 @@ Example: 118 members at `limit=10` = 12 calls.
 **Probe size before paginating; prefer filters over walking the full table.** Sites can have millions of rows.
 
 **Probe:** call `list*` with `limit=1`, read `total` (string — cast to int).
+
+**Count trick: `limit=1` returns the full count in `total`.** Use this for ANY count question — never fetch all rows just to count them. Combine with filters to count subsets in one call: `listUsers limit=1 property=active property_value=2 property_operator=eq` returns the count of active members. Works on every `list*` endpoint.
 
 **Decide by `total`:**
 - `≤ 25` — fetch in one call.
@@ -438,11 +440,11 @@ Example: 118 members at `limit=10` = 12 calls.
 
 If unsure what's filterable, call the fields endpoint for the authoritative column list: `getUserFields`, `getSingleImagePostFields`, `getMultiImagePostFields`, `getPostTypeCustomFields`.
 
-**Empty-result envelope** (verified): unknown column, derived field, and legitimate "no match" all return `{status: "success", message: [], total: 0, current_page: 1, total_pages: 0, next_page: ""}`. Treat `total: 0` as ambiguous — see **Rule: Silent-drop check**.
+**Empty-result envelope** (verified): unknown column, derived field, and legitimate "no match" all return `{status: "success", message: [], total: 0, current_page: 1, total_pages: 0, next_page: ""}`. Treat `total: 0` as ambiguous — if you suspect a column-name typo, verify against `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` before assuming the table is empty. See **Rule: Silent-drop check**.
 
 ### Rule: Filter operators
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call.
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call — for multi-condition AND across different fields, make two filtered calls and intersect client-side.
 
 **Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params; symbol forms never reach PHP. Word-form aliases survive.
 
