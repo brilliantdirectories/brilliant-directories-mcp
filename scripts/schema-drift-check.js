@@ -102,7 +102,7 @@ for (const [urlPath, methods] of Object.entries(spec.paths || {})) {
 // When those files change, update this block too.
 // ---------------------------------------------------------------------------
 
-const HIDDEN_TOOLS = new Set(["createUserMeta", "renderWidget"]);
+const HIDDEN_TOOLS = new Set(["createUserMeta"]);
 
 // Read-tool families: operationIds that each lean shaper handles.
 const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.60] - 2026-04-30
+
+### Fixed — package-lock.json was frozen at 6.41.31 (regenerated to 6.41.60)
+
+Cold-eyes audit caught `mcp/package-lock.json` had been stale for 28 versions — top-level `version` and `packages[""].version` both at `6.41.31`. Lockfile metadata is what `npm view` and dep-tree resolution surfaces show; shipping wrong metadata silently misleads downstream tooling. Regenerated via `npm install --package-lock-only`. Confirmed alignment across all stamps now: `mcp/package.json`, `mcp/package-lock.json` (×2), `plugin.json`, `server.json` (×2) — all `6.41.60`.
+
+### Changed — `widget_name` character class widened to allow `+` and `_`
+
+v6.41.59's `[A-Za-z0-9 -]+` was too narrow. Some legacy BD widgets carry `+` (e.g. `C++ Course`) or `_` (e.g. `Email_Validator_v2`) in their names — the runtime guard would reject valid existing widgets on `updateWidget`. Widened to `[A-Za-z0-9 \-+_]+` (alphanumeric + space + hyphen + plus + underscore) in Worker `WIDGET_NAME_PATTERN`, npm mirror, drift-check, and tool descriptions. Error message updated to list all 5 allowed character classes.
+
+### Changed — `updateWidget` description: never rename unless user explicitly asks
+
+Renaming a widget breaks every `[widget=Name]` shortcode reference to its old name on every page/email — silently. Description now leads with: *"DO NOT pass `widget_name` unless the user explicitly asks to rename the widget."* If user does ask, same format rules apply (`[A-Za-z0-9 -+_]+` runtime-rejected on bad chars; `-vN` collision flow up to v10).
+
+### Changed — `renderWidget` un-hidden as diagnostic-only tool
+
+v6.41.59 hid `renderWidget` reasoning customer-site rendering is shortcode-driven. But the troubleshoot scenario in `Rule: Widget code fields` legitimately needs server-side render output to confirm backslash strip / `<style>` auto-wrap / `<script>` wrapper symptoms — agents can't read the render pipeline output via `getWidget` alone. v6.41.60 un-hides it. Tool description rewritten to scope purpose explicitly: *"Diagnostic tool only — production widget rendering is always via `[widget=Name]` shortcode in page or email content; never call this tool to deliver widget HTML to end users."* `HIDDEN_TOOLS` now contains only `createUserMeta` (the EAV-write footgun). VISION doc "Out of scope" section retitled to "Scope decisions" and rewritten to reflect.
+
+### Changed — backslash-example parity in `widget_javascript` description
+
+`widget_data` description shows 4 backslash-strip examples (`\d \n \t \\`); `widget_javascript` previously showed only 3 (`\d \w \s`). Asymmetry could imply `\n`/`\t` don't survive in JS. Widened to: *"regex literals (`\d`, `\w`, `\s`) AND string escapes (`\n`, `\t`, `\\`) survive intact"*.
+
+### Changed — stale `renderWidget` cross-refs cleaned in spec
+
+`createWidget`, `listWidgets`, `getWidget`, and the `createWidget` "Writes live data" footer all referenced `renderWidget` for use cases that don't apply (telling agents to "test output via renderWidget after create" or "render on external sites"). Refs replaced with shortcode guidance + `getWidget` for storage verification. The single `renderWidget` cross-reference in the troubleshoot scenario stays — that's its actual valid use case.
+
+### Removed — stale forensic artifacts in hosted folder
+
+`worker-tail.json`, `worker-tail-90s.json`, and `analyze-logs.py` (companion to those captures) were leftover debug artifacts from a April 24 investigation. Removed from disk; gitignore already prevented future captures from being tracked.
+
 ## [6.41.59] - 2026-04-30
 
 ### Added — `widget_name` runtime format guard
