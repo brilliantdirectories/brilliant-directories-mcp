@@ -288,19 +288,20 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 ### Rule: Widget code fields
 
-**Three fields, one rule per scenario:**
+**Three fields. The render truth dictates the wrapper rules:**
 
-- `widget_data` = HTML body. No `<style>`, no `<script>`.
-- `widget_style` = CSS body. No `<style>` wrapper. (If wrapped, the wrapper is server-side stripped before storage.)
-- `widget_javascript` = JS body. **MUST be wrapped in `<script>...</script>`** — BD's renderer requires the wrapper for the JS to execute.
+- `widget_data` = pure HTML. **No `<style>`, no `<script>`.** Renders as-is.
+- `widget_style` = raw CSS only. **No `<style>` wrapper.** BD's renderer auto-wraps this content in `<style type='text/css'>...</style>` at render time. Agent-supplied wrappers are server-side stripped before storage as a failsafe.
+- `widget_javascript` = JS body. **MUST include `<script>...</script>` wrapper.** BD does NOT auto-wrap this field; without the wrapper the JS renders as inert text.
 
-**Authoring a NEW widget (`createWidget`):** route by content type — HTML → `widget_data`, CSS → `widget_style`, JS → `widget_javascript`. Never dump everything into `widget_data`.
+**Scenario 1 — NEW widget (`createWidget`):** route by content type. HTML → `widget_data`. CSS → `widget_style` (no wrapper). JS → `widget_javascript` (with `<script>` wrapper). Never inline `<style>` or `<script>` blocks in `widget_data`.
 
-**Editing an EXISTING widget (`updateWidget`): DO NOT MOVE CODE.** Whatever's in `widget_data` stays in `widget_data` — even if it contains `<style>` or `<script>`. Existing widgets work; relocating is a refactor the user did not ask for. **Only exception:** the user explicitly reports the widget is broken (CSS not applying, JS not firing, form stuck, regex acting wrong) AND the symptom matches a known render bug — then relocating CSS/JS to the correct field is a valid troubleshooting step. Otherwise: leave it alone.
+**Scenario 2 — EDIT existing widget (`updateWidget`), routine change:** DO NOT MOVE CODE. Whatever's in `widget_data` stays in `widget_data` — even if it contains `<style>` or `<script>` blocks. Existing widgets work; relocating is a refactor the user did not ask for. Just modify the specific text/attribute the user requested and leave the rest alone.
 
-**Why these fields exist (only relevant if you're debugging a real render bug):** BD's render path on `widget_data` strips backslashes from output (`\n` → `n`, `\s` → `s`, `\.` → `.`), corrupting any `<script>` regex/escape sequences. Froala separately strips `<style>` tags from `widget_data` when the widget is embedded via `[widget=Name]` in a page's `content`. `widget_style` and `widget_javascript` don't have either failure mode. Don't try to fix in-place by avoiding backslashes (`String.fromCharCode(10)` etc.) — move the JS to `widget_javascript` and use normal escapes.
-
-**Diagnostic shortcut:** if a rendered widget shows JS regex like `/^\d+$/` becoming `/^d+$/`, or `\s` becoming `s` — the JS is in `widget_data` and got backslash-stripped on render. Move it to `widget_javascript`. If a `<style>` block is showing as visible text on the page, the widget is being embedded in a Froala-edited page's body content and `<style>` got stripped — move CSS to `widget_style`.
+**Scenario 3 — TROUBLESHOOT a user-reported broken widget:** the only context where moving code between fields is appropriate. Trigger: the user explicitly says the widget is broken (CSS not applying, JS not firing, form stuck, regex matching wrong characters). First diagnose via `renderWidget` to see actual output, then:
+- JS regex `/^\d+$/` rendering as `/^d+$/` (backslashes stripped) → JS is in `widget_data` and BD's render path stripped the backslashes. Move JS to `widget_javascript` (wrapped in `<script>`) — that field doesn't backslash-strip.
+- `<style>` block visible as plain page text when the widget is embedded via `[widget=Name]` in a Froala-edited page → Froala stripped the `<style>` from the page's content field on save. Move CSS to `widget_style` — Froala only sees the `[widget=Name]` shortcode token, never the widget's CSS.
+- JS not executing at all on a fresh widget you just created → confirm `widget_javascript` content has the `<script>...</script>` wrapper. Without it BD renders the JS as plain text.
 
 ### Rule: API key permissions
 

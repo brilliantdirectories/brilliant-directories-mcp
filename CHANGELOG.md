@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.55] - 2026-04-30
+
+### Changed — `Rule: Widget code fields` ground-truthed against actual BD render output; field descriptions reconciled
+
+Live `renderWidget` probe on a 3-field-populated widget revealed BD's actual render shape:
+```
+<style type='text/css'> {widget_style content} </style>{widget_data}{widget_javascript verbatim}
+```
+
+Two implications:
+1. **`widget_style` IS auto-wrapped** by BD's renderer — confirmed empirically. Agent-supplied `<style>` wrapper would produce nested `<style><style>...</style></style>`. Auto-strip behavior is correct.
+2. **`widget_javascript` is NOT auto-wrapped** — content renders verbatim. Agent MUST include `<script>...</script>` wrapper or the JS becomes inert text on the page.
+
+Rule rewritten into three crisp scenarios (NEW / EDIT-routine / TROUBLESHOOT) with explicit symptom→fix mappings under TROUBLESHOOT. Field descriptions on `createWidget` AND `updateWidget` reconciled with rule and render truth — no more conflicting guidance about `<style>` in `widget_data`. Two prior subtle conflicts removed: (a) `createWidget.widget_data` description previously hedged "leave any existing CSS/JS alone unless …" which only applies to EDIT scenarios — wrong field; (b) `widget_style` field description didn't mention BD's auto-wrap, so agents reading just the field tooltip didn't know why the wrapper rule existed.
+
+Includes an extra symptom on the troubleshoot path: "JS not executing at all on a fresh widget you just created → confirm `<script>...</script>` wrapper is present in `widget_javascript`."
+
 ## [6.41.54] - 2026-04-30
 
 ### Fixed — `widget_javascript` MUST keep `<script>...</script>` wrapper; v6.41.53 was wrongly stripping it
