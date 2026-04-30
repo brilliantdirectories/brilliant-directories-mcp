@@ -5374,7 +5374,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML only. No `<style>`, no `<script>` — render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**."
+                    "description": "HTML only. No `<style>`, no `<script>` — render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). JS with stripped escapes throws SyntaxError on parse — every handler unbound, widget renders but no clicks/inputs work. Fix: relocate to `widget_javascript`, do not rewrite JS to avoid backslashes. Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",
@@ -5444,7 +5444,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML. Render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). Never relocate existing `<style>`/`<script>` blocks here — only on user-reported breakage. New content: route by type (CSS→`widget_style`, JS→`widget_javascript`). See **Rule: Widget code fields**."
+                    "description": "HTML. Render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). JS with stripped escapes throws SyntaxError on parse — every handler unbound, widget renders but no clicks/inputs work. Fix: relocate to `widget_javascript`, do not rewrite JS to avoid backslashes. Never relocate existing `<style>`/`<script>` blocks here — only on user-reported breakage. New content: route by type (CSS→`widget_style`, JS→`widget_javascript`). See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",

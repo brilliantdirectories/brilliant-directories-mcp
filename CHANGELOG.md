@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.63] - 2026-04-30
+
+### Changed — `widget_data` and corpus rule sharpen JS-in-widget_data failure framing from "degraded" to "catastrophic parse"
+
+Real failure-mode reframing surfaced by an agent post-mortem: when JS lives in `widget_data` and BD's render strips backslashes, the result is NOT graceful degradation ("string escapes look weird, mostly works") — it's `SyntaxError` on parse, which aborts the entire script. Every event handler unbound. Symptom an agent can diagnose: widget renders visually but no clicks/inputs/forms respond.
+
+Previous wording said the strip happens; agents reading it could (and did) assume their JS would mostly work. New wording says the JS won't run at all. Equally important: agents discovering a misrouted widget tend to fix it by rewriting the JS to avoid backslashes (`String.fromCharCode(10)`, charCode-loop trim, indexOf-based regex replacement). That's a workaround, not a fix — relocation is the fix.
+
+Patches applied:
+
+1. `createWidget.widget_data` description — adds "JS with stripped escapes throws SyntaxError on parse — every handler unbound, widget renders but no clicks/inputs work. Fix: relocate to `widget_javascript`, do not rewrite JS to avoid backslashes."
+2. `updateWidget.widget_data` description — same addition (truncation-resilient duplicate).
+3. `Rule: Widget code fields` troubleshoot scenario — first bullet sharpened with the SyntaxError mechanism, the renders-but-doesn't-respond symptom, AND an explicit anti-pattern note naming the three workarounds (charCode, charCode-loop trim, indexOf-regex) so an agent recognizes them as detours not fixes.
+
+No code change. No new behavior. Pure reframing of the same failure mode from "may degrade" to "will silently break"; the recovery path is unchanged but the diagnostic intuition is now correct.
+
 ## [6.41.62] - 2026-04-30
 
 ### Changed — `createWidget` description: route-by-type-first directive + post-create verification carve-out

@@ -300,7 +300,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **On user-reported breakage:** only context for moving code. `renderWidget` first (diagnostic-only — never call to deliver HTML to end users), then:
 
-- backslash escapes stripped in render (regex `\d`→`d`, string `\n`→`n`, etc.): JS is in `widget_data`. Move to `widget_javascript`.
+- backslash escapes stripped in render (regex `\d`→`d`, string `\n`→`n`, etc.): JS is in `widget_data`. Stripped escapes throw SyntaxError on parse — handlers unbound, widget renders but doesn't respond to clicks/inputs. Move JS to `widget_javascript`. Do NOT rewrite JS to avoid backslashes (`String.fromCharCode(10)`, charCode-loop trim, indexOf-based regex replacements) — that's a workaround, not a fix; relocation is the fix.
 - `<style>` visible as text on page embedding the widget: CSS is in `widget_data`. Move to `widget_style`.
 - JS doesn't execute / source visible: missing `<script>` wrapper in `widget_javascript`. Add wrapper.
 - CSS not applying, no visible source: selector/scope issue. Don't move code.
