@@ -1576,6 +1576,155 @@ function applyHeroBundleAutofill(toolName, args, currentRecord) {
   return filled.length > 0 ? { autofilled: filled } : null;
 }
 
+// data_category page support — validators, autofills, pair-uniqueness guard.
+// See Worker `src/index.ts` for full design rationale. Mirrored byte-for-byte.
+const POST_TYPES_CACHE = new Map();
+const POST_TYPES_TTL_MS = 5 * 60 * 1000;
+
+async function getPostTypesCached(domain, apiKey) {
+  const cached = POST_TYPES_CACHE.get(domain);
+  if (cached && (Date.now() - cached.fetchedAt) < POST_TYPES_TTL_MS) return cached.rows;
+  try {
+    const url = new URL(`/api/v2/data_categories/get`, `https://${domain}`);
+    url.searchParams.set("limit", "100");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return null;
+    const body = await resp.json().catch(() => null);
+    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    POST_TYPES_CACHE.set(domain, { rows, fetchedAt: Date.now() });
+    return rows;
+  } catch { return null; }
+}
+
+function _parseFeatureCategories(raw) {
+  if (typeof raw !== "string" || raw === "") return [];
+  return raw.split(",").map(s => s.trim()).filter(Boolean);
+}
+
+async function _readLinkedPostMeta(domain, apiKey, seoId) {
+  try {
+    const url = new URL(`/api/v2/users_meta/get`, `https://${domain}`);
+    url.searchParams.append("property[]", "database");
+    url.searchParams.append("property[]", "database_id");
+    url.searchParams.append("property_value[]", "list_seo");
+    url.searchParams.append("property_value[]", String(seoId));
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.set("limit", "100");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return {};
+    const body = await resp.json().catch(() => null);
+    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    const out = {};
+    for (const r of rows) {
+      if (r && r.key === "linked_post_type") out.linked_post_type = String(r.value || "");
+      if (r && r.key === "linked_post_category") out.linked_post_category = String(r.value || "");
+    }
+    return out;
+  } catch { return null; }
+}
+
+async function _findPagesByLinkedPostType(domain, apiKey, linkedPostType) {
+  try {
+    const url = new URL(`/api/v2/users_meta/get`, `https://${domain}`);
+    url.searchParams.append("property[]", "database");
+    url.searchParams.append("property[]", "key");
+    url.searchParams.append("property[]", "value");
+    url.searchParams.append("property_value[]", "list_seo");
+    url.searchParams.append("property_value[]", "linked_post_type");
+    url.searchParams.append("property_value[]", linkedPostType);
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.set("limit", "100");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return null;
+    const body = await resp.json().catch(() => null);
+    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    const seoIds = rows
+      .filter(r => r && r.database === "list_seo" && r.key === "linked_post_type" && String(r.value) === linkedPostType)
+      .map(r => String(r.database_id));
+    const pairs = await Promise.all(seoIds.map(async (sid) => {
+      const meta = await _readLinkedPostMeta(domain, apiKey, sid);
+      return { seo_id: sid, linked_post_category: (meta && meta.linked_post_category) || "post_main_page" };
+    }));
+    return pairs;
+  } catch { return null; }
+}
+
+async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRecord) {
+  if (toolName !== "createWebPage" && toolName !== "updateWebPage") return null;
+  if (!args || typeof args !== "object") return null;
+
+  let effective = args.seo_type;
+  if (effective === undefined && currentRecord) effective = currentRecord.seo_type;
+  const seoType = String(effective || "").toLowerCase();
+
+  if (toolName === "createWebPage" && seoType !== "data_category") {
+    const fn = args.filename;
+    if (fn === undefined || fn === null || fn === "") {
+      return { error: `filename is required when seo_type=${seoType || "content"}. Pass a URL slug (e.g. "about-us"). Only seo_type=data_category creates allow filename to be omitted (BD auto-generates a placeholder; the public URL routes via the post type's data_filename + category).` };
+    }
+  }
+
+  if (seoType !== "data_category") return null;
+
+  let currentMeta = {};
+  if (toolName === "updateWebPage" && args.seo_id !== undefined && args.seo_id !== null) {
+    const m = await _readLinkedPostMeta(domain, apiKey, args.seo_id);
+    if (m) currentMeta = m;
+  }
+
+  const incomingType = args.linked_post_type;
+  const incomingCategory = args.linked_post_category;
+  const effectiveType = (incomingType !== undefined && incomingType !== null && incomingType !== "")
+    ? String(incomingType) : currentMeta.linked_post_type;
+  if (!effectiveType) {
+    return { error: `seo_type=data_category requires linked_post_type (the post type's data_id). Pass linked_post_type=<data_id>. Discover values via listPostTypes — the data_id field on each row.` };
+  }
+
+  const postTypes = await getPostTypesCached(domain, apiKey);
+  if (!postTypes) return null;
+  const matchedPT = postTypes.find(pt => String(pt.data_id) === effectiveType);
+  if (!matchedPT) {
+    const sampleIds = postTypes.slice(0, 6).map(pt => `${pt.data_id}=${pt.data_name || pt.system_name || "?"}`).join(", ");
+    return { error: `linked_post_type=${effectiveType} doesn't match any post type's data_id on this site. Run listPostTypes to discover valid values (sample: ${sampleIds}${postTypes.length > 6 ? ", ..." : ""}).` };
+  }
+
+  let effectiveCategory = (incomingCategory !== undefined && incomingCategory !== null && incomingCategory !== "")
+    ? String(incomingCategory) : currentMeta.linked_post_category;
+  const autofilled = [];
+  if (!effectiveCategory) {
+    effectiveCategory = "post_main_page";
+    args.linked_post_category = "post_main_page";
+    autofilled.push("linked_post_category");
+  }
+
+  if (effectiveCategory !== "post_main_page") {
+    const cats = _parseFeatureCategories(matchedPT.feature_categories);
+    if (cats.length === 0) {
+      return { error: `Post type ${matchedPT.data_name || matchedPT.system_name || effectiveType} (data_id=${effectiveType}) has no feature_categories defined. linked_post_category must be 'post_main_page' for this post type, or add categories first via updatePostType.` };
+    }
+    if (!cats.includes(effectiveCategory)) {
+      return { error: `linked_post_category='${effectiveCategory}' isn't a valid category for post type ${matchedPT.data_name || matchedPT.system_name || effectiveType}. Valid options: post_main_page, ${cats.join(", ")}. Categories are case-sensitive and must match exactly.` };
+    }
+  }
+
+  const claimingPages = await _findPagesByLinkedPostType(domain, apiKey, effectiveType);
+  if (claimingPages) {
+    const ownSeoId = (args.seo_id !== undefined && args.seo_id !== null) ? String(args.seo_id) : null;
+    const conflict = claimingPages.find(p => p.linked_post_category === effectiveCategory && p.seo_id !== ownSeoId);
+    if (conflict) {
+      return { error: `Pair (linked_post_type=${effectiveType}, linked_post_category=${effectiveCategory}) is already claimed by web page seo_id=${conflict.seo_id}. Each post type + category combo can only host ONE data_category page. To re-pin: updateWebPage seo_id=${conflict.seo_id} seo_type=content (releases the slot), then retry. To repurpose the existing page: updateWebPage seo_id=${conflict.seo_id} with new content.` };
+    }
+  }
+
+  return {
+    autofilled: autofilled.length > 0 ? autofilled : undefined,
+    pair_validated: { linked_post_type: effectiveType, linked_post_category: effectiveCategory },
+  };
+}
+
 // Free-form RGB color fields on createWebPage / updateWebPage. BD's hero
 // templates expect `rgb(R, G, B)` literally — hex codes (#ffffff), named
 // colors (white), and rgba(...) all break the CSS variable interpolation
@@ -3722,6 +3871,7 @@ async function main() {
       // (site-tz, both create+update). Agents never pass it.
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         args.content_active = 1;
+        args.master_id = 0; // unconditional overwrite — list_seo_template only
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique
@@ -3747,10 +3897,13 @@ async function main() {
       if (slugGuard && slugGuard.adjusted) _slugAdjusted = slugGuard.adjusted;
       if (slugGuard && slugGuard.probe_warning) _slugProbeWarning = slugGuard.probe_warning;
 
-      // profile_search_results segment-binding guard + hero bundle autofill.
-      // Both need the current `list_seo` row on updateWebPage (for effective
-      // seo_type and current enable_hero_section). One fetch, both consumers.
+      // profile_search_results segment-binding guard + hero bundle autofill +
+      // data_category page guard. All three need the current `list_seo` row on
+      // updateWebPage (for effective seo_type, current hero state, current
+      // linked_post_* state). One fetch, three consumers.
       let _heroBundleAutofilled = null;
+      let _dataCategoryAutofilled = null;
+      let _dataCategoryPair = null;
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         let effectiveSeoType = args.seo_type;
         let currentRecord = null;
@@ -3776,6 +3929,13 @@ async function main() {
           return { content: [{ type: "text", text: heroResult.error }], isError: true };
         }
         if (heroResult && heroResult.autofilled) _heroBundleAutofilled = heroResult.autofilled;
+
+        const dataCatResult = await applyDataCategoryGuard(config.domain, config.apiKey, name, args, currentRecord);
+        if (dataCatResult && dataCatResult.error) {
+          return { content: [{ type: "text", text: dataCatResult.error }], isError: true };
+        }
+        if (dataCatResult && dataCatResult.autofilled) _dataCategoryAutofilled = dataCatResult.autofilled;
+        if (dataCatResult && dataCatResult.pair_validated) _dataCategoryPair = dataCatResult.pair_validated;
       }
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
@@ -4123,6 +4283,15 @@ async function main() {
       // hero off→on transition. User-supplied values are not listed here.
       if (_heroBundleAutofilled && result.body && typeof result.body === "object") {
         result.body._hero_bundle_autofilled = _heroBundleAutofilled;
+      }
+      // data_category page guard feedback. Echoes the validated pair and
+      // any wrapper-autofilled defaults (currently only linked_post_category
+      // → "post_main_page" on omitted-on-create / no-prior-meta switch).
+      if (_dataCategoryAutofilled && result.body && typeof result.body === "object") {
+        result.body._data_category_autofilled = _dataCategoryAutofilled;
+      }
+      if (_dataCategoryPair && result.body && typeof result.body === "object") {
+        result.body._data_category_pair = _dataCategoryPair;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.

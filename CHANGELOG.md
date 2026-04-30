@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.65] - 2026-04-30
+
+### Added — `seo_type=data_category` page support
+
+Web pages with `seo_type=data_category` attach custom SEO content to a post type's main search-results page (e.g. `/blog`) or to one of its category-specific pages (e.g. `/blog/category-1`). Pinning lives in `users_meta` as `(linked_post_type, linked_post_category)`. Empirical testing confirmed BD itself writes both fields to users_meta on `createWebPage` (no wrapper EAV-on-create extension needed); the existing `updateWebPage` EAV upsert helper already handles the page-type-switch flow per-field. The wrapper's job is the guards: validation, auto-default, pair-uniqueness, and the filename carve-out.
+
+**Wrapper changes (mirrored byte-equivalent in Worker `src/index.ts` and npm `mcp/index.js`):**
+
+1. **`applyDataCategoryGuard`** new validator helper. Runs before forwarding the createWebPage / updateWebPage call:
+   - Validates `linked_post_type` matches a real post type's `data_id` (probe via `listPostTypes`, cached per-domain 5min via new `POST_TYPES_CACHE`).
+   - Auto-defaults `linked_post_category` to `post_main_page` when omitted on a fresh data_category create OR a content→data_category switch with no prior users_meta row. Echoes `_data_category_autofilled` in response.
+   - Validates `linked_post_category` against the post type's `feature_categories` list (lean-included in `listPostTypes` — same probe serves both validators). Skips the check when value is the canonical `post_main_page` sentinel.
+   - Pair-uniqueness guard on `(linked_post_type, linked_post_category)`: queries users_meta, rejects if another data_category page already claims the same combo. BD allows duplicates silently otherwise.
+   - Filename-required runtime gate: enforces `filename` on createWebPage for every seo_type EXCEPT `data_category` (where BD auto-generates a placeholder; the public URL routes via the post type's `data_filename` + category, not list_seo.filename).
+   - Echoes `_data_category_pair: { linked_post_type, linked_post_category }` in success response so agents see what the wrapper validated.
+
+2. **`createWebPage` spec `required` array**: `filename` removed (was `["seo_type", "filename"]`, now `["seo_type"]`). The conditional requirement moved into the runtime validator above so other seo_types still reject when filename is missing.
+
+3. **`master_id` auto-force**: on every `createWebPage` / `updateWebPage` write, wrapper now sets `master_id=0` unconditionally. `master_id` is exclusive to the `list_seo_template` table — always `0` on `list_seo` (web page) rows. Already absent from input schemas (agents can't pass it); now also pinned mechanically server-side so BD's row defaults can't drift across releases. Mirrors the existing `content_active=1` auto-force pattern.
+
+4. **Field description rewrites** in `mcp/openapi/bd-api.json`:
+   - `linked_post_type`: now specifies "Post type's `data_id` (from `listPostTypes`). REQUIRED when `seo_type=data_category`; ignored on other seo_types."
+   - `linked_post_category`: now specifies "`post_main_page` OR a category name from the linked post type's `feature_categories`. REQUIRED when `seo_type=data_category` — wrapper auto-defaults to `post_main_page` when omitted. Wrapper enforces pair-uniqueness."
+   - `filename` on createWebPage: gains "OPTIONAL on `seo_type=data_category` (BD auto-generates a placeholder; public URL routes via post type's `data_filename` + category). REQUIRED on every other seo_type."
+
+5. **New corpus rule**: `Rule: Post search-results SEO pages (seo_type=data_category)` in `mcp-instructions.md`. ~5-sentence sibling to the existing `profile_search_results` rule. Cross-references `listPostTypes` for discovery and the existing hero/SEO defaults.
+
+6. **Drift-check tracker**: 5 new entries in `MIRROR_FUNCTIONS` (`getPostTypesCached`, `_parseFeatureCategories`, `_readLinkedPostMeta`, `_findPagesByLinkedPostType`, `applyDataCategoryGuard`). One verified-equivalent dialect-noise entry (`applyDataCategoryGuard: { accesses: [11, 0] }`) for the standard `(args as any).x` cast pattern documented across other validators.
+
+Empirical findings that drove the design (5 live probes against the test site):
+- BD writes `linked_post_type` + `linked_post_category` to users_meta itself on createWebPage (no need to extend EAV_ROUTES.createWebPage).
+- BD silently allows pair-collisions (probe 4 verified two pages claiming the same `(8, post_main_page)` pair) → wrapper enforcement is load-bearing.
+- BD does NOT auto-default `linked_post_category` (probe 5 verified half-pinned page with only linked_post_type written) → wrapper auto-default required.
+- `master_id` always `0` or `null` on list_seo rows (probes 2, 3 confirmed) → safe to auto-force.
+
 ## [6.41.64] - 2026-04-30
 
 ### Changed — `Rule: Widget code fields` adds `[hidden]` attribute trap + troubleshoot symptom

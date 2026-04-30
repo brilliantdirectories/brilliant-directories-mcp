@@ -465,6 +465,11 @@ const MIRROR_FUNCTIONS = [
   "autoDefaultSystemTimestamps",
   "_formatNow14InTz",
   "_formatNow19InTz",
+  "getPostTypesCached",
+  "_parseFeatureCategories",
+  "_readLinkedPostMeta",
+  "_findPagesByLinkedPostType",
+  "applyDataCategoryGuard",
 ];
 // validateUsersMetaRead is intentionally excluded — npm inlines the same
 // logic in dispatch instead of factoring into a named function. Not a
@@ -480,6 +485,7 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateWidgetNameInArgs:      { accesses: [1, 0] }, // worker uses `(args as any).widget_name` cast
+  applyDataCategoryGuard:        { accesses: [11, 0] }, // worker uses `(args as any).x` cast throughout
   sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
   stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline

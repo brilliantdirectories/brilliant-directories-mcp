@@ -799,6 +799,10 @@ Do NOT auto-set `facebook_image` - needs a user-uploaded asset.
 
 Location + Sidebar CRUD are read-only by design in this MCP (create/delete deliberately omitted to prevent collisions with BD's auto-seeding and system layouts).
 
+### Rule: Post search-results SEO pages (`seo_type=data_category`)
+
+A `seo_type=data_category` page attaches custom SEO content to a post type's main search-results page (e.g. `/blog`) or to one of its category-specific pages (e.g. `/blog/category-1`). Pin via `linked_post_type` (post type's `data_id` from `listPostTypes`) plus `linked_post_category` (either the literal `post_main_page` for the main page, or an exact category name from the post type's `feature_categories`). Wrapper auto-defaults `linked_post_category=post_main_page` when omitted on a fresh create or content→data_category switch. Wrapper enforces pair-uniqueness on `(linked_post_type, linked_post_category)` — only ONE data_category page per combo. `filename` is OPTIONAL on this seo_type (the public URL is derived from the post type's `data_filename` + category, not list_seo.filename — BD auto-generates a placeholder). Same hero / SEO meta defaults as `profile_search_results` pages apply.
+
 ### Rule: Sidebars
 
 **Sidebars - `form_name` field on WebPages is the SIDEBAR name, not a contact-form slug** (BD's field is misnamed). On post types, the equivalent field is `category_sidebar` (same value set, different variable name).

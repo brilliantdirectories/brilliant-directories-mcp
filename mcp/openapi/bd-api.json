@@ -9831,8 +9831,7 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "seo_type",
-                  "filename"
+                  "seo_type"
                 ],
                 "properties": {
                   "seo_type": {
@@ -9849,7 +9848,7 @@
                   },
                   "filename": {
                     "type": "string",
-                    "description": "URL slug (e.g. home, about-us). Must be unique across all pages — duplicates break BD's router (two pages competing for the same URL render non-deterministically). The wrapper auto-rejects creates that collide with an existing `filename`; the agent must either pick a unique slug or `updateWebPage` the existing record."
+                    "description": "URL slug (e.g. home, about-us). Must be unique across all pages — duplicates break BD's router (two pages competing for the same URL render non-deterministically). The wrapper auto-rejects creates that collide with an existing `filename`; the agent must either pick a unique slug or `updateWebPage` the existing record. **OPTIONAL on `seo_type=data_category`** (the public URL routes via the post type's `data_filename` + category, not list_seo.filename — BD auto-generates a placeholder if omitted). REQUIRED on every other seo_type."
                   },
                   "nickname": {
                     "type": "string",
@@ -10199,11 +10198,11 @@
                   },
                   "linked_post_type": {
                     "type": "string",
-                    "description": "Linked post type"
+                    "description": "Post type's `data_id` (from `listPostTypes`). REQUIRED when `seo_type=data_category`; ignored on other seo_types. Discover values via `listPostTypes` — pick the row whose `data_name` / `system_name` matches what the user named (e.g. \"blog\", \"events\"), then pass that row's `data_id`."
                   },
                   "linked_post_category": {
                     "type": "string",
-                    "description": "Linked post category"
+                    "description": "Either the literal `post_main_page` (pins to the post type's main search-results page) OR an exact category name from the linked post type's `feature_categories` (e.g. `\"Category 1\"`, case-sensitive). REQUIRED when `seo_type=data_category` — wrapper auto-defaults to `post_main_page` when omitted on a fresh data_category create or content→data_category switch. Ignored on other seo_types. Wrapper enforces pair-uniqueness on `(linked_post_type, linked_post_category)`."
                   },
                   "private_page_select": {
                     "type": "string",
@@ -10618,11 +10617,11 @@
                   },
                   "linked_post_type": {
                     "type": "string",
-                    "description": "Linked post type"
+                    "description": "Post type's `data_id` (from `listPostTypes`). REQUIRED when `seo_type=data_category`; ignored on other seo_types. Discover values via `listPostTypes` — pick the row whose `data_name` / `system_name` matches what the user named (e.g. \"blog\", \"events\"), then pass that row's `data_id`."
                   },
                   "linked_post_category": {
                     "type": "string",
-                    "description": "Linked post category"
+                    "description": "Either the literal `post_main_page` (pins to the post type's main search-results page) OR an exact category name from the linked post type's `feature_categories` (e.g. `\"Category 1\"`, case-sensitive). REQUIRED when `seo_type=data_category` — wrapper auto-defaults to `post_main_page` when omitted on a fresh data_category create or content→data_category switch. Ignored on other seo_types. Wrapper enforces pair-uniqueness on `(linked_post_type, linked_post_category)`."
                   },
                   "private_page_select": {
                     "type": "string",
