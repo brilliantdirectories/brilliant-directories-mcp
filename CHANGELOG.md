@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.50] - 2026-04-30
+
+### Fixed — Widget code field separation rule (real production failure surfaced today)
+
+User reported a Fitness Goal Calculator widget where the Next button stopped working on the public page. The agent that built it dumped HTML, CSS, and JS all into `widget_data` (HTML field), leaving `widget_style` and `widget_javascript` empty. Symptom on the page: form rendered but JS didn't fire — clicks ignored, quiz stuck on step 1.
+
+When the user prompted the agent to fix it, the agent went down a rabbit hole rewriting every backslash escape (`\n` → `String.fromCharCode(10)`, regex literals replaced with `indexOf` checks, `\u` escapes stripped) — claiming BD storage strips backslashes both on incoming JSON tool calls AND on render.
+
+**Verified live 2026-04-29 against the deployed wrapper:** the diagnosis was half wrong.
+
+- ✅ **Render-side stripping IS real** — BD's widget render path mangles backslashes on `widget_data` output. `\n` → `n`, regex `\s` → `s`, `\.` → `.`. Any `<script>` block in `widget_data` has its regex/escapes corrupted on render.
+- ❌ **Storage-side stripping is NOT real** — round-trip via `getWidget` shows all backslashes preserved exactly. The wire is clean.
+- ❌ **Avoiding backslash escapes is treating the symptom** — the actual fix is "JS doesn't belong in `widget_data`." `widget_javascript` doesn't backslash-strip on render.
+
+The user fixed it by moving the JS to `widget_javascript`. The widget worked immediately.
+
+**Corpus updates:**
+1. New `Rule: Widget code fields` in `mcp-instructions.md` — explicit field separation on `createWidget`, with the verified backslash-strip behavior, the Froala `<style>` strip on `[widget=Name]` shortcode embed, and an anti-rabbit-hole note ("don't fix this with `String.fromCharCode(10)` workarounds — move the JS to the right field").
+2. `widget_data` description in spec sharpened — was "accepts arbitrary HTML/CSS/JS/iframes/PHP" (technically true for storage but misleading for render). Now explicitly: HTML only, CSS goes in `widget_style`, JS goes in `widget_javascript`, with the render-corruption symptom called out.
+3. Soft-rule for `updateWidget` — when editing existing widgets with code already in `widget_data`, do NOT silently relocate it unless the user reports a render bug or explicitly asks to refactor. Don't surprise-edit the user's structure.
+
+No code change. Drift check clean.
+
 ## [6.41.49] - 2026-04-30
 
 ### Fixed — DANGEROUS corpus regression: array-syntax compound filters were taught as canonical but the wrapper rejects them

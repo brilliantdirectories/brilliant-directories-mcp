@@ -286,6 +286,27 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **After every successful `createEmailTemplate` or `updateEmailTemplate`, surface the BD admin edit URL to the user.** Pattern: `https://ww2.managemydirectory.com/admin/emailTemplates.php?faction=edit&email=<email_id>&newsite=<website_id>`. The host is fixed — every BD customer admin lives on `ww2.managemydirectory.com`; do NOT substitute `BD_API_URL` (the customer-facing site root). `email_id` comes from the create/update response. `website_id` comes from `getSiteInfo` (`message.website_id`) — call once per session and cache it; both params are required to scope the admin link to the correct tenant. Takes the user straight to the email in their admin to visually review/tweak, send a test, or open the Froala editor for fine-tuning.
 
+### Rule: Widget code fields
+
+**Widgets have THREE distinct code fields. Route assets correctly on every NEW widget create:**
+
+- `widget_data` — HTML body **only**. No `<style>` blocks. No `<script>` blocks.
+- `widget_style` — CSS body **only**. No `<style>` wrapper tag — paste raw CSS rules directly.
+- `widget_javascript` — JS body **only**. No `<script>` wrapper tag — paste raw JS directly.
+
+**Why this matters (verified live 2026-04-29):** BD's widget render path strips backslashes from `widget_data` on output. `\n` becomes `n`, regex `\s` becomes `s`, `\.` becomes `.`. Any `<script>` block embedded in `widget_data` has its regex literals, escape sequences, and JSON-encoded strings silently corrupted on render — JS throws on parse, the entire widget dies, the user sees a broken UI with no errors. The `widget_javascript` field does NOT backslash-strip on render; JS placed there round-trips clean.
+
+`<style>` blocks in `widget_data` have a separate failure mode: when the widget is embedded in a page's `content` field via `[widget=Name]` shortcode, Froala strips `<style>` tags on save. The CSS disappears entirely. Same fix: put CSS in `widget_style`.
+
+**Hard rule on `createWidget`:** if you're authoring NEW widget code, route by content type:
+1. Strip `<style>...</style>` from your draft → put the inner CSS in `widget_style`.
+2. Strip `<script>...</script>` from your draft → put the inner JS in `widget_javascript`.
+3. Send the remaining HTML in `widget_data`.
+
+**Soft rule on `updateWidget`:** if the existing widget already has CSS/JS embedded in `widget_data` and the user is asking for a content change, **do NOT silently move it** — that's a refactor, not the edit they asked for. Only relocate when (a) the user reports a render bug consistent with the backslash-strip / Froala-strip symptoms (no styling, JS doesn't fire, regex broken), OR (b) the user explicitly asks to clean it up.
+
+**Don't rabbit-hole on backslash escaping inside `widget_data`.** `String.fromCharCode(10)` instead of `\n` is treating the symptom. The fix is always "move JS to `widget_javascript`." Storage doesn't strip backslashes — only the render path on `widget_data` does.
+
 ### Rule: API key permissions
 
 **API key permissions are per-endpoint, toggled in BD Admin -> Developer Hub on the key.** A 403 "API Key does not have permission to access this endpoint" means THIS key is missing THIS endpoint.
