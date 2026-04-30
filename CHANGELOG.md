@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.67] - 2026-04-30
+
+### Fixed — `seo_type=data_category` filename + redirect lifecycle (Bugs #5, #6, #7)
+
+Three more silent-drift bugs surfaced by post-v6.41.66 stress tests. All three now fixed end-to-end. Mirror-equivalent in Worker `src/index.ts` and npm `mcp/index.js`.
+
+1. **Bug #5 — Empty `list_seo.filename` on data_category creates.** v6.41.65/.66 documented "BD auto-generates a placeholder slug" — this turned out to be true ONLY for admin-UI-driven creates. API creates left `filename` empty/null, every data_category page collided at the same `/` URL render-order-undefined. Wrapper now generates a 10-char lowercase alphanumeric slug (matches admin-UI shape: `kx9m4p2qhjf3w`, `pq5zbx4234`) inside `applyDataCategoryGuard` whenever the incoming filename is empty, missing, or non-conforming. Slug is set on `args.filename` before the BD write so the persisted record has the value.
+
+2. **Bug #6 — No 301 redirect from placeholder slug → canonical URL.** Admin-UI creates also emit a 301 redirect from the random slug to the post type's actual public URL (`<data_filename>` for post_main_page, `<data_filename>?category[]=<Exact Category Name>` for feature-category pinning). API creates skipped this entirely, breaking SEO continuity. Wrapper now drives the full lifecycle via the existing `redirect_301/*` endpoints:
+   - **Create:** post-write hook calls `_createDataCategoryRedirect` (idempotent — exact-pair existing rules are a no-op; same-source different-destination rules are repointed via update). Annotates response `_data_category_redirect: { source, destination, redirect_id }` on success or `_data_category_redirect_failed` on failure. Best-effort — never blocks the parent write.
+   - **Update:** when filename changes (either non-conforming → regenerated, or agent-supplied conforming-shape replacement), the old redirect is deleted and a new one created at the new source. When `linked_post_category` changes without filename change, the redirect's destination is updated in place.
+   - **Delete:** `deleteWebPage` pre-probe captures filename + seo_type; if the page was data_category, post-write `_deleteRedirectByOldFilename` cascade-deletes the matching redirect. Annotates `_data_category_redirect_deleted: <redirect_id>`.
+
+3. **Bug #7 — Orphan-strip silently no-op'd.** v6.41.66's transition-orphan cleanup emitted `_data_category_orphans_stripped: []` on every dc→content transition while the rows survived. Root cause: hand-rolled DELETE used the wrong path shape (`/api/v2/users_meta/delete/<meta_id>?database=...&database_id=...`) — BD's actual contract is path `/api/v2/users_meta/delete` (no meta_id in path) with a form-urlencoded body containing all three fields. DELETE silently 404'd, response was non-OK, deleted array stayed empty. Annotation lying-as-empty made it pass the v6.41.66 contract audit; only post-strip `listUserMeta` verification caught it. Fix: form-urlencoded body to canonical endpoint, plus response-body status check (`drBody.status === "success"`) before pushing meta_id into deleted array.
+
+### Drift-check
+
+Six new entries in `MIRROR_FUNCTIONS` (`_generateDataCategoryFilename`, `_buildDataCategoryDestination`, `_findRedirectByOldFilename`, `_createDataCategoryRedirect`, `_updateRedirectDestination`, `_updateRedirectSource`, `_deleteRedirectByOldFilename`). Worker introduces two new type aliases (`RedirectLookupResult`, `RedirectMutationResult`) so the inline-`Promise<{...}>` return-type literal pattern that confuses the brace-balance parser is avoided. `applyDataCategoryGuard` dialect-noise tolerance bumped from `accesses: [16, 0]` to `[21, 0]` for the new filename-normalization branches.
+
+### Corpus
+
+`Rule: Post search-results SEO pages` expanded with the wrapper-managed filename contract, the auto-redirect lifecycle (create → 301, update → repoint, delete → cascade), and the in-body link pattern `<data_filename>?category[]=<Exact Category Name>`.
+
 ## [6.41.66] - 2026-04-30
 
 ### Fixed — `seo_type=data_category` pair-uniqueness silent-drift class

@@ -1686,15 +1686,142 @@ async function _stripLinkedPostMetaOrphans(domain, apiKey, seoId) {
     const targets = rows.filter(r => r && (r.key === "linked_post_type" || r.key === "linked_post_category") && r.meta_id);
     await Promise.all(targets.map(async (r) => {
       try {
-        const delUrl = new URL(`/api/v2/users_meta/delete/${encodeURIComponent(String(r.meta_id))}`, `https://${domain}`);
-        delUrl.searchParams.set("database", "list_seo");
-        delUrl.searchParams.set("database_id", String(seoId));
-        const dr = await fetch(delUrl.toString(), { method: "DELETE", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
-        if (dr.ok) deleted.push(String(r.meta_id));
+        const delUrl = new URL(`/api/v2/users_meta/delete`, `https://${domain}`);
+        const form = new URLSearchParams();
+        form.set("meta_id", String(r.meta_id));
+        form.set("database", "list_seo");
+        form.set("database_id", String(seoId));
+        const dr = await fetch(delUrl.toString(), {
+          method: "DELETE",
+          headers: {
+            "X-Api-Key": apiKey,
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: form.toString(),
+        });
+        if (dr.ok) {
+          const drBody = await dr.json().catch(() => null);
+          if (drBody && drBody.status === "success") deleted.push(String(r.meta_id));
+        }
       } catch { /* swallow per-row */ }
     }));
   } catch { /* swallow */ }
   return deleted;
+}
+
+const DATA_CATEGORY_FILENAME_LEN = 10;
+const DATA_CATEGORY_FILENAME_RE = /^[a-z0-9]{10}$/;
+function _generateDataCategoryFilename() {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const buf = new Uint8Array(DATA_CATEGORY_FILENAME_LEN);
+  globalThis.crypto.getRandomValues(buf);
+  let out = "";
+  for (let i = 0; i < DATA_CATEGORY_FILENAME_LEN; i++) out += alphabet[buf[i] % alphabet.length];
+  return out;
+}
+
+function _buildDataCategoryDestination(postType, linkedPostCategory) {
+  if (!postType) return null;
+  const dataFilename = postType.data_filename ? String(postType.data_filename) : null;
+  if (!dataFilename) return null;
+  if (linkedPostCategory === "post_main_page") return dataFilename;
+  return `${dataFilename}?category[]=${encodeURIComponent(linkedPostCategory).replace(/%20/g, "+")}`;
+}
+
+async function _findRedirectByOldFilename(domain, apiKey, oldFilename) {
+  try {
+    const url = new URL(`/api/v2/redirect_301/get`, `https://${domain}`);
+    url.searchParams.append("property[]", "old_filename");
+    url.searchParams.append("property_value[]", oldFilename);
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.set("limit", "1");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return null;
+    const body = await resp.json().catch(() => null);
+    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    const row = rows.find(r => r && r.old_filename === oldFilename);
+    if (!row || !row.redirect_id) return null;
+    return { redirect_id: String(row.redirect_id), new_filename: String(row.new_filename || "") };
+  } catch { return null; }
+}
+
+async function _createDataCategoryRedirect(domain, apiKey, oldFilename, newFilename, seoId) {
+  try {
+    const existing = await _findRedirectByOldFilename(domain, apiKey, oldFilename);
+    if (existing && existing.new_filename === newFilename) {
+      return { ok: true, redirect_id: existing.redirect_id };
+    }
+    if (existing) {
+      return await _updateRedirectDestination(domain, apiKey, existing.redirect_id, newFilename);
+    }
+    const url = new URL(`/api/v2/redirect_301/create`, `https://${domain}`);
+    const form = new URLSearchParams();
+    form.set("old_filename", oldFilename);
+    form.set("new_filename", newFilename);
+    form.set("type", "custom");
+    form.set("db_id", String(seoId));
+    const resp = await fetch(url.toString(), {
+      method: "POST",
+      headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    if (!resp.ok) return { ok: false, reason: `HTTP ${resp.status}` };
+    const body = await resp.json().catch(() => null);
+    if (!body || body.status !== "success") return { ok: false, reason: (body && body.message) || "non-success body" };
+    const created = body.message;
+    const rid = created && (created.redirect_id || (Array.isArray(created) && created[0] && created[0].redirect_id));
+    return { ok: true, redirect_id: rid ? String(rid) : undefined };
+  } catch (e) { return { ok: false, reason: e.message }; }
+}
+
+async function _updateRedirectDestination(domain, apiKey, redirectId, newFilename) {
+  try {
+    const url = new URL(`/api/v2/redirect_301/update`, `https://${domain}`);
+    const form = new URLSearchParams();
+    form.set("redirect_id", redirectId);
+    form.set("new_filename", newFilename);
+    const resp = await fetch(url.toString(), {
+      method: "PUT",
+      headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    if (!resp.ok) return { ok: false, redirect_id: redirectId, reason: `HTTP ${resp.status}` };
+    return { ok: true, redirect_id: redirectId };
+  } catch (e) { return { ok: false, redirect_id: redirectId, reason: e.message }; }
+}
+
+async function _updateRedirectSource(domain, apiKey, redirectId, newOldFilename) {
+  try {
+    const url = new URL(`/api/v2/redirect_301/update`, `https://${domain}`);
+    const form = new URLSearchParams();
+    form.set("redirect_id", redirectId);
+    form.set("old_filename", newOldFilename);
+    const resp = await fetch(url.toString(), {
+      method: "PUT",
+      headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    if (!resp.ok) return { ok: false, reason: `HTTP ${resp.status}` };
+    return { ok: true };
+  } catch (e) { return { ok: false, reason: e.message }; }
+}
+
+async function _deleteRedirectByOldFilename(domain, apiKey, oldFilename) {
+  try {
+    const existing = await _findRedirectByOldFilename(domain, apiKey, oldFilename);
+    if (!existing) return { ok: true };
+    const url = new URL(`/api/v2/redirect_301/delete`, `https://${domain}`);
+    const form = new URLSearchParams();
+    form.set("redirect_id", existing.redirect_id);
+    const resp = await fetch(url.toString(), {
+      method: "DELETE",
+      headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    if (!resp.ok) return { ok: false, redirect_id: existing.redirect_id, reason: `HTTP ${resp.status}` };
+    return { ok: true, redirect_id: existing.redirect_id };
+  } catch (e) { return { ok: false, reason: e.message }; }
 }
 
 async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRecord) {
@@ -1777,9 +1904,50 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
     }
   }
 
+  const destination = _buildDataCategoryDestination(matchedPT, effectiveCategory);
+  let filenameGenerated;
+  let redirectPending;
+  if (destination) {
+    if (toolName === "createWebPage") {
+      const incomingFilename = typeof args.filename === "string" ? args.filename.trim() : "";
+      const conforming = DATA_CATEGORY_FILENAME_RE.test(incomingFilename);
+      const finalFilename = conforming ? incomingFilename : _generateDataCategoryFilename();
+      args.filename = finalFilename;
+      if (!conforming) filenameGenerated = finalFilename;
+      redirectPending = { old_filename: finalFilename, new_filename: destination };
+    } else if (toolName === "updateWebPage") {
+      const currentFilename = currentRecord && typeof currentRecord.filename === "string" ? currentRecord.filename : "";
+      const incomingFilenameRaw = args.filename;
+      const incomingFilename = typeof incomingFilenameRaw === "string" ? incomingFilenameRaw.trim() : undefined;
+      const filenameTouched = incomingFilename !== undefined;
+      const candidate = filenameTouched ? incomingFilename : currentFilename;
+      const conforming = DATA_CATEGORY_FILENAME_RE.test(candidate);
+      if (!conforming) {
+        const fresh = _generateDataCategoryFilename();
+        args.filename = fresh;
+        filenameGenerated = fresh;
+        redirectPending = {
+          old_filename: fresh,
+          new_filename: destination,
+          old_filename_replaced: currentFilename || undefined,
+        };
+      } else if (filenameTouched && incomingFilename !== currentFilename) {
+        redirectPending = {
+          old_filename: candidate,
+          new_filename: destination,
+          old_filename_replaced: currentFilename || undefined,
+        };
+      } else {
+        redirectPending = { old_filename: candidate, new_filename: destination };
+      }
+    }
+  }
+
   return {
     autofilled: autofilled.length > 0 ? autofilled : undefined,
     pair_validated: { linked_post_type: effectiveType, linked_post_category: effectiveCategory },
+    redirect_pending: redirectPending,
+    filename_generated: filenameGenerated,
   };
 }
 
@@ -3963,6 +4131,8 @@ async function main() {
       let _dataCategoryAutofilled = null;
       let _dataCategoryPair = null;
       let _dataCategoryStripPending = null;
+      let _dataCategoryRedirectPending = null;
+      let _dataCategoryFilenameGenerated = null;
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         let effectiveSeoType = args.seo_type;
         let currentRecord = null;
@@ -3996,7 +4166,27 @@ async function main() {
         if (dataCatResult && dataCatResult.autofilled) _dataCategoryAutofilled = dataCatResult.autofilled;
         if (dataCatResult && dataCatResult.pair_validated) _dataCategoryPair = dataCatResult.pair_validated;
         if (dataCatResult && dataCatResult.strip_orphans) _dataCategoryStripPending = dataCatResult.strip_orphans;
+        if (dataCatResult && dataCatResult.redirect_pending) _dataCategoryRedirectPending = dataCatResult.redirect_pending;
+        if (dataCatResult && dataCatResult.filename_generated) _dataCategoryFilenameGenerated = dataCatResult.filename_generated;
       }
+
+      // deleteWebPage pre-probe: capture filename of seo_type=data_category page
+      // so the post-write hook can cascade-delete the matching 301 redirect.
+      let _dataCategoryDeleteCascade = null;
+      if (
+        name === "deleteWebPage" &&
+        args && typeof args === "object" &&
+        args.seo_id !== undefined && args.seo_id !== null
+      ) {
+        try {
+          const cur = await makeRequest(config, "GET", `/api/v2/list_seo/get/${encodeURIComponent(String(args.seo_id))}`, null, null);
+          const row = cur && cur.body && (Array.isArray(cur.body.message) ? cur.body.message[0] : cur.body.message);
+          if (row && String(row.seo_type || "").toLowerCase() === "data_category" && row.filename) {
+            _dataCategoryDeleteCascade = { filename: String(row.filename) };
+          }
+        } catch { /* probe failure — skip cascade silently */ }
+      }
+
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
 
@@ -4365,6 +4555,52 @@ async function main() {
       ) {
         const stripped = await _stripLinkedPostMetaOrphans(config.domain, config.apiKey, _dataCategoryStripPending.seo_id);
         result.body._data_category_orphans_stripped = stripped;
+      }
+      // data_category auto-redirect lifecycle. The wrapper-managed placeholder
+      // filename (10-char alphanum slug) needs a 301 redirect to the canonical
+      // post-type URL. Best-effort: never blocks the parent write.
+      if (
+        _dataCategoryRedirectPending &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const seoIdRaw = (() => {
+          const m = result.body.message;
+          if (m && typeof m === "object" && m.seo_id) return m.seo_id;
+          if (Array.isArray(m) && m[0] && m[0].seo_id) return m[0].seo_id;
+          return args.seo_id;
+        })();
+        const r = _dataCategoryRedirectPending;
+        if (r.old_filename_replaced && r.old_filename_replaced !== r.old_filename) {
+          await _deleteRedirectByOldFilename(config.domain, config.apiKey, r.old_filename_replaced);
+        }
+        const created = await _createDataCategoryRedirect(config.domain, config.apiKey, r.old_filename, r.new_filename, seoIdRaw);
+        if (created.ok) {
+          result.body._data_category_redirect = {
+            source: r.old_filename,
+            destination: r.new_filename,
+            redirect_id: created.redirect_id || null,
+          };
+        } else {
+          result.body._data_category_redirect_failed = created.reason || "unknown";
+        }
+      }
+      if (_dataCategoryFilenameGenerated && result.body && typeof result.body === "object") {
+        result.body._data_category_filename_generated = _dataCategoryFilenameGenerated;
+      }
+      // deleteWebPage cascade — wipe the 301 redirect that pointed at the
+      // deleted data_category page's slug.
+      if (
+        _dataCategoryDeleteCascade &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const del = await _deleteRedirectByOldFilename(config.domain, config.apiKey, _dataCategoryDeleteCascade.filename);
+        if (del.ok && del.redirect_id) {
+          result.body._data_category_redirect_deleted = del.redirect_id;
+        } else if (!del.ok) {
+          result.body._data_category_redirect_delete_failed = del.reason || "unknown";
+        }
       }
 
       // Auto-refresh site cache after successful cache-gated writes.
