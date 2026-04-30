@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.72] - 2026-04-30
+
+### Changed — Surgical-prose sweep on data_category + hero rules; added Resource disambiguation rule
+
+Doc-only. Zero code change, zero behavior change. Mirrored byte-equivalent in npm corpus + spec.
+
+1. **`Rule: Post search-results SEO pages (seo_type=data_category)`** (corpus) — ~62% reduction. Removed duplicate filename-rule statement, redundant multi-word example, trailing cross-reference filler. Annotation list collapsed from 11 line-by-line entries to 2 grouped lines (success echoes vs. failure echoes); each failure now described once with the shared `<reason>` pattern instead of restated 5 times.
+
+2. **`Rule: Hero readability bundle`** (corpus) — 200-word hectoring intro paragraph collapsed to one imperative sentence. Mandatory-fields list and the don't-re-apply-on-untouched-update rule kept verbatim. Atomic-bundle requirement preserved.
+
+3. **`Rule: Resource disambiguation`** (corpus, NEW) — addresses cognitive shortcut that bit a user: agent saw "classifieds" and assumed Member Listings post type instead of confirming the actual Classifieds post type. New rule mandates STOP-and-confirm before editing when the user's reference to a resource is ambiguous (post types, categories, web pages, member profiles, post records). Same surgical-discipline pattern as `createRedirect`'s pre-check rules.
+
+4. **`updatePostType` description** — gained a `**Picking the right post type — disambiguation.**` block that mandates `listPostTypes` lookup + multi-match confirmation before editing. Cross-references the new corpus rule.
+
+5. **`linked_post_type` field description** (createWebPage + updateWebPage) — dropped the `(e.g. "blog", "events")` parenthetical; replaced with a one-line cross-reference to `Rule: Resource disambiguation` for the post-type-naming case.
+
+### Why this helps agent behavior
+
+Long, redundant prose dilutes attention away from load-bearing facts and creates drift surface (two ways to describe the same rule = two ways to describe it differently when one gets edited). Tighter prose with one source of truth + explicit STOP-and-confirm constraints reduces both attention dilution and the cognitive shortcut "I have a plausible match, so I'm done."
+
+### Net diff
+
+-19 lines (data_category trim) -5 lines (hero trim) +6 lines (disambiguation rule) +1 line (updatePostType block) = ~17 lines net cut from agent-facing prose. No technical instruction or rule was removed; only redundant or hectoring framing.
+
 ## [6.41.71] - 2026-04-30
 
 ### Fixed — `seo_type` transition AWAY from `data_category` rejects update if filename is wrapper-managed placeholder (Bug #12)

@@ -644,9 +644,7 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 
 ### Rule: Hero readability bundle
 
-**Hero section readability safe-defaults — ALL fields in this rule MANDATORY on every hero transition.** When turning the hero ON (setting `enable_hero_section` from `0`/unset to `1` or `2`, either on `createWebPage` with hero enabled or on `updateWebPage` flipping the toggle) AND the user hasn't explicitly set a value, you MUST include every field in this rule in the same write call. Not a subset. Not "the typography ones." **All of them.** BD's own field-level defaults (10px small font, dark body text, transparent overlay, near-zero padding, full-width text column) render the hero unreadably against a background image; the bundle in this rule is BD's canonical recipe for a readable hero and must be treated as atomic.
-
-**The mandatory fields — do not omit any:**
+When `enable_hero_section` flips from `0`/unset to `1` or `2` (on `createWebPage` or `updateWebPage`) and the user hasn't supplied values, send all fields below atomically — BD's field-level defaults render the hero unreadable against a background image.
 
 - `h1_font_color="rgb(255,255,255)"`
 - `h2_font_color="rgb(255,255,255)"`
@@ -658,9 +656,7 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 - `hero_bottom_padding="100"`
 - `hero_column_width="5"`
 
-Treat these as a single atomic recipe, not a menu. If you're tempted to skip one because "the schema default is fine" or "the user didn't ask for that specifically" — stop. The full bundle IS the default we want; BD's field-level defaults are not. Applies to BOTH `content` and `profile_search_results` page types and to any future hero-enabled `seo_type`.
-
-**Do NOT re-apply defaults on updates that don't touch `enable_hero_section`.** If the hero is already on and the user is tweaking a single hero field, respect their existing color/overlay/padding values. Only the field(s) they explicitly asked about should change.
+Atomic — never a subset. Applies to every hero-enabled `seo_type`. On updates that don't touch `enable_hero_section`, do NOT re-apply defaults; respect the user's existing values and change only the field they asked about.
 
 **Disabling the hero — set `enable_hero_section=0`, period.** Stored bundle values are preserved server-side; re-enabling restores the user's last-known look instantly with no autofill. Do NOT loop `deleteUserMeta` / `updateUserMeta` to clear bundle fields on a disable request — that's destructive, slow, and not reversible. Only wipe values when the user explicitly says "wipe / reset / clear all hero values."
 
@@ -801,21 +797,16 @@ Location + Sidebar CRUD are read-only by design in this MCP (create/delete delib
 
 ### Rule: Post search-results SEO pages (`seo_type=data_category`)
 
-A `seo_type=data_category` page attaches custom SEO content to a post type's main search-results page or to one of its category-specific pages. Pin via `linked_post_type` (post type's `data_id` from `listPostTypes`) plus `linked_post_category` (either the literal `post_main_page` for the main page, or an exact case-sensitive category name from the post type's `feature_categories`). Wrapper auto-defaults `linked_post_category=post_main_page` when omitted on a fresh create or content→data_category switch. Wrapper enforces pair-uniqueness on `(linked_post_type, linked_post_category)` — only ONE data_category page per combo; transitioning a page AWAY from `data_category` releases the slot automatically (orphan `linked_post_*` users_meta rows are stripped AND the placeholder-slug 301 redirect is retired post-write). When transitioning AWAY from data_category, you MUST supply a new `filename` if the current value is a wrapper-managed placeholder (10-char alphanumeric); the wrapper rejects the update otherwise because the placeholder slug 404s on `profile_search_results` and renders gibberish on `content`. `filename` is wrapper-managed: a 10-char lowercase alphanumeric placeholder slug (e.g. `kx9m4p2qhjf3w`) is generated on every create and on any update where the current value isn't 10-char alphanumeric. The public URL is the post type's `data_filename` (+ `?category[]=<Exact Category Name>` for feature-category pinning, with spaces encoded as `%2B`); the wrapper auto-creates a 301 redirect from the placeholder slug to the canonical destination on every successful write, and cascades the redirect-delete on `deleteWebPage`. To link from page bodies to a post type's category page, write the URL as `<data_filename>?category[]=<Exact%2BCategory%2BName>` (e.g. `articles?category[]=Category%2B1`, or for multi-word categories `articles?category[]=The%2BCategory%2BName`). Same hero / SEO meta defaults as `profile_search_results` pages apply.
+A `seo_type=data_category` page attaches custom SEO content to a post type's main search-results page or to a category-specific page. Pin via `linked_post_type` (post type's `data_id` from `listPostTypes`) plus `linked_post_category` (literal `post_main_page` OR an exact case-sensitive category name from `feature_categories`). Wrapper auto-defaults `linked_post_category=post_main_page` when omitted, and enforces pair-uniqueness on `(linked_post_type, linked_post_category)` — only ONE data_category page per combo. Transitioning AWAY from data_category releases the slot, strips orphan meta, and retires the placeholder-slug redirect; you MUST supply a new `filename` on the transition update because the wrapper-managed placeholder 404s on every other seo_type. `filename` is wrapper-managed on data_category — a fresh 10-char lowercase alphanumeric slug is generated whenever the value isn't already 10-char alphanumeric. The public URL is `<post_type.data_filename>?category[]=<Exact%2BCategory%2BName>` (or just `<data_filename>` for `post_main_page`) — encode spaces as `%2B`. The wrapper auto-creates a 301 redirect from the placeholder to that destination on every successful write, and cascades the redirect-delete on `deleteWebPage`.
 
-**Wrapper response annotations on data_category writes** (echoed on `createWebPage` / `updateWebPage` / `deleteWebPage` success bodies; agents can ignore unless debugging):
+**Wrapper response annotations** (echoed on `_data_category_*` keys on success bodies):
 
-- `_data_category_pair: { linked_post_type, linked_post_category }` — the validated pair the wrapper persisted.
-- `_data_category_autofilled: ["linked_post_category"]` — listed when the wrapper supplied the `post_main_page` default.
-- `_data_category_filename_generated: <slug>` — listed when the wrapper generated or replaced the filename.
-- `_data_category_redirect: { source, destination, redirect_id }` — the 301 the wrapper created or repointed.
-- `_data_category_redirect_failed: <reason>` — surface-level failure (e.g. BD 429 on the redirect call); the page write still committed.
-- `_data_category_orphans_stripped: [<meta_ids>]` — emitted on transition AWAY from data_category; meta rows the wrapper deleted.
-- `_data_category_orphans_strip_probe_failed: <reason>` — emitted instead of `_orphans_stripped` when the meta probe couldn't run; rows may still exist, retry on next update.
-- `_data_category_redirect_retired: <redirect_id>` — the placeholder-slug redirect the wrapper deleted on transition AWAY.
-- `_data_category_redirect_retire_failed: <reason>` — retire attempt failed; redirect may be a zombie, manual `deleteRedirect` recommended.
-- `_data_category_redirect_deleted: <redirect_id>` — emitted on `deleteWebPage` cascade.
-- `_data_category_redirect_delete_failed: <reason>` — cascade-delete failed; manual `deleteRedirect` recommended.
+- Success echoes: `pair`, `autofilled`, `filename_generated`, `redirect`, `orphans_stripped`, `redirect_retired`, `redirect_deleted`.
+- Failure echoes (best-effort step couldn't complete; parent write still committed): `redirect_failed`, `orphans_strip_probe_failed`, `redirect_retire_failed`, `redirect_delete_failed`. Each carries a `<reason>`. A retire/delete failure may leave a zombie redirect — manual `deleteRedirect` if needed.
+
+### Rule: Resource disambiguation
+
+When the user references a resource by description (not by ID or exact slug) and the description could match more than one record, STOP and confirm before editing. Common traps: post types ("classifieds" = Classifieds post type OR Member Listings?), categories (top vs sub with same name), web pages with similar `title` / `filename`, member profiles when only a first name is given, post records with reused titles. List candidates with their distinguishing fields and wait. The cost of editing the wrong resource on a live site is undoing public-facing changes; the cost of asking is seconds.
 
 ### Rule: Sidebars
 
