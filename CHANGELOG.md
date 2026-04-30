@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.58] - 2026-04-30
+
+### Changed — field descriptions absorb load-bearing rule details (truncation insurance)
+
+The MCP SDK's `instructions` block sometimes truncates before reaching the `### Rule: Widget code fields` body when delivered to subagents. v6.41.55–57 progressively moved render-strip facts into field descriptions; v6.41.58 finishes the absorption so every load-bearing fact lives in the field description regardless of rule-body truncation:
+
+- `widget_data` description (create + update) extends the backslash-strip example from `\d`→`d` to the full `\d \n \t \\` set so agents reading just the tooltip don't underestimate scope to regex character classes only.
+- `widget_javascript` description (create + update) adds "No backslash-strip on this field — regex literals (`\d`, `\w`, `\s`) and escape sequences survive intact" so agents recognize widget_javascript as the safe home for backslash-bearing code without consulting the rule.
+
+No code change. No new behavior. Pure description tightening so agents perform reliably even when the corpus rule body is unavailable.
+
 ## [6.41.57] - 2026-04-30
 
 ### Changed — three minor surgical follow-ups from v6.41.56 verification round

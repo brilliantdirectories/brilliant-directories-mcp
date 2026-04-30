@@ -5374,7 +5374,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML only. No `<style>`, no `<script>` — render strips backslashes here (`\\d`→`d`). Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**."
+                    "description": "HTML only. No `<style>`, no `<script>` — render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",
@@ -5382,7 +5382,7 @@
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. See **Rule: Widget code fields**."
+                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. No backslash-strip on this field — regex literals (`\\d`, `\\w`, `\\s`) and escape sequences survive intact. See **Rule: Widget code fields**."
                   },
                   "widget_viewport": {
                     "type": "string",
@@ -5444,7 +5444,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML. Never relocate existing `<style>`/`<script>` blocks here — only on user-reported breakage. New content: route by type (CSS→`widget_style`, JS→`widget_javascript`). See **Rule: Widget code fields**."
+                    "description": "HTML. Render strips backslashes here (`\\d`→`d`, `\\n`→`n`, `\\t`→`t`, `\\\\`→`\\`). Never relocate existing `<style>`/`<script>` blocks here — only on user-reported breakage. New content: route by type (CSS→`widget_style`, JS→`widget_javascript`). See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",
@@ -5452,7 +5452,7 @@
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. See **Rule: Widget code fields**."
+                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. No backslash-strip on this field — regex literals (`\\d`, `\\w`, `\\s`) and escape sequences survive intact. See **Rule: Widget code fields**."
                   }
                 }
               }
