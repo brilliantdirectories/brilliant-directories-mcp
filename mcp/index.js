@@ -1293,32 +1293,31 @@ function sanitizeScaffoldingInArgs(args) {
   return args;
 }
 
-// Widget wrapper-tag failsafe. Agents occasionally paste a CSS block wrapped in
-// `<style>...</style>` into widget_style, or JS wrapped in `<script>...</script>`
-// into widget_javascript. BD stores those wrappers literally and the renderer
-// then emits `<style><style>...</style></style>` (or the script equivalent),
-// which breaks layout / silently neutralises the JS. Field descriptions already
-// say "no <style> wrapper" / "no <script> wrapper"; this is the runtime belt.
+// Widget wrapper-tag failsafe — widget_style ONLY.
+// Agents occasionally paste a CSS block wrapped in `<style>...</style>` into
+// widget_style. BD stores wrappers literally and the renderer then emits
+// `<style><style>...</style></style>`, breaking layout. Field description
+// already says "no <style> wrapper"; this is the runtime belt.
+//
+// widget_javascript is DELIBERATELY NOT stripped — BD's renderer requires
+// `<script>...</script>` wrapping in widget_javascript for the JS to execute.
+// Stripping it would silently break every widget.
+//
+// widget_data is also untouched — HTML legitimately contains <style>/<script>
+// inline.
 //
 // Surgical: strip ONE outer wrapper only, and only when the value starts with
-// the wrapper tag (whitespace allowed) and ends with the matching closer. The
-// inner content is preserved byte-for-byte. Never touches widget_data — HTML
-// legitimately contains <style>/<script> inline.
+// `<style>` (whitespace allowed) and ends with the matching `</style>`. Inner
+// CSS is preserved byte-for-byte.
 //
 // Mirrored byte-for-byte in Worker `src/index.ts`. Keep both in sync.
 const WIDGET_STYLE_WRAPPER_REGEX = /^\s*<style\b[^>]*>([\s\S]*?)<\/style>\s*$/i;
-const WIDGET_SCRIPT_WRAPPER_REGEX = /^\s*<script\b[^>]*>([\s\S]*?)<\/script>\s*$/i;
 function stripWidgetWrapperTagsInArgs(args) {
   if (!args || typeof args !== "object") return args;
   const styleVal = args.widget_style;
   if (typeof styleVal === "string") {
     const m = styleVal.match(WIDGET_STYLE_WRAPPER_REGEX);
     if (m) args.widget_style = m[1];
-  }
-  const jsVal = args.widget_javascript;
-  if (typeof jsVal === "string") {
-    const m = jsVal.match(WIDGET_SCRIPT_WRAPPER_REGEX);
-    if (m) args.widget_javascript = m[1];
   }
   return args;
 }

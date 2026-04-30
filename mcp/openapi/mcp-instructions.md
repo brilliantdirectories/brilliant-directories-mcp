@@ -291,8 +291,8 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 **Three fields, one rule per scenario:**
 
 - `widget_data` = HTML body. No `<style>`, no `<script>`.
-- `widget_style` = CSS body. No `<style>` wrapper.
-- `widget_javascript` = JS body. No `<script>` wrapper.
+- `widget_style` = CSS body. No `<style>` wrapper. (If wrapped, the wrapper is server-side stripped before storage.)
+- `widget_javascript` = JS body. **MUST be wrapped in `<script>...</script>`** — BD's renderer requires the wrapper for the JS to execute.
 
 **Authoring a NEW widget (`createWidget`):** route by content type — HTML → `widget_data`, CSS → `widget_style`, JS → `widget_javascript`. Never dump everything into `widget_data`.
 

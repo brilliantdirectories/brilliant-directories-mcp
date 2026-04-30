@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.54] - 2026-04-30
+
+### Fixed — `widget_javascript` MUST keep `<script>...</script>` wrapper; v6.41.53 was wrongly stripping it
+
+v6.41.53 introduced a wrapper-tag failsafe that stripped both outer `<style>` from `widget_style` and outer `<script>` from `widget_javascript`. The `<script>` half is **wrong** — BD's renderer requires `widget_javascript` content be wrapped in `<script>...</script>` for the JS to execute. Stripping the wrapper silently broke every widget whose JS the failsafe touched.
+
+**Fix:** removed `WIDGET_SCRIPT_WRAPPER_REGEX` and the JS half of `stripWidgetWrapperTagsInArgs` from both Worker and npm wrapper. The CSS half (`<style>` strip on `widget_style`) is correct and stays — BD's renderer wraps `widget_style` content in `<style>` automatically, so an agent-supplied wrapper produces `<style><style>...</style></style>`.
+
+Field description on `widget_javascript` updated in `bd-api.json` (was: "no `<script>` wrapper" — wrong; now: "**Wrap in `<script>...</script>`** — BD's renderer requires the wrapper for the JS to execute"). Corpus `Rule: Widget code fields` updated to match.
+
 ## [6.41.53] - 2026-04-30
 
 ### Added — wrapper auto-strip of `<style>` / `<script>` wrapper tags as runtime failsafe

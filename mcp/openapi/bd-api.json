@@ -5382,7 +5382,7 @@
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS body of the widget. Raw JS — no `<script>` wrapper. See **Rule: Widget code fields**."
+                    "description": "JS body of the widget. **Wrap in `<script>...</script>`** — BD's renderer requires the wrapper for the JS to execute. See **Rule: Widget code fields**."
                   },
                   "widget_viewport": {
                     "type": "string",
@@ -5452,7 +5452,7 @@
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS body of the widget. Raw JS — no `<script>` wrapper. See **Rule: Widget code fields**."
+                    "description": "JS body of the widget. **Wrap in `<script>...</script>`** — BD's renderer requires the wrapper for the JS to execute. See **Rule: Widget code fields**."
                   }
                 }
               }
