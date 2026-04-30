@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.71] - 2026-04-30
+
+### Fixed — `seo_type` transition AWAY from `data_category` rejects update if filename is wrapper-managed placeholder (Bug #12)
+
+User-caught regression: a `seo_type=data_category` page transitioned to `seo_type=profile_search_results` kept the wrapper-generated 10-char placeholder filename (e.g. `xwcfgvaeal`). The placeholder is meaningful only on `data_category` (where the public URL routes via the post type's `data_filename`); on profile_search_results it 404s (the BD router needs a real `country/state/city/top/sub` slug), and on `content` it renders as gibberish at `/<random-slug>`.
+
+Wrapper now pre-write rejects any `updateWebPage` that transitions AWAY from `data_category` when the current filename is a wrapper-managed placeholder shape (`/^[a-z0-9]{10}$/`) AND the agent isn't supplying a replacement filename. The error message tells the agent what kind of slug each target seo_type needs (`country/state/city/top/sub` for profile_search_results, `about-us`-style for content).
+
+Symmetric with the data_category-create contract: just as a data_category create requires `linked_post_type`, a transition AWAY now requires a new filename when the current value is a wrapper artifact. If the agent supplies a new `filename` on the transition update, the wrapper passes through normally and the existing v6.41.68 retire-redirect + strip-orphans logic runs as before.
+
+Mirrored byte-equivalent in Worker `src/index.ts` and npm `mcp/index.js`. Drift-check `applyDataCategoryGuard` access tolerance bumped from 21 → 24 for the new pre-write check (worker uses `(args as any).x` cast throughout). Corpus rule gains one sentence describing the new contract.
+
+### Fixed — TypeScript type narrowness on `_dataCategoryStripPending`
+
+Worker dispatcher's local variable was declared with the v6.41.67 inline type `{ seo_id: string } | null`, but v6.41.68 extended `applyDataCategoryGuard`'s return shape to include `retire_redirect_for_filename` on the strip_orphans field. The variable type wasn't widened to match, so Cursor flagged a TS error reading `.retire_redirect_for_filename` (line 5297). Runtime worked because Wrangler strips types pre-deploy, but the type contract was lying. Fixed by widening the variable's declared type to match the guard's return type. No behavioral change.
+
 ## [6.41.70] - 2026-04-30
 
 ### Fixed — `data_category` redirect destination encodes spaces as `%2B` (not `+`)

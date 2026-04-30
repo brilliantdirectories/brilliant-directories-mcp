@@ -1854,6 +1854,11 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
       args.seo_id !== undefined && args.seo_id !== null
     ) {
       const oldFilename = currentRecord && typeof currentRecord.filename === "string" ? currentRecord.filename : "";
+      const incomingFilename = typeof args.filename === "string" ? args.filename.trim() : undefined;
+      const incomingFilenameSet = incomingFilename !== undefined && incomingFilename !== "";
+      if (DATA_CATEGORY_FILENAME_RE.test(oldFilename) && !incomingFilenameSet) {
+        return { error: `Transitioning seo_id=${args.seo_id} from seo_type=data_category to seo_type=${seoType} requires a new filename. The current filename '${oldFilename}' is a wrapper-managed placeholder and won't render correctly on the new seo_type. Pass filename=<new-slug> on this update — for seo_type=profile_search_results use a BD-router slug like 'country/state/city/top/sub' (see Member Search Results SEO pages rule); for seo_type=content use a human slug like 'about-us'.` };
+      }
       return {
         strip_orphans: {
           seo_id: String(args.seo_id),

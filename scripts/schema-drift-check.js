@@ -495,7 +495,7 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateWidgetNameInArgs:      { accesses: [1, 0] }, // worker uses `(args as any).widget_name` cast
-  applyDataCategoryGuard:        { accesses: [21, 0] }, // worker uses `(args as any).x` cast throughout
+  applyDataCategoryGuard:        { accesses: [24, 0] }, // worker uses `(args as any).x` cast throughout
   sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
   stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
