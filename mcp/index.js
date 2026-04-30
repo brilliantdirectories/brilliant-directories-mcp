@@ -1596,6 +1596,29 @@ async function getPostTypesCached(domain, apiKey) {
   } catch { return null; }
 }
 
+const WEBSITE_INFO_CACHE = new Map();
+async function getWebsiteInfoCached(domain, apiKey) {
+  const cached = WEBSITE_INFO_CACHE.get(domain);
+  if (cached && (Date.now() - cached.fetchedAt) < POST_TYPES_TTL_MS) return cached.website_id;
+  try {
+    const url = new URL(`/api/v2/site_info/get`, `https://${domain}`);
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return null;
+    const body = await resp.json().catch(() => null);
+    const msg = body && body.message;
+    const row = Array.isArray(msg) ? msg[0] : msg;
+    const wid = row && row.website_id;
+    if (!wid) return null;
+    const websiteId = String(wid);
+    WEBSITE_INFO_CACHE.set(domain, { website_id: websiteId, fetchedAt: Date.now() });
+    return websiteId;
+  } catch { return null; }
+}
+
+function _buildAdminEditUrl(websiteId, seoId) {
+  return `https://ww2.managemydirectory.com/admin/contentManage.php?template_type=&faction=edittemplate&seo_id=${encodeURIComponent(String(seoId))}&newsite=${encodeURIComponent(websiteId)}`;
+}
+
 function _parseFeatureCategories(raw) {
   if (typeof raw !== "string" || raw === "") return [];
   return raw.split(",").map(s => s.trim()).filter(Boolean);
@@ -4595,6 +4618,24 @@ async function main() {
         result.body.status === "success"
       ) {
         result.body._data_category_filename_generated = _dataCategoryFilenameGenerated;
+      }
+      if (
+        (name === "createWebPage" || name === "updateWebPage") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const writtenSeoId = (() => {
+          const m = result.body.message;
+          if (m && typeof m === "object" && !Array.isArray(m) && m.seo_id) return m.seo_id;
+          if (Array.isArray(m) && m[0] && m[0].seo_id) return m[0].seo_id;
+          return args.seo_id;
+        })();
+        if (writtenSeoId !== undefined && writtenSeoId !== null && writtenSeoId !== "") {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            result.body._admin_edit_url = _buildAdminEditUrl(websiteId, writtenSeoId);
+          }
+        }
       }
       // deleteWebPage cascade — wipe the 301 redirect that pointed at the
       // deleted data_category page's slug.

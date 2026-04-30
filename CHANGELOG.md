@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.69] - 2026-04-30
+
+### Added — `_admin_edit_url` annotation on WebPage writes
+
+Every successful `createWebPage` / `updateWebPage` response now carries an `_admin_edit_url` field — a centralized-admin deep-link to the WebPage editor for the seo_id just written. Format: `https://ww2.managemydirectory.com/admin/contentManage.php?template_type=&faction=edittemplate&seo_id=<seo_id>&newsite=<website_id>`. Agents should surface this URL to the user so they can jump straight into the admin edit screen for the page the agent just modified.
+
+`website_id` is resolved via a new `getWebsiteInfoCached` helper (calls `/api/v2/site_info/get`, caches per-domain with the same 5-min TTL as `POST_TYPES_CACHE`). Best-effort: if the probe fails, the annotation is silently skipped — never blocks the parent write. Only fires when `bdBody.status === "success"` (no annotation on rejected writes).
+
+Spec change: createWebPage + updateWebPage Returns blocks document the new `_admin_edit_url` field. Drift-check `MIRROR_FUNCTIONS` adds `getWebsiteInfoCached` and `_buildAdminEditUrl`.
+
 ## [6.41.68] - 2026-04-30
 
 ### Fixed — `seo_type=data_category` transition redirect retirement + annotation honesty (Bugs #9, #11)

@@ -466,6 +466,8 @@ const MIRROR_FUNCTIONS = [
   "_formatNow14InTz",
   "_formatNow19InTz",
   "getPostTypesCached",
+  "getWebsiteInfoCached",
+  "_buildAdminEditUrl",
   "_parseFeatureCategories",
   "_readLinkedPostMeta",
   "_findPagesByLinkedPostType",
