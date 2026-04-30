@@ -294,6 +294,8 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 - `widget_style` = raw CSS. No `<style>` wrapper. BD wraps at render. Wholly-wrapped values: outer wrapper stripped on storage. Concatenated wrappers: not stripped.
 - `widget_javascript` = JS with `<script>...</script>` wrapper required. BD does not auto-wrap. No backslash-strip.
 
+**`hidden` attribute trap:** the browser's `[hidden]{display:none}` rule has near-zero specificity — any authored `display:` rule in `widget_style` (`.overlay{display:flex}`, `.panel{display:grid}`, etc.) silently overrides it. Symptom: `el.hidden=true` from JS toggles the attribute but the element stays visible AND handlers appear broken (clicks fire, no visual change). Fix: pair the rule (`.overlay[hidden]{display:none}`) or use a class-based hide (`.is-hidden{display:none!important}`).
+
 **On `createWidget`:** route by type. Decline `<style>`/`<script>` in `widget_data` even if requested.
 
 **On `updateWidget`, routine change:** never relocate existing code. Decline refactor requests. New content follows create routing.
@@ -304,6 +306,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 - `<style>` visible as text on page embedding the widget: CSS is in `widget_data`. Move to `widget_style`.
 - JS doesn't execute / source visible: missing `<script>` wrapper in `widget_javascript`. Add wrapper.
 - CSS not applying, no visible source: selector/scope issue. Don't move code.
+- Click/JS handler fires (no console error) but element stays visible / overlay stuck open / panel doesn't toggle: `[hidden]` is being overridden by a `display:` rule in `widget_style`. Add a `[selector][hidden]{display:none}` companion rule, or switch to a class-based hide.
 
 ### Rule: API key permissions
 

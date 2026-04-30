@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.64] - 2026-04-30
+
+### Changed — `Rule: Widget code fields` adds `[hidden]` attribute trap + troubleshoot symptom
+
+Real failure mode caught in a customer-built widget (Cosmic Tic Tac Toe, widget_id 76 on test site): an overlay panel stuck visible on page load, "Play Again" button clicked but produced no visual change. Root cause: HTML `hidden` attribute on the overlay div was being overridden by the widget's own CSS rule `.sttt-overlay { display: flex }` — the browser's `[hidden] { display: none }` user-agent rule has near-zero specificity and loses every cascade fight against any authored `display:` rule.
+
+The trap is universal browser behavior, not BD-specific or theme-specific. Any widget that uses both the `hidden` attribute on a layout container AND a `display:` rule in `widget_style` will silently break show/hide state. Symptoms are deceptive: JS handlers fire correctly (no console error), `el.hidden = true` toggles the attribute, but the element stays visible — agents typically look at the click handler first and miss the CSS root cause.
+
+Two patches to `mcp-instructions.md` `Rule: Widget code fields`:
+
+1. **New `hidden` attribute trap paragraph** inserted after the field-truth bullets (before scenarios). 75 words: states the specificity problem, names which `display:` values trigger it (any of `flex`, `grid`, `block`, etc.), describes the symptom pair (element-stays-visible AND handlers-appear-broken), and gives both fix shapes (`[hidden]` companion rule for retrofit, class-based hide with `!important` for new code). Reaches both `createWidget` and `updateWidget` flows via the existing field-description cross-references.
+
+2. **New troubleshoot scenario bullet** added to Scenario 3 (user-reported breakage). Maps the specific symptom — *"click handler fires (no console error) but element stays visible / overlay stuck open / panel doesn't toggle"* — directly to the fix. Agents diagnosing this pattern in production will land on the right root cause without going down the click-handler rabbit hole.
+
+No code change. No new behavior. Pure rule expansion to close a real failure mode that v6.41.63 didn't address. Single-paragraph addition (rule body) + single-bullet addition (troubleshoot list) — keeps the rule's surgical density.
+
 ## [6.41.63] - 2026-04-30
 
 ### Changed — `widget_data` and corpus rule sharpen JS-in-widget_data failure framing from "degraded" to "catastrophic parse"
