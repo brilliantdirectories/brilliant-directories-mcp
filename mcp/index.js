@@ -1750,7 +1750,7 @@ function _buildDataCategoryDestination(postType, linkedPostCategory) {
   const dataFilename = postType.data_filename ? String(postType.data_filename) : null;
   if (!dataFilename) return null;
   if (linkedPostCategory === "post_main_page") return dataFilename;
-  return `${dataFilename}?category[]=${encodeURIComponent(linkedPostCategory).replace(/%20/g, "+")}`;
+  return `${dataFilename}?category[]=${encodeURIComponent(linkedPostCategory).replace(/%20/g, "%2B")}`;
 }
 
 async function _findRedirectByOldFilename(domain, apiKey, oldFilename) {

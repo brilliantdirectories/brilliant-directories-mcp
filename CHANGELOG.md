@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.70] - 2026-04-30
+
+### Fixed — `data_category` redirect destination encodes spaces as `%2B` (not `+`)
+
+Live-tested: BD's router accepts `%2B` as the space separator inside `?category[]=...` but NOT a literal `+`. v6.41.67/.68/.69 emitted `Category+1` which BD treated as a literal-plus filename, breaking the redirect target.
+
+`_buildDataCategoryDestination` now encodes spaces as `%2B`. Multi-word categories like `The Category Name` resolve to `articles?category[]=The%2BCategory%2BName`. Corpus rule updated to match. Mirrored byte-equivalent in Worker + npm.
+
 ## [6.41.69] - 2026-04-30
 
 ### Added — `_admin_edit_url` annotation on WebPage writes
