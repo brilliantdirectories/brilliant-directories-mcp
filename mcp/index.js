@@ -276,7 +276,7 @@ function buildTools(spec) {
   // create; exposing a manual create action to AI agents causes orphan
   // rows, duplicates, and cross-table corruption. Think twice before
   // adding anything here.
-  const HIDDEN_TOOLS = new Set(["createUserMeta"]);
+  const HIDDEN_TOOLS = new Set(["createUserMeta", "renderWidget"]);
 
   for (const [urlPath, methods] of Object.entries(spec.paths)) {
     for (const [method, op] of Object.entries(methods)) {
@@ -1607,6 +1607,25 @@ function validateRgbColorsInArgs(toolName, args) {
         return `${field} channel ${i} out of range (0-255): "${m[i]}" in "${s}".`;
       }
     }
+  }
+  return null;
+}
+
+// Widget name format validator. BD does not enforce uniqueness OR character
+// sanity on widget_name, but `[widget=Name]` shortcode resolution gets fragile
+// fast with special chars (URL parsing, HTML attribute escaping, BD's own
+// shortcode parser). Restrict to a safe character class up front:
+//   [A-Za-z0-9 -]+   alphanumeric + space + hyphen, nothing else.
+// Mirrored byte-for-byte in Worker `src/index.ts`. Keep in sync.
+const WIDGET_NAME_PATTERN = /^[A-Za-z0-9 \-]+$/;
+const WIDGET_NAME_TOOLS = new Set(["createWidget", "updateWidget"]);
+function validateWidgetNameInArgs(toolName, args) {
+  if (!WIDGET_NAME_TOOLS.has(toolName) || !args || typeof args !== "object") return null;
+  const v = args.widget_name;
+  if (v === undefined || v === null || v === "") return null;
+  const s = String(v).trim();
+  if (!WIDGET_NAME_PATTERN.test(s)) {
+    return `widget_name must contain only letters, numbers, spaces, and hyphens — you sent: "${s}". Special characters (slashes, quotes, dots, ampersands, brackets, etc.) break [widget=Name] shortcode resolution. Pick a name like "Mortgage Calculator" or "Service-Card-v2".`;
   }
   return null;
 }
@@ -3609,6 +3628,15 @@ async function main() {
       if (rgbErr) {
         return {
           content: [{ type: "text", text: rgbErr }],
+          isError: true,
+        };
+      }
+      // widget_name format guard: alphanumeric + space + hyphen only.
+      // Special chars in widget names break [widget=Name] shortcode resolution.
+      const widgetNameErr = validateWidgetNameInArgs(name, args);
+      if (widgetNameErr) {
+        return {
+          content: [{ type: "text", text: widgetNameErr }],
           isError: true,
         };
       }

@@ -102,7 +102,7 @@ for (const [urlPath, methods] of Object.entries(spec.paths || {})) {
 // When those files change, update this block too.
 // ---------------------------------------------------------------------------
 
-const HIDDEN_TOOLS = new Set(["createUserMeta"]);
+const HIDDEN_TOOLS = new Set(["createUserMeta", "renderWidget"]);
 
 // Read-tool families: operationIds that each lean shaper handles.
 const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
@@ -453,6 +453,7 @@ const MIRROR_FUNCTIONS = [
   "validatePathParamIds",
   "validateHeroEnumsInArgs",
   "validateRgbColorsInArgs",
+  "validateWidgetNameInArgs",
   "_validateSlugFormat",
   "_tryPunycodeDecode",
   "sanitizeImageUrlsInArgs",
@@ -478,6 +479,7 @@ const MIRROR_FUNCTIONS = [
 const VERIFIED_EQUIVALENT_DRIFT = {
   validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
+  validateWidgetNameInArgs:      { accesses: [1, 0] }, // worker uses `(args as any).widget_name` cast
   sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
   stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
@@ -630,6 +632,8 @@ const MIRROR_CONSTANTS = [
   "SCAFFOLDING_SENSITIVE_FIELDS",
   "SCAFFOLDING_TOKENS",
   "WIDGET_STYLE_WRAPPER_REGEX",
+  "WIDGET_NAME_PATTERN",
+  "WIDGET_NAME_TOOLS",
   "SLUG_TOOL_CONFIG",
   "RGB_PATTERN",
 ];

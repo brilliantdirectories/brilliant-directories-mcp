@@ -10,6 +10,10 @@ node_modules/
 .vscode/
 .idea/
 
+# Wrangler local state (Cloudflare account ID cache, deploy metadata)
+# Account ID is semi-public but does not belong in source control.
+.wrangler/
+
 # Internal-only working docs (dev onboarding, todo lists, etc.).
 # These live inside the folder so devs find them immediately when they
 # clone from Bitbucket, but should NEVER ship to GitHub / npm — they're

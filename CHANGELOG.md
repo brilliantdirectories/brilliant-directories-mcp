@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.59] - 2026-04-30
+
+### Added — `widget_name` runtime format guard
+
+New `validateWidgetNameInArgs` validator on `createWidget` and `updateWidget`. Restricts `widget_name` to alphanumeric + spaces + hyphens (`[A-Za-z0-9 -]+`). Special characters (slashes, dots, ampersands, quotes, brackets, etc.) break `[widget=Name]` shortcode resolution and now hard-reject with a helpful error message. Mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`. Added to drift-check's `MIRROR_FUNCTIONS` and `MIRROR_CONSTANTS` (`WIDGET_NAME_PATTERN`, `WIDGET_NAME_TOOLS`).
+
+### Changed — `createWidget` description: deterministic name-collision flow
+
+The Pre-check section previously said "If taken: reuse, OR ask the user, OR pick an alternate" — non-deterministic. Now specifies: append `-v2`, re-check; still taken try `-v3`, ... up to `-v10`; first free suffix wins; only if all 10 are taken, ask user. Also lifts the `[A-Za-z0-9 -]+` format rule into the field description so agents see it before the runtime guard fires.
+
+### Changed — `renderWidget` hidden from MCP via `HIDDEN_TOOLS`
+
+Customer-site widget rendering is exclusively `[widget=Name]` shortcode-driven. Agents diagnose widget bugs through field inspection (`getWidget`) plus `Rule: Widget code fields` directives — they never need the rendered HTML. `renderWidget` is hidden in both Worker and npm wrapper. Spec keeps the operation for reference; HIDDEN_TOOLS just skips registration. Third-party-embedding (the legitimate non-agent use case) is documented as deferred-scope in `brilliant-directories-mcp-VISION.md` under "Out of scope".
+
+### Removed — `scripts/test-review-lean.js`
+
+One-off ad-hoc verification script for the v6.41.x review-lean shaper. Verification it performed is now codified in the production wrapper. Zero references in the codebase. Deleted to reduce clutter and prevent accidental dev-environment runs against the wrong site.
+
 ## [6.41.58] - 2026-04-30
 
 ### Changed — field descriptions absorb load-bearing rule details (truncation insurance)
