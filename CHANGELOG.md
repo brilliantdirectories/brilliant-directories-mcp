@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.52] - 2026-04-30
+
+### Fixed — `createWidget` and `updateWidget` schemas missing `widget_style` and `widget_javascript` (cold-minion audit caught this)
+
+Cold-minion compliance audit deployed 4 fresh agents against v6.41.51:
+- **Minion 1** built a mortgage calculator. Read the corpus rule, sent CSS to `widget_style` and JS to `widget_javascript` on `createWidget`. Wrapper accepted the call but silently dropped both fields. Verified via `getWidget` — both empty. Was forced to inline `<style>` and `<script>` into `widget_data` to ship a working widget.
+- **Minion 2** built a tic-tac-toe game. Hit the exact same blocker independently. Quote: *"the createWidget tool description lists widget_style and widget_javascript as 'Common fields on create' — but the JSON schema (additionalProperties:false) only permits widget_name, widget_viewport, bootstrap_enabled, widget_data."*
+
+The corpus rule promised three fields. The OpenAPI input schemas only declared one. Agents had no path to comply.
+
+**Fix:** added `widget_style` and `widget_javascript` properties to both `createWidget` and `updateWidget` request-body schemas in `bd-api.json`. Field descriptions point at `Rule: Widget code fields` for the routing guidance. No code change in the wrapper — the JSON-Schema-to-Zod auto-derivation picks up the new fields on next deploy.
+
+### Verified — backslash render-strip claim (Minion 4 empirical audit)
+
+Minion 4 ran an end-to-end test of the corpus claim that BD's render path strips backslashes from `widget_data`. **Confirmed reproducible:**
+
+| Escape | Stored (round-trip via getWidget) | Rendered (via renderWidget) |
+|---|---|---|
+| `\n` | preserved | stripped → `n` |
+| `\t` | preserved | stripped → `t` |
+| `\s` (in regex) | preserved | stripped → `s` |
+| `\.` (in regex) | preserved | stripped → `.` |
+| `\\` (literal backslash) | preserved | partial → `\` |
+| `→`, `"` (Unicode) | preserved | preserved |
+
+The corpus warning is accurate. Storage is clean; render is the bug.
+
+### ✅ Edit-rule compliance proven (Minion 3)
+
+Minion 3 was given an existing widget with `<style>` and `<script>` blocks inlined in `widget_data` and asked to make 2 text-only changes. **Result: did NOT relocate the CSS/JS.** Quote: *"I considered relocating the inline CSS/JS to widget_style and widget_javascript and rejected it: relocation would be a refactor unrelated to the stated task."* Edit-rule worked even when the corpus blob was truncated in the agent's view — user intent was unambiguous. The v6.41.51 hard-rewrite ("DO NOT MOVE CODE") is reaching agents and being followed.
+
+No code change. Drift check clean.
+
 ## [6.41.51] - 2026-04-30
 
 ### Changed — Tightened `Rule: Widget code fields` (v6.41.50 was bloated, edit-rule too soft)
