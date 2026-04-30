@@ -4029,6 +4029,19 @@ async function main() {
         }
       }
 
+      // Strip BD's pagination metadata leak from single-record get* responses.
+      // BD's REST returns total/current_page/total_pages/next_page on every
+      // /get/{id} call — meaningless on a single-record fetch. Silent noise that
+      // misleads agents into thinking they need to paginate. Strip on get* tools
+      // only; leave intact on list*/search* where the metadata is real.
+      if (result.body && typeof result.body === "object" && typeof name === "string" && name.startsWith("get")) {
+        delete result.body.total;
+        delete result.body.current_page;
+        delete result.body.total_pages;
+        delete result.body.next_page;
+        delete result.body.prev_page;
+      }
+
       // Apply lean-response shaping. Reads honor include_* flags; writes
       // are always lean (create/update echoes trimmed to a small keep-set).
       if (result.body) {

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.57] - 2026-04-30
+
+### Changed — three minor surgical follow-ups from v6.41.56 verification round
+
+1. `widget_style` field description (createWidget + updateWidget) gains the "concatenated wrappers not stripped" caveat for parity with the rule body. Agents reading just the field tooltip now have full failsafe scope without consulting the rule.
+2. Rule's backslash-strip example broadened from `\d` only to `\d \n \t \\` so agents recognize the failure mode beyond regex character classes (string escapes, literal newlines, escaped backslashes all strip the same way).
+3. Stripped BD's pagination metadata leak (`total`, `current_page`, `total_pages`, `next_page`, `prev_page`) from single-record `get*` tool responses. BD's REST returns these on every `/get/{id}` even though they're meaningless on single-record fetches (`total: 38` was the row count of the entire widgets table). Mirrored in Worker `src/index.ts` and npm `mcp/index.js`. `list*`/`search*` responses untouched — the metadata is real there.
+
 ## [6.41.56] - 2026-04-30
 
 ### Changed — Rule: Widget code fields rewritten surgical; field descriptions tightened

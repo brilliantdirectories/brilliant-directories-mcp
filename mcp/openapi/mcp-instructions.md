@@ -290,7 +290,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Field truth:**
 
-- `widget_data` = HTML. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`).
+- `widget_data` = HTML. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`, `\n`→`n`, `\t`→`t`, `\\`→`\`).
 - `widget_style` = raw CSS. No `<style>` wrapper. BD wraps at render. Wholly-wrapped values: outer wrapper stripped on storage. Concatenated wrappers: not stripped.
 - `widget_javascript` = JS with `<script>...</script>` wrapper required. BD does not auto-wrap. No backslash-strip.
 
@@ -300,7 +300,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **On user-reported breakage:** only context for moving code. `renderWidget` first, then:
 
-- regex `\d` → `d` in render: JS is in `widget_data`. Move to `widget_javascript`.
+- backslash escapes stripped in render (regex `\d`→`d`, string `\n`→`n`, etc.): JS is in `widget_data`. Move to `widget_javascript`.
 - `<style>` visible as text on page embedding the widget: CSS is in `widget_data`. Move to `widget_style`.
 - JS doesn't execute / source visible: missing `<script>` wrapper in `widget_javascript`. Add wrapper.
 - CSS not applying, no visible source: selector/scope issue. Don't move code.

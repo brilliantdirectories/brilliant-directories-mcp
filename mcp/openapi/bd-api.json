@@ -5378,7 +5378,7 @@
                   },
                   "widget_style": {
                     "type": "string",
-                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage. See **Rule: Widget code fields**."
+                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage; concatenated wrappers not stripped. See **Rule: Widget code fields**."
                   },
                   "widget_javascript": {
                     "type": "string",
@@ -5448,7 +5448,7 @@
                   },
                   "widget_style": {
                     "type": "string",
-                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage. See **Rule: Widget code fields**."
+                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage; concatenated wrappers not stripped. See **Rule: Widget code fields**."
                   },
                   "widget_javascript": {
                     "type": "string",
