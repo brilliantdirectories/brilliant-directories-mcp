@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.61] - 2026-04-30
+
+### Changed — `renderWidget` diagnostic-only positioning aligned across all surfaces
+
+Contract-lawyer audit on v6.41.60 surfaced 3 surfaces still promoting `renderWidget` for external-site rendering as a primary use case — direct contradiction of v6.41.60's *"never call this tool to deliver widget HTML to end users"* promise. v6.41.61 reconciles:
+
+1. **`docs/api-widgets.md` line 12** rewritten: instead of "external sites can render them on-demand via `renderWidget`", now reads "The `renderWidget` MCP tool is **diagnostic-only**; third-party REST clients can still call the underlying endpoint directly for cross-site embedding." Distinguishes MCP scope from raw REST scope.
+
+2. **`docs/api-widgets.md` "Render Widget" section header** gains an explicit "**Diagnostic-only via MCP**" callout with cross-reference to `Rule: Widget code fields` scenario 3.
+
+3. **`docs/api-widgets.md` "Common use case — rendering BD widgets on external sites"** section retitled to "Third-party REST embedding (NOT an MCP use case)" with a leading callout: *"This pattern requires direct REST calls outside the MCP — the renderWidget MCP tool is diagnostic-only."* The 5-step recipe stays (it's accurate for the REST path, just not via MCP).
+
+4. **`mcp-instructions.md` line 301** (the corpus rule that legitimizes `renderWidget` calls) now asserts the diagnostic-only scope inline: *"`renderWidget` first (diagnostic-only — never call to deliver HTML to end users), then:"* Previously the rule cross-referenced the spec description for that framing; now both surfaces carry the assertion directly.
+
+No code change. No new behavior. Pure narrative reconciliation so every surface tells the same story about renderWidget's scope.
+
 ## [6.41.60] - 2026-04-30
 
 ### Fixed — package-lock.json was frozen at 6.41.31 (regenerated to 6.41.60)

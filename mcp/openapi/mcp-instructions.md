@@ -298,7 +298,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **On `updateWidget`, routine change:** never relocate existing code. Decline refactor requests. New content follows create routing.
 
-**On user-reported breakage:** only context for moving code. `renderWidget` first, then:
+**On user-reported breakage:** only context for moving code. `renderWidget` first (diagnostic-only — never call to deliver HTML to end users), then:
 
 - backslash escapes stripped in render (regex `\d`→`d`, string `\n`→`n`, etc.): JS is in `widget_data`. Move to `widget_javascript`.
 - `<style>` visible as text on page embedding the widget: CSS is in `widget_data`. Move to `widget_style`.
