@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.62] - 2026-04-30
+
+### Changed — `createWidget` description: route-by-type-first directive + post-create verification carve-out
+
+Two surgical additions to the `createWidget` tool description, both addressing failure modes that have shown up in agent self-reports:
+
+1. **"Route by type BEFORE writing values"** — placed between the auto-suffix collision flow and the field list. Instructs agents to decide what each piece of code IS (HTML / CSS / JS), then write to the matching field — rather than dumping a self-contained block into `widget_data` and discovering the silent-failure later. Calls out that `widget_data` strips backslashes on render, mangling regex literals (`\d`, `\s`), string escapes (`\n`, `\t`), and unicode escapes (`"`); the other two fields don't strip backslashes. Lifts a procedural sequencing rule out of the rule body and into the tool description so it lands before the agent starts assembling values.
+
+2. **"Post-create verification (recommended)"** — placed after the success-return description. Suggests (not mandates) calling `getWidget` once to confirm field placement after a fresh create. Crucially, includes an explicit carve-out: *"Proactive relocation here is correct and does NOT violate the 'don't relocate without user-reported breakage' rule on `updateWidget` — that rule applies to subsequent edits, not to self-correcting your own just-created record."* Without this, a careful agent reading the don't-relocate rule could over-apply it to its own immediate output.
+
+No code change. No new behavior. Pure description tightening. Both additions are mechanism-level (specific failure → specific recovery) rather than aspirational guidance.
+
 ## [6.41.61] - 2026-04-30
 
 ### Changed — `renderWidget` diagnostic-only positioning aligned across all surfaces
