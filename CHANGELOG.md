@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.66] - 2026-04-30
+
+### Fixed — `seo_type=data_category` pair-uniqueness silent-drift class
+
+Stress-test minions on v6.41.65 exposed three related bugs in the data_category guard. All three are silent-drift class — wrapper accepted the writes, BD persisted them, but the resulting state quietly violated the wrapper's stated contract. Fix shape mirrors byte-equivalent in Worker `src/index.ts` and npm `mcp/index.js`.
+
+1. **Pair-uniqueness now joins back to `list_seo.seo_type`.** `_findPagesByLinkedPostType` previously matched any users_meta row with `key=linked_post_type` regardless of its parent page's seo_type. Content / profile_search_results pages with stale `linked_post_*` meta rows therefore stole pair-uniqueness slots from legitimate data_category creates. The probe now fetches each candidate seo_id's parent row in parallel via new helper `_readSeoTypeForId` and keeps only rows whose parent is actually `seo_type=data_category`.
+
+2. **data_category → other-seo_type transition strips orphan meta.** When a page's seo_type changes AWAY from data_category, the guard now emits a `strip_orphans` signal carrying the page's seo_id. The dispatcher runs new helper `_stripLinkedPostMetaOrphans` post-write (after BD's seo_type change commits successfully) which deletes the now-orphan `linked_post_type` / `linked_post_category` users_meta rows. Best-effort: failure annotates `_data_category_orphans_stripped` but does NOT fail the parent write. Together with fix #1 this closes the loop — orphans stop accumulating AND legacy orphans no longer block new creates.
+
+3. **`linked_post_type` / `linked_post_category` whitespace now trimmed.** Incoming string values were previously compared against `feature_categories` literally — `"  post_main_page  "` failed validation as a non-existent feature category. Guard now trims leading/trailing whitespace on both fields before any compare/default and writes the trimmed value back to `args` so the persisted record matches what was validated.
+
+### Fixed — `createWebPage` operation-level required-field lead-line
+
+The lead-line `**Required fields:** seo_type, filename.` in createWebPage's description predated the data_category carve-out and contradicted the field-level `OPTIONAL on seo_type=data_category` wording four paragraphs later. Lead line now reads `Required fields: seo_type. filename is required for every seo_type EXCEPT data_category (BD auto-generates a placeholder slug for that type; the public URL routes via the post type's data_filename, not list_seo.filename).` — single source of truth, no contradiction with the field description or the `required` array.
+
+### Changed — corpus rule expanded with URL format + category-page link pattern
+
+`Rule: Post search-results SEO pages (seo_type=data_category)` in `mcp-instructions.md` gained:
+- The public URL pattern: `<data_filename>?category[]=<Exact Category Name>` (e.g. `articles?category[]=Category 1`). Agents writing internal links from a page's body to a post type's category-search page now have the canonical format.
+- Explicit case-sensitivity callout on `feature_categories` matching (worker error already said this; corpus rule now does too).
+- Note that AWAY-from-data_category transition releases the slot automatically.
+- BD's auto-301 from the placeholder `list_seo.filename` to the canonical post-type URL (caught in admin UI 301 Redirect Rules).
+
+### Drift-check
+
+Two new entries in `MIRROR_FUNCTIONS` (`_readSeoTypeForId`, `_stripLinkedPostMetaOrphans`). Existing `applyDataCategoryGuard` dialect-noise tolerance bumped from `accesses: [11, 0]` to `[16, 0]` for the new trim-normalization + strip-orphans branches.
+
 ## [6.41.65] - 2026-04-30
 
 ### Added — `seo_type=data_category` page support

@@ -1645,11 +1645,56 @@ async function _findPagesByLinkedPostType(domain, apiKey, linkedPostType) {
       .filter(r => r && r.database === "list_seo" && r.key === "linked_post_type" && String(r.value) === linkedPostType)
       .map(r => String(r.database_id));
     const pairs = await Promise.all(seoIds.map(async (sid) => {
-      const meta = await _readLinkedPostMeta(domain, apiKey, sid);
+      const [meta, parentSeoType] = await Promise.all([
+        _readLinkedPostMeta(domain, apiKey, sid),
+        _readSeoTypeForId(domain, apiKey, sid),
+      ]);
+      if (parentSeoType !== "data_category") return null;
       return { seo_id: sid, linked_post_category: (meta && meta.linked_post_category) || "post_main_page" };
     }));
-    return pairs;
+    return pairs.filter(p => p !== null);
   } catch { return null; }
+}
+
+async function _readSeoTypeForId(domain, apiKey, seoId) {
+  try {
+    const url = new URL(`/api/v2/list_seo/get/${encodeURIComponent(String(seoId))}`, `https://${domain}`);
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return null;
+    const body = await resp.json().catch(() => null);
+    const row = body && body.message && (Array.isArray(body.message) ? body.message[0] : body.message);
+    if (!row || typeof row !== "object") return null;
+    return row.seo_type ? String(row.seo_type).toLowerCase() : null;
+  } catch { return null; }
+}
+
+async function _stripLinkedPostMetaOrphans(domain, apiKey, seoId) {
+  const deleted = [];
+  try {
+    const url = new URL(`/api/v2/users_meta/get`, `https://${domain}`);
+    url.searchParams.append("property[]", "database");
+    url.searchParams.append("property[]", "database_id");
+    url.searchParams.append("property_value[]", "list_seo");
+    url.searchParams.append("property_value[]", String(seoId));
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.set("limit", "100");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    if (!resp.ok) return deleted;
+    const body = await resp.json().catch(() => null);
+    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    const targets = rows.filter(r => r && (r.key === "linked_post_type" || r.key === "linked_post_category") && r.meta_id);
+    await Promise.all(targets.map(async (r) => {
+      try {
+        const delUrl = new URL(`/api/v2/users_meta/delete/${encodeURIComponent(String(r.meta_id))}`, `https://${domain}`);
+        delUrl.searchParams.set("database", "list_seo");
+        delUrl.searchParams.set("database_id", String(seoId));
+        const dr = await fetch(delUrl.toString(), { method: "DELETE", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+        if (dr.ok) deleted.push(String(r.meta_id));
+      } catch { /* swallow per-row */ }
+    }));
+  } catch { /* swallow */ }
+  return deleted;
 }
 
 async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRecord) {
@@ -1667,7 +1712,16 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
     }
   }
 
-  if (seoType !== "data_category") return null;
+  if (seoType !== "data_category") {
+    if (
+      toolName === "updateWebPage" &&
+      currentRecord && String(currentRecord.seo_type || "").toLowerCase() === "data_category" &&
+      args.seo_id !== undefined && args.seo_id !== null
+    ) {
+      return { strip_orphans: { seo_id: String(args.seo_id) } };
+    }
+    return null;
+  }
 
   let currentMeta = {};
   if (toolName === "updateWebPage" && args.seo_id !== undefined && args.seo_id !== null) {
@@ -1675,8 +1729,12 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
     if (m) currentMeta = m;
   }
 
-  const incomingType = args.linked_post_type;
-  const incomingCategory = args.linked_post_category;
+  const rawIncomingType = args.linked_post_type;
+  const rawIncomingCategory = args.linked_post_category;
+  const incomingType = typeof rawIncomingType === "string" ? rawIncomingType.trim() : rawIncomingType;
+  const incomingCategory = typeof rawIncomingCategory === "string" ? rawIncomingCategory.trim() : rawIncomingCategory;
+  if (typeof rawIncomingType === "string" && rawIncomingType !== incomingType) args.linked_post_type = incomingType;
+  if (typeof rawIncomingCategory === "string" && rawIncomingCategory !== incomingCategory) args.linked_post_category = incomingCategory;
   const effectiveType = (incomingType !== undefined && incomingType !== null && incomingType !== "")
     ? String(incomingType) : currentMeta.linked_post_type;
   if (!effectiveType) {
@@ -3904,6 +3962,7 @@ async function main() {
       let _heroBundleAutofilled = null;
       let _dataCategoryAutofilled = null;
       let _dataCategoryPair = null;
+      let _dataCategoryStripPending = null;
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         let effectiveSeoType = args.seo_type;
         let currentRecord = null;
@@ -3936,6 +3995,7 @@ async function main() {
         }
         if (dataCatResult && dataCatResult.autofilled) _dataCategoryAutofilled = dataCatResult.autofilled;
         if (dataCatResult && dataCatResult.pair_validated) _dataCategoryPair = dataCatResult.pair_validated;
+        if (dataCatResult && dataCatResult.strip_orphans) _dataCategoryStripPending = dataCatResult.strip_orphans;
       }
       // Defensive: if any old client still sends the removed bypass flag.
       if (args && typeof args === "object" && "force_duplicate_filename" in args) delete args.force_duplicate_filename;
@@ -4292,6 +4352,19 @@ async function main() {
       }
       if (_dataCategoryPair && result.body && typeof result.body === "object") {
         result.body._data_category_pair = _dataCategoryPair;
+      }
+      // data_category → other-seo_type transition: strip the now-orphan
+      // linked_post_type / linked_post_category users_meta rows. Otherwise
+      // they keep claiming the pair-uniqueness slot indefinitely. Best-
+      // effort: failure is reported as annotation but does NOT fail the
+      // parent write (the seo_type change already committed).
+      if (
+        _dataCategoryStripPending &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const stripped = await _stripLinkedPostMetaOrphans(config.domain, config.apiKey, _dataCategoryStripPending.seo_id);
+        result.body._data_category_orphans_stripped = stripped;
       }
 
       // Auto-refresh site cache after successful cache-gated writes.
