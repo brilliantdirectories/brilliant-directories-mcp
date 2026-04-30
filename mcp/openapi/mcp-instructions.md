@@ -288,24 +288,17 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 ### Rule: Widget code fields
 
-**Widgets have THREE distinct code fields. Route assets correctly on every NEW widget create:**
+**Three fields, one rule per scenario:**
 
-- `widget_data` — HTML body **only**. No `<style>` blocks. No `<script>` blocks.
-- `widget_style` — CSS body **only**. No `<style>` wrapper tag — paste raw CSS rules directly.
-- `widget_javascript` — JS body **only**. No `<script>` wrapper tag — paste raw JS directly.
+- `widget_data` = HTML body. No `<style>`, no `<script>`.
+- `widget_style` = CSS body. No `<style>` wrapper.
+- `widget_javascript` = JS body. No `<script>` wrapper.
 
-**Why this matters (verified live 2026-04-29):** BD's widget render path strips backslashes from `widget_data` on output. `\n` becomes `n`, regex `\s` becomes `s`, `\.` becomes `.`. Any `<script>` block embedded in `widget_data` has its regex literals, escape sequences, and JSON-encoded strings silently corrupted on render — JS throws on parse, the entire widget dies, the user sees a broken UI with no errors. The `widget_javascript` field does NOT backslash-strip on render; JS placed there round-trips clean.
+**Authoring a NEW widget (`createWidget`):** route by content type — HTML → `widget_data`, CSS → `widget_style`, JS → `widget_javascript`. Never dump everything into `widget_data`.
 
-`<style>` blocks in `widget_data` have a separate failure mode: when the widget is embedded in a page's `content` field via `[widget=Name]` shortcode, Froala strips `<style>` tags on save. The CSS disappears entirely. Same fix: put CSS in `widget_style`.
+**Editing an EXISTING widget (`updateWidget`): DO NOT MOVE CODE.** Whatever's in `widget_data` stays in `widget_data` — even if it contains `<style>` or `<script>`. Existing widgets work; relocating is a refactor the user did not ask for. **Only exception:** the user explicitly reports the widget is broken (CSS not applying, JS not firing, form stuck, regex acting wrong) AND the symptom matches a known render bug — then relocating CSS/JS to the correct field is a valid troubleshooting step. Otherwise: leave it alone.
 
-**Hard rule on `createWidget`:** if you're authoring NEW widget code, route by content type:
-1. Strip `<style>...</style>` from your draft → put the inner CSS in `widget_style`.
-2. Strip `<script>...</script>` from your draft → put the inner JS in `widget_javascript`.
-3. Send the remaining HTML in `widget_data`.
-
-**Soft rule on `updateWidget`:** if the existing widget already has CSS/JS embedded in `widget_data` and the user is asking for a content change, **do NOT silently move it** — that's a refactor, not the edit they asked for. Only relocate when (a) the user reports a render bug consistent with the backslash-strip / Froala-strip symptoms (no styling, JS doesn't fire, regex broken), OR (b) the user explicitly asks to clean it up.
-
-**Don't rabbit-hole on backslash escaping inside `widget_data`.** `String.fromCharCode(10)` instead of `\n` is treating the symptom. The fix is always "move JS to `widget_javascript`." Storage doesn't strip backslashes — only the render path on `widget_data` does.
+**Why these fields exist (only relevant if you're debugging a real render bug):** BD's render path on `widget_data` strips backslashes from output (`\n` → `n`, `\s` → `s`, `\.` → `.`), corrupting any `<script>` regex/escape sequences. Froala separately strips `<style>` tags from `widget_data` when the widget is embedded via `[widget=Name]` in a page's `content`. `widget_style` and `widget_javascript` don't have either failure mode. Don't try to fix in-place by avoiding backslashes (`String.fromCharCode(10)` etc.) — move the JS to `widget_javascript` and use normal escapes.
 
 ### Rule: API key permissions
 

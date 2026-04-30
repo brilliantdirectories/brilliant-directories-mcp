@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.51] - 2026-04-30
+
+### Changed — Tightened `Rule: Widget code fields` (v6.41.50 was bloated, edit-rule too soft)
+
+User feedback: the v6.41.50 rule was wordy and the critical "don't touch existing widgets" instruction was buried in the second-to-last bullet behind 300+ chars of agent-side context. Edit-rule was labeled "soft" when it should be hard.
+
+Rewrote: ~50% shorter, scenario-first structure (NEW widget vs EDIT existing), edit-rule promoted to **DO NOT MOVE CODE** with the troubleshooting exception explicit. The "why these fields exist" backstory is now demoted to "only relevant if you're debugging a real render bug" so agents creating routine widgets don't get distracted by the gotcha.
+
+Spec `widget_data` field descriptions also tightened — both `createWidget` and `updateWidget` now point at the corpus rule by name instead of duplicating the explanation. Two-sentence per field instead of paragraph.
+
+No code change. Drift check clean.
+
 ## [6.41.50] - 2026-04-30
 
 ### Fixed — Widget code field separation rule (real production failure surfaced today)

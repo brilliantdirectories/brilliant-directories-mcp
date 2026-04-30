@@ -5374,7 +5374,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "Widget HTML content **only**. **HARD RULE on `create*` of new widget code:** `<style>` blocks MUST go in `widget_style` (no `<style>` wrapper). `<script>` blocks MUST go in `widget_javascript` (no `<script>` wrapper). CSS/JS dumped into `widget_data` is render-corrupted — BD's render path strips backslashes from this field on output (verified live: `\\n` → `n`, regex `\\s` → `s`, `\\.` → `.`), which silently breaks every regex literal, escape sequence, and JSON-encoded string in any embedded `<script>`. The `<style>` tags also get stripped by the Froala editor when the widget is embedded into a page's `content` field via `[widget=Name]` shortcode. Symptom: widget appears unstyled and JS does nothing on the public page. **Fix:** put HTML here, CSS in `widget_style`, JS in `widget_javascript`. The JS field is NOT backslash-stripped on render. Supports PHP variables and `%%%template_tokens%%%`. Widget-exempt from universal sanitization (accepts arbitrary HTML/PHP/iframes); the field-separation rule is about render correctness, not security. **When EDITING an existing widget that already has code in `widget_data`, do NOT silently move it** — only relocate when the user reports a render bug or explicitly asks to refactor."
+                    "description": "HTML body of the widget. On NEW widget creation: CSS goes in `widget_style`, JS goes in `widget_javascript` — see **Rule: Widget code fields**. When EDITING an existing widget, leave any existing CSS/JS in `widget_data` alone unless the user reports a render bug. Widget-exempt from universal sanitization (accepts HTML/PHP/iframes). Supports PHP variables and `%%%template_tokens%%%`."
                   },
                   "widget_viewport": {
                     "type": "string",
@@ -5436,7 +5436,7 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML body of the widget. CSS belongs in `widget_style`, JS in `widget_javascript` — see `createWidget.widget_data` description for the field-separation rule + render-side backslash-strip gotcha. **When editing an existing widget that already has CSS/JS embedded in `widget_data`, do NOT silently move it** unless the user reports a render bug or explicitly asks to refactor."
+                    "description": "HTML body of the widget. Leave existing CSS/JS in `widget_data` alone unless the user reports the widget is broken — see **Rule: Widget code fields**."
                   }
                 }
               }
