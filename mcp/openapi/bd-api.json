@@ -5374,15 +5374,15 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML body of the widget. **Pure HTML only — no `<style>`, no `<script>`.** Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**. Widget-exempt from universal sanitization (accepts HTML/PHP/iframes). Supports PHP variables and `%%%template_tokens%%%`."
+                    "description": "HTML only. No `<style>`, no `<script>` — render strips backslashes here (`\\d`→`d`). Put CSS in `widget_style`, JS in `widget_javascript`. See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",
-                    "description": "CSS body of the widget. **Raw CSS rules only — no `<style>` wrapper.** BD's renderer auto-wraps this content in `<style type='text/css'>...</style>` at render time. (If an agent does include a `<style>` wrapper anyway, the wrapper is server-side stripped before storage as a failsafe.) See **Rule: Widget code fields**."
+                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage. See **Rule: Widget code fields**."
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS body of the widget. **MUST include `<script>...</script>` wrapper** — BD does NOT auto-wrap this field; without the wrapper, the JS renders as plain text and never executes. See **Rule: Widget code fields**."
+                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. See **Rule: Widget code fields**."
                   },
                   "widget_viewport": {
                     "type": "string",
@@ -5444,15 +5444,15 @@
                   },
                   "widget_data": {
                     "type": "string",
-                    "description": "HTML body of the widget. **On EDIT: do NOT relocate existing CSS/JS** that's already in this field — even if it contains `<style>` or `<script>` blocks, leave it alone unless the user explicitly reports the widget is broken. Relocating is a refactor the user did not ask for. See **Rule: Widget code fields**."
+                    "description": "HTML. Never relocate existing `<style>`/`<script>` blocks here — only on user-reported breakage. New content: route by type (CSS→`widget_style`, JS→`widget_javascript`). See **Rule: Widget code fields**."
                   },
                   "widget_style": {
                     "type": "string",
-                    "description": "CSS body of the widget. **Raw CSS rules only — no `<style>` wrapper.** BD's renderer auto-wraps this content in `<style type='text/css'>...</style>` at render time. (If an agent does include a `<style>` wrapper anyway, the wrapper is server-side stripped before storage as a failsafe.) See **Rule: Widget code fields**."
+                    "description": "Raw CSS. No `<style>` wrapper — BD wraps at render. Wholly-wrapped value: outer wrapper stripped on storage. See **Rule: Widget code fields**."
                   },
                   "widget_javascript": {
                     "type": "string",
-                    "description": "JS body of the widget. **MUST include `<script>...</script>` wrapper** — BD does NOT auto-wrap this field; without the wrapper, the JS renders as plain text and never executes. See **Rule: Widget code fields**."
+                    "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. See **Rule: Widget code fields**."
                   }
                 }
               }

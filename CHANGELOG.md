@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.56] - 2026-04-30
+
+### Changed — Rule: Widget code fields rewritten surgical; field descriptions tightened
+
+Quiz round on v6.41.55 surfaced four real gaps:
+1. Render-strip behavior of `widget_data` was rule-only and prone to truncation in the SDK-delivered `instructions` block; agents reading just field descriptions missed it. Now stated in both rule body AND `widget_data` field description.
+2. Scenario 2 / Scenario 3 contradicted on whether explicit user request lifts the no-relocation rule. Now unambiguous: never relocate, even on explicit refactor request — Scenario 3 (user-reported breakage) is the only trigger.
+3. `updateWidget.widget_data` description was silent on routing for NEW content added during an edit. Now explicit: new code blocks follow create-time routing.
+4. `widget_style` failsafe scope was understated; agents could assume any `<style>` substring is stripped. Now explicit: only WHOLLY-wrapped values are stripped, concatenated wrappers are not.
+
+Plus surgical-pass cleanup: rule body cut from ~30 dense lines to ~15 punchy ones. Field descriptions trimmed to load-bearing truth. No bloat. No code change.
+
 ## [6.41.55] - 2026-04-30
 
 ### Changed — `Rule: Widget code fields` ground-truthed against actual BD render output; field descriptions reconciled
