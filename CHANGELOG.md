@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.68] - 2026-04-30
+
+### Fixed — `seo_type=data_category` transition redirect retirement + annotation honesty (Bugs #9, #11)
+
+Three bugs surfaced by post-v6.41.67 stress tests. All three close the loop on the redirect lifecycle and the strip-annotation contract. Mirrored byte-equivalent in Worker `src/index.ts` and npm `mcp/index.js`.
+
+1. **Bug #9 — Zombie 301 redirect on transition AWAY from data_category.** v6.41.67 stripped `linked_post_*` users_meta rows when a page transitioned to another seo_type, but the placeholder-slug 301 redirect kept pointing at the now-stranded URL. Edge-case minion confirmed (E4 + E8) that these orphan redirects survived even though the page was no longer data_category. Wrapper now extends the existing `strip_orphans` signal with a `retire_redirect_for_filename` field (captured from `currentRecord.filename` at guard time); dispatcher calls `_deleteRedirectByOldFilename` alongside the orphan-strip and emits `_data_category_redirect_retired: <redirect_id>` (or `_data_category_redirect_retire_failed` on probe failure). Same best-effort discipline as the orphan-strip — never blocks the parent write.
+
+2. **Bug #11 — `_data_category_filename_generated` annotation lied on 429.** The wrapper generates the slug pre-write (so it's available for the BD POST body); under v6.41.67 this annotation echoed even when BD's write 429'd, suggesting the slug was claimed when in fact the row was never created. Annotation now gated on `bdBody.status === "success"` — same discipline as `_data_category_redirect_*` and `_data_category_orphans_*`.
+
+3. **Strip annotation honesty.** v6.41.66/.67 emitted `_data_category_orphans_stripped: []` indistinguishably for both "nothing to strip" and "couldn't probe" cases — under 429 turbulence the GET-meta probe inside `_stripLinkedPostMetaOrphans` failed silently, the targets array stayed empty, and the annotation reported success-with-zero-deletions while rows survived. Function now returns a structured `{ probed_ok, deleted, reason }` result; dispatcher emits `_data_category_orphans_stripped: [...]` ONLY when probe succeeded, OR `_data_category_orphans_strip_probe_failed: <reason>` when the probe itself failed. Agents can now distinguish "nothing was there" from "we couldn't tell" and retry on the latter.
+
+### Changed — Documentation honesty
+
+- **createWebPage** description, `filename` field description, AND the runtime error string ALL now say "the WRAPPER generates" instead of "BD auto-generates" (BD does NOT auto-generate `list_seo.filename` for API creates — the wrapper does, since v6.41.67). Three-location lie fixed.
+- **updateWebPage** description gains a carve-out: data_category orphan-strip and redirect retire-on-transition are wrapper-managed; agent doesn't need manual `listUserMeta`+`deleteUserMeta` for `linked_post_*` rows on transition.
+- **deleteWebPage** description gains a carve-out: data_category placeholder-slug 301 redirect is auto-cascade-deleted (annotation `_data_category_redirect_deleted`); agent doesn't need manual `deleteRedirect`.
+- **Corpus rule** lists all 11 wrapper response annotations (`_data_category_pair`, `_data_category_autofilled`, `_data_category_filename_generated`, `_data_category_redirect`, `_data_category_redirect_failed`, `_data_category_orphans_stripped`, `_data_category_orphans_strip_probe_failed`, `_data_category_redirect_retired`, `_data_category_redirect_retire_failed`, `_data_category_redirect_deleted`, `_data_category_redirect_delete_failed`) so agents reading responses have a contract.
+
+### Removed — Dead code
+
+`_updateRedirectSource` deleted from both Worker and npm — defined in v6.41.67 but never called (`_createDataCategoryRedirect` handles the source-rename path via delete-old + create-new). Drift-check `MIRROR_FUNCTIONS` updated.
+
 ## [6.41.67] - 2026-04-30
 
 ### Fixed — `seo_type=data_category` filename + redirect lifecycle (Bugs #5, #6, #7)

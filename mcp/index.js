@@ -1680,9 +1680,10 @@ async function _stripLinkedPostMetaOrphans(domain, apiKey, seoId) {
     url.searchParams.append("property_operator[]", "=");
     url.searchParams.set("limit", "100");
     const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
-    if (!resp.ok) return deleted;
+    if (!resp.ok) return { probed_ok: false, deleted, reason: `probe HTTP ${resp.status}` };
     const body = await resp.json().catch(() => null);
-    const rows = (body && Array.isArray(body.message)) ? body.message : [];
+    if (!body || body.status !== "success") return { probed_ok: false, deleted, reason: (body && body.message) || "probe non-success body" };
+    const rows = Array.isArray(body.message) ? body.message : [];
     const targets = rows.filter(r => r && (r.key === "linked_post_type" || r.key === "linked_post_category") && r.meta_id);
     await Promise.all(targets.map(async (r) => {
       try {
@@ -1706,8 +1707,8 @@ async function _stripLinkedPostMetaOrphans(domain, apiKey, seoId) {
         }
       } catch { /* swallow per-row */ }
     }));
-  } catch { /* swallow */ }
-  return deleted;
+    return { probed_ok: true, deleted };
+  } catch (e) { return { probed_ok: false, deleted, reason: e.message }; }
 }
 
 const DATA_CATEGORY_FILENAME_LEN = 10;
@@ -1791,22 +1792,6 @@ async function _updateRedirectDestination(domain, apiKey, redirectId, newFilenam
   } catch (e) { return { ok: false, redirect_id: redirectId, reason: e.message }; }
 }
 
-async function _updateRedirectSource(domain, apiKey, redirectId, newOldFilename) {
-  try {
-    const url = new URL(`/api/v2/redirect_301/update`, `https://${domain}`);
-    const form = new URLSearchParams();
-    form.set("redirect_id", redirectId);
-    form.set("old_filename", newOldFilename);
-    const resp = await fetch(url.toString(), {
-      method: "PUT",
-      headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-      body: form.toString(),
-    });
-    if (!resp.ok) return { ok: false, reason: `HTTP ${resp.status}` };
-    return { ok: true };
-  } catch (e) { return { ok: false, reason: e.message }; }
-}
-
 async function _deleteRedirectByOldFilename(domain, apiKey, oldFilename) {
   try {
     const existing = await _findRedirectByOldFilename(domain, apiKey, oldFilename);
@@ -1835,7 +1820,7 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
   if (toolName === "createWebPage" && seoType !== "data_category") {
     const fn = args.filename;
     if (fn === undefined || fn === null || fn === "") {
-      return { error: `filename is required when seo_type=${seoType || "content"}. Pass a URL slug (e.g. "about-us"). Only seo_type=data_category creates allow filename to be omitted (BD auto-generates a placeholder; the public URL routes via the post type's data_filename + category).` };
+      return { error: `filename is required when seo_type=${seoType || "content"}. Pass a URL slug (e.g. "about-us"). Only seo_type=data_category creates allow filename to be omitted (the wrapper generates a 10-char placeholder; the public URL routes via the post type's data_filename + category).` };
     }
   }
 
@@ -1845,7 +1830,13 @@ async function applyDataCategoryGuard(domain, apiKey, toolName, args, currentRec
       currentRecord && String(currentRecord.seo_type || "").toLowerCase() === "data_category" &&
       args.seo_id !== undefined && args.seo_id !== null
     ) {
-      return { strip_orphans: { seo_id: String(args.seo_id) } };
+      const oldFilename = currentRecord && typeof currentRecord.filename === "string" ? currentRecord.filename : "";
+      return {
+        strip_orphans: {
+          seo_id: String(args.seo_id),
+          retire_redirect_for_filename: oldFilename || undefined,
+        },
+      };
     }
     return null;
   }
@@ -4553,8 +4544,21 @@ async function main() {
         result.body && typeof result.body === "object" &&
         result.body.status === "success"
       ) {
-        const stripped = await _stripLinkedPostMetaOrphans(config.domain, config.apiKey, _dataCategoryStripPending.seo_id);
-        result.body._data_category_orphans_stripped = stripped;
+        const stripResult = await _stripLinkedPostMetaOrphans(config.domain, config.apiKey, _dataCategoryStripPending.seo_id);
+        if (stripResult.probed_ok) {
+          result.body._data_category_orphans_stripped = stripResult.deleted;
+        } else {
+          result.body._data_category_orphans_strip_probe_failed = stripResult.reason || "unknown";
+        }
+        const retireSlug = _dataCategoryStripPending.retire_redirect_for_filename;
+        if (retireSlug) {
+          const del = await _deleteRedirectByOldFilename(config.domain, config.apiKey, retireSlug);
+          if (del.ok && del.redirect_id) {
+            result.body._data_category_redirect_retired = del.redirect_id;
+          } else if (!del.ok) {
+            result.body._data_category_redirect_retire_failed = del.reason || "unknown";
+          }
+        }
       }
       // data_category auto-redirect lifecycle. The wrapper-managed placeholder
       // filename (10-char alphanum slug) needs a 301 redirect to the canonical
@@ -4585,7 +4589,11 @@ async function main() {
           result.body._data_category_redirect_failed = created.reason || "unknown";
         }
       }
-      if (_dataCategoryFilenameGenerated && result.body && typeof result.body === "object") {
+      if (
+        _dataCategoryFilenameGenerated &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
         result.body._data_category_filename_generated = _dataCategoryFilenameGenerated;
       }
       // deleteWebPage cascade — wipe the 301 redirect that pointed at the

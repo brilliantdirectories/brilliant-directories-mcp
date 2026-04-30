@@ -476,7 +476,6 @@ const MIRROR_FUNCTIONS = [
   "_findRedirectByOldFilename",
   "_createDataCategoryRedirect",
   "_updateRedirectDestination",
-  "_updateRedirectSource",
   "_deleteRedirectByOldFilename",
   "applyDataCategoryGuard",
 ];
