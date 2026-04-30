@@ -1293,6 +1293,36 @@ function sanitizeScaffoldingInArgs(args) {
   return args;
 }
 
+// Widget wrapper-tag failsafe. Agents occasionally paste a CSS block wrapped in
+// `<style>...</style>` into widget_style, or JS wrapped in `<script>...</script>`
+// into widget_javascript. BD stores those wrappers literally and the renderer
+// then emits `<style><style>...</style></style>` (or the script equivalent),
+// which breaks layout / silently neutralises the JS. Field descriptions already
+// say "no <style> wrapper" / "no <script> wrapper"; this is the runtime belt.
+//
+// Surgical: strip ONE outer wrapper only, and only when the value starts with
+// the wrapper tag (whitespace allowed) and ends with the matching closer. The
+// inner content is preserved byte-for-byte. Never touches widget_data — HTML
+// legitimately contains <style>/<script> inline.
+//
+// Mirrored byte-for-byte in Worker `src/index.ts`. Keep both in sync.
+const WIDGET_STYLE_WRAPPER_REGEX = /^\s*<style\b[^>]*>([\s\S]*?)<\/style>\s*$/i;
+const WIDGET_SCRIPT_WRAPPER_REGEX = /^\s*<script\b[^>]*>([\s\S]*?)<\/script>\s*$/i;
+function stripWidgetWrapperTagsInArgs(args) {
+  if (!args || typeof args !== "object") return args;
+  const styleVal = args.widget_style;
+  if (typeof styleVal === "string") {
+    const m = styleVal.match(WIDGET_STYLE_WRAPPER_REGEX);
+    if (m) args.widget_style = m[1];
+  }
+  const jsVal = args.widget_javascript;
+  if (typeof jsVal === "string") {
+    const m = jsVal.match(WIDGET_SCRIPT_WRAPPER_REGEX);
+    if (m) args.widget_javascript = m[1];
+  }
+  return args;
+}
+
 // Image-URL sanitizer — strips `?query` suffixes before forwarding to BD.
 // BD's auto_image_import bakes any `?query` into the stored filename → the
 // imported file 404s at CDN. Field descriptions say "bare URL only" but
@@ -3564,6 +3594,7 @@ async function main() {
       // call — EAV fields below also flow through so hero_section_content
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
+      stripWidgetWrapperTagsInArgs(args);
       sanitizeImageUrlsInArgs(name, args);
       applyImgRoundedToBodyFields(args);
       const heroEnumErr = validateHeroEnumsInArgs(name, args);

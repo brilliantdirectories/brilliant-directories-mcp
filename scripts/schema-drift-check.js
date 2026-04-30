@@ -459,6 +459,7 @@ const MIRROR_FUNCTIONS = [
   "ensureImgRoundedClass",
   "applyImgRoundedToBodyFields",
   "sanitizeScaffoldingInArgs",
+  "stripWidgetWrapperTagsInArgs",
   "getSiteTimezoneCached",
   "autoDefaultSystemTimestamps",
   "_formatNow14InTz",
@@ -478,6 +479,7 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
+  stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
 };
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
@@ -627,6 +629,8 @@ const MIRROR_CONSTANTS = [
   "RICH_TEXT_BODY_FIELDS",
   "SCAFFOLDING_SENSITIVE_FIELDS",
   "SCAFFOLDING_TOKENS",
+  "WIDGET_STYLE_WRAPPER_REGEX",
+  "WIDGET_SCRIPT_WRAPPER_REGEX",
   "SLUG_TOOL_CONFIG",
   "RGB_PATTERN",
 ];

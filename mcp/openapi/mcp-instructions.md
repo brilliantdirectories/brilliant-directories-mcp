@@ -300,6 +300,8 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Why these fields exist (only relevant if you're debugging a real render bug):** BD's render path on `widget_data` strips backslashes from output (`\n` → `n`, `\s` → `s`, `\.` → `.`), corrupting any `<script>` regex/escape sequences. Froala separately strips `<style>` tags from `widget_data` when the widget is embedded via `[widget=Name]` in a page's `content`. `widget_style` and `widget_javascript` don't have either failure mode. Don't try to fix in-place by avoiding backslashes (`String.fromCharCode(10)` etc.) — move the JS to `widget_javascript` and use normal escapes.
 
+**Diagnostic shortcut:** if a rendered widget shows JS regex like `/^\d+$/` becoming `/^d+$/`, or `\s` becoming `s` — the JS is in `widget_data` and got backslash-stripped on render. Move it to `widget_javascript`. If a `<style>` block is showing as visible text on the page, the widget is being embedded in a Froala-edited page's body content and `<style>` got stripped — move CSS to `widget_style`.
+
 ### Rule: API key permissions
 
 **API key permissions are per-endpoint, toggled in BD Admin -> Developer Hub on the key.** A 403 "API Key does not have permission to access this endpoint" means THIS key is missing THIS endpoint.

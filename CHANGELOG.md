@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.53] - 2026-04-30
+
+### Added — wrapper auto-strip of `<style>` / `<script>` wrapper tags as runtime failsafe
+
+Five-minion verification round on v6.41.52 surfaced two failure modes that the schema fix alone doesn't address:
+
+1. **MCP-client schema cache lag.** Subagents inheriting the parent session's tool list saw the pre-v6.41.52 `createWidget` / `updateWidget` schemas (widget_style / widget_javascript not in `properties`) and the SDK's `additionalProperties:false` enforcement silently dropped those fields client-side. Even after Worker deploy, customers whose MCP client still has the old schema cached are silently broken until the next `tools/list` refresh.
+2. **Wrapper-tag pollution.** Agents occasionally paste a CSS block already wrapped in `<style>...</style>` into `widget_style`, or JS wrapped in `<script>...</script>` into `widget_javascript`. BD stores wrappers literally; the renderer then emits `<style><style>...</style></style>`, breaking layout.
+
+**Fix:** new `stripWidgetWrapperTagsInArgs` helper, mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`. Strips ONE outer `<style>...</style>` from `widget_style` and ONE outer `<script>...</script>` from `widget_javascript` only. Inner content preserved byte-for-byte. Never touches `widget_data` (HTML legitimately contains those tags inline).
+
+Wired into the dispatch pipeline immediately after `sanitizeScaffoldingInArgs`, runs on every tool call before forward to BD. Added `WIDGET_STYLE_WRAPPER_REGEX`, `WIDGET_SCRIPT_WRAPPER_REGEX` to `MIRROR_CONSTANTS` and `stripWidgetWrapperTagsInArgs` to `MIRROR_FUNCTIONS` in `schema-drift-check.js`.
+
+### Changed — `Rule: Widget code fields` adds explicit render-strip diagnostic shortcut
+
+Minion 5 (Fitness Goal Calculator troubleshoot) succeeded but only because the prompt hinted at the backslash-strip quirk. The corpus rule already explained the mechanism but didn't lead with the pattern-matching cue. Added a one-paragraph **Diagnostic shortcut** under the existing rule body: if rendered JS shows `/^\d+$/` becoming `/^d+$/`, the JS is in `widget_data` — move it. If a `<style>` block shows as visible page text, CSS got Froala-stripped — move it.
+
 ## [6.41.52] - 2026-04-30
 
 ### Fixed — `createWidget` and `updateWidget` schemas missing `widget_style` and `widget_javascript` (cold-minion audit caught this)
