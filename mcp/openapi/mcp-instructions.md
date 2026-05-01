@@ -236,7 +236,7 @@ ReCaptcha and HoneyPot need no configuration beyond `field_type` (OMIT `field_re
 
 **Button `input_class` is REQUIRED** - pattern `btn btn-lg btn-block <variant>` where variant is a Bootstrap class (`btn-primary` / `btn-secondary` / `btn-danger` / `btn-success` / `btn-warning` / `btn-info` / `btn-dark`) or a custom site-CSS class. Example: `input_class="btn btn-lg btn-block btn-secondary"`.
 
-Without every requirement in this rule, BD errors on submit and the form won't function. Audit existing forms before `updateForm` flips them into a public-facing `form_action_type` - run `listFormFields` first to confirm the tail pattern exists.
+Without every listed requirement, BD errors on submit and the form won't function. Audit existing forms before `updateForm` flips them into a public-facing `form_action_type` - run `listFormFields` first to confirm the tail pattern exists.
 
 ### Rule: Form field view flags
 
@@ -644,7 +644,7 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 
 ### Rule: Hero readability bundle
 
-When `enable_hero_section` flips from `0`/unset to `1` or `2` (on `createWebPage` or `updateWebPage`) and the user hasn't supplied values, send all fields below atomically — BD's field-level defaults render the hero unreadable against a background image.
+When `enable_hero_section` flips from `0`/unset to `1` or `2` (on `createWebPage` or `updateWebPage`) and the user hasn't supplied values, send all listed fields atomically — BD's field-level defaults render the hero unreadable against a background image.
 
 - `h1_font_color="rgb(255, 255, 255)"`
 - `h2_font_color="rgb(255, 255, 255)"`
@@ -856,7 +856,7 @@ Writes are live and immediately visible on the public site. Confirm before any d
 
 Security & input sanitization (every write, every resource). BD stores input verbatim on API writes - BD's backend `protectUserInputs()` is NOT invoked on the API path, so THIS rule is the only sanitization layer. Render-time escaping is inconsistent across BD views. Reject writes that contain obvious injection payloads - asking the user to confirm if it looks intentional.
 
-**Pattern matching is case-insensitive for ALL patterns in this rule (not just <script>).** Before matching, HTML-entity-decode the value once (turn `&#60;script&#62;` into `<script>`, turn `&amp;#x6a;avascript:` into `javascript:`) and URL-decode once - an agent that matches only the raw form lets encoded payloads through. Reject patterns:
+**Pattern matching is case-insensitive for ALL listed patterns (not just <script>).** Before matching, HTML-entity-decode the value once (turn `&#60;script&#62;` into `<script>`, turn `&amp;#x6a;avascript:` into `javascript:`) and URL-decode once - an agent that matches only the raw form lets encoded payloads through. Reject patterns:
 
 - **Script/markup tags:** `<script>`, `</script>`, `<iframe>`, `<object>`, `<embed>`, `<svg ... on[a-z]+=` (SVG is a common XSS vector via handlers), standalone `<style>` blocks on non-widget/non-email-body fields.
 - **Inline event handlers - pattern-match, not list-match:** ANY `on[a-z]+=` attribute pattern (`onerror`, `onload`, `onclick`, `onmouseover`, `onfocus`, `onanimationend`, `ontoggle`, `onpointerdown`, `onwheel`, `onbeforeprint`, etc. - 100+ DOM handlers, all fire XSS). Do NOT maintain a fixed list; match the pattern.
@@ -869,7 +869,7 @@ Distinguish real content from attack shapes - "we DROP by the office at 5pm" is 
 **Field-strictness split:**
 
 - **Plain-text fields** - reject ANY HTML tags: `first_name`, `last_name`, `company`, `email`, `phone_number`, URL fields (`website`/`facebook`/`twitter`/`linkedin`/`instagram`), SEO meta (`title`/`meta_desc`/`meta_keywords`/`facebook_title`/`facebook_desc`), menu labels, form/widget/menu/email internal names, review name/title, tag name.
-- **HTML-allowed fields** - allow safe HTML but still block the dangerous patterns listed in this rule.
+- **HTML-allowed fields** - allow safe HTML but still block the listed dangerous patterns.
 
 **Fields:**
 
@@ -890,7 +890,7 @@ Any unlisted field defaults to plain-text treatment unless the field name contai
 **Exceptions to the HTML-allowed rules:**
 
 - **Email body — no `<style>` blocks.** Outlook strips them. Use inline `style=""` attributes only. See **Rule: Email template recipe** for full email-client constraints.
-- **Widget exception:** `widget_data`, `widget_style`, `widget_javascript` are exempt from all the patterns in this rule. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. `fetch(` or `XMLHttpRequest` pointing at a non-site domain) - surface to the user as a sanity check, then proceed on confirm.
+- **Widget exception:** `widget_data`, `widget_style`, `widget_javascript` are exempt from all listed patterns. Widgets legitimately need JS and scoped CSS, and anyone with API permission to write widgets already has admin capability. Warn (but do NOT block) if widget_javascript contains an obvious external-exfiltration shape (e.g. `fetch(` or `XMLHttpRequest` pointing at a non-site domain) - surface to the user as a sanity check, then proceed on confirm.
 
 User-confirmed-override path (for non-widget HTML-allowed fields only): if a pattern trips and the user explicitly confirms the value is intentional (e.g. a legitimate SQL tutorial blog post containing "UNION SELECT ... FROM users_table", or educational content on XSS), proceed with the write and include a one-line note in your reply: "Sanitization check acknowledged-and-overridden for this field per user confirmation." Never silently skip the check - always surface and confirm.
 
@@ -898,7 +898,7 @@ Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, 
 
 ### Rule: Pre-check natural keys
 
-**Duplicate silent-accept - always pre-check before create on the resources in this rule** (applies to every resource with a natural-key field OR a pair/triple uniqueness invariant). BD does NOT enforce DB-level uniqueness on most natural-key fields or join-table pairs. Two calls with the same natural key (or pair) both succeed, produce different primary keys, and leave downstream lookups ambiguous, double-count in widgets/reports, or cause URL collisions.
+**Duplicate silent-accept - always pre-check before create on the listed resources** (applies to every resource with a natural-key field OR a pair/triple uniqueness invariant). BD does NOT enforce DB-level uniqueness on most natural-key fields or join-table pairs. Two calls with the same natural key (or pair) both succeed, produce different primary keys, and leave downstream lookups ambiguous, double-count in widgets/reports, or cause URL collisions.
 
 **Covered resources - name-based (single natural-key field):**
 
@@ -915,7 +915,7 @@ Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, 
 - `createTagGroup` - group_tag_name
 - `createSmartList` - smart_list_name
 - `createDataType` - category_name
-- `createRedirect` - old_filename (PLUS reverse-rule loop check, see the special-case workflow in this rule)
+- `createRedirect` - old_filename (PLUS reverse-rule loop check; see the redirect-specific bullets in this same rule)
 - `createSingleImagePost` - post_title (URL slug derives from it)
 - `createMultiImagePost` - post_title
 - `createFormField` - field_name scoped to form_name (duplicate field system-names on same form break submit)

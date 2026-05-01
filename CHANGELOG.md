@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.75] - 2026-04-30
+
+### Fixed — Spatial-awareness sweep pass 3 (~34 more leaks v6.41.74 missed)
+
+Spatial-awareness audit pass 3 found 34 additional leaks v6.41.74's narrower grep had missed. v6.41.74 was already promised as "100% aligned"; pass 3 proved otherwise. Audit pattern now expanded from ~15 phrases to ~33 phrases; baked into project memory's pre-publish grep so future versions catch these classes proactively.
+
+**Bulk fixes (single-replace per pattern):**
+
+- 15× identical `Use the tools named above` boilerplate at the bottom of every Top/Sub-category description → `Use \`createTopCategory\` / \`createSubCategory\` instead (...mapping in **Rule: Table to endpoint**)`.
+- 2× still-uncaught `See corpus URL slug rule` (different exact phrasing than v6.41.73's target) → `See **Rule: URL slug rename**`.
+- 3× `(see updatePostType description for the all-or-nothing save rule)` variants → `**Rule: Post-type code fields**`.
+
+**Per-leak fixes:**
+
+- `code-group save rule below` (updatePostType description) → `per **Rule: Post-type code fields**`.
+- `carries the full code-group save rules and Member Listings workflow` (getPostType See-also) → `applies **Rule: Post-type code fields** and **Rule: Member Listings post type**`.
+- `(see this tool's post-create verification section)` (createMultiImagePost.image_urls field) → `via \`listMultiImagePostPhotos\``.
+- `Each record has all the widget fields below` (listWidgets Returns) → `Each record carries the full widget object (fields enumerated in the table that follows)`.
+- `(member search override - see the profile_search_results workflow in this description)` (createWebPage seo_type values) → `(member search override — apply **Rule: Member search SEO pages**)`.
+- `Missing -> createWebPage with fields below` (createWebPage workflow step 3) → `Missing -> createWebPage with the required defaults listed in step 4`.
+- `(see the IDENTITY RULE block in this description)` (listUserMeta Filter — introduced by v6.41.74's own fix) → `(see **Rule: users_meta identity**)`.
+- `See the empty-state quirk note in this description.` (listLeadMatches Returns — also v6.41.74's own fix) → inline error-shape `\`{ status: \"error\", message: \"lead_matches not found\", total: 0 }\``.
+- `see taxonomy rule below` (createUser Prerequisites) → `see the **Category taxonomy** section of this same tool`.
+
+**Corpus self-references (`in this rule` × 6):**
+
+- `Rule: Form creation recipe`: `Without every requirement in this rule` → `Without every numbered requirement` (and `Without every rule above` in createForm spec → same).
+- `Rule: Input sanitization`: 3× `in this rule` references replaced with `listed patterns`.
+- `Rule: Pre-check natural keys`: `the resources in this rule` → `the listed resources`; `see the special-case workflow in this rule` → `see the redirect-specific bullets in this same rule`.
+- `Rule: Hero readability bundle`: `send all fields below atomically` → `send all listed fields atomically`.
+
+### Memory rule expanded
+
+`feedback_no_spatial_cross_refs.md` updated with the full ~33-phrase pre-publish grep pattern and a self-substitution-watch warning ("when fixing a spatial leak, the replacement must not introduce a new one — re-run the grep on every replacement"). v6.41.74 introduced two of its own leaks while fixing others; v6.41.75's caught those in the third pass.
+
+### Net diff
+
+Doc-only. ~30 spatial-leak fixes. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.74] - 2026-04-30
 
 ### Fixed — Spatial-awareness sweep pass 2 (v6.41.73 missed ~20 leaks) + 3 conflicts
