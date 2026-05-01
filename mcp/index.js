@@ -2464,7 +2464,11 @@ async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   if (!fieldId) return null;
   const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
   try {
-    const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
+    // Header casing: every other internal BD-fetch in this file uses TitleCase
+    // X-Api-Key. HTTP headers are case-insensitive per RFC 7230, but some
+    // middleware (ModSecurity, LiteSpeed) doesn't always follow the spec.
+    // Normalize to TitleCase to match the rest of the codebase.
+    const resp = await fetch(url, { headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
     if (!resp.ok) return null;
     const body = await resp.json();
     const msg = body?.message;
@@ -2504,7 +2508,11 @@ async function _listFormFieldsByFormName(domain, apiKey, formName) {
   // shape on zero matches.
   const url = `https://${domain}/api/v2/form_fields/get?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
   try {
-    const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
+    // Header casing: every other internal BD-fetch in this file uses TitleCase
+    // X-Api-Key. HTTP headers are case-insensitive per RFC 7230, but some
+    // middleware (ModSecurity, LiteSpeed) doesn't always follow the spec.
+    // Normalize to TitleCase to match the rest of the codebase.
+    const resp = await fetch(url, { headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
     const body = await resp.json().catch(() => null);
     // BD's empty-result quirk: zero rows returns 400 + status:"error" +
     // message:"<table> not found". This is legitimately "zero rows match
@@ -2516,11 +2524,18 @@ async function _listFormFieldsByFormName(domain, apiKey, formName) {
         typeof body.message === "string" &&
         /not found$/i.test(body.message);
       if (isEmptyResultQuirk) return [];
+      // Diagnostic: log non-OK responses that aren't the empty-result quirk
+      // so we can see why the validator fail-closed in production.
+      console.error(`[validateFieldNameUnique] BD returned non-OK status=${resp.status} for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
       return null; // real failure — fail-closed
     }
-    if (!body || !Array.isArray(body.message)) return null;
+    if (!body || !Array.isArray(body.message)) {
+      console.error(`[validateFieldNameUnique] BD returned unexpected shape for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
+      return null;
+    }
     return body.message;
-  } catch {
+  } catch (err) {
+    console.error(`[validateFieldNameUnique] fetch threw for form_name="${formName}": ${err.message}`);
     return null;
   }
 }

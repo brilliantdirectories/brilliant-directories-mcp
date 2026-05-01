@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.88] - 2026-05-01
+
+### Fixed — Form-validator helpers: header casing normalization + diagnostic logging
+
+Customer report: intermittent `createFormField` failures on `strength_blueprint_ebook` form. Two identical calls 30 seconds apart produced different outcomes (one wrote despite the wrapper's "fail-closed" error response, one didn't). The error message claimed `BD listFormFields lookup failed` but BD itself responded fine to direct calls in the same session.
+
+**Two changes to the form-validator internal-fetch helpers** (`_listFormFieldsByFormName`, `_getFormFieldRecordById`):
+
+1. **Header casing normalized to `X-Api-Key` (TitleCase).** Both helpers were the only places in the wrapper using `X-API-KEY` (all-uppercase). HTTP headers are case-insensitive per RFC 7230, but BD sits behind ModSecurity + ConfigServer Firewall + LiteSpeed (per the BD CLAUDE.md infra notes), and middleware doesn't always follow the spec. Aligning these two helpers with every other internal BD-fetch in the codebase removes a real-world variable.
+
+2. **Diagnostic logging on the fail-closed paths.** The helpers used to silently return `null` on any non-OK response, malformed body, or thrown exception. Now they `console.warn` (Worker) / `console.error` (npm) the response status, body excerpt (first 300 chars), and any thrown error message before returning `null`. Worker logs stream via `wrangler tail`; npm logs go to the user's terminal. Future incidents like Cursor's will have a paper trail.
+
+The changes preserve the fail-closed contract — duplicates can't slip through — but make next-occurrence debugging concrete instead of speculative.
+
+### Net diff
+
+Two helper functions in each mirror file (Worker `src/index.ts` + npm `mcp/index.js`). Drift clean, JSON valid. No spec change. No corpus change. No new behavior beyond logging.
+
 ## [6.41.87] - 2026-05-01
 
 ### Fixed — Live README + npm env-var compatibility (no Worker code change)
