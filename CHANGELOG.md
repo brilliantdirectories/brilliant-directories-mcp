@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.97] - 2026-05-01
+
+### Fixed — 3-minion review pass on v6.41.96 (prose-only, no behavior change)
+
+**Bloat trims:**
+- `updateLead` description block: removed duplicated geocode-column list and `lead_status` 7-value enum mapping (already in property descriptions); collapsed to 6 lines.
+- `lead_more` property: removed stale `Use 0/1, NOT true/false` residue (corpus already covers binary-flag rule once at § Field anatomy → 5 view flags).
+- `field_type` description on `createFormField` / `updateFormField`: removed inline 7-row grouping that duplicated **Rule: Forms** § Field anatomy verbatim. Description now points at the canonical rule.
+- CHANGELOG v6.41.96 entry: removed "Triple-checked dismissals" scratch-notes block — internal-debate residue belongs in `INTERNAL-FINAL-MCP-TODOS.md`, not the public CHANGELOG.
+
+**Lead field parity + 1-liners:** `createLead` and `updateLead` properties now share matching descriptions on shared columns. Each previously-undocumented field gets a surgical 1-liner — `lead_more` clarifies the broadcast-vs-single-match semantic, `lead_notes` distinguishes owner-to-member visible notes from `lead_message` (submitter-authored body), `lead_location` notes that BD recomputes derived geocode columns from this string.
+
+**Consistency fixes:**
+- **Rule: Forms** § Wrapper-enforced invariants #4: extended to mention the new XSS refusal — `<` / `>` / `"` in Hidden `field_text` now listed alongside the empty-name / empty-text cases. Agents reading the canonical wrapper-rules list see the full refusal contract.
+- § Field anatomy → Hidden field_type: rewrote from agent-responsibility tone ("must be an attribute-friendly value") to wrapper-enforced language matching v6.41.96's actual behavior.
+
+**Maintenance:**
+- `scripts/schema-drift-check.js`: corrected `VERIFIED_EQUIVALENT_DRIFT` comment that read `[npm, worker]` — entries are actually `[worker_extra, npm_extra]` (the cast count delta the worker adds vs npm).
+- Removed legacy `clever-prancing-wall.md` plan scratchpad (work absorbed into `INTERNAL-FINAL-MCP-TODOS.md`).
+
+### Net diff
+
+`bd-api.json`: ~30 lines net deletion in lead + form-field descriptions, ~12 lines added (lead 1-liners with parity). `mcp-instructions.md`: 2 wrapper-enforcement clarifications. `CHANGELOG.md`: v6.41.96 entry trimmed. `schema-drift-check.js`: 1 comment line. No code change.
+
 ## [6.41.96] - 2026-05-01
 
 ### Fixed — 5-minion break-test follow-up + customer-reported updateLead/lead-custom-field gap
@@ -36,31 +60,9 @@ Tier 1 + Tier 2 patches from the v6.41.95 break-test, plus 2 customer-reported g
 13. **§ Field anatomy → "The 5 view flags"** — added one-line note: send integer/string `0`/`1`, NOT JSON `true`/`false` (booleans refused by `validateBinaryFlags`). Single corpus location instead of bloating each of the 7 binary-field descriptions.
 14. **`form_action_type` description** — softened "tail pattern (Button-last) required" to "Button-last is the agent-side responsibility (NOT wrapper-enforced)". Was ambiguous since v6.41.90.
 
-**Drift-check:** `validateFieldType` and `validateHiddenFieldRequirements` access-counts updated in `VERIFIED_EQUIVALENT_DRIFT` to reflect the type-guard rewrite + writeback.
+**Drift-check:** `validateFieldType` and `validateHiddenFieldRequirements` access-counts updated in `VERIFIED_EQUIVALENT_DRIFT` for the type-guard + writeback rewrite.
 
-**Triple-checked dismissals from the break-test:**
-
-- WRITE_KEEP_SETS gap for forms (Minion 2 #1) — real, deferred to internal todos § A; touches response shape, want a controlled audit.
-- `field_options` malformed-encoding parser (Minion 5 #1) — deferred to § B; need to read BD's PHP parser first to match tolerance.
-- `json_meta` JSON-validation (Minion 5 #2) — deferred to § C; canonical skeleton may be incomplete.
-- `default_value` PHP allowance (Minion 5 #3) — deferred to § D; product call required.
-- `lead_status` schema field vs `leads.status` column (audit) — deferred to § E; needs live round-trip test.
-- `updateForm` immutability gap (Minion 2 #2) — deferred to § F; per-field product call.
-- Boolean-strictness inconsistency between `validateBinaryFlags` and `_normalizeRequiredFlag` (Minion 1 HIGH-3) — partial fix shipped (corpus note); contract reconciliation deferred to § G.
-- Minion 1 LOW-1 (`fieldType` alias) — Zod input-shape rejects unknown props at SDK layer; not real.
-- Minion 1 MEDIUM-1 (sequential refusal UX) — by-design.
-- Minion 3 M1 (`include_view_flags` description) — already correct on inspection; no-op.
-- Minion 3 H1 (`field_type` grouping) — fixed in #7 above.
-- Minion 4 #2 — `form_target` external-URL clarity not flagged as urgent; revisit if customers ask.
-- Minion 5 #5 (`input_class` Button-required enforcement) — deferred; BD-side render escaping behavior needs verification before adding wrapper refusal.
-
-### Net diff
-
-- `src/index.ts` + `mcp/index.js`: 3 validators tightened, `_getFormFieldRecordById` returns `"not_found"` sentinel, type-guards added.
-- `bd-api.json`: 2 enums tightened (`form_action_type`, `form_table`), 1 description rewritten (`field_type`), 1 schema expanded (`updateLead`), several softening / cross-ref polish.
-- `mcp-instructions.md`: 1 column-name fix, 1 recipe item added (`form_action`), 1 new subsection (Custom-field storage), 1 new subsection (Cloning a form), 1 binary-flag boolean note.
-- `INTERNAL-FINAL-MCP-TODOS.md`: 7 deferred items documented with repro + fix shape.
-- `scripts/schema-drift-check.js`: 2 `VERIFIED_EQUIVALENT_DRIFT` access-counts updated.
+7 break-test items deferred (WRITE_KEEP_SETS for forms, `field_options` parser, `json_meta` validation, `default_value` PHP scope, `lead_status` mapping, `updateForm` immutability, boolean-strictness reconciliation) — full repro + fix shape in `INTERNAL-FINAL-MCP-TODOS.md`.
 
 ## [6.41.95] - 2026-05-01
 

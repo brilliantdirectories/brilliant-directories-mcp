@@ -352,7 +352,7 @@ User-ask → flag: "hide from email" → `field_email_view=0`; "hide from confir
 
 To attach a validator, preserve the full skeleton above but populate the relevant slots AND set `field_validator_enabled` to `"1"`. `field_required` (the top-level boolean column) works independently of `json_meta` and fires regardless.
 
-**`Hidden` field_type** — value at submit comes from `field_text` (NOT `default_value`). `field_name` REQUIRED (no posting key without it; empty `field_name` is invalid on `Hidden`, unlike `ReCaptcha` / `HoneyPot` / `Button`). `field_text` must be an attribute-friendly value (no HTML, no markup, no quotes that break attribute escaping). `field_required=1` is permitted because `field_text` always supplies a value at render time.
+**`Hidden` field_type** — value at submit comes from `field_text` (NOT `default_value`). `field_name` REQUIRED (no posting key without it; empty `field_name` is invalid on `Hidden`, unlike `ReCaptcha` / `HoneyPot` / `Button`). `field_text` renders inside `<input value="...">`; wrapper refuses `<`, `>`, or `"` in `field_text` (attribute-escape break / stored-XSS surface). `field_required=1` is permitted because `field_text` always supplies a value at render time.
 
 **Display-only field_types** (no posted value):
 
@@ -445,7 +445,7 @@ The wrapper refuses (throws on the call) 5 silent-failure paths on `createForm` 
 1. `createForm` / `updateForm` with `form_action_type=redirect` AND empty `form_target` → refused (would submit nowhere).
 2. `createFormField` / `updateFormField` with `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`} → refused (form unsubmittable). `Hidden` is allowed because its value comes from `field_text`.
 3. `createFormField` / `updateFormField` with `field_type` not in the canonical enum → refused (BD's renderer switches on exact spelling; typos render unpredictably). Strict case match — `textarea` is the lone lowercase value. See § Field anatomy → field_type.
-4. `createFormField` / `updateFormField` with `field_type=Hidden` AND empty `field_name` OR empty `field_text` → refused (Hidden has no UI; without both, it posts nothing).
+4. `createFormField` / `updateFormField` with `field_type=Hidden` AND (empty `field_name` OR empty `field_text` OR `field_text` containing `<` / `>` / `"`) → refused. First two: Hidden has no UI, without both it posts nothing. Third: `field_text` renders inside `<input value="...">`; those chars break attribute escaping (stored-XSS surface).
 5. `createFormField` / `updateFormField` with any of `field_required`, `field_input_view`, `field_display_view`, `field_email_view`, `field_search_view`, `field_grid_view`, `field_input_view_admin_only` set to a non-binary value → refused. Empty / omitted accepted (BD applies per-field defaults).
 
 **Agent-side responsibilities** (NOT wrapper-enforced — agent owns these):

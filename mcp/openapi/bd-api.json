@@ -3166,23 +3166,28 @@
                 ],
                 "properties": {
                   "lead_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Submitter's full name."
                   },
                   "lead_email": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Submitter email address."
                   },
                   "lead_phone": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Submitter phone number."
                   },
                   "lead_message": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Submitted message body (longtext). Preserves `[widget=...]` shortcodes and `%%%token%%%` translations."
                   },
                   "lead_location": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Geocoded location string. BD computes the derived geocode columns (`lat`/`lng`/bounding box/`country_sn`/`adm_lvl_1_sn`/`location_type`) from this."
                   },
                   "top_id": {
                     "type": "integer",
-                    "description": "Category ID"
+                    "description": "Top category ID. Discover via `listTopCategories`."
                   },
                   "send_lead_email_notification": {
                     "type": "integer",
@@ -3285,23 +3290,24 @@
                     "type": "integer"
                   },
                   "lead_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Submitter's full name."
                   },
                   "lead_email": {
                     "type": "string",
-                    "description": "Lead email address. Mutable post-create."
+                    "description": "Submitter email address."
                   },
                   "lead_phone": {
                     "type": "string",
-                    "description": "Lead phone number. Mutable post-create."
+                    "description": "Submitter phone number."
                   },
                   "lead_message": {
                     "type": "string",
-                    "description": "Lead's submitted message body (longtext, supports newlines). Mutable post-create — use for cleaning up garbled wizard prefaces, AI-generated text, or test-data residue. Preserves any `[widget=...]` shortcodes / `%%%token%%%` translations."
+                    "description": "Submitted message body (longtext). Preserves `[widget=...]` shortcodes and `%%%token%%%` translations."
                   },
                   "lead_location": {
                     "type": "string",
-                    "description": "Geocoded location string. Mutable post-create. Note: BD's geocode-derived columns (`lat`, `lng`, `swlat`, `swlng`, `nelat`, `nelng`, `country_sn`, `adm_lvl_1_sn`, `location_type`) are recomputed by BD when this changes — agent should not pass them directly."
+                    "description": "Geocoded location string. BD recomputes the derived geocode columns (`lat`/`lng`/bounding box/`country_sn`/`adm_lvl_1_sn`/`location_type`) when this changes."
                   },
                   "lead_more": {
                     "type": "integer",
@@ -3309,23 +3315,23 @@
                       0,
                       1
                     ],
-                    "description": "Additional-info flag. Use `0`/`1`, NOT `true`/`false`."
+                    "description": "Match-broadcast flag from the submitter's form input (radio/select). `0` = contact only the single matched member (default). `1` = broadcast to multiple matching members."
                   },
                   "lead_price": {
                     "type": "number",
-                    "description": "Lead pricing (decimal). `0.00` = free."
+                    "description": "Lead price (decimal). `0.00` = free."
                   },
                   "top_id": {
                     "type": "integer",
-                    "description": "Top category ID. Mutable, but changing this orphans existing `lead_matches` rows — re-run `matchLead` after to re-route."
+                    "description": "Top category ID. Changing this orphans existing `lead_matches` rows — re-run `matchLead` to re-route."
                   },
                   "sub_id": {
                     "type": "integer",
-                    "description": "Sub-category ID. Mutable; same `lead_matches` consideration as `top_id`."
+                    "description": "Sub-category ID. Same `lead_matches` consideration as `top_id`."
                   },
                   "lead_notes": {
                     "type": "string",
-                    "description": "Admin notes on the lead. Free text, longtext column. Surfaced in admin lead inbox."
+                    "description": "Owner-to-member notes about the lead (e.g. \"phone number verified\"). Visible to the matched member; never shown to the submitter. Leave blank unless the user asks."
                   },
                   "lead_status": {
                     "type": "integer",
@@ -3357,7 +3363,7 @@
             }
           }
         },
-        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** correcting lead contact info / message body / location, adding admin notes, updating status, or recategorizing. For deleting use `deleteLead`; for re-matching members use `matchLead`.\n\n**Required:** `lead_id`.\n\n**Mutable standard columns:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `lead_more`, `lead_price`, `lead_notes`, `lead_status`, `top_id`, `sub_id`.\n\n**Custom (form-defined) lead fields** — e.g. wizard-style hidden `match_*` fields — live in `users_meta` with `database=leads` and `database_id=<lead_id>`. Use `updateUserMeta` / `createUserMeta` for those (see **Rule: Forms** § Form classes → Custom-field storage).\n\n**Geocode-derived columns** (`lat`, `lng`, `swlat`/`swlng`/`nelat`/`nelng`, `country_sn`, `adm_lvl_1_sn`, `location_type`) are recomputed by BD when `lead_location` changes — do not pass them directly.\n\n**Enums:** `lead_status`: `1`=Pending, `2`=Matched, `4`=Follow-Up, `5`=Sold Out, `6`=Closed, `7`=Bad Leads, `8`=Delete. (Verified against admin UI dropdown 2026-04-19. Value `3` does not exist. BD accepts out-of-range integers silently - stick to this set.)\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently), `matchLead` (re-route to members), `updateUserMeta` (custom-field updates).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
+        "description": "Update an existing lead record by ID. Fields omitted are untouched.\n\n**Required:** `lead_id`.\n\n**Custom (form-defined) lead fields** — e.g. wizard-style hidden `match_*` fields — live in `users_meta` with `database=leads` and `database_id=<lead_id>`. Use `updateUserMeta` / `createUserMeta` for those. **Rule: Forms** § Form classes → Custom-field storage covers the pattern.\n\n**See also:** `createLead`, `deleteLead`, `matchLead`, `updateUserMeta`.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }`.\n\n"
       }
     },
     "/api/v2/leads/delete": {
@@ -6448,7 +6454,7 @@
                       "Category",
                       "Years"
                     ],
-                    "description": "Form field type. Authoritative enum (copy spelling exactly — most are TitleCase but `textarea` is lowercase). Grouped by purpose:\n\n- **Text inputs:** `Textbox` (single line), `textarea` (paragraph, lowercase), `Email`, `Phone`, `CountryCodePhone`, `Url`, `Password`, `Number`, `Pricebox`, `Hidden`.\n- **Selectors:** `Select` (dropdown), `Radio`, `Checkbox`, `YesNo`. Require `field_options`.\n- **Date / time:** `Date`, `DateTimeLocal`, `Years`.\n- **Geo / category:** `Country`, `State`, `Category` (Top Category list).\n- **Rich / file:** `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`.\n- **Display-only (no posted value):** `HTML` (section title), `Custom` (escape hatch — raw HTML / shortcodes), `Tip` (help alert box).\n- **Tail / security:** `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type=\"submit\">`).\n\nSee **Rule: Forms** § Field anatomy for the canonical table."
+                    "description": "Form field type. Copy spelling exactly — most are TitleCase but `textarea` is lowercase. Grouping + use cases at **Rule: Forms** § Field anatomy → Valid field_type values."
                   },
                   "field_order": {
                     "type": "integer"
@@ -6610,7 +6616,7 @@
                       "Category",
                       "Years"
                     ],
-                    "description": "Form field type. Authoritative enum (copy spelling exactly — most are TitleCase but `textarea` is lowercase). Grouped by purpose:\n\n- **Text inputs:** `Textbox` (single line), `textarea` (paragraph, lowercase), `Email`, `Phone`, `CountryCodePhone`, `Url`, `Password`, `Number`, `Pricebox`, `Hidden`.\n- **Selectors:** `Select` (dropdown), `Radio`, `Checkbox`, `YesNo`. Require `field_options`.\n- **Date / time:** `Date`, `DateTimeLocal`, `Years`.\n- **Geo / category:** `Country`, `State`, `Category` (Top Category list).\n- **Rich / file:** `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`.\n- **Display-only (no posted value):** `HTML` (section title), `Custom` (escape hatch — raw HTML / shortcodes), `Tip` (help alert box).\n- **Tail / security:** `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type=\"submit\">`).\n\nSee **Rule: Forms** § Field anatomy for the canonical table."
+                    "description": "Form field type. Copy spelling exactly — most are TitleCase but `textarea` is lowercase. Grouping + use cases at **Rule: Forms** § Field anatomy → Valid field_type values."
                   },
                   "field_order": {
                     "type": "integer"

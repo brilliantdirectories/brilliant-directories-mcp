@@ -499,7 +499,8 @@ const MIRROR_FUNCTIONS = [
 // drops one `args.` access vs npm's `args.x`; collapsed CJK normalization vs
 // expanded `if/===` chain), record the noise floor here so the warning stays
 // quiet until NEW drift appears beyond the documented delta. Each entry maps
-// fingerprint key -> [npm, worker] expected counts.
+// fingerprint key -> [worker_extra, npm_extra] expected counts (the extra
+// occurrences the worker adds vs npm — typically `(args as any).x` casts).
 const VERIFIED_EQUIVALENT_DRIFT = {
   validateFilterValuesInArgs:    { accesses: [1, 0] }, // worker uses `(args as any).x` cast
   validateFilterOperatorInArgs:  { accesses: [1, 0] }, // worker uses `(args as any).x` cast
