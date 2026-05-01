@@ -4362,8 +4362,11 @@ async function main() {
         const hasUserId = args.user_id !== undefined && args.user_id !== null && args.user_id !== "";
         if (hasUserId && !hasClientId) {
           try {
-            const userUrl = new URL(`/api/v2/user/get`, config.apiUrl);
-            userUrl.searchParams.set("user_id", String(args.user_id));
+            // BD's `/user/get?user_id=N` query-param form is silently
+            // ignored — returns the first user record regardless. Use
+            // path-param form `/user/get/{user_id}` which actually
+            // filters. Verified live 2026-05-01.
+            const userUrl = new URL(`/api/v2/user/get/${encodeURIComponent(String(args.user_id))}`, config.apiUrl);
             const ur = await fetch(userUrl.toString(), { method: "GET", headers: { "X-Api-Key": config.apiKey, Accept: "application/json" } });
             const ub = ur.ok ? await ur.json().catch(() => null) : null;
             let row = ub && ub.message;
