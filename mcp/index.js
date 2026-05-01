@@ -2371,7 +2371,7 @@ function validateDatetime14InArgs(args) {
 // ---------------------------------------------------------------------------
 // Form-write invariant validators.
 //
-// 4 silent-failure paths the wrapper actively refuses on createForm /
+// 2 silent-failure paths the wrapper actively refuses on createForm /
 // updateForm / createFormField / updateFormField. See Rule: Forms §
 // Wrapper-enforced invariants for the agent-facing contract. Each returns
 // a non-null error string when the call should be refused; null = pass.
@@ -2467,7 +2467,7 @@ async function _getFormFieldRecordById(domain, apiKey, fieldId) {
     return null;
   } catch (err) {
     if (err?.name === "AbortError") {
-      console.error(`[_getFormFieldRecordById] BD form_fields/get fetch timed out (5s) for field_id=${fieldId}`);
+      console.warn(`[_getFormFieldRecordById] BD form_fields/get fetch timed out (5s) for field_id=${fieldId}`);
     }
     return null;
   } finally {
@@ -4329,7 +4329,7 @@ async function main() {
       }
 
       // Form-write invariants. See Rule: Forms § Wrapper-enforced invariants.
-      // 4 silent-failure paths refused before the call hits BD.
+      // 2 silent-failure paths refused before the call hits BD.
       const redirectErr = validateRedirectFormPair(name, args);
       if (redirectErr) {
         return { content: [{ type: "text", text: redirectErr }], isError: true };

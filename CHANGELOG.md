@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.92] - 2026-05-01
+
+### Cleanup — 3-minion audit pass on v6.41.91
+
+Three audit minions (code, corpus, spec) found one HIGH-priority stale comment that survived the v6.41.90 cleanup, plus minor parity drift and prose duplication. No breaking bugs, no misleading truths — just cleanup.
+
+**Code:**
+- 4 instances of `// 4 silent-failure paths the wrapper actively refuses` comment header (Worker × 2, npm × 2) corrected to `// 2 silent-failure paths` after v6.41.90 dropped 2 of the 4 validators.
+- `_getFormFieldRecordById` parity drift: Worker uses `console.warn`, npm was using `console.error`. Standardized on `console.warn` (matches the stated convention for non-fatal diagnostics).
+
+**Corpus (`mcp-instructions.md`):**
+- `Rule: Forms § Field anatomy` `field_required` entry — removed spatial leak "see Hidden subsection below"; replaced with `Hidden` is allowed — its value comes from `field_text`.
+- `Rule: Forms § Field anatomy` `field_name` entry — trimmed redundant agent-side recipe (already documented in § Wrapper-enforced invariants → Agent-side responsibilities); kept the concise pointer.
+- `Rule: Forms § Form-level recipe` Tail pattern — trimmed duplicate "Either ReCaptcha → HoneyPot → Button or HoneyPot → ReCaptcha → Button is valid" (now lives only in § Lead-match special case where it has the canonical `bootstrap_get_match` reference).
+
+**Spec (`bd-api.json`):**
+- `createFormField` description — demoted embedded mini-rules for `field_name` uniqueness + single-submit invariant to a single-line cross-reference to `Rule: Forms § Wrapper-enforced invariants → Agent-side responsibilities`. Saved 4 lines of recipe restatement.
+- `updateFormField` description — same demotion. Removed mechanism-narrative parenthetical *"falls open and skips the check if BD lookup fails"* — restated more directly.
+- Severity phrasing standardized to `**Wrapper-enforced refusal:**` across all 4 form-write operation descriptions (was inconsistently mixing `Wrapper refuses the call (4xx, no write)`).
+
+### Net diff
+
+Worker `src/index.ts`: 2 comment edits.
+npm `mcp/index.js`: 2 comment edits + 1 parity fix.
+`mcp-instructions.md`: 3 sentences trimmed.
+`bd-api.json`: 2 operation descriptions trimmed.
+
+No code behavior change. Drift clean, JSON valid.
+
 ## [6.41.91] - 2026-05-01
 
 ### Fixed — 3 stale-claim corpus leftovers from the v6.41.90 validator removal
