@@ -6079,11 +6079,11 @@
                       "redirect"
                     ],
                     "default": "widget",
-                    "description": "Post-submit behavior:\n\n- `widget` = Success Pop-Up (agent default on create)\n\n- `notification` = Inline Success Alert Banner\n\n- `redirect` = Redirect to URL (REQUIRES `form_target` - destination URL)\n\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing)\n\n**When set to `widget`/`notification`/`redirect`, the form's fields list MUST end with `ReCaptcha` -> `HoneyPot` -> `Button` (Submit) in that exact order.** Missing any of the three -> BD errors on submit, form won't function. See `createFormField`."
+                    "description": "Post-submit behavior:\n\n- `widget` = Success Pop-Up (agent default).\n- `notification` = Inline Success Alert Banner.\n- `redirect` = Redirect to URL (wrapper-enforced: `form_target` required, see `form_target` field).\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing).\n\nFor public-facing values (`widget` / `notification` / `redirect`), tail pattern (Button-last) required. See **Rule: Forms** § Form-level recipe."
                   },
                   "form_target": {
                     "type": "string",
-                    "description": "Destination URL. **Required when `form_action_type=redirect`**; ignored otherwise. Full URL (e.g. `https://mysite.com/thanks`).\n\n**NOT schema-enforced** - BD accepts `form_action_type=redirect` with empty `form_target`, but submissions go nowhere on the live site. **Agent MUST set this whenever `form_action_type=redirect`.** BD validates URL shape on write; malformed URLs cause redirect to silently fail on submit."
+                    "description": "Destination URL. **Required when `form_action_type=redirect`** — wrapper refuses the call without it. Full URL with `https://`, e.g. `https://mysite.com/thanks`."
                   },
                   "form_url": {
                     "type": "string",
@@ -6172,7 +6172,7 @@
                       "notification",
                       "redirect"
                     ],
-                    "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL, `\"\"` = no behavior (internal-only forms). **If changing TO `redirect`, also set `form_target`. If changing FROM empty to any of `widget`/`notification`/`redirect` on an existing form, verify the fields list ends with `ReCaptcha` -> `HoneyPot` -> `Button` (in that order) - otherwise submits will error.**"
+                    "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL (wrapper-enforced: `form_target` required), `\"\"` = no behavior (internal-only forms). When flipping FROM empty TO a public-facing value, verify the tail pattern via `listFormFields`. See **Rule: Forms** § Form-level recipe."
                   },
                   "form_target": {
                     "type": "string",
@@ -6505,7 +6505,7 @@
             }
           }
         },
-        "description": "Create a new formfield record. Writes live data.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Canonical `field_name` values when parent form's `form_table=website_contacts`** — use these EXACTLY (NOT `name` / `email` / `message` — those land in unindexed storage and won't surface in the admin inbox columns):\n- Submitter's name → `yourname`\n- Submitter's email → `inquiry_email`\n- Submitter's phone → `phone`\n- Submitter's message → `comments`\n- Anything else → custom `field_name` (free-form; persists fine but won't appear in canonical inbox columns).\n\nSee **Rule: Forms** § Field anatomy for field shape, view-flag defaults, validators, and the canonical `json_meta` skeleton. § Form-level recipe covers the tail pattern. § Lead-match / § Member-dashboard cover special-case forms.\n\n**Wrapper-enforced refusal:** `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`}. `Hidden` is allowed (value comes from `field_text`).\n\n**Agent pre-checks** (NOT wrapper-enforced): `field_name` uniqueness within form, single submit element per form. See **Rule: Forms** § Wrapper-enforced invariants → Agent-side responsibilities.\n\n**See also:** `updateFormField`, `listFormFields`.\n\n"
+        "description": "Create a new formfield record. Writes live data.\n\n**Required:** `form_name`, `field_name`, `field_text`, `field_type`, `field_order`.\n\n**Canonical `field_name` for `form_table=website_contacts`:** `yourname` / `inquiry_email` / `phone` / `comments` (NOT `name` / `email` / `message` — those persist but don't surface in the admin inbox columns). Anything else = custom `field_name`. Full table at **Rule: Forms** § Form classes.\n\nSee **Rule: Forms** § Field anatomy for field shape, view-flag defaults, validators, and the canonical `json_meta` skeleton. § Form-level recipe covers the tail pattern. § Lead-match / § Member-dashboard cover special-case forms.\n\n**Wrapper-enforced refusal:** `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`}. `Hidden` is allowed (value comes from `field_text`).\n\n**Agent pre-checks** (NOT wrapper-enforced): `field_name` uniqueness within form, single submit element per form. See **Rule: Forms** § Wrapper-enforced invariants → Agent-side responsibilities.\n\n**See also:** `updateFormField`, `listFormFields`.\n\n"
       }
     },
     "/api/v2/form_fields/update": {
@@ -6667,7 +6667,7 @@
             }
           }
         },
-        "description": "Update an existing formfield record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `field_id`.\n\nIf renaming a `field_name` on a form whose `form_table=website_contacts`, use canonical names: `yourname` / `inquiry_email` / `phone` / `comments` (NOT `name` / `email` / `message`). Mismatched names land in unindexed storage and won't surface in the admin inbox columns. See `createFormField` for the full mapping.\n\nSee **Rule: Forms** § Field anatomy for field shape, view-flag defaults, validators, and the canonical `json_meta` skeleton.\n\n**Wrapper-enforced refusal:** `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`}. `Hidden` is allowed (value comes from `field_text`). When `field_type` is omitted from update args, the wrapper looks up the existing record's type; falls open and skips the check if the lookup fails.\n\n**Agent pre-checks** (NOT wrapper-enforced): `field_name` uniqueness within form, single submit element per form. See **Rule: Forms** § Wrapper-enforced invariants → Agent-side responsibilities.\n\n**See also:** `createFormField`, `deleteFormField`, `listFormFields`.\n\n"
+        "description": "Update an existing formfield record by ID. Fields omitted are untouched. Writes live data.\n\n**Required:** `field_id`.\n\nWhen renaming `field_name` on a `form_table=website_contacts` form, use canonical names (`yourname` / `inquiry_email` / `phone` / `comments`) — see `createFormField` and **Rule: Forms** § Form classes.\n\nSee **Rule: Forms** § Field anatomy for field shape, view-flag defaults, validators, and the canonical `json_meta` skeleton.\n\n**Wrapper-enforced refusal:** `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`}. `Hidden` is allowed (value comes from `field_text`).\n\n**Agent pre-checks** (NOT wrapper-enforced): `field_name` uniqueness within form, single submit element per form. See **Rule: Forms** § Wrapper-enforced invariants → Agent-side responsibilities.\n\n**See also:** `createFormField`, `deleteFormField`, `listFormFields`.\n\n"
       }
     },
     "/api/v2/form_fields/delete": {

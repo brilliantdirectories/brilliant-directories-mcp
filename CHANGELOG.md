@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.94] - 2026-05-01
+
+### Fixed — 4 stale-truth + 2 redundancy items in spec descriptions (cleanup-pass audit)
+
+3-minion cleanup audit on v6.41.93 found one CLEAN code surface, one SAFE risk profile, and these prose fixes worth shipping:
+
+**Stale truth (HIGH — would mislead agents):**
+
+1. `createForm.form_target`: said *"NOT schema-enforced... submissions go nowhere on the live site. Agent MUST set this whenever..."* — that was the pre-v6.41.83 reality. Wrapper has refused redirect+empty-target since v6.41.83. Replaced with concise: *"Required when `form_action_type=redirect` — wrapper refuses the call without it."*
+2. `createForm.form_action_type`: asserted *"fields list MUST end with ReCaptcha → HoneyPot → Button in that exact order"* — corpus rule says only Button-last is enforced; ReCaptcha-vs-HoneyPot order is flexible. Replaced with: *"For public-facing values, tail pattern (Button-last) required. See Rule: Forms § Form-level recipe."*
+3. `updateForm.form_action_type`: same strict-order assertion. Same fix.
+
+**Redundancy (MEDIUM — duplicated content across files):**
+
+4. `createFormField.description`: bold canonical `website_contacts` field_name list duplicated the corpus § Form classes table verbatim. Collapsed to a one-line callout + cross-ref to the corpus table.
+5. `updateFormField.description`: same canonical-name list also duplicated. Same collapse + removed implementation-detail narrative *"falls open and skips the check if BD lookup fails"* (low actionable value at the call site).
+
+### Net diff
+
+`bd-api.json`: 5 description blocks tightened. No code change. Drift clean, JSON valid.
+
 ## [6.41.93] - 2026-05-01
 
 ### Fixed — `website_contacts` canonical `field_name` rule was buried in `createFormField` description
