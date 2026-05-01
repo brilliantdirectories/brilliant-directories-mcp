@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.96] - 2026-05-01
+
+### Fixed — 5-minion break-test follow-up + customer-reported updateLead/lead-custom-field gap
+
+Tier 1 + Tier 2 patches from the v6.41.95 break-test, plus 2 customer-reported gaps that came in mid-cycle (Claude Desktop hit `updateLead` not exposing `lead_message`; agent struggled to find lead custom-field storage).
+
+**Code (Worker `src/index.ts` + npm `mcp/index.js`, byte-mirrored):**
+
+1. **`validateFieldType` trim-then-write-back.** v6.41.95 trimmed `field_type` for the enum check but forwarded the un-trimmed value to BD. ` Button ` (with whitespace) passed the validator, BD's case-sensitive renderer fell through to default. Now the trimmed canonical string is written back to `args` so BD sees the exact enum value.
+2. **Type guard on `field_type` / `field_name` / `field_text`.** v6.41.95 used `String(v)` coercion on these fields, which converts arrays / objects to comma-joined strings (`["Button"] → "Button"`) and silently passes the wrong shape. Now non-string values are refused upfront with a clear message.
+3. **Hidden field_text attribute-safety.** Hidden fields render inside `<input value="...">`. Any `<`, `>`, or `"` breaks attribute escaping and exposes the rest as raw HTML (stored XSS surface). Wrapper now refuses these characters on `field_type=Hidden field_text`. Corpus already documented this contract; wrapper now enforces.
+4. **`_getFormFieldRecordById` distinguishes "not found" from "fetch failed".** v6.41.95 collapsed BD's empty-result quirk (HTTP 400 + `{status:"error", message:"<table> not found"}`) into the same `null` path as network errors, so `validateRequiredFieldType` skipped the check on bogus `field_id` instead of refusing. Now returns sentinel `"not_found"` when BD says the row doesn't exist; caller refuses the call with a clear `field_id=X not found` error.
+
+**Spec (`mcp/openapi/bd-api.json`):**
+
+5. **`form_action_type` enum gains `"default"`** — both `createForm` and `updateForm`. Was always a real BD value (member-dashboard class) referenced in field descriptions but absent from the enum, blocking round-trips on member-dashboard form updates.
+6. **`form_table` enum locked down** — `[website_contacts, leads, users_data]`. Was free-form string; typo (`websitecontacts`) silently created an inbox-less form.
+7. **`field_type` description grouping rewritten** to mirror the corpus § Field anatomy 7-row table verbatim. Old "Select / Text inputs / Fancy" framing misclassified `HTML` and `Button` as text inputs.
+8. **`updateLead` schema expanded** to all reasonable mutable lead columns: `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `lead_more`, `lead_price`, `top_id`, `sub_id`, `lead_notes` (kept), `lead_status` (kept). Customer report (Claude Desktop): wanted to clean a garbled `lead_message` post-create — schema only exposed 3 fields. No reason for the limit; added the rest with description notes about geocode-derived columns being BD-managed.
+
+**Corpus (`mcp/openapi/mcp-instructions.md`):**
+
+9. **Rule: Field over hack — column-name fix.** Was naming `field_lead_previews` and `field_table_view` (don't exist). Real names: `field_search_view` and `field_grid_view`. Agents reading this rule were sending unknown columns; BD silently dropped them.
+10. **§ Form-level recipe** — added `form_action` as item 1 (it's spec-required but recipe omitted it). Renumbered subsequent items.
+11. **§ Form classes** — added `Custom-field storage` paragraph documenting the `users_meta` EAV pattern for any `form_table`. Same shape as `list_seo` hero fields. Read via `listUserMeta database=<form_table> database_id=<row_id>`.
+12. **§ Cloning a form** — new section. There's no `cloneForm` tool; clone is a 4-step recipe (`getForm` → `createForm` → `listFormFields` → loop `createFormField`). Worked example with `[widget=...]` + `%%%token%%%` preservation note. Closes Minion 4's "what does 'clone bootstrap_get_match' mean operationally?" gap.
+13. **§ Field anatomy → "The 5 view flags"** — added one-line note: send integer/string `0`/`1`, NOT JSON `true`/`false` (booleans refused by `validateBinaryFlags`). Single corpus location instead of bloating each of the 7 binary-field descriptions.
+14. **`form_action_type` description** — softened "tail pattern (Button-last) required" to "Button-last is the agent-side responsibility (NOT wrapper-enforced)". Was ambiguous since v6.41.90.
+
+**Drift-check:** `validateFieldType` and `validateHiddenFieldRequirements` access-counts updated in `VERIFIED_EQUIVALENT_DRIFT` to reflect the type-guard rewrite + writeback.
+
+**Triple-checked dismissals from the break-test:**
+
+- WRITE_KEEP_SETS gap for forms (Minion 2 #1) — real, deferred to internal todos § A; touches response shape, want a controlled audit.
+- `field_options` malformed-encoding parser (Minion 5 #1) — deferred to § B; need to read BD's PHP parser first to match tolerance.
+- `json_meta` JSON-validation (Minion 5 #2) — deferred to § C; canonical skeleton may be incomplete.
+- `default_value` PHP allowance (Minion 5 #3) — deferred to § D; product call required.
+- `lead_status` schema field vs `leads.status` column (audit) — deferred to § E; needs live round-trip test.
+- `updateForm` immutability gap (Minion 2 #2) — deferred to § F; per-field product call.
+- Boolean-strictness inconsistency between `validateBinaryFlags` and `_normalizeRequiredFlag` (Minion 1 HIGH-3) — partial fix shipped (corpus note); contract reconciliation deferred to § G.
+- Minion 1 LOW-1 (`fieldType` alias) — Zod input-shape rejects unknown props at SDK layer; not real.
+- Minion 1 MEDIUM-1 (sequential refusal UX) — by-design.
+- Minion 3 M1 (`include_view_flags` description) — already correct on inspection; no-op.
+- Minion 3 H1 (`field_type` grouping) — fixed in #7 above.
+- Minion 4 #2 — `form_target` external-URL clarity not flagged as urgent; revisit if customers ask.
+- Minion 5 #5 (`input_class` Button-required enforcement) — deferred; BD-side render escaping behavior needs verification before adding wrapper refusal.
+
+### Net diff
+
+- `src/index.ts` + `mcp/index.js`: 3 validators tightened, `_getFormFieldRecordById` returns `"not_found"` sentinel, type-guards added.
+- `bd-api.json`: 2 enums tightened (`form_action_type`, `form_table`), 1 description rewritten (`field_type`), 1 schema expanded (`updateLead`), several softening / cross-ref polish.
+- `mcp-instructions.md`: 1 column-name fix, 1 recipe item added (`form_action`), 1 new subsection (Custom-field storage), 1 new subsection (Cloning a form), 1 binary-flag boolean note.
+- `INTERNAL-FINAL-MCP-TODOS.md`: 7 deferred items documented with repro + fix shape.
+- `scripts/schema-drift-check.js`: 2 `VERIFIED_EQUIVALENT_DRIFT` access-counts updated.
+
 ## [6.41.95] - 2026-05-01
 
 ### Added — 3 synchronous form-write validators (5-minion break-test follow-up)

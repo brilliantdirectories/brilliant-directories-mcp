@@ -241,6 +241,19 @@ Read-back tools per class: inquiries via the site's forms inbox, leads via `list
 
 **Lean read responses** — `listForms` / `getForm` returns 11 essential fields (id, name, title, table, action_type, target, email_on, url, success_message, label_to_placeholder, revision_timestamp); admin-form-builder breadcrumbs and legacy columns are stripped. `listFormFields` / `getFormField` returns 15 essential fields by default; opt-in flags surface the heavier columns: `include_view_flags=true` adds the 5 view-flag toggles + admin-only flag + 5 alt-label overrides (use when editing visibility); `include_meta=true` adds the `json_meta` blob (use when adding/editing per-field validators — see § Field anatomy → `json_meta`).
 
+**Custom-field storage** — a custom (non-canonical) `field_name` on a public form posts its value into `users_meta` with compound identity `(database=<form_table>, database_id=<row_id>, key=<field_name>)`. Same EAV pattern as `list_seo` hero fields. Read via `listUserMeta database=<form_table> database_id=<row_id>`; mutate via `updateUserMeta` / `createUserMeta`. Applies to every `form_table` (`website_contacts`, `leads`, `users_data`).
+
+#### § Cloning a form (verbatim copy with a new slug)
+
+There is no `cloneForm` tool — clone is a 4-step recipe agents run themselves. Use this when the user asks to "duplicate this form", "copy form X", or to create a Lead-saving form (always start from `bootstrap_get_match` per § Lead-match special case):
+
+1. `getForm form_name=<source>` — read every form-level setting.
+2. `createForm` with the source's settings, swapping `form_name` to a new unique slug (run **Rule: Pre-check natural keys** first) and `form_title` to the user's chosen display name.
+3. `listFormFields property=form_name property_value=<source> property_operator==` — read every field row (use `include_view_flags=true include_meta=true` if the source uses non-default view flags or validators).
+4. For each row in field_order: `createFormField form_name=<new>` carrying `field_name`, `field_text`, `field_type`, `field_order`, plus any view-flags / `field_options` / `default_value` / `json_meta` / `input_class` the source had set. Preserve `[widget=...]` shortcodes and `%%%token%%%` translations verbatim — no canonicalization.
+
+`field_id` is auto-assigned per row; do NOT carry it forward. `revision_timestamp` is BD-managed.
+
 #### § Form-level recipe (every public form)
 
 This recipe applies to the **Standard public class only** (`form_table=website_contacts`; see § Form classes). Lead-saving forms always start from `bootstrap_get_match` (see § Lead-match special case). Member-dashboard forms are never created (see § Member-dashboard special case).
@@ -249,20 +262,21 @@ This recipe applies to the **Standard public class only** (`form_table=website_c
 
 Required values on a `createForm` for a Standard public form:
 
-1. `form_url` = `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form` (exact, `%20` literal).
-2. `form_class` = `form-control` (cascades to every field; do NOT set `input_class` on fields just for CSS).
-3. `table_index` = `ID`.
-4. `form_table` = `website_contacts`.
-5. `form_action_type` — pick by submit-time UX:
+1. `form_action` = `post` (HTTP method; almost always `post`. `get` only for bookmarkable search/filter forms).
+2. `form_url` = `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form` (exact, `%20` literal).
+3. `form_class` = `form-control` (cascades to every field; do NOT set `input_class` on fields just for CSS).
+4. `table_index` = `ID`.
+5. `form_table` = `website_contacts`.
+6. `form_action_type` — pick by submit-time UX:
    - `widget` (default) — DOM target swapped inline with a success pop-up; user stays on the page.
    - `notification` — inline success alert; no DOM swap, no redirect.
    - `redirect` — browser navigates to `form_target` URL after submit.
    - (`default` = member-dashboard class only; never used outside § Member-dashboard special case.)
-6. If `form_action_type=widget`: `form_action_div` = `#main-content` (leading `#` required). When `form_action_type` is `notification` or `redirect`, leave `form_action_div` empty — it's only consumed by the widget DOM-swap path.
-7. If `form_action_type=redirect`: `form_target` = destination URL. Wrapper refuses the call without it.
-8. `form_email_on` = `0`.
-9. `form_success_message` — optional custom success-message text (free text). Empty falls back to the site's default `message_sent_label`. Applies to `widget` / `notification` / `redirect`; not used by `default` class. Leave empty unless user asks for custom copy.
-10. `label_to_placeholder` — optional `"0"`/`"1"` toggle (default `"0"`). When `"1"`, BD collapses each field's `field_text` (label) into placeholder text inside the input; per-field `field_placeholder` is overridden. Use only when the user explicitly requests a compact / no-label form layout.
+7. If `form_action_type=widget`: `form_action_div` = `#main-content` (leading `#` required). When `form_action_type` is `notification` or `redirect`, leave `form_action_div` empty — it's only consumed by the widget DOM-swap path.
+8. If `form_action_type=redirect`: `form_target` = destination URL. Wrapper refuses the call without it.
+9. `form_email_on` = `0`.
+10. `form_success_message` — optional custom success-message text (free text). Empty falls back to the site's default `message_sent_label`. Applies to `widget` / `notification` / `redirect`; not used by `default` class. Leave empty unless user asks for custom copy.
+11. `label_to_placeholder` — optional `"0"`/`"1"` toggle (default `"0"`). When `"1"`, BD collapses each field's `field_text` (label) into placeholder text inside the input; per-field `field_placeholder` is overridden. Use only when the user explicitly requests a compact / no-label form layout.
 
 **Tail pattern** (Standard public class only): 3 trailing fields — ReCaptcha, HoneyPot, Button — at the highest `field_order` slots. Only `Button`-last is hard-required; ReCaptcha-vs-HoneyPot order between them is flexible. `field_order` = `listFormFields` max + 1/+2/+3. ReCaptcha and HoneyPot need only `field_type` (omit `field_required` and all 5 view-flag columns — BD auto-handles them). `Button` `input_class` required, pattern `btn btn-lg btn-block <variant>` (Bootstrap variant or site-CSS class). Exactly one submit element per form (Button or Custom-coded) — agent-checked, see § Wrapper-enforced invariants → Agent-side responsibilities.
 
@@ -288,7 +302,7 @@ Member-dashboard forms (`form_action_type=default`) do NOT use shortcode placeme
 | Display-only (no posted value) | `HTML` (Section Title — formatted subheading), `Custom` (Custom HTML — escape hatch), `Tip` (Help Alert Box) |
 | Tail / security | `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type="submit">`) |
 
-**The 5 view flags** — every flag is binary `0`/`1`. No other values.
+**The 5 view flags** — every flag is binary `0`/`1`. Send the integer / string `0` or `1`, NOT JSON `true` / `false` (booleans are refused by the wrapper). Same rule applies to `field_required` and `field_input_view_admin_only`.
 
 | Column | Admin label | Controls |
 |---|---|---|
@@ -792,7 +806,7 @@ Common cases:
 - Unsubscribe footer suppression - EmailTemplate `unsubscribe_link=0`, NOT stripping the merge token out of `email_body`
 - Retire a plan - MembershipPlan `sub_active=0`, NOT hacking signup widget markup
 - Remove payment cycles from public checkout (but keep for admin-created subs) - MembershipPlan `hide_*_amount` toggles
-- Per-field visibility - FormField view-flag toggles (`field_input_view` / `field_display_view` / `field_lead_previews` / `field_email_view` / `field_table_view`), NOT CSS or email-template surgery
+- Per-field visibility - FormField view-flag toggles (`field_input_view` / `field_display_view` / `field_search_view` / `field_email_view` / `field_grid_view`), NOT CSS or email-template surgery
 
 Before reaching for a CSS/JS workaround on anything user-facing, check the resource's GET response for a field/toggle - those are the supported, audit-safe paths.
 

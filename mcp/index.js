@@ -2446,9 +2446,17 @@ function validateFieldType(toolName, args) {
   if (!args || typeof args !== "object") return null;
   const v = args.field_type;
   if (v === undefined || v === null || v === "") return null;
-  const fieldType = String(v).trim();
-  if (FIELD_TYPE_ENUM.has(fieldType)) return null;
-  return `field_type=${fieldType} is not a valid value. Use one of: ${Array.from(FIELD_TYPE_ENUM).join(", ")}. Note: most are TitleCase but \`textarea\` is lowercase. See Rule: Forms § Field anatomy.`;
+  if (typeof v !== "string") {
+    return `field_type must be a string. See Rule: Forms § Field anatomy.`;
+  }
+  const fieldType = v.trim();
+  if (!FIELD_TYPE_ENUM.has(fieldType)) {
+    return `field_type=${fieldType} is not a valid value. Use one of: ${Array.from(FIELD_TYPE_ENUM).join(", ")}. Note: most are TitleCase but \`textarea\` is lowercase. See Rule: Forms § Field anatomy.`;
+  }
+  // Write canonical (trimmed) value back so BD's case-sensitive renderer sees
+  // the exact enum string, not " Button " with stray whitespace.
+  args.field_type = fieldType;
+  return null;
 }
 
 // Refuse Hidden field_type with empty field_name OR empty field_text. Hidden
@@ -2458,15 +2466,19 @@ function validateFieldType(toolName, args) {
 function validateHiddenFieldRequirements(toolName, args) {
   if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
   if (!args || typeof args !== "object") return null;
-  const fieldType = String(args.field_type ?? "").trim();
-  if (fieldType !== "Hidden") return null;
-  const fieldName = String(args.field_name ?? "").trim();
-  const fieldText = String(args.field_text ?? "").trim();
+  if (typeof args.field_type !== "string" || args.field_type.trim() !== "Hidden") return null;
+  const fieldName = typeof args.field_name === "string" ? args.field_name.trim() : "";
+  const fieldText = typeof args.field_text === "string" ? args.field_text.trim() : "";
   if (!fieldName) {
-    return "field_type=Hidden requires a non-empty field_name (the form posts the value under this key). See Rule: Forms § Field anatomy → Hidden field_type.";
+    return "field_type=Hidden requires a non-empty string field_name (the form posts the value under this key). See Rule: Forms § Field anatomy → Hidden field_type.";
   }
   if (!fieldText) {
-    return "field_type=Hidden requires a non-empty field_text (its value comes from field_text at render time, NOT default_value). See Rule: Forms § Field anatomy → Hidden field_type.";
+    return "field_type=Hidden requires a non-empty string field_text (its value comes from field_text at render time, NOT default_value). See Rule: Forms § Field anatomy → Hidden field_type.";
+  }
+  // Hidden field_text renders inside <input value="..."> — `<`, `>`, `"` break
+  // attribute escaping and expose the rest as raw HTML (stored XSS).
+  if (/[<>"]/.test(fieldText)) {
+    return "field_type=Hidden field_text must be attribute-safe — no `<`, `>`, or `\"` characters. For richer content use field_type=Custom. See Rule: Forms § Field anatomy → Hidden field_type.";
   }
   return null;
 }
@@ -2498,6 +2510,9 @@ async function validateRequiredFieldType(domain, apiKey, toolName, args) {
   if (!fieldTypeRaw && toolName === "updateFormField") {
     const fieldId = String(args.field_id ?? "").trim();
     const existing = await _getFormFieldRecordById(domain, apiKey, fieldId);
+    if (existing === "not_found") {
+      return `field_id=${fieldId} not found — cannot update a non-existent form field. See Rule: Forms § Field anatomy.`;
+    }
     if (existing) fieldTypeRaw = String(existing.field_type ?? "").trim();
   }
   if (!fieldTypeRaw) return null; // can't validate; let schema/BD catch
@@ -2521,9 +2536,9 @@ async function validateRequiredFieldType(domain, apiKey, toolName, args) {
 async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   if (!fieldId) return null;
   const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
-  // 5s bounded fetch matches the pattern at reserveSiteUrlSlug — fail fast
-  // and let the caller (validateRequiredFieldType) treat null as "couldn't
-  // resolve, skip the check."
+  // 5s bounded fetch. Returns "not_found" when BD says the row doesn't exist,
+  // null when the fetch itself failed (timeout/network). Caller distinguishes:
+  // not_found → refuse the call; null → can't tell, skip the check.
   const ctl = new AbortController();
   const timeout = setTimeout(() => ctl.abort(), 5000);
   try {
@@ -2531,10 +2546,13 @@ async function _getFormFieldRecordById(domain, apiKey, fieldId) {
       headers: { "X-Api-Key": apiKey, Accept: "application/json" },
       signal: ctl.signal,
     });
+    const body = await resp.json().catch(() => null);
+    // BD's empty-result quirk: HTTP 400 + { status: "error", message: "<table> not found" }
+    // means the row doesn't exist (NOT a wrapper failure). See reference_bd_empty_result_quirk.
+    if (body && body.status === "error") return "not_found";
     if (!resp.ok) return null;
-    const body = await resp.json();
     const msg = body?.message;
-    if (Array.isArray(msg)) return msg[0] ?? null;
+    if (Array.isArray(msg)) return msg[0] ?? "not_found";
     if (msg && typeof msg === "object") return msg;
     return null;
   } catch (err) {

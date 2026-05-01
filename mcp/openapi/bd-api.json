@@ -3287,8 +3287,45 @@
                   "lead_name": {
                     "type": "string"
                   },
+                  "lead_email": {
+                    "type": "string",
+                    "description": "Lead email address. Mutable post-create."
+                  },
+                  "lead_phone": {
+                    "type": "string",
+                    "description": "Lead phone number. Mutable post-create."
+                  },
+                  "lead_message": {
+                    "type": "string",
+                    "description": "Lead's submitted message body (longtext, supports newlines). Mutable post-create — use for cleaning up garbled wizard prefaces, AI-generated text, or test-data residue. Preserves any `[widget=...]` shortcodes / `%%%token%%%` translations."
+                  },
+                  "lead_location": {
+                    "type": "string",
+                    "description": "Geocoded location string. Mutable post-create. Note: BD's geocode-derived columns (`lat`, `lng`, `swlat`, `swlng`, `nelat`, `nelng`, `country_sn`, `adm_lvl_1_sn`, `location_type`) are recomputed by BD when this changes — agent should not pass them directly."
+                  },
+                  "lead_more": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Additional-info flag. Use `0`/`1`, NOT `true`/`false`."
+                  },
+                  "lead_price": {
+                    "type": "number",
+                    "description": "Lead pricing (decimal). `0.00` = free."
+                  },
+                  "top_id": {
+                    "type": "integer",
+                    "description": "Top category ID. Mutable, but changing this orphans existing `lead_matches` rows — re-run `matchLead` after to re-route."
+                  },
+                  "sub_id": {
+                    "type": "integer",
+                    "description": "Sub-category ID. Mutable; same `lead_matches` consideration as `top_id`."
+                  },
                   "lead_notes": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Admin notes on the lead. Free text, longtext column. Surfaced in admin lead inbox."
                   },
                   "lead_status": {
                     "type": "integer",
@@ -3320,7 +3357,7 @@
             }
           }
         },
-        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** adding admin notes to a lead, updating lead status, or correcting lead metadata. For deleting use `deleteLead`; for re-matching members use `matchLead`.\n\n**Required:** `lead_id`.\n\n**Enums:** `lead_status`: `1`=Pending, `2`=Matched, `4`=Follow-Up, `5`=Sold Out, `6`=Closed, `7`=Bad Leads, `8`=Delete. (Verified against admin UI dropdown 2026-04-19. Value `3` does not exist. BD accepts out-of-range integers silently - stick to this set.)\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
+        "description": "Update an existing lead record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** correcting lead contact info / message body / location, adding admin notes, updating status, or recategorizing. For deleting use `deleteLead`; for re-matching members use `matchLead`.\n\n**Required:** `lead_id`.\n\n**Mutable standard columns:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `lead_more`, `lead_price`, `lead_notes`, `lead_status`, `top_id`, `sub_id`.\n\n**Custom (form-defined) lead fields** — e.g. wizard-style hidden `match_*` fields — live in `users_meta` with `database=leads` and `database_id=<lead_id>`. Use `updateUserMeta` / `createUserMeta` for those (see **Rule: Forms** § Form classes → Custom-field storage).\n\n**Geocode-derived columns** (`lat`, `lng`, `swlat`/`swlng`/`nelat`/`nelng`, `country_sn`, `adm_lvl_1_sn`, `location_type`) are recomputed by BD when `lead_location` changes — do not pass them directly.\n\n**Enums:** `lead_status`: `1`=Pending, `2`=Matched, `4`=Follow-Up, `5`=Sold Out, `6`=Closed, `7`=Bad Leads, `8`=Delete. (Verified against admin UI dropdown 2026-04-19. Value `3` does not exist. BD accepts out-of-range integers silently - stick to this set.)\n\n**See also:** `createLead` (add new), `deleteLead` (remove permanently), `matchLead` (re-route to members), `updateUserMeta` (custom-field updates).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
       }
     },
     "/api/v2/leads/delete": {
@@ -6052,7 +6089,12 @@
                   },
                   "form_table": {
                     "type": "string",
-                    "description": "Database table the form submissions post into. Default: `website_contacts`. Override only when building a form that posts into a different BD table.",
+                    "enum": [
+                      "website_contacts",
+                      "leads",
+                      "users_data"
+                    ],
+                    "description": "Database table the form submissions post into. `website_contacts` = generic contact inbox (default). `leads` = lead-system inbox (pairs with `form_action_type` matching/distribution). `users_data` = member-account forms (signup, profile-edit, member-dashboard `default` class). Once set on create, treat as immutable (BD does not migrate submissions across tables).",
                     "default": "website_contacts"
                   },
                   "form_class": {
@@ -6076,10 +6118,11 @@
                       "",
                       "widget",
                       "notification",
-                      "redirect"
+                      "redirect",
+                      "default"
                     ],
                     "default": "widget",
-                    "description": "Post-submit behavior:\n\n- `widget` = Success Pop-Up (agent default).\n- `notification` = Inline Success Alert Banner.\n- `redirect` = Redirect to URL (wrapper-enforced: `form_target` required, see `form_target` field).\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing).\n\nFor public-facing values (`widget` / `notification` / `redirect`), tail pattern (Button-last) required. See **Rule: Forms** § Form-level recipe."
+                    "description": "Post-submit behavior:\n\n- `widget` = Success Pop-Up (agent default).\n- `notification` = Inline Success Alert Banner.\n- `redirect` = Redirect to URL (wrapper-enforced: `form_target` required, see `form_target` field).\n- `default` = Member-dashboard class (admin-clone-only; do not create from scratch).\n- `\"\"` (empty) = no post-submit behavior (valid only for internal/programmatic forms, NOT public-facing).\n\nFor public-facing values (`widget` / `notification` / `redirect`), Button-last is the agent-side tail-pattern responsibility (NOT wrapper-enforced). See **Rule: Forms** § Form-level recipe."
                   },
                   "form_target": {
                     "type": "string",
@@ -6170,9 +6213,10 @@
                       "",
                       "widget",
                       "notification",
-                      "redirect"
+                      "redirect",
+                      "default"
                     ],
-                    "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL (wrapper-enforced: `form_target` required), `\"\"` = no behavior (internal-only forms). When flipping FROM empty TO a public-facing value, verify the tail pattern via `listFormFields`. See **Rule: Forms** § Form-level recipe."
+                    "description": "Post-submit behavior. `widget` = success pop-up, `notification` = success alert banner, `redirect` = send user to `form_target` URL (wrapper-enforced: `form_target` required, see `form_target` field), `default` = member-dashboard class (admin-clone-only), `\"\"` = no behavior (internal-only forms). When flipping FROM empty TO a public-facing value, verify the tail pattern (Button-last is agent-side, NOT wrapper-enforced) via `listFormFields`. See **Rule: Forms** § Form-level recipe."
                   },
                   "form_target": {
                     "type": "string",
@@ -6404,7 +6448,7 @@
                       "Category",
                       "Years"
                     ],
-                    "description": "Form field type. Authoritative enum values (copy spelling exactly - most are TitleCase but `textarea` is lowercase):\n\n**Select:** `Checkbox` (multi-select), `Select` (dropdown), `Radio` (single-select), `YesNo` (toggle). Require `field_options` list.\n\n**Text inputs:** `Custom` (HTML injection), `Email` (validates format), `HTML` (display heading), `Button` (submit), `Textbox` (single-line), `textarea` (multi-line, lowercase), `Url`.\n\n**Fancy:** `Date`, `DateTimeLocal`, `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`, `Tip` (help box), `Hidden` (stores value, not rendered), `Country`, `State`, `Number` (integer-only), `Password` (masked), `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha`, `HoneyPot` (anti-spam), `Category`, `Years`.\n\nSimple text -> `Textbox`; paragraphs -> `textarea`; emails -> `Email` (BD validates format)."
+                    "description": "Form field type. Authoritative enum (copy spelling exactly — most are TitleCase but `textarea` is lowercase). Grouped by purpose:\n\n- **Text inputs:** `Textbox` (single line), `textarea` (paragraph, lowercase), `Email`, `Phone`, `CountryCodePhone`, `Url`, `Password`, `Number`, `Pricebox`, `Hidden`.\n- **Selectors:** `Select` (dropdown), `Radio`, `Checkbox`, `YesNo`. Require `field_options`.\n- **Date / time:** `Date`, `DateTimeLocal`, `Years`.\n- **Geo / category:** `Country`, `State`, `Category` (Top Category list).\n- **Rich / file:** `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`.\n- **Display-only (no posted value):** `HTML` (section title), `Custom` (escape hatch — raw HTML / shortcodes), `Tip` (help alert box).\n- **Tail / security:** `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type=\"submit\">`).\n\nSee **Rule: Forms** § Field anatomy for the canonical table."
                   },
                   "field_order": {
                     "type": "integer"
@@ -6566,7 +6610,7 @@
                       "Category",
                       "Years"
                     ],
-                    "description": "Form field type. Authoritative enum values (copy spelling exactly - most are TitleCase but `textarea` is lowercase):\n\n**Select:** `Checkbox` (multi-select), `Select` (dropdown), `Radio` (single-select), `YesNo` (toggle). Require `field_options` list.\n\n**Text inputs:** `Custom` (HTML injection), `Email` (validates format), `HTML` (display heading), `Button` (submit), `Textbox` (single-line), `textarea` (multi-line, lowercase), `Url`.\n\n**Fancy:** `Date`, `DateTimeLocal`, `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`, `Tip` (help box), `Hidden` (stores value, not rendered), `Country`, `State`, `Number` (integer-only), `Password` (masked), `Phone`, `CountryCodePhone`, `Pricebox`, `ReCaptcha`, `HoneyPot` (anti-spam), `Category`, `Years`.\n\nSimple text -> `Textbox`; paragraphs -> `textarea`; emails -> `Email` (BD validates format)."
+                    "description": "Form field type. Authoritative enum (copy spelling exactly — most are TitleCase but `textarea` is lowercase). Grouped by purpose:\n\n- **Text inputs:** `Textbox` (single line), `textarea` (paragraph, lowercase), `Email`, `Phone`, `CountryCodePhone`, `Url`, `Password`, `Number`, `Pricebox`, `Hidden`.\n- **Selectors:** `Select` (dropdown), `Radio`, `Checkbox`, `YesNo`. Require `field_options`.\n- **Date / time:** `Date`, `DateTimeLocal`, `Years`.\n- **Geo / category:** `Country`, `State`, `Category` (Top Category list).\n- **Rich / file:** `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin`.\n- **Display-only (no posted value):** `HTML` (section title), `Custom` (escape hatch — raw HTML / shortcodes), `Tip` (help alert box).\n- **Tail / security:** `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type=\"submit\">`).\n\nSee **Rule: Forms** § Field anatomy for the canonical table."
                   },
                   "field_order": {
                     "type": "integer"
