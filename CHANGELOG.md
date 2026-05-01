@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.4] - 2026-05-01
+
+### Maintenance — repo + Worker source cleanup (no behavior change)
+
+- Deleted stray `.wrangler/` directory in npm-package folder (created accidentally by a wrangler invocation from the wrong cwd at some point; gitignored, never used).
+- Deleted empty `.wrangler/tmp/` in Worker folder; wrangler regenerates as needed on next deploy.
+- Worker `src/index.ts`: trimmed 7-line v6.40.26 historical narrative comment above `validateHeroEnumsInArgs` to a single line preserving the rule (`// Reject-don't-coerce on hero enums...`). Per standing convention: version-stamped narratives belong in CHANGELOG, not code.
+
+Verified Worker production unaffected: primary URL, MCP protocol handshake, and workers.dev backup all 200 before delete; wrangler CLI auth intact.
+
 ## [6.42.3] - 2026-05-01
 
 ### Fixed — 8-minion full-spec audit (truth-only corrections, no context loss)
