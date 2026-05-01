@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.90] - 2026-05-01
+
+### Removed — `validateFieldNameUnique` + `validateSubmitCount` wrapper validators (root-cause fix for createFormField intermittent failures)
+
+Both validators required pre-fetching the parent form's existing field list via BD's `listFormFields` endpoint, then comparing against the incoming write. The pre-fetch (`_listFormFieldsByFormName`) proved fragile in production: the unbounded `await fetch()` could be silently cancelled by the Cloudflare Worker's invocation budget if BD responded slowly, returning `null` and tripping a fail-closed branch that refused legitimate writes. v6.41.89 added a 5s `AbortController` to the fetch but customers continued reporting 100% failure on certain forms while direct `listFormFields` calls succeeded, indicating the validator's failure-mode was not just slow BD responses but a non-deterministic interaction between Worker invocation lifecycle, Durable Object subrequest budgets, and the validator's pre-check pattern.
+
+After 7 patch versions (v6.41.83–v6.41.89) chasing edge cases on these two validators, the simplest and correct fix is to remove them entirely. BD itself does not enforce field_name uniqueness or single-submit invariants server-side — these were defense-in-depth checks the wrapper added on top. Moving the responsibility back to the agent (via corpus rule + spec descriptions) eliminates the entire problem class.
+
+**What was removed:**
+- `validateFieldNameUnique` — refused duplicate `field_name` within a form.
+- `validateSubmitCount` — refused 2nd submit-producing field on a form.
+- `_listFormFieldsByFormName` — the fragile pre-fetch helper.
+- `_isSubmitProducingField` — submit-detection helper, only used by `validateSubmitCount`.
+- `SUBMIT_REGEX` — submit-element regex, only used by `_isSubmitProducingField`.
+- `_getFormFieldFormNameById` — form-name-from-field-id helper used only by the removed validators.
+- All v6.41.83–v6.41.89 diagnostic logging, header-casing notes, AbortController wrapping that targeted these specific validators.
+- 7 entries from `MIRROR_FUNCTIONS` + 1 entry from `MIRROR_CONSTANTS` in `scripts/schema-drift-check.js`.
+
+**What was kept (these never had the broken probe):**
+- `validateRedirectFormPair` — refuses `form_action_type=redirect` + empty `form_target`. Pure arg-shape check, no BD probe.
+- `validateRequiredFieldType` — refuses `field_required=1` + `field_type` ∈ {HoneyPot, HTML, Tip, Button}. On `updateFormField` with `field_type` omitted, falls back to `_getFormFieldRecordById` (single-row lookup by primary key, very different code path from the broken filter probe). Falls open and skips the check if the lookup fails — no fail-closed.
+
+### Wrapper-enforced invariants — reduced from 4 to 2
+
+`Rule: Forms § Wrapper-enforced invariants` and the spec descriptions on `createFormField` / `updateFormField` now document only 2 wrapper refusals:
+
+1. `form_action_type=redirect` + empty `form_target` (createForm/updateForm).
+2. `field_required=1` + `field_type` ∈ {HoneyPot, HTML, Tip, Button} (createFormField/updateFormField).
+
+A new **"Agent-side responsibilities"** subsection documents the 2 invariants the agent now owns:
+
+- `field_name` uniqueness — agent runs `listFormFields property=form_name property_value=<form> property_operator==` before picking a field_name; on collision, append `_2`/`_3` or pick a different stem.
+- Single submit element per form — agent runs `listFormFields` and confirms no existing `Button` or `Custom` with `type="submit"` markup before adding one. To replace, `deleteFormField` first.
+
+### Added — Canonical `field_name` conventions for `website_contacts` forms
+
+`Rule: Forms § Form classes` now documents the canonical `field_name` values BD's forms inbox + `form_inquiries` table read on submit for Standard public forms:
+
+| Purpose | Canonical `field_name` |
+|---|---|
+| Submitter's name | `yourname` |
+| Submitter's email | `inquiry_email` |
+| Submitter's phone | `phone` |
+| Submitter's message | `comments` |
+| Anything else | custom `field_name` (free-form; works but doesn't surface in canonical inbox columns) |
+
+Spec descriptions on `createFormField` cross-reference this table.
+
+### Net diff
+
+Worker `src/index.ts`: -190 lines (removed validators + helpers + dispatch wiring + diagnostic logs).
+npm `mcp/index.js`: byte-equivalent removal mirror.
+`scripts/schema-drift-check.js`: removed 7 functions + 1 constant from mirror registries.
+`mcp/openapi/bd-api.json`: 2 operation descriptions tightened.
+`mcp/openapi/mcp-instructions.md`: § Wrapper-enforced invariants reduced from 4 to 2; new § Form classes table for `website_contacts` field_name conventions; new "Agent-side responsibilities" sub-block.
+
+Drift clean, JSON valid. Worker `89e43ff8` already deployed for the smoke test confirmed the bug is fixed end-to-end against `find-fitness-pros.directoryup.com` form_id 337.
+
 ## [6.41.89] - 2026-05-01
 
 ### Fixed — Form-validator helpers: 5s bounded fetch (root cause of "wrote despite error" pattern)

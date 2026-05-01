@@ -483,12 +483,7 @@ const MIRROR_FUNCTIONS = [
   "validateRedirectFormPair",
   "validateRequiredFieldType",
   "_normalizeRequiredFlag",
-  "_isSubmitProducingField",
-  "_listFormFieldsByFormName",
   "_getFormFieldRecordById",
-  "_getFormFieldFormNameById",
-  "validateFieldNameUnique",
-  "validateSubmitCount",
   "applyFormLean",
   "applyFormFieldLean",
 ];
@@ -512,8 +507,6 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
   validateRedirectFormPair:      { accesses: [2, 0] }, // worker uses `(args as any).x` cast
   validateRequiredFieldType:     { accesses: [3, 0] }, // worker uses `(args as any).x` cast (3 access sites: field_required, field_id, field_type — last 2 added v6.41.85 for updateFormField record lookup)
-  validateFieldNameUnique:       { ifs: [8, 0], returns: [8, 0], eq3: [4, 0], neq3: [4, 0], accesses: [4, 0] }, // worker uses `(args as any).x` casts and TS-conditional branches; hardened in v6.41.83 (form_name lookup + fail-closed)
-  validateSubmitCount:           { ifs: [8, 0], returns: [8, 0], eq3: [3, 0], neq3: [4, 0], accesses: [5, 0] }, // worker uses `(args as any).x` casts and TS-conditional branches; hardened in v6.41.83 (form_name lookup + fail-closed)
 };
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
 const WORKER_PATH = path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts");
@@ -668,7 +661,6 @@ const MIRROR_CONSTANTS = [
   "SLUG_TOOL_CONFIG",
   "RGB_PATTERN",
   "FIELD_REQUIRED_FORBIDDEN",
-  "SUBMIT_REGEX",
   "FORM_LEAN_INCLUDE_FLAGS",
   "FORM_ALWAYS_KEEP",
   "FORM_FIELD_LEAN_INCLUDE_FLAGS",

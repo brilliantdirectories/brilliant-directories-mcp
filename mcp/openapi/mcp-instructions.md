@@ -229,6 +229,16 @@ Every form belongs to ONE of three classes, keyed on `form_table` (and `form_act
 
 Read-back tools per class: inquiries via the site's forms inbox, leads via `listLeadMatches` / `listLeads`, member fields via `getUser` / `listUserMeta`.
 
+**Canonical `field_name` values for Standard public forms (`form_table=website_contacts`)** — BD's forms inbox + the `form_inquiries` table read these column names on submit. Use them verbatim for matching purposes; anything else is a custom field (still works, just doesn't surface in the canonical inbox columns):
+
+| Purpose | Canonical `field_name` |
+|---|---|
+| Submitter's name | `yourname` |
+| Submitter's email | `inquiry_email` |
+| Submitter's phone | `phone` |
+| Submitter's message | `comments` |
+| Anything else | custom field (free-form `field_name`) |
+
 **Lean read responses** — `listForms` / `getForm` returns 11 essential fields (id, name, title, table, action_type, target, email_on, url, success_message, label_to_placeholder, revision_timestamp); admin-form-builder breadcrumbs and legacy columns are stripped. `listFormFields` / `getFormField` returns 15 essential fields by default; opt-in flags surface the heavier columns: `include_view_flags=true` adds the 5 view-flag toggles + admin-only flag + 5 alt-label overrides (use when editing visibility); `include_meta=true` adds the `json_meta` blob (use when adding/editing per-field validators — see § Field anatomy → `json_meta`).
 
 #### § Form-level recipe (every public form)
@@ -416,12 +426,15 @@ The agent does NOT need to add a column to `users_data` to make a custom field s
 
 #### § Wrapper-enforced invariants
 
-The wrapper refuses (throws on the call) 4 silent-failure paths on `createForm` / `updateForm` / `createFormField` / `updateFormField`. Each refusal is an active error, not a warning — the call returns 4xx and no write happens:
+The wrapper refuses (throws on the call) 2 silent-failure paths on `createForm` / `updateForm` / `createFormField` / `updateFormField`. Each refusal is an active error, not a warning — the call returns 4xx and no write happens:
 
 1. `createForm` / `updateForm` with `form_action_type=redirect` AND empty `form_target` → refused (would submit nowhere).
-2. `createFormField` / `updateFormField` with non-empty `field_name` duplicating another field on the same form → refused (submission collision; same-name renames on `updateFormField` are excluded).
-3. `createFormField` / `updateFormField` with `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`} → refused (form unsubmittable). `Hidden` is allowed because its value comes from `field_text`.
-4. `createFormField` / `updateFormField` adding a submit-producing field to a form that already has one → refused (must be exactly one submit element). Submit-producing = `Button` field_type OR `Custom` field_type whose `field_text` contains `type="submit"`.
+2. `createFormField` / `updateFormField` with `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`} → refused (form unsubmittable). `Hidden` is allowed because its value comes from `field_text`.
+
+**Agent-side responsibilities** (NOT wrapper-enforced — agent owns these):
+
+- **`field_name` uniqueness within a form.** BD doesn't enforce server-side; duplicate `field_name` produces two records and the form silently breaks on submit. Before `createFormField` with a non-empty `field_name`, run `listFormFields property=form_name property_value=<form_name> property_operator==` and confirm the chosen name isn't taken. On collision, append `_2` / `_3` / etc. or pick a different stem.
+- **Single submit element per form.** BD doesn't refuse a 2nd `Button` or a `Custom` field with `type="submit"` markup; the form silently misbehaves. Before adding a submit-producing field, run `listFormFields` and confirm none exists. To replace an existing submit, `deleteFormField` it first, then `createFormField` the new one.
 
 ### Rule: Email template recipe
 

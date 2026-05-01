@@ -2384,10 +2384,6 @@ const FIELD_REQUIRED_FORBIDDEN = new Set(["HoneyPot", "HTML", "Tip", "Button"]);
 // at render time, so the requirement is always satisfied. See Rule: Forms §
 // Field anatomy → Hidden field_type.
 
-// Word-boundary version: matches `type="submit"` but not `data-type="submit"`.
-// Leading boundary requires whitespace, `<`, or start-of-string before `type=`.
-const SUBMIT_REGEX = /(?:^|[\s<])type\s*=\s*["']?submit["']?/i;
-
 // Truthy-string normalization for the `field_required` flag. Agents may send
 // the value as integer (1), string ("1"), boolean (true), or word ("yes").
 // Coerce all permissive truthy values to "1" so the case-sensitive forbidden-
@@ -2446,25 +2442,16 @@ async function validateRequiredFieldType(domain, apiKey, toolName, args) {
   return null;
 }
 
-function _isSubmitProducingField(field) {
-  const t = String(field.field_type ?? "");
-  if (t === "Button") return true;
-  if (t === "Custom") {
-    const text = String(field.field_text ?? "");
-    return SUBMIT_REGEX.test(text);
-  }
-  return false;
-}
-
 // Fetch the full form-field record from BD via field_id. Used on updateFormField
-// when the agent omits structural fields (form_name for uniqueness, field_type
-// for forbidden-type validation, field_text for submit-element detection on
-// Custom fields). Returns null on failure or non-existent field_id.
+// when the agent omits `field_type` (only field_id + field_required sent), so the
+// forbidden-type validator can look up the existing record's field_type.
+// Returns null on failure or non-existent field_id.
 async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   if (!fieldId) return null;
   const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
-  // 5s bounded fetch — without this, the await is unbounded; if BD is slow
-  // we'd block the validator and risk the caller's invocation budget.
+  // 5s bounded fetch matches the pattern at reserveSiteUrlSlug — fail fast
+  // and let the caller (validateRequiredFieldType) treat null as "couldn't
+  // resolve, skip the check."
   const ctl = new AbortController();
   const timeout = setTimeout(() => ctl.abort(), 5000);
   try {
@@ -2486,142 +2473,6 @@ async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   } finally {
     clearTimeout(timeout);
   }
-}
-
-// Resolve a field's parent `form_name` from BD via field_id. Thin wrapper
-// over _getFormFieldRecordById for the form_name use-case.
-async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
-  const row = await _getFormFieldRecordById(domain, apiKey, fieldId);
-  if (!row) return null;
-  const name = String(row.form_name ?? "").trim();
-  return name || null;
-}
-
-// Returns null on fetch failure OR malformed response shape (caller treats
-// null as "fail-closed" — we refuse the write rather than allow a duplicate
-// to slip through during a transient BD outage or unexpected response).
-// Returns [] when BD legitimately reports zero matching rows.
-//
-// BD empty-result quirk: when a /list endpoint filter matches zero rows, BD
-// returns HTTP 400 + `{status:"error", message:"<table> not found"}` instead
-// of HTTP 200 + `{message: []}`. A naive `!resp.ok` check misreads this
-// legitimate-zero-rows case as a fetch failure and incorrectly fail-closes
-// every uniqueness probe on fresh forms (zero existing fields). See
-// reference_bd_empty_result_quirk.md.
-async function _listFormFieldsByFormName(domain, apiKey, formName) {
-  // BD uses /get (not /list) for paginated list endpoints on this resource —
-  // mirrors the spec's `/api/v2/form_fields/get` operationId=listFormFields. A
-  // /list path 404s and returns an HTTP 200 empty body that we'd misread as
-  // legitimate zero rows; using /get returns the canonical {message:[],total:0}
-  // shape on zero matches.
-  const url = `https://${domain}/api/v2/form_fields/get?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
-  // Bounded with a 5s AbortController. Without this, the fetch awaits
-  // indefinitely. If BD is slow, the caller's invocation budget runs out,
-  // the platform cancels the in-flight fetch, and the validator returns
-  // null → fail-closed. Meanwhile the agent's actual createFormField BD
-  // write may have already landed at BD, producing the "wrote despite
-  // error" pattern reported by customers. 5s is plenty for a normal
-  // listFormFields filter response (~50ms typical) while staying well
-  // inside the top-level invocation budget so we fail-fast and log here.
-  const ctl = new AbortController();
-  const timeout = setTimeout(() => ctl.abort(), 5000);
-  try {
-    const resp = await fetch(url, {
-      headers: { "X-Api-Key": apiKey, Accept: "application/json" },
-      signal: ctl.signal,
-    });
-    const body = await resp.json().catch(() => null);
-    if (!resp.ok) {
-      const isEmptyResultQuirk =
-        body !== null &&
-        body.status === "error" &&
-        typeof body.message === "string" &&
-        /not found$/i.test(body.message);
-      if (isEmptyResultQuirk) return [];
-      console.error(`[validateFieldNameUnique] BD returned non-OK status=${resp.status} for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
-      return null;
-    }
-    if (!body || !Array.isArray(body.message)) {
-      console.error(`[validateFieldNameUnique] BD returned unexpected shape for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
-      return null;
-    }
-    return body.message;
-  } catch (err) {
-    if (err?.name === "AbortError") {
-      console.error(`[validateFieldNameUnique] BD listFormFields fetch timed out (5s) for form_name="${formName}"`);
-    } else {
-      console.error(`[validateFieldNameUnique] fetch threw for form_name="${formName}": ${err.message}`);
-    }
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function validateFieldNameUnique(domain, apiKey, toolName, args, cachedFields) {
-  if (toolName !== "createFormField" && toolName !== "updateFormField") return {};
-  if (!args || typeof args !== "object") return {};
-  const fieldName = String(args.field_name ?? "").trim();
-  if (!fieldName) return { fields: cachedFields };
-  let lookupFormName = String(args.form_name ?? "").trim();
-  if (!lookupFormName && toolName === "updateFormField") {
-    const fieldId = String(args.field_id ?? "").trim();
-    const resolved = await _getFormFieldFormNameById(domain, apiKey, fieldId);
-    if (!resolved) {
-      return { error: `field_name uniqueness validation requires either form_name (preferred) or a resolvable field_id on updateFormField. Provide form_name or verify field_id exists.` };
-    }
-    lookupFormName = resolved;
-  }
-  if (!lookupFormName) return { fields: cachedFields };
-  const fields = cachedFields ?? await _listFormFieldsByFormName(domain, apiKey, lookupFormName);
-  if (fields === null) {
-    return { error: `Could not verify field_name uniqueness — BD listFormFields lookup failed for form_name="${lookupFormName}". Refusing the write to prevent a silent duplicate. Retry once BD is reachable.` };
-  }
-  const selfId = toolName === "updateFormField" ? String(args.field_id ?? "") : "";
-  const collision = fields.find(f =>
-    String(f.field_name ?? "").trim() === fieldName &&
-    String(f.field_id ?? "") !== selfId
-  );
-  if (collision) {
-    return {
-      error: `field_name "${fieldName}" already exists on form "${lookupFormName}" (field_id=${collision.field_id}). Duplicate non-empty field_names break the form on submit. See Rule: Forms § Field anatomy.`,
-      fields,
-    };
-  }
-  return { fields };
-}
-
-async function validateSubmitCount(domain, apiKey, toolName, args, cachedFields) {
-  if (toolName !== "createFormField" && toolName !== "updateFormField") return {};
-  if (!args || typeof args !== "object") return {};
-  let lookupFormName = String(args.form_name ?? "").trim();
-  if (!lookupFormName && toolName === "updateFormField") {
-    const fieldId = String(args.field_id ?? "").trim();
-    const resolved = await _getFormFieldFormNameById(domain, apiKey, fieldId);
-    if (!resolved) return { fields: cachedFields };
-    lookupFormName = resolved;
-  }
-  if (!lookupFormName) return { fields: cachedFields };
-  const incoming = _isSubmitProducingField({
-    field_type: args.field_type,
-    field_text: args.field_text,
-  });
-  if (!incoming) return { fields: cachedFields };
-  const fields = cachedFields ?? await _listFormFieldsByFormName(domain, apiKey, lookupFormName);
-  if (fields === null) {
-    return { error: `Could not verify single-submit invariant — BD listFormFields lookup failed for form_name="${lookupFormName}". Refusing the write to prevent a duplicate submit element. Retry once BD is reachable.` };
-  }
-  const selfId = toolName === "updateFormField" ? String(args.field_id ?? "") : "";
-  const existing = fields.filter(f =>
-    _isSubmitProducingField(f) && String(f.field_id ?? "") !== selfId
-  ).length;
-  if (existing >= 1) {
-    return {
-      error: `Form "${lookupFormName}" already has a submit-producing field. A form must have exactly one submit element (Button field_type OR a Custom field_type with type="submit" markup). Delete the existing one before adding another. See Rule: Forms § Form-level recipe.`,
-      fields,
-    };
-  }
-  return { fields };
 }
 
 // ---------------------------------------------------------------------------
@@ -4487,20 +4338,12 @@ async function main() {
       if (reqTypeErr) {
         return { content: [{ type: "text", text: reqTypeErr }], isError: true };
       }
-      // Live-state validators (need a fetch); cache the field list across
-      // both so we make at most one listFormFields call per write.
-      if (name === "createFormField" || name === "updateFormField") {
-        let cachedFormFields = undefined;
-        const uniqueResult = await validateFieldNameUnique(config.domain, config.apiKey, name, args, cachedFormFields);
-        if (uniqueResult.fields !== undefined) cachedFormFields = uniqueResult.fields;
-        if (uniqueResult.error) {
-          return { content: [{ type: "text", text: uniqueResult.error }], isError: true };
-        }
-        const submitResult = await validateSubmitCount(config.domain, config.apiKey, name, args, cachedFormFields);
-        if (submitResult.error) {
-          return { content: [{ type: "text", text: submitResult.error }], isError: true };
-        }
-      }
+      // NOTE: field_name uniqueness + single-submit invariant are NOT
+      // enforced wrapper-side. Both required pre-fetching the form's
+      // existing fields, which proved fragile (BD's listFormFields probe
+      // could time out and produce misleading errors). Both invariants
+      // are now agent-side rules in Rule: Forms — the agent runs
+      // `listFormFields` itself before the create/update.
 
       // Force `status=1` on createMultiImagePostPhoto. BD only ever uses
       // status=1 for users_portfolio rows (album/gallery photos); other values
