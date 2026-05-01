@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.2] - 2026-05-01
+
+### Fixed — `createTag` / `updateTag` audit fields hidden + hardcoded
+
+Stress-test surfaced that `createTag` was forcing agents to pass `added_by` (BD admin user_id) as a required input even though BD never enforces FK on that audit-trail column. Same disposition as `createRedirect.type` from v6.43.0: drop the audit fields from the input schema entirely; wrapper hardcodes `0` mechanically before forwarding to BD.
+
+- `createTag.added_by` removed from input schema; wrapper sets to 0.
+- `updateTag.updated_by` removed from input schema; wrapper sets to 0.
+- Spec descriptions for both tools now state the wrapper-managed disposition explicitly.
+
+Agent friction goes away — they don't need a BD admin user_id to create a tag.
+
 ## [6.43.1] - 2026-05-01
 
 ### Fixed — `getUserSubscriptions` / `getUserTransactions` retract clientid translation
