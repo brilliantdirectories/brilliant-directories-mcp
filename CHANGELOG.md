@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.77] - 2026-04-30
+
+### Added — `Rule: Category taxonomy` (corpus)
+
+Promoted the inline `**Category taxonomy:**` sub-section from `createUser` + `updateUser` descriptions into a real corpus rule (`### Rule: Category taxonomy` at `mcp-instructions.md:529`). Eliminates the source of recurring "see the Category taxonomy section of this same tool" spatial leaks. Both tool descriptions now reference the rule by name + carry the create-vs-update auto-create distinction inline (1 sentence each).
+
+### Fixed — Spatial-awareness pass 5 + Conflict pass 4 (~3 leaks)
+
+- **`bd-api.json:1861`** (createUser) `Categories auto-create — see the **Category taxonomy** section of this same tool` → `apply **Rule: Category taxonomy** (auto-create is ON for createUser)`. Inline taxonomy block (~25 lines) replaced with the same one-sentence cross-ref.
+- **`bd-api.json:1868`** (updateUser) inline taxonomy block + `Destructive side effect` paragraph collapsed into the corpus rule body; tool description now carries one cross-ref + the create-vs-update auto-create note.
+- **`bd-api.json:8885`** (createTagRelationship) `via this same mechanism` → `via the same tag_type_id + object_id lookup pattern`.
+- **Conflict C — createWebPage lead-line silent on conditional `linked_post_type`.** v6.41.76 added the marker to `updateWebPage` lead-line but missed the symmetric mirror on `createWebPage`. Added: `"When seo_type=data_category, linked_post_type is also required (auto-validated at runtime)."` Worker enforces both create and update via `applyDataCategoryGuard`; now both lead-lines say so.
+
+### Net diff
+
+Doc-only. ~30 lines moved from spec inline → corpus rule (cleaner separation of concerns); ~3 surgical phrase fixes; 1 conflict resolution. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.76] - 2026-04-30
 
 ### Fixed — Spatial-awareness sweep pass 4 (7 more leaks v6.41.75 missed) + 2 conflicts

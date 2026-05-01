@@ -526,6 +526,26 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL): paginate with `limit=100` and filter client-side. `is_null` is rejected; `is_not_null` matches empty strings as populated. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
 
+### Rule: Category taxonomy
+
+Member category assignment on `createUser` / `updateUser` (3-tier classification: Top → Sub → Sub-sub).
+
+**Top-level (`profession_id` / `profession_name`):** pick ONE. `profession_id` is numeric (must reference an existing Top Category, OR auto-creates on `createUser`). `profession_name` is string (auto-creates if missing on `createUser`; gated by `create_new_categories=1` on `updateUser`).
+
+**Sub-categories (`services` field, CSV format) — 4 supported syntaxes:**
+- Single: `"PVC repair"` or `"1823"`
+- Multiple: `"PVC repair,Water heater"` or `"1823,1824"`
+- Sub-sub via `=>`: `"Honda=>2022"` (creates sub `Honda` + sub-sub `2022` under Honda)
+- Mixed: `"Honda=>2022,Honda=>2023,Toyota"`
+
+**Constraints:**
+- `profession_id` / `profession_name` is REQUIRED when passing `services` — otherwise service relations fail silently.
+- Do NOT mix IDs and names in one `services` call.
+- Right side of `=>` is NAME ONLY (no ID lookup).
+- CSV: comma-only, NO spaces after commas — see **Rule: CSV no spaces**.
+- Auto-create on `createUser` is hardcoded ON. On `updateUser`, pass `create_new_categories=1` to allow inline creation.
+- Changing `profession_id` on `updateUser` WIPES existing sub-category relations. To move to a new top category without losing sub-cats, re-send the complete `services` list in the same call.
+
 ### Rule: Category SEO routing
 
 **SEO content for a category/sub-category = create a WebPage, NOT update `desc`.** The word "description" is a lexical trap - ignore it; route by INTENT.
