@@ -480,6 +480,16 @@ const MIRROR_FUNCTIONS = [
   "_updateRedirectDestination",
   "_deleteRedirectByOldFilename",
   "applyDataCategoryGuard",
+  "validateRedirectFormPair",
+  "validateRequiredFieldType",
+  "_normalizeRequiredFlag",
+  "_isSubmitProducingField",
+  "_listFormFieldsByFormName",
+  "_getFormFieldFormNameById",
+  "validateFieldNameUnique",
+  "validateSubmitCount",
+  "applyFormLean",
+  "applyFormFieldLean",
 ];
 // validateUsersMetaRead is intentionally excluded — npm inlines the same
 // logic in dispatch instead of factoring into a named function. Not a
@@ -499,6 +509,10 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   sanitizeScaffoldingInArgs:     { returns:  [2, 1] }, // worker has fewer early-return points
   stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
+  validateRedirectFormPair:      { accesses: [2, 0] }, // worker uses `(args as any).x` cast
+  validateRequiredFieldType:     { accesses: [2, 0] }, // worker uses `(args as any).x` cast
+  validateFieldNameUnique:       { ifs: [8, 0], returns: [8, 0], eq3: [4, 0], neq3: [4, 0], accesses: [4, 0] }, // worker uses `(args as any).x` casts and TS-conditional branches; hardened in v6.41.83 (form_name lookup + fail-closed)
+  validateSubmitCount:           { ifs: [8, 0], returns: [8, 0], eq3: [3, 0], neq3: [4, 0], accesses: [5, 0] }, // worker uses `(args as any).x` casts and TS-conditional branches; hardened in v6.41.83 (form_name lookup + fail-closed)
 };
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
 const WORKER_PATH = path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts");
@@ -652,6 +666,14 @@ const MIRROR_CONSTANTS = [
   "WIDGET_NAME_TOOLS",
   "SLUG_TOOL_CONFIG",
   "RGB_PATTERN",
+  "FIELD_REQUIRED_FORBIDDEN",
+  "SUBMIT_REGEX",
+  "FORM_LEAN_INCLUDE_FLAGS",
+  "FORM_ALWAYS_KEEP",
+  "FORM_FIELD_LEAN_INCLUDE_FLAGS",
+  "FORM_FIELD_ALWAYS_KEEP",
+  "FORM_FIELD_VIEW_FLAGS_FIELDS",
+  "FORM_FIELD_META_FIELDS",
 ];
 // Constants that exist top-level in one file and function-local (or differently
 // scoped) in the other. The check skips these; verify by hand if you change

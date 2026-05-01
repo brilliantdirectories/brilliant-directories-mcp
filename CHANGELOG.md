@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.83] - 2026-05-01
+
+### Forms surface — full consolidation, hardening, exposure, and lean reads
+
+**Corpus consolidation.** Replaced two scattered rules (`Rule: Form creation recipe` + `Rule: Form field view flags` — the latter had a documented bug naming non-existent DB columns `field_lead_previews` and `field_table_view`) with a single consolidated `Rule: Forms` covering 7 subsections macro→granular: Form classes (decision tree), Form-level recipe, Placement, Field anatomy, Lead-match special case, Member-dashboard special case, Wrapper-enforced invariants. Captures 24 ground-truth statements about how BD forms actually behave.
+
+**Bug fix.** Existing rule referenced two DB column names that don't exist; corrected to actual columns `field_search_view` (Lead Previews) and `field_grid_view` (Table View). Agents following the old rule were setting non-existent fields.
+
+**Spec exposures — 7 new columns on `createFormField` / `updateFormField`:**
+
+| Column | Purpose |
+|---|---|
+| `field_options` | Radio / Checkbox / Select option list (`system_name=>label,...`) |
+| `field_ldesc` | Helper text under input |
+| `default_value` | Prefilled value (static or PHP) |
+| `field_search_view` | Lead Previews flag |
+| `field_grid_view` | Table View flag |
+| `field_input_view_admin_only` | Admin-only render flag |
+| `json_meta` | Per-field UI metadata + validator config blob |
+
+**Spec exposures — 2 new columns on `createForm` / `updateForm`:** `form_success_message` (custom success-message text), `label_to_placeholder` (collapse-label-into-placeholder toggle). All exposed via the data-driven Zod schema; no Worker code change needed for the passthroughs themselves.
+
+**Wrapper-enforced invariants — 4 silent-failure paths now refused (4xx + no write):**
+
+1. `createForm` / `updateForm` with `form_action_type=redirect` AND empty `form_target` → refused (would submit nowhere). `validateRedirectFormPair`.
+2. `createFormField` / `updateFormField` with non-empty `field_name` duplicating another field on same form → refused (submission collision). `validateFieldNameUnique`.
+3. `createFormField` / `updateFormField` with `field_required=1` AND `field_type ∈ {HoneyPot, HTML, Tip, Button}` → refused (form unsubmittable). `validateRequiredFieldType`. `Hidden` is allowed because its value comes from `field_text`.
+4. `createFormField` / `updateFormField` adding a 2nd submit-producing field → refused (must be exactly one submit element). `validateSubmitCount`. Submit-producing = `Button` field_type OR `Custom` field_type whose `field_text` contains `type="submit"`.
+
+**Hostile-agent hardening — 6 attack vectors closed:**
+
+- Type coercion on `field_required` (`true`, `"yes"`, `2`, `"on"`) normalized via `_normalizeRequiredFlag`.
+- Case mismatch on `form_action_type` (`"REDIRECT"`) normalized via `.toLowerCase()`.
+- Case mismatch on `field_type` (`"button"`) handled via case-insensitive Set lookup.
+- Empty `form_name` on `updateFormField` resolved via `_getFormFieldFormNameById` lookup (was a silent bypass).
+- Fail-closed on BD listFormFields fetch failure or malformed JSON response (was silently allowing writes through).
+- `SUBMIT_REGEX` tightened with word-boundary lookahead `(?:^|[\s<])` to avoid `data-type="submit"` false positives.
+
+**Lean read responses — 2 new resource families covered.**
+
+- `listForms` / `getForm`: 11 essential fields kept, 30 admin-form-builder breadcrumbs + legacy columns stripped. ~72% reduction. No `include_*` flags.
+- `listFormFields` / `getFormField`: 15 essential fields kept by default. Two opt-in flags: `include_view_flags=true` (5 view-flag toggles + admin-only flag + 5 alt-label overrides — 11 fields), `include_meta=true` (json_meta longtext blob — ~700 chars/field). 8 truly-dead columns permanently stripped (`tablesExists`, `field_sdesc`, `form_section`, `field_icon`, `display_class`, 3 Url-field button-styling sub-fields). ~70% reduction on default lean.
+
+**Drift-check additions:** 8 new functions in `MIRROR_FUNCTIONS` (`validateRedirectFormPair`, `validateRequiredFieldType`, `_normalizeRequiredFlag`, `_isSubmitProducingField`, `_listFormFieldsByFormName`, `_getFormFieldFormNameById`, `validateFieldNameUnique`, `validateSubmitCount`, `applyFormLean`, `applyFormFieldLean`). 8 new constants in `MIRROR_CONSTANTS` (`FIELD_REQUIRED_FORBIDDEN`, `SUBMIT_REGEX`, `FORM_LEAN_INCLUDE_FLAGS`, `FORM_ALWAYS_KEEP`, `FORM_FIELD_LEAN_INCLUDE_FLAGS`, `FORM_FIELD_ALWAYS_KEEP`, `FORM_FIELD_VIEW_FLAGS_FIELDS`, `FORM_FIELD_META_FIELDS`).
+
+**Verification:** drift-check exits 0, JSON-valid passes, Worker ↔ npm byte-equivalent on all 8 new functions + 8 new constants. 4 audit-minion passes (faithfulness + hostile-agent + cross-rule + mirror parity) confirmed clean.
+
 ## [6.41.82] - 2026-04-30
 
 ### Added — README install path: Claude Code plugin (`/plugin install`)

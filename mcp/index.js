@@ -945,6 +945,95 @@ function applyReviewLean(body, includeFlags) {
 
 const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
 
+// --- Form lean shaper -----------------------------------------------------
+// Applies to listForms / getForm. BD's response has ~41 columns per form,
+// most of which are admin-form-builder breadcrumbs (`copy_from`, `subaction`,
+// `method`, `save`, `form`, `edit_form`, `newsite`, `is_master`, etc.) that
+// echo the duplicate-form POST shape, plus legacy columns (`form_desc`,
+// `form_database`, `form_email_recipient`, `form_style`, `short_code`,
+// `form_fields_name`, `old_form_name`) that are empty in 100% of observed
+// data. Strip aggressively to 11 fields. No `include_*` flags — the lean
+// payload is small enough to always return.
+
+const FORM_LEAN_INCLUDE_FLAGS = [];
+const FORM_ALWAYS_KEEP = [
+  "form_id", "form_name", "form_title", "form_table", "form_action_type",
+  "form_target", "form_email_on", "form_url", "form_success_message",
+  "label_to_placeholder", "revision_timestamp",
+];
+const FORM_READ_TOOLS = new Set(["listForms", "getForm"]);
+
+function applyFormLean(body, _includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const allow = new Set(FORM_ALWAYS_KEEP);
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    const out = {};
+    for (const k of Object.keys(row)) if (allow.has(k)) out[k] = row[k];
+    return out;
+  };
+  if (Array.isArray(body.message)) body.message = body.message.map(shapeRow);
+  else if (body.message && typeof body.message === "object") body.message = shapeRow(body.message);
+  return body;
+}
+
+// --- Form Field lean shaper -----------------------------------------------
+// Applies to listFormFields / getFormField. BD's response has ~32 columns
+// per field, with two heavy-hitter sub-bundles:
+//
+//   - 6 view-flag columns + 5 alt-label-override columns (toggles for
+//     Input/Display/Lead-Previews/Email/Table view, plus admin-only flag
+//     and per-flag custom labels). Agent doesn't need them on a quick
+//     "what's on this form" survey; opt in via `include_view_flags=true`
+//     when actively editing visibility.
+//
+//   - `json_meta` longtext blob (UI rendering metadata + per-field
+//     validator config — `field_validator_enabled` flag + 7 validator slots).
+//     ~700 chars per field; on a 26-field form that's ~18KB of JSON noise.
+//     Opt in via `include_meta=true` when adding/editing validators.
+//
+// Permanently stripped (truly dead in observed data): `tablesExists`,
+// `field_sdesc`, `form_section`, `field_icon`, `display_class`, the 3
+// `field_display_view_button*` Url-only sub-fields. Lean default keeps
+// `display_div_id` / `input_div_id` because the lead-form category cascade
+// (top_id/sub_id/sub_sub_id with sid/tid/ttid) reads them.
+
+const FORM_FIELD_LEAN_INCLUDE_FLAGS = ["include_view_flags", "include_meta"];
+const FORM_FIELD_ALWAYS_KEEP = [
+  "field_id", "form_name", "field_name", "field_text", "field_type",
+  "field_order", "field_required", "field_placeholder", "field_ldesc",
+  "field_options", "default_value", "input_class",
+  "display_div_id", "input_div_id", "revision_timestamp",
+];
+const FORM_FIELD_VIEW_FLAGS_FIELDS = [
+  "field_input_view", "field_display_view", "field_search_view",
+  "field_email_view", "field_grid_view", "field_input_view_admin_only",
+  "input_view_label", "display_view_label", "search_view_label",
+  "email_view_label", "grid_view_label",
+];
+const FORM_FIELD_META_FIELDS = ["json_meta"];
+const FORM_FIELD_READ_TOOLS = new Set(["listFormFields", "getFormField"]);
+
+function applyFormFieldLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    viewFlags: !!includeFlags.include_view_flags,
+    meta: !!includeFlags.include_meta,
+  };
+  const allow = new Set(FORM_FIELD_ALWAYS_KEEP);
+  if (include.viewFlags) for (const k of FORM_FIELD_VIEW_FLAGS_FIELDS) allow.add(k);
+  if (include.meta) for (const k of FORM_FIELD_META_FIELDS) allow.add(k);
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    const out = {};
+    for (const k of Object.keys(row)) if (allow.has(k)) out[k] = row[k];
+    return out;
+  };
+  if (Array.isArray(body.message)) body.message = body.message.map(shapeRow);
+  else if (body.message && typeof body.message === "object") body.message = shapeRow(body.message);
+  return body;
+}
+
 // --- WRITE-RESPONSE LEAN-SHAPING -------------------------------------------
 //
 // BD's create/update endpoints echo the full updated/created record in the
@@ -2248,6 +2337,193 @@ function validateDatetime14InArgs(args) {
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Form-write invariant validators.
+//
+// 4 silent-failure paths the wrapper actively refuses on createForm /
+// updateForm / createFormField / updateFormField. See Rule: Forms §
+// Wrapper-enforced invariants for the agent-facing contract. Each returns
+// a non-null error string when the call should be refused; null = pass.
+//
+// Mirrored byte-for-byte from Worker src/index.ts. Keep in sync.
+// ---------------------------------------------------------------------------
+
+const FIELD_REQUIRED_FORBIDDEN = new Set(["HoneyPot", "HTML", "Tip", "Button"]);
+// Note: Hidden is intentionally NOT in this set; its value comes from field_text
+// at render time, so the requirement is always satisfied. See Rule: Forms §
+// Field anatomy → Hidden field_type.
+
+// Word-boundary version: matches `type="submit"` but not `data-type="submit"`.
+// Leading boundary requires whitespace, `<`, or start-of-string before `type=`.
+const SUBMIT_REGEX = /(?:^|[\s<])type\s*=\s*["']?submit["']?/i;
+
+// Truthy-string normalization for the `field_required` flag. Agents may send
+// the value as integer (1), string ("1"), boolean (true), or word ("yes").
+// Coerce all permissive truthy values to "1" so the case-sensitive forbidden-
+// type check below cannot be bypassed via type coercion.
+function _normalizeRequiredFlag(v) {
+  if (v === undefined || v === null || v === "") return "0";
+  if (v === 1 || v === "1" || v === true) return "1";
+  if (v === 0 || v === "0" || v === false) return "0";
+  const s = String(v).trim().toLowerCase();
+  if (s === "true" || s === "yes" || s === "y" || s === "on") return "1";
+  if (s === "false" || s === "no" || s === "n" || s === "off") return "0";
+  const n = Number(s);
+  if (!Number.isNaN(n)) return n === 0 ? "0" : "1";
+  return "0";
+}
+
+function validateRedirectFormPair(toolName, args) {
+  if (toolName !== "createForm" && toolName !== "updateForm") return null;
+  if (!args || typeof args !== "object") return null;
+  // Case-insensitive — BD accepts "redirect" / "REDIRECT" / "Redirect" the
+  // same way; case-sensitive compare here would let mixed-case inputs slip.
+  const actionType = String(args.form_action_type ?? "").trim().toLowerCase();
+  if (actionType !== "redirect") return null;
+  const target = String(args.form_target ?? "").trim();
+  if (!target) {
+    return "form_action_type=redirect requires a non-empty form_target URL. Without form_target, BD accepts the call but submissions silently go nowhere on submit. See Rule: Forms § Form-level recipe.";
+  }
+  return null;
+}
+
+function validateRequiredFieldType(toolName, args) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
+  if (!args || typeof args !== "object") return null;
+  const required = _normalizeRequiredFlag(args.field_required);
+  if (required !== "1") return null;
+  // Case-insensitive forbidden-type check: agent may send "button" or "BUTTON";
+  // the canonical enum is TitleCase ("Button") but BD's API accepts the value
+  // as the agent provides it. Defending the wrapper here means agents can't
+  // sneak past the forbidden list by lowercasing.
+  const fieldTypeRaw = String(args.field_type ?? "").trim();
+  const fieldTypeLower = fieldTypeRaw.toLowerCase();
+  for (const forbidden of FIELD_REQUIRED_FORBIDDEN) {
+    if (forbidden.toLowerCase() === fieldTypeLower) {
+      return `field_required=1 is forbidden on field_type=${fieldTypeRaw} — submitters cannot fill this field_type, so marking it required bricks the form on submit. See Rule: Forms § Field anatomy.`;
+    }
+  }
+  return null;
+}
+
+function _isSubmitProducingField(field) {
+  const t = String(field.field_type ?? "");
+  if (t === "Button") return true;
+  if (t === "Custom") {
+    const text = String(field.field_text ?? "");
+    return SUBMIT_REGEX.test(text);
+  }
+  return false;
+}
+
+// Resolve a field's parent `form_name` from BD via field_id. Used on
+// updateFormField when the agent omits form_name but the validator needs
+// it to look up sibling fields for uniqueness/submit-count checks.
+async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
+  if (!fieldId) return null;
+  const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
+  try {
+    const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
+    if (!resp.ok) return null;
+    const body = await resp.json();
+    const msg = body?.message;
+    if (Array.isArray(msg)) {
+      const row = msg[0];
+      return row ? String(row.form_name ?? "") || null : null;
+    }
+    if (msg && typeof msg === "object") {
+      return String(msg.form_name ?? "") || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Returns null on fetch failure OR malformed response shape (caller treats
+// null as "fail-closed" — we refuse the write rather than allow a duplicate
+// to slip through during a transient BD outage or unexpected response).
+// Returns [] only when BD legitimately reports zero matching rows (HTTP 200
+// with the canonical `{message: []}` empty-array shape).
+async function _listFormFieldsByFormName(domain, apiKey, formName) {
+  const url = `https://${domain}/api/v2/form_fields/list?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
+  try {
+    const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
+    if (!resp.ok) return null;
+    const body = await resp.json();
+    if (!Array.isArray(body?.message)) return null;
+    return body.message;
+  } catch {
+    return null;
+  }
+}
+
+async function validateFieldNameUnique(domain, apiKey, toolName, args, cachedFields) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return {};
+  if (!args || typeof args !== "object") return {};
+  const fieldName = String(args.field_name ?? "").trim();
+  if (!fieldName) return { fields: cachedFields };
+  let lookupFormName = String(args.form_name ?? "").trim();
+  if (!lookupFormName && toolName === "updateFormField") {
+    const fieldId = String(args.field_id ?? "").trim();
+    const resolved = await _getFormFieldFormNameById(domain, apiKey, fieldId);
+    if (!resolved) {
+      return { error: `field_name uniqueness validation requires either form_name (preferred) or a resolvable field_id on updateFormField. Provide form_name or verify field_id exists.` };
+    }
+    lookupFormName = resolved;
+  }
+  if (!lookupFormName) return { fields: cachedFields };
+  const fields = cachedFields ?? await _listFormFieldsByFormName(domain, apiKey, lookupFormName);
+  if (fields === null) {
+    return { error: `Could not verify field_name uniqueness — BD listFormFields lookup failed for form_name="${lookupFormName}". Refusing the write to prevent a silent duplicate. Retry once BD is reachable.` };
+  }
+  const selfId = toolName === "updateFormField" ? String(args.field_id ?? "") : "";
+  const collision = fields.find(f =>
+    String(f.field_name ?? "").trim() === fieldName &&
+    String(f.field_id ?? "") !== selfId
+  );
+  if (collision) {
+    return {
+      error: `field_name "${fieldName}" already exists on form "${lookupFormName}" (field_id=${collision.field_id}). Duplicate non-empty field_names break the form on submit. See Rule: Forms § Field anatomy.`,
+      fields,
+    };
+  }
+  return { fields };
+}
+
+async function validateSubmitCount(domain, apiKey, toolName, args, cachedFields) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return {};
+  if (!args || typeof args !== "object") return {};
+  let lookupFormName = String(args.form_name ?? "").trim();
+  if (!lookupFormName && toolName === "updateFormField") {
+    const fieldId = String(args.field_id ?? "").trim();
+    const resolved = await _getFormFieldFormNameById(domain, apiKey, fieldId);
+    if (!resolved) return { fields: cachedFields };
+    lookupFormName = resolved;
+  }
+  if (!lookupFormName) return { fields: cachedFields };
+  const incoming = _isSubmitProducingField({
+    field_type: args.field_type,
+    field_text: args.field_text,
+  });
+  if (!incoming) return { fields: cachedFields };
+  const fields = cachedFields ?? await _listFormFieldsByFormName(domain, apiKey, lookupFormName);
+  if (fields === null) {
+    return { error: `Could not verify single-submit invariant — BD listFormFields lookup failed for form_name="${lookupFormName}". Refusing the write to prevent a duplicate submit element. Retry once BD is reachable.` };
+  }
+  const selfId = toolName === "updateFormField" ? String(args.field_id ?? "") : "";
+  const existing = fields.filter(f =>
+    _isSubmitProducingField(f) && String(f.field_id ?? "") !== selfId
+  ).length;
+  if (existing >= 1) {
+    return {
+      error: `Form "${lookupFormName}" already has a submit-producing field. A form must have exactly one submit element (Button field_type OR a Custom field_type with type="submit" markup). Delete the existing one before adding another. See Rule: Forms § Form-level recipe.`,
+      fields,
+    };
+  }
+  return { fields };
 }
 
 // ---------------------------------------------------------------------------
@@ -3741,6 +4017,8 @@ async function main() {
       const isPlanReadTool = PLAN_READ_TOOLS.has(name);
       const isEmailTemplateReadTool = EMAIL_TEMPLATE_READ_TOOLS.has(name);
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
+      const isFormReadTool = FORM_READ_TOOLS.has(name);
+      const isFormFieldReadTool = FORM_FIELD_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
@@ -3757,7 +4035,11 @@ async function main() {
                     ? EMAIL_TEMPLATE_LEAN_INCLUDE_FLAGS
                     : isReviewReadTool
                       ? REVIEW_LEAN_INCLUDE_FLAGS
-                      : null;
+                      : isFormReadTool
+                        ? FORM_LEAN_INCLUDE_FLAGS
+                        : isFormFieldReadTool
+                          ? FORM_FIELD_LEAN_INCLUDE_FLAGS
+                          : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -4095,6 +4377,31 @@ async function main() {
           content: [{ type: "text", text: opErr }],
           isError: true,
         };
+      }
+
+      // Form-write invariants. See Rule: Forms § Wrapper-enforced invariants.
+      // 4 silent-failure paths refused before the call hits BD.
+      const redirectErr = validateRedirectFormPair(name, args);
+      if (redirectErr) {
+        return { content: [{ type: "text", text: redirectErr }], isError: true };
+      }
+      const reqTypeErr = validateRequiredFieldType(name, args);
+      if (reqTypeErr) {
+        return { content: [{ type: "text", text: reqTypeErr }], isError: true };
+      }
+      // Live-state validators (need a fetch); cache the field list across
+      // both so we make at most one listFormFields call per write.
+      if (name === "createFormField" || name === "updateFormField") {
+        let cachedFormFields = undefined;
+        const uniqueResult = await validateFieldNameUnique(config.domain, config.apiKey, name, args, cachedFormFields);
+        if (uniqueResult.fields !== undefined) cachedFormFields = uniqueResult.fields;
+        if (uniqueResult.error) {
+          return { content: [{ type: "text", text: uniqueResult.error }], isError: true };
+        }
+        const submitResult = await validateSubmitCount(config.domain, config.apiKey, name, args, cachedFormFields);
+        if (submitResult.error) {
+          return { content: [{ type: "text", text: submitResult.error }], isError: true };
+        }
       }
 
       // Force `status=1` on createMultiImagePostPhoto. BD only ever uses
@@ -4511,6 +4818,8 @@ async function main() {
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (isEmailTemplateReadTool) result.body = applyEmailTemplateLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
+        else if (isFormReadTool) result.body = applyFormLean(result.body, includeFlags);
+        else if (isFormFieldReadTool) result.body = applyFormFieldLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
       }
 
