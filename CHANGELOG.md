@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.85] - 2026-05-01
+
+### Fixed — Two real regressions surfaced by 5-minion live stress test (HOTFIX)
+
+**1. `_listFormFieldsByFormName` was hitting the wrong BD endpoint.** v6.41.84's empty-result-quirk patch detected the wrong response shape because the helper URL was `/api/v2/form_fields/list`, but BD's actual endpoint is `/api/v2/form_fields/get` (BD uses `/get` for paginated lists on this resource — operationId in the spec is `listFormFields` mapped to the `/get` path). The `/list` path 404s/non-existent-routes-as-empty, never returning the empty-result quirk shape v6.41.84 expected. Fix: helper now hits `/api/v2/form_fields/get`, which returns the canonical `{message:[],total:0}` on zero matches. Result: every `createFormField` write that was blocked by the false "lookup failed" error now works.
+
+**2. `validateRequiredFieldType` didn't catch `field_required=1` on existing ReCaptcha/HoneyPot via `updateFormField`.** Original validator read `args.field_type` only — when an agent updates an existing field with just `field_id` + `field_required`, `field_type` isn't in args (it lives on the existing BD row). Validator returned null, the forbidden combination slipped through, the form bricks on submit. Fix: validator is now async, fetches the existing record via the new `_getFormFieldRecordById` helper when `field_type` is omitted on `updateFormField`, then runs the forbidden-list check against the actual current type. Also refactored `_getFormFieldFormNameById` to be a thin wrapper over the new record-fetcher.
+
+### Net diff
+
+Two helper files (Worker `src/index.ts` + npm `mcp/index.js`), one URL string change, one async-conversion of a validator, one new helper (`_getFormFieldRecordById`), one drift-check `MIRROR_FUNCTIONS` entry. No spec change. No corpus change.
+
+### Verification (live)
+
+The 5-minion stress test that surfaced these regressions will be re-run after deploy. Drift-check exits 0, JSON-valid passes.
+
 ## [6.41.84] - 2026-05-01
 
 ### Fixed — `_listFormFieldsByFormName` empty-result quirk regression (HOTFIX)

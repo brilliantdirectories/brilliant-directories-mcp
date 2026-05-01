@@ -2389,16 +2389,25 @@ function validateRedirectFormPair(toolName, args) {
   return null;
 }
 
-function validateRequiredFieldType(toolName, args) {
+async function validateRequiredFieldType(domain, apiKey, toolName, args) {
   if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
   if (!args || typeof args !== "object") return null;
   const required = _normalizeRequiredFlag(args.field_required);
   if (required !== "1") return null;
+  // On updateFormField, agent often omits field_type (only changing the
+  // required flag on an existing field). The wrapper needs to know the
+  // CURRENT field_type to enforce the forbidden-list. Look it up.
+  let fieldTypeRaw = String(args.field_type ?? "").trim();
+  if (!fieldTypeRaw && toolName === "updateFormField") {
+    const fieldId = String(args.field_id ?? "").trim();
+    const existing = await _getFormFieldRecordById(domain, apiKey, fieldId);
+    if (existing) fieldTypeRaw = String(existing.field_type ?? "").trim();
+  }
+  if (!fieldTypeRaw) return null; // can't validate; let schema/BD catch
   // Case-insensitive forbidden-type check: agent may send "button" or "BUTTON";
   // the canonical enum is TitleCase ("Button") but BD's API accepts the value
   // as the agent provides it. Defending the wrapper here means agents can't
   // sneak past the forbidden list by lowercasing.
-  const fieldTypeRaw = String(args.field_type ?? "").trim();
   const fieldTypeLower = fieldTypeRaw.toLowerCase();
   for (const forbidden of FIELD_REQUIRED_FORBIDDEN) {
     if (forbidden.toLowerCase() === fieldTypeLower) {
@@ -2418,10 +2427,11 @@ function _isSubmitProducingField(field) {
   return false;
 }
 
-// Resolve a field's parent `form_name` from BD via field_id. Used on
-// updateFormField when the agent omits form_name but the validator needs
-// it to look up sibling fields for uniqueness/submit-count checks.
-async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
+// Fetch the full form-field record from BD via field_id. Used on updateFormField
+// when the agent omits structural fields (form_name for uniqueness, field_type
+// for forbidden-type validation, field_text for submit-element detection on
+// Custom fields). Returns null on failure or non-existent field_id.
+async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   if (!fieldId) return null;
   const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
   try {
@@ -2429,17 +2439,21 @@ async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
     if (!resp.ok) return null;
     const body = await resp.json();
     const msg = body?.message;
-    if (Array.isArray(msg)) {
-      const row = msg[0];
-      return row ? String(row.form_name ?? "") || null : null;
-    }
-    if (msg && typeof msg === "object") {
-      return String(msg.form_name ?? "") || null;
-    }
+    if (Array.isArray(msg)) return msg[0] ?? null;
+    if (msg && typeof msg === "object") return msg;
     return null;
   } catch {
     return null;
   }
+}
+
+// Resolve a field's parent `form_name` from BD via field_id. Thin wrapper
+// over _getFormFieldRecordById for the form_name use-case.
+async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
+  const row = await _getFormFieldRecordById(domain, apiKey, fieldId);
+  if (!row) return null;
+  const name = String(row.form_name ?? "").trim();
+  return name || null;
 }
 
 // Returns null on fetch failure OR malformed response shape (caller treats
@@ -2454,7 +2468,12 @@ async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
 // every uniqueness probe on fresh forms (zero existing fields). See
 // reference_bd_empty_result_quirk.md.
 async function _listFormFieldsByFormName(domain, apiKey, formName) {
-  const url = `https://${domain}/api/v2/form_fields/list?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
+  // BD uses /get (not /list) for paginated list endpoints on this resource —
+  // mirrors the spec's `/api/v2/form_fields/get` operationId=listFormFields. A
+  // /list path 404s and returns an HTTP 200 empty body that we'd misread as
+  // legitimate zero rows; using /get returns the canonical {message:[],total:0}
+  // shape on zero matches.
+  const url = `https://${domain}/api/v2/form_fields/get?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
   try {
     const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
     const body = await resp.json().catch(() => null);
@@ -4402,7 +4421,7 @@ async function main() {
       if (redirectErr) {
         return { content: [{ type: "text", text: redirectErr }], isError: true };
       }
-      const reqTypeErr = validateRequiredFieldType(name, args);
+      const reqTypeErr = await validateRequiredFieldType(config.domain, config.apiKey, name, args);
       if (reqTypeErr) {
         return { content: [{ type: "text", text: reqTypeErr }], isError: true };
       }
