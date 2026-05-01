@@ -600,7 +600,7 @@ Apply the SEO-intent -> WebPage routing rule across `createTopCategory` / `updat
 
 Common cases:
 
-- WebPage full-bleed - `content_layout=1`, NOT margin/padding hacks (see **Rule: WebPage asset routing**)
+- WebPage full-bleed - `content_layout=1`, NOT margin/padding hacks (see **Rule: WebPage full-bleed**)
 - Page chrome hiding - WebPage `hide_header` / `hide_footer` / `hide_top_right` / `hide_header_links` / `hide_from_menu`, NOT `display:none` in `content_css`
 - Widget render surface - `widget_viewport` (`front`/`admin`/`both`), NOT `@media` queries or `body.admin-panel` JS detection inside widget code
 - Unsubscribe footer suppression - EmailTemplate `unsubscribe_link=0`, NOT stripping the merge token out of `email_body`

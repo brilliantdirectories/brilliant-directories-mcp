@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.78] - 2026-04-30
+
+### Fixed — Semantic-correctness audit catches 1 cross-ref misdirection
+
+Prior 6 audit passes verified every `**Rule: <Name>**` cross-ref resolved to a real `### Rule: <Name>` heading (syntactic correctness). New semantic-correctness audit asks the harder question: does each cross-ref's TARGET rule body actually cover the topic the surrounding prose was discussing?
+
+One misdirection found across 24+ sampled cross-refs:
+
+- **`mcp-instructions.md:603`** (in `### Rule: Field over hack`, full-bleed bullet) — said `(see **Rule: WebPage asset routing**)` but `WebPage asset routing` covers field-routing for `content` / `content_css` / `content_footer_html` etc., not full-bleed layout. Correct target is `**Rule: WebPage full-bleed**` (line 613), whose body opens with `"WebPage full-bleed layout - use content_layout=1, NOT CSS margin hacks."` — direct topical match. Fixed.
+
+All other sampled cross-refs (Pagination, Filter operators, Lean read responses, Hero readability bundle, Image URLs, URL slug rename, EAV auto-route, users_meta identity, users_meta writes, Post-type code fields, Member Listings post type, Resource disambiguation, Sidebars, Table to endpoint, Email template recipe, Widget code fields, Member search SEO pages, users_meta orphans, Category taxonomy, Post-body formatting, Image sourcing, Identity-confirming fields, Pre-check natural keys, Compound filters) verified semantically aligned with their target rule bodies.
+
+### Net diff
+
+Doc-only. 1-line fix in corpus. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.77] - 2026-04-30
 
 ### Added — `Rule: Category taxonomy` (corpus)
