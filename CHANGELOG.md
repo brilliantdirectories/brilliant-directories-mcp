@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.82] - 2026-04-30
+
+### Added — README install path: Claude Code plugin (`/plugin install`)
+
+New "Easiest path" subsection at the top of the Claude Code platform section, ahead of the existing Easy (hosted-Worker `claude mcp add`) and Advanced (`npx` subprocess) paths. Two slash commands install the BD MCP server as a Claude Code plugin from this repo's self-hosted marketplace:
+
+```
+/plugin marketplace add brilliantdirectories/brilliant-directories-mcp
+/plugin install brilliant-directories@brilliant-directories-mcp
+```
+
+This is the payoff for the v6.41.80 manifest work. Surfaces it where users actually look. Includes a fallback note for users on older Claude Code builds where `/plugin` isn't yet supported (`npm install -g @anthropic-ai/claude-code@latest`).
+
+### Net diff
+
+One file (`README.md`). No code change. Drift clean.
+
 ## [6.41.81] - 2026-04-30
 
 ### Added — Plugin category hint (`productivity`)
