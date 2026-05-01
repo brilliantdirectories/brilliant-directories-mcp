@@ -490,7 +490,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 | `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
 | `is_not_null` | value param ignored | `property=logo&property_operator=is_not_null` |
 
-**CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — wrapper expects scalar string. **WRITES are stricter** — see top-level CSV rule for stored-CSV fields where spaces become persisted data.
+**CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — wrapper expects scalar string. **WRITES are stricter** — see **Rule: CSV no spaces** for stored-CSV fields where spaces become persisted data.
 
 **Case sensitivity:**
 - **Operator names: case-insensitive.** `eq`, `EQ`, `Eq` all work — BD normalizes case server-side. Same for every operator. Lowercase is canonical for readability.
@@ -806,7 +806,17 @@ A `seo_type=data_category` page attaches custom SEO content to a post type's mai
 
 ### Rule: Resource disambiguation
 
-When the user references a resource by description (not by ID or exact slug) and the description could match more than one record, STOP and confirm before editing. Common traps: post types ("classifieds" = Classifieds post type OR Member Listings?), categories (top vs sub with same name), web pages with similar `title` / `filename`, member profiles when only a first name is given, post records with reused titles. List candidates with their distinguishing fields and wait. The cost of editing the wrong resource on a live site is undoing public-facing changes; the cost of asking is seconds.
+Before editing any resource the user named by description, resolve to a stable ID and confirm — semantic similarity is NOT a match.
+
+**Layer ambiguity (the most common trap).** "Edit my classifieds page" / "the events page" / "the members page" can mean any of: a `seo_type=content` WebPage with that slug; the post type's `category_header`/`search_results_div`/`category_footer` code group (`updatePostType`); the Member Listings post type's UI (`data_type=10`); a `seo_type=data_category` SEO page pinned to that post type; a top or sub category landing page. ALWAYS confirm WHICH layer before mutating, even when only one record string-matches.
+
+**Resolution algorithm.**
+1. Verbatim match on `data_name` / `system_name` / `data_filename` (case-insensitive) → propose that record AND the layer interpretation; confirm before writing.
+2. Multiple plausible matches → STOP. List candidates with their distinguishing fields (`data_id`, `data_name`, `data_filename`, `data_type` for post types; `seo_id`, `filename`, `seo_type` for WebPages; etc.). Ask which one.
+3. Semantic match only (no verbatim hit, but the description loosely fits one or more records) → STOP. Treat as multi-match. Never proceed on similarity.
+4. User named a stable ID (`data_id=6`, `seo_id=42`, `data_filename="/classifieds"`) → unambiguous, proceed.
+
+**Trap classes** (apply the algorithm whenever the user's reference falls in one of these): post types, categories (top vs sub same name), WebPages with similar `title`/`filename`, member profiles named only by first name, post records with reused titles.
 
 ### Rule: Sidebars
 

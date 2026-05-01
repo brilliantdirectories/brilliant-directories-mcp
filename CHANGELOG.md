@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.73] - 2026-04-30
+
+### Changed — Spatial-awareness sweep + disambiguation rule rewrite
+
+User-caught regression: the convention is **always reference rules and tools by name** (`**Rule: <Name>**` or backticked tool name), never by spatial words like "see X" or "in the corpus". Rule names exist precisely to be string-searched. v6.41.72 fixed one case (`(see enable_hero_section)` → `**Rule: Hero readability bundle**`) but ~75 spatial leaks remained.
+
+**Spec sweep — every spatial reference replaced with explicit rule-name form:**
+
+- `See top-level pagination rule for...` → `See **Rule: Pagination** for...` (33 occurrences)
+- `See top-level filter rule for...` → `See **Rule: Filter operators** for...` (29 occurrences)
+- `from the corpus hero rule` → `from **Rule: Hero readability bundle**` (3 phrasings)
+- `the **Sidebars** rule in the corpus` → `**Rule: Sidebars**` (3 phrasings)
+- `the **Member Search Results SEO pages** rule in the corpus` → `**Rule: Member search SEO pages**` (also fixed wrong rule name — corpus heading is "Member search SEO pages", not "Member Search Results")
+- `(see image URL rule)` → `(see **Rule: Image URLs**)` (11 occurrences)
+- `(part of the hero readability bundle — see \`enable_hero_section\`)` → `(part of **Rule: Hero readability bundle**)` (18 occurrences)
+- `per the top-level users_meta rule` → `per **Rule: users_meta orphans**` (2 phrasings)
+- `(see workflow below)` → explicit "in this description" pointer
+- `See \`content_footer_html\` for the paired JS rule` → "The paired JS rule lives in the `content_footer_html` field." (rephrase to remove "see <field-name>" spatial ambiguity)
+- Two stragglers: bare `See top-level filter rule.` / `See top-level pagination rule.` → `See **Rule: Filter operators**.` / `See **Rule: Pagination**.`
+
+**Corpus sweep:**
+
+- One `see top-level CSV rule` → `see **Rule: CSV no spaces**`. (One acceptable meta-instructional use of "elsewhere in tool descriptions" preserved — describes a class of phrases generally, not a cross-reference.)
+
+**Worker / npm runtime error string fix:**
+
+- The Bug #12 transition-reject error message included `(see Member Search Results SEO pages rule)` — fixed to `(apply **Rule: Member search SEO pages**)`. Mirrored byte-equivalent in Worker + npm.
+
+### Changed — `Rule: Resource disambiguation` rewrite (semantic + layer ambiguity)
+
+v6.41.72's rule only addressed string-match ambiguity. Live behavior probe revealed it would NOT have caught the original "edit my classifieds page" failure, because on that test site "classifieds" verbatim-matches one record (the Classified post type) — so the multi-match STOP-branch never fires. An agent could still pick Member Listings via semantic similarity ("classifieds = search-results-like") under the rule as written.
+
+Rule rewritten to lead with **layer ambiguity** ("edit my X page" → which layer? WebPage with that slug? post-type code group? Member Listings UI? data_category SEO page? category landing?), and adds an explicit "semantic match only → STOP, treat as multi-match. Never proceed on similarity." clause. `data_filename` unified into the verbatim-match enumeration (was a separate branch in v6.41.72).
+
+`updatePostType` description's disambiguation block tightened — the explanatory line "User vocabulary doesn't map 1:1 to BD post types" replaced with the imperative "Resolve to `data_id` via `listPostTypes` first; never proceed on semantic similarity alone."
+
+### Trim
+
+Closing line on the disambiguation rule (`The cost of editing... the cost of asking is seconds`) — justification framing, dropped.
+
+### Net diff
+
+Doc-only. ~80 spatial leak fixes (mostly bulk text replacements); ~15 lines of disambiguation rule rewrite; ~3 lines of hectoring trim. No code change. Worker fetches corpus from main branch at runtime — no Worker redeploy needed (the worker error-message fix DOES require redeploy). Drift clean, JSON valid, TS clean.
+
 ## [6.41.72] - 2026-04-30
 
 ### Changed — Surgical-prose sweep on data_category + hero rules; added Resource disambiguation rule
