@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.5] - 2026-05-01
+
+### Fixed — `_eav_partial_write_warning` on EAV bundle partial writes
+
+When BD rate-limits (HTTP 429) mid-bundle on `updateWebPage` hero/EAV writes, individual EAV fields can fail while the top-level response stays `status: "success"`. Per-field status was already in `eav_results[]`, but agents reading the success envelope alone (and the `_hero_bundle_autofilled` echo) wouldn't see the partial state.
+
+Now: when any `eav_results[]` entry has `status: "error"`, the response includes a top-level `_eav_partial_write_warning` listing the failed keys with retry guidance. Agents see exactly which fields didn't persist and can retry just those instead of trusting the success envelope.
+
+Behavior on the success path is unchanged — warning only appears when there's something to warn about.
+
+### Net diff
+
+`src/index.ts` + `mcp/index.js`: ~5-line addition each (byte-mirrored), inside the EAV follow-up block. No spec change. No corpus change. No drift-check change.
+
 ## [6.42.4] - 2026-05-01
 
 ### Maintenance — repo + Worker source cleanup (no behavior change)

@@ -4851,6 +4851,15 @@ async function main() {
         if (parentId) {
           const eavResults = await writeEavFields(config, eavRoute, parentId, eavQueued);
           result.body.eav_results = eavResults;
+          // Partial-write surfacing: if any individual EAV write failed (e.g.
+          // BD rate-limited mid-bundle with HTTP 429), the top-level response
+          // is still "success" but the hero/EAV state is half-written.
+          // Surface the failed keys so the agent can retry those specifically
+          // instead of trusting the success envelope.
+          const failed = eavResults.filter((r) => r && r.status === "error");
+          if (failed.length > 0) {
+            result.body._eav_partial_write_warning = `${failed.length} EAV field(s) did not persist: ${failed.map((r) => r.key).join(", ")}. Retry these via updateWebPage with the same values, or check eav_results[] for per-field http status.`;
+          }
         }
       }
 
