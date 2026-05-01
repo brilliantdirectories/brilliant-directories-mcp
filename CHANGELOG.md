@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.76] - 2026-04-30
+
+### Fixed — Spatial-awareness sweep pass 4 (7 more leaks v6.41.75 missed) + 2 conflicts
+
+Audit pass 4 surfaced 7 leaks v6.41.75's pattern missed (4 identical Froala-body-field copy-paste, 3 corpus tool-description references) plus 2 low-risk cross-source conflicts. All fixed surgically.
+
+**Spatial leaks:**
+
+- 4× `Froala body field — see post-body formatting rule (...)` (createSingleImagePost, updateSingleImagePost, createMultiImagePost, updateMultiImagePost body field descriptions) → `see **Rule: Post-body formatting**`. Single search-replace.
+- `For the common-edit cheat-sheet ... see \`updatePostType\`'s tool description.` (corpus Member Listings rule) → `see \`updatePostType\`.`
+- `(PLUS reverse-rule loop check; see the redirect-specific bullets in this same rule)` (corpus Pre-check natural keys rule) → `(PLUS reverse-rule loop check — see \`createRedirect\` for the canonical workflow)`.
+- `Special-case resources - run the expanded workflow in their tool description BEFORE the standard pre-check:` (corpus) → `Special-case resources - run the expanded workflow on \`createRedirect\` BEFORE the standard pre-check:`
+
+**Conflicts resolved:**
+
+- **Class A — `linked_post_category` mislabeled REQUIRED.** Spec field descriptions at createWebPage + updateWebPage (lines 10205, 10624) said `"REQUIRED when seo_type=data_category"`. Field is functionally optional — wrapper auto-defaults to `post_main_page` when omitted, never errors. Only `linked_post_type` is hard-required. Reworded to `"Optional on seo_type=data_category — wrapper auto-defaults to post_main_page when omitted..."`. Worker behavior unchanged; only the prose label was loose. Both corpus and worker already had this right; the spec field descriptions were wrong.
+
+- **Class C — `updateWebPage` lead-line silent on conditional `linked_post_type` requirement.** Lead-line said `"Required fields: seo_id."` but on a content→data_category transition, `linked_post_type` is also required (worker enforces at runtime). The truth was already in the field-level description and the corpus rule, but lead-line silence misled lead-line-first readers. Appended one sentence: `"When changing seo_type to data_category, linked_post_type is also required (auto-validated at runtime)."`
+
+### Net diff
+
+Doc-only. ~9 spatial-leak fixes + 2 conflict resolutions across spec + corpus. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.75] - 2026-04-30
 
 ### Fixed — Spatial-awareness sweep pass 3 (~34 more leaks v6.41.74 missed)
