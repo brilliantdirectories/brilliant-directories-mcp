@@ -241,13 +241,13 @@ Read-back tools per class: inquiries via the site's forms inbox, leads via `list
 
 **Lean read responses** — `listForms` / `getForm` returns 11 essential fields (id, name, title, table, action_type, target, email_on, url, success_message, label_to_placeholder, revision_timestamp); admin-form-builder breadcrumbs and legacy columns are stripped. `listFormFields` / `getFormField` returns 15 essential fields by default; opt-in flags surface the heavier columns: `include_view_flags=true` adds the 5 view-flag toggles + admin-only flag + 5 alt-label overrides (use when editing visibility); `include_meta=true` adds the `json_meta` blob (use when adding/editing per-field validators — see § Field anatomy → `json_meta`).
 
-**Custom-field storage** — a custom (non-canonical) `field_name` on a public form posts its value into `users_meta` with compound identity `(database=<form_table>, database_id=<row_id>, key=<field_name>)`. Same EAV pattern as `list_seo` hero fields. Read via `listUserMeta database=<form_table> database_id=<row_id>`; mutate via `updateUserMeta` / `createUserMeta`. Applies to every `form_table` (`website_contacts`, `leads`, `users_data`).
+**Custom-field storage** — a custom (non-canonical) `field_name` on a public form posts its value into `users_meta` with compound identity `(database=<form_table>, database_id=<row_id>, key=<field_name>)`. Same EAV pattern as `list_seo` hero fields. Read via `listUserMeta database=<form_table> database_id=<row_id>`; mutate via `updateUserMeta`. Applies to every `form_table` (`website_contacts`, `leads`, `users_data`). Custom-field rows are auto-seeded on submission; no manual create needed.
 
 #### § Cloning a form (verbatim copy with a new slug)
 
 There is no `cloneForm` tool — clone is a 4-step recipe agents run themselves. Use this when the user asks to "duplicate this form", "copy form X", or to create a Lead-saving form (always start from `bootstrap_get_match` per § Lead-match special case):
 
-1. `getForm form_name=<source>` — read every form-level setting.
+1. `listForms property=form_name property_value=<source> property_operator==` — find the source form's `form_id`, then `getForm form_id=<id>` for full settings (or use the `listForms` row directly if it has every needed field).
 2. `createForm` with the source's settings, swapping `form_name` to a new unique slug (run **Rule: Pre-check natural keys** first) and `form_title` to the user's chosen display name.
 3. `listFormFields property=form_name property_value=<source> property_operator==` — read every field row (use `include_view_flags=true include_meta=true` if the source uses non-default view flags or validators).
 4. For each row in field_order: `createFormField form_name=<new>` carrying `field_name`, `field_text`, `field_type`, `field_order`, plus any view-flags / `field_options` / `default_value` / `json_meta` / `input_class` the source had set. Preserve `[widget=...]` shortcodes and `%%%token%%%` translations verbatim — no canonicalization.

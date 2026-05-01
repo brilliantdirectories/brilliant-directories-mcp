@@ -1235,7 +1235,7 @@ const EAV_ROUTES = {
       "h1_font_weight", "h2_font_weight",
       "h1_font_color", "h2_font_color",
       "linked_post_type", "linked_post_category",
-      "disable_css_stylesheets", "disable_preview_screenshot",
+      "disable_css_stylesheets",
     ]),
   },
 };

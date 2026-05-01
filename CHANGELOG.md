@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.3] - 2026-05-01
+
+### Fixed — 8-minion full-spec audit (truth-only corrections, no context loss)
+
+8-minion audit covering all ~173 tools surfaced lies, contradictions, and stale claims. This release fixes only the falsehoods and adds the truth where descriptions were inaccurate. Existing critical context (filter-find patterns, pre-check workflows, special-case rules) preserved.
+
+**Spec — `bd-api.json`:**
+
+1. **`createTopCategory` / `createSubCategory` `Pre-check before create`** — added "Wrapper safety net" sentence about auto-suffix (`-1`...`-20`). Pre-check still preferred to avoid surprise suffixes in URL-sensitive workflows. Lying claim "Never silently create a duplicate" replaced with the truth.
+2. **`createMembershipPlan.custom_checkout_url`** — clarified BD auto-routes extras to users_meta on create; explicit set on create works.
+3. **`searchUsers` description** — removed `output_type=html` capability claim (Worker forces `output_type=array` line 4943; capability is wrapper-blocked).
+4. **`createClick.click_type`** — replaced fabricated enum `[link, phone, email]` with truth: free-form string, BD does NOT normalize. Common BD-canonical values listed (live-verified against `users_clicks` table).
+5. **`createClick.click_from`** — replaced fabricated enum `[profile_page, search_results]` with truth: HTTP referer URL, free-form string, empty allowed for direct hits.
+6. **`createMultiImagePost` pre-check** — natural key was `post_title`; corrected to `group_name` (the actual `users_portfolio_groups` natural key per schema).
+7. **`createLead.auto_match` vs `users_to_match`** — reconciled the two contradictory descriptions. Truth: `auto_match=1` fires the match step; with `users_to_match` set, the matching ALGORITHM is bypassed but the step still fires.
+8. **`getBrandKit` font-loading guidance** — replaced `@import url('fonts.googleapis.com/...')` (contradicts runtime `usage_guidance.font_rule`) with `<link rel="stylesheet">` in `content_head`.
+9. **`(=` only)` parenthetical** on filter-operator hint, repeated across many list endpoints — replaced with "verified-working operator set" pointer (Rule: Filter operators documents the actual set).
+10. **`createTagRelationship.tag_id`** — added description: integer PK from `tags.id` passed as string per the underlying `varchar(500)` column. Schema column comment ("name of the tag") is misleading legacy; live-verified against the table.
+11. **`searchReviews`** — softened "Keyword search" framing without falsely denying capability; cross-ref to `listReviews` LIKE pattern for body-text match.
+12. **`createMembershipPlan.subscription_filename`** — namespace pre-check count `4 → 5` (added `users_data` for member profile slugs, matching `SITE_NAMESPACE_TABLES` in Worker).
+13. **`createSubCategory.filename` description** — added member profile slugs to the uniqueness namespace list.
+14. **`createWebPage.filename` + `updateWebPage.filename`** — same namespace expansion (5th = member profile slugs).
+15. **`createWebPage` + `updateWebPage`** — added `disable_css_stylesheets` field with description (was wrapper-routed but not exposed). `disable_preview_screenshot` removed from `EAV_ROUTES` (admin-side preference, not agent-facing).
+16. **`createEmailTemplate`** — added JSON Schema `default` keywords on `notemplate` (`2`) and `category_id` (`0`) so generated clients pick up the documented defaults.
+17. **`createWebPage.enable_hero_section`** — fixed internal contradiction: description said "0px padding" but per-field defaults are `70`/`60`. Now matches.
+
+**Corpus — `mcp-instructions.md`:**
+
+18. **§ Cloning a form step 1** — `getForm form_name=<source>` corrected to `listForms` first (returns `form_id`), then `getForm form_id=<id>`. Original recipe pointed at a parameter `getForm` doesn't accept.
+19. **§ Form classes Custom-field storage** — removed `createUserMeta` reference (it's in `HIDDEN_TOOLS`). Custom-field rows are auto-seeded on submission; no manual create needed.
+
+**Wrapper — `src/index.ts` + `mcp/index.js` (byte-mirrored):**
+
+20. **`EAV_ROUTES.updateWebPage.eavFields`** — removed `disable_preview_screenshot` (admin-only preference per product owner; not for MCP agents).
+
+### Net diff
+
+`bd-api.json`: ~17 description edits across spec, 2 schema additions (`disable_css_stylesheets`, JSON Schema defaults). `mcp-instructions.md`: 2 corpus paragraphs. `src/index.ts` + `mcp/index.js`: 1 line removed from EAV_ROUTES. No other code change. Worker deploy required (`src/index.ts` changed).
+
 ## [6.42.2] - 2026-05-01
 
 ### Fixed — create/update prose parity audit (11 confirmed items, prose-only)

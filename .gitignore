@@ -20,6 +20,7 @@ node_modules/
 # BD-internal guidance, not public documentation. Bitbucket's parent
 # repo DOES track them (only gitignored from the inner GitHub repo).
 INTERNAL-*.md
+INTERNAL-*/
 
 # Misc
 *.log
