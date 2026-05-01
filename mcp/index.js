@@ -2463,20 +2463,28 @@ function _isSubmitProducingField(field) {
 async function _getFormFieldRecordById(domain, apiKey, fieldId) {
   if (!fieldId) return null;
   const url = `https://${domain}/api/v2/form_fields/get?field_id=${encodeURIComponent(fieldId)}`;
+  // 5s bounded fetch — without this, the await is unbounded; if BD is slow
+  // we'd block the validator and risk the caller's invocation budget.
+  const ctl = new AbortController();
+  const timeout = setTimeout(() => ctl.abort(), 5000);
   try {
-    // Header casing: every other internal BD-fetch in this file uses TitleCase
-    // X-Api-Key. HTTP headers are case-insensitive per RFC 7230, but some
-    // middleware (ModSecurity, LiteSpeed) doesn't always follow the spec.
-    // Normalize to TitleCase to match the rest of the codebase.
-    const resp = await fetch(url, { headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    const resp = await fetch(url, {
+      headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+      signal: ctl.signal,
+    });
     if (!resp.ok) return null;
     const body = await resp.json();
     const msg = body?.message;
     if (Array.isArray(msg)) return msg[0] ?? null;
     if (msg && typeof msg === "object") return msg;
     return null;
-  } catch {
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      console.error(`[_getFormFieldRecordById] BD form_fields/get fetch timed out (5s) for field_id=${fieldId}`);
+    }
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -2507,16 +2515,22 @@ async function _listFormFieldsByFormName(domain, apiKey, formName) {
   // legitimate zero rows; using /get returns the canonical {message:[],total:0}
   // shape on zero matches.
   const url = `https://${domain}/api/v2/form_fields/get?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
+  // Bounded with a 5s AbortController. Without this, the fetch awaits
+  // indefinitely. If BD is slow, the caller's invocation budget runs out,
+  // the platform cancels the in-flight fetch, and the validator returns
+  // null → fail-closed. Meanwhile the agent's actual createFormField BD
+  // write may have already landed at BD, producing the "wrote despite
+  // error" pattern reported by customers. 5s is plenty for a normal
+  // listFormFields filter response (~50ms typical) while staying well
+  // inside the top-level invocation budget so we fail-fast and log here.
+  const ctl = new AbortController();
+  const timeout = setTimeout(() => ctl.abort(), 5000);
   try {
-    // Header casing: every other internal BD-fetch in this file uses TitleCase
-    // X-Api-Key. HTTP headers are case-insensitive per RFC 7230, but some
-    // middleware (ModSecurity, LiteSpeed) doesn't always follow the spec.
-    // Normalize to TitleCase to match the rest of the codebase.
-    const resp = await fetch(url, { headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    const resp = await fetch(url, {
+      headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+      signal: ctl.signal,
+    });
     const body = await resp.json().catch(() => null);
-    // BD's empty-result quirk: zero rows returns 400 + status:"error" +
-    // message:"<table> not found". This is legitimately "zero rows match
-    // your filter" — return [] so the uniqueness check passes (no collision).
     if (!resp.ok) {
       const isEmptyResultQuirk =
         body !== null &&
@@ -2524,10 +2538,8 @@ async function _listFormFieldsByFormName(domain, apiKey, formName) {
         typeof body.message === "string" &&
         /not found$/i.test(body.message);
       if (isEmptyResultQuirk) return [];
-      // Diagnostic: log non-OK responses that aren't the empty-result quirk
-      // so we can see why the validator fail-closed in production.
       console.error(`[validateFieldNameUnique] BD returned non-OK status=${resp.status} for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
-      return null; // real failure — fail-closed
+      return null;
     }
     if (!body || !Array.isArray(body.message)) {
       console.error(`[validateFieldNameUnique] BD returned unexpected shape for form_name="${formName}"; body=${JSON.stringify(body).slice(0, 300)}`);
@@ -2535,8 +2547,14 @@ async function _listFormFieldsByFormName(domain, apiKey, formName) {
     }
     return body.message;
   } catch (err) {
-    console.error(`[validateFieldNameUnique] fetch threw for form_name="${formName}": ${err.message}`);
+    if (err?.name === "AbortError") {
+      console.error(`[validateFieldNameUnique] BD listFormFields fetch timed out (5s) for form_name="${formName}"`);
+    } else {
+      console.error(`[validateFieldNameUnique] fetch threw for form_name="${formName}": ${err.message}`);
+    }
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

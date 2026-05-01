@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.89] - 2026-05-01
+
+### Fixed — Form-validator helpers: 5s bounded fetch (root cause of "wrote despite error" pattern)
+
+**Root cause confirmed via `wrangler tail`** during a customer's live failure session. Every Worker invocation that hit the form-validator path was logging:
+
+```
+(warn) waitUntil() tasks did not complete within the allowed time after invocation end and have been cancelled.
+```
+
+The validator helpers (`_listFormFieldsByFormName`, `_getFormFieldRecordById`) were issuing unbounded `await fetch()` calls. When BD responded slowly to the filter query, the Worker's invocation budget expired before the fetch resolved. Cloudflare cancelled the in-flight fetch; the helper saw a thrown error or null body, swallowed it in `catch`, returned `null` → fail-closed.
+
+**Meanwhile** — and this is the root of the "wrote despite error" pattern — the agent's actual `createFormField` BD write (which dispatches through a SEPARATE 25s-bounded passthrough at line 4706) sometimes still landed at BD before the platform cancelled the Worker invocation. So the validator returned the fail-closed error to the agent while the BD write was already in flight, silently committing afterward.
+
+Fix: both helpers now wrap their `fetch()` in a 5s `AbortController` matching the existing pattern at `_validateProfileSearchResultsSegments` (line ~3902) and `reserveSiteUrlSlug` (line ~4034). 5s is comfortable for a normal listFormFields filter response (~50ms typical) and well inside the 25s top-level budget, so the validator fails fast with an explicit logged `AbortError` instead of being silently cancelled by the platform. The agent gets a clear refusal; no orphan write happens.
+
+Diagnostic logs from v6.41.88 are retained — they'll now reliably show `BD listFormFields fetch timed out (5s)` instead of being silently cancelled.
+
+### Net diff
+
+Two helper functions in each mirror file (Worker `src/index.ts` + npm `mcp/index.js`). Drift clean, JSON valid. No spec or corpus change.
+
 ## [6.41.88] - 2026-05-01
 
 ### Fixed — Form-validator helpers: header casing normalization + diagnostic logging
