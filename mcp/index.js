@@ -11,7 +11,32 @@
  *   brilliant-directories-mcp --api-key YOUR_KEY --url https://your-site.com
  *
  * Or via env vars:
- *   BD_API_KEY=YOUR_KEY BD_API_URL=https://your-site.com brilliant-directories-mcp
+ *   BD_API_KEY=YOUR_KEY BD_SITE_URL=https://your-site.com brilliant-directories-mcp
+ *   (BD_API_URL is accepted as a legacy alias for BD_SITE_URL.)
+ *
+ * =============================================================================
+ * DESIGN DECISION — env var name compatibility (intentional, do NOT remove)
+ * =============================================================================
+ *
+ * The site-URL env var has TWO accepted names that both resolve to the same
+ * config slot:
+ *
+ *   BD_SITE_URL  (canonical — clearer customer-facing intent: "your BD site URL")
+ *   BD_API_URL   (legacy alias — supported indefinitely so older customer
+ *                 configs continue to work after the v6.41.87 rename)
+ *
+ * Precedence: `BD_SITE_URL` wins when both are set. README leads with
+ * `BD_SITE_URL` for new customers; `.mcp.json` (the Claude Code Plugin
+ * install manifest) substitutes `${BD_SITE_URL}` for the same reason.
+ *
+ * BD_API_URL is intentionally NOT deprecated and NOT removed — it ships in
+ * existing customer configs (npx wizard wrote it, Cursor Directory installs
+ * wrote it, Claude Desktop docs printed it). Removing the alias would
+ * silently break working installs. Going-forward strategy: lead with
+ * BD_SITE_URL in all docs and new tooling; accept both forever in code.
+ *
+ * Reference: bd-cursor-config/brilliant-directories-mcp-VISION.md §
+ * "Env var compatibility — BD_SITE_URL canonical, BD_API_URL legacy alias"
  *
  * =============================================================================
  * MAINTENANCE HYGIENE — hardcoded constants that mirror the OpenAPI spec
@@ -144,9 +169,13 @@ const IN_FLIGHT_REQUESTS = new Set();
 
 function parseArgs() {
   const args = process.argv.slice(2);
+  // BD_SITE_URL is the canonical env var name (clearer customer-facing intent —
+  // "your BD site URL"). BD_API_URL is the legacy alias from earlier versions
+  // and remains supported indefinitely so existing customer configs don't break.
+  // Precedence: BD_SITE_URL > BD_API_URL.
   const config = {
     apiKey: process.env.BD_API_KEY || "",
-    apiUrl: process.env.BD_API_URL || "",
+    apiUrl: process.env.BD_SITE_URL || process.env.BD_API_URL || "",
     verify: false,
     setup: false,
     help: false,
@@ -197,7 +226,7 @@ function parseArgs() {
     process.exit(1);
   }
   if (!config.apiUrl) {
-    console.error("Error: Site URL required. Use --url https://your-site.com or set BD_API_URL env var.");
+    console.error("Error: Site URL required. Use --url https://your-site.com or set BD_SITE_URL env var (BD_API_URL also supported as a legacy alias).");
     console.error("Run with --help for usage.");
     process.exit(1);
   }

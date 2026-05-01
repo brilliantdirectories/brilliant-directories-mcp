@@ -369,7 +369,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
          "command": "npx",
          "args": ["-y", "--prefer-online", "brilliant-directories-mcp@latest"],
          "env": {
-           "BD_API_URL": "https://www.your-site.com",
+           "BD_SITE_URL": "https://www.your-site.com",
            "BD_API_KEY": "ENTER_API_KEY"
          }
        }
@@ -419,12 +419,12 @@ Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 | Field (as shown in Codex) | Value |
 |---|---|
 | **Name** | `Brilliant Directories` (or any label) |
-| **URL** | `https://brilliantmcp.com/mcp` |
+| **URL** | `https://brilliantmcp.com` |
 | **Bearer token env var** | *leave empty — don't touch* |
-| **Headers** — Key | `x-api-key` |
+| **Headers** — Key | `X-Api-Key` |
 | **Headers** — Value | your BD API key |
 | *Click **+ Add header** to add the second row* | |
-| **Headers** — Key (row 2) | `x-bd-site-url` |
+| **Headers** — Key (row 2) | `X-BD-Site-URL` |
 | **Headers** — Value (row 2) | `https://www.your-site.com` |
 | **Headers from environment variables** | *leave empty — don't touch* |
 
@@ -601,7 +601,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
    | Left (do NOT touch) | Right (paste your values) |
    |---|---|
    | `BD_API_KEY` | your BD API key |
-   | `BD_API_URL` | `https://www.your-site.com` — include `https://`, no trailing slash |
+   | `BD_SITE_URL` | `https://www.your-site.com` — include `https://`, no trailing slash |
 
    - API key → BD Admin → **Developer Hub** → **Generate API Key** (BD shows it once; if lost, generate a new one).
    - Advanced endpoint permissions must be enabled on the key or most writes 403. See [Before you start](#requirements--before-you-start).
