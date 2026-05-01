@@ -3179,7 +3179,7 @@
                   },
                   "lead_message": {
                     "type": "string",
-                    "description": "Submitted message body (longtext). Preserves `[widget=...]` shortcodes and `%%%token%%%` translations."
+                    "description": "Submitter's detailed request — what they typed describing their needs."
                   },
                   "lead_location": {
                     "type": "string",
@@ -3303,7 +3303,7 @@
                   },
                   "lead_message": {
                     "type": "string",
-                    "description": "Submitted message body (longtext). Preserves `[widget=...]` shortcodes and `%%%token%%%` translations."
+                    "description": "Submitter's detailed request — what they typed describing their needs."
                   },
                   "lead_location": {
                     "type": "string",
