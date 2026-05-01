@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.74] - 2026-04-30
+
+### Fixed — Spatial-awareness sweep pass 2 (v6.41.73 missed ~20 leaks) + 3 conflicts
+
+Audit minions found 20 additional spatial leaks v6.41.73 missed, plus 3 cross-source conflicts. All fixed surgically.
+
+**4 high-risk Pattern C broken cross-refs** (referenced rule names that did not exist as `### Rule:` headings — agents string-searching would have hit zero results):
+
+- `top-level users_meta compound-identity rule` → `**Rule: users_meta identity**`
+- `corpus users_meta-writes-restricted rule` → `**Rule: users_meta writes**` (also unwrapped accidental double-bold)
+- `corpus **EAV auto-route** rule` → `**Rule: EAV auto-route**` (reformat to canonical `**Rule: <Name>**` form)
+- `see all-or-nothing save rule` / `(see updatePostType)` × 4 → `**Rule: Post-type code fields**` (rule body literally documents the all-or-nothing-save behavior; pointing directly at the rule rather than the tool that hosts it)
+
+**Implicit-spatial leaks resolved to canonical rule references:**
+
+- `(see its lean note)` × 6 → `(see **Rule: Lean read responses**)`
+- `see Lean note` → `see **Rule: Lean read responses**`
+- `see corpus URL slug rule` × 2 → `see **Rule: URL slug rename**`
+
+**Intra-description spatial words fixed:**
+
+- `(described above)` (listUserMeta filter block) → `(see the IDENTITY RULE block in this description)`
+- `see master-fallback note below` (getPostType) → `apply **Rule: Post-type code fields**`
+- `See empty-state quirk above.` (listLeadMatches) → `See the empty-state quirk note in this description.`
+
+**Corpus prose:**
+
+- `elsewhere in tool descriptions` → `appearing in tool descriptions` (line 76)
+- `or section tables below` → `or section tables` (line 267 — generic prose, not a cross-ref; spatial word dropped)
+
+### Conflicts resolved
+
+**Conflict A — RGB hero default format alignment.** Worker autofills with `rgb(0, 0, 0)` (with spaces) per the BD CSS template requirement; corpus + spec lead-line had `rgb(0,0,0)` (no spaces). Aligned all 5 corpus entries + 11 spec occurrences to the with-spaces canonical form. Validator regex tolerates both, but the worker only emits with-spaces — corpus now matches.
+
+**Conflict B — "no exceptions" filename uniqueness claim softened.** createWebPage description claimed `"There is no bypass — duplicate URLs are never permitted via MCP"` — but for `seo_type=data_category` creates the wrapper auto-generates a 10-char alphanumeric slug WITHOUT pre-checking against `listWebPages`. Reworded to: `"There is no agent-facing bypass; for seo_type=data_category the wrapper generates the slug itself (10-char lowercase alphanumeric — statistically unique across 36^10, no pre-check needed)."` — matches actual behavior; collision odds are 1-in-3.6e15.
+
+**Conflict C — `linked_post_type` REQUIRED marker added to corpus.** Spec field description says `REQUIRED when seo_type=data_category`; worker enforces; corpus rule said `"Pin via linked_post_type"` without explicit REQUIRED. Added one-word `(REQUIRED — ...)` clause to corpus.
+
+### Audit-tooling change
+
+Added `feedback_no_spatial_cross_refs.md` to project memory documenting the ban on spatial cross-references and the pre-publish grep audit that should run before every doc-only ship. v6.41.65→v6.41.73 accumulated ~95 spatial leaks; this is the second of two cleanup ships.
+
+### Net diff
+
+Doc-only. ~30 spatial-leak fixes + 3 conflict resolutions. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.73] - 2026-04-30
 
 ### Changed — Spatial-awareness sweep + disambiguation rule rewrite

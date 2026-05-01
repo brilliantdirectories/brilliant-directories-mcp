@@ -73,7 +73,7 @@ Chain or run multiple tools to compile the data points needed. Most real tasks n
 
 **Update-tool schemas are DOCUMENTATION, not whitelists - universal rule across every `update*` tool.** The `properties` listed on each update tool's request body name the commonly-edited, enum-tagged, or interaction-annotated fields; they are NOT a server-side allow list. BD's backend accepts any field it recognizes as a column/EAV key on the target resource.
 
-**If a field appears in the resource's `get*` / `list*` response but not in the `update*` schema, send it on update and BD will persist it** - the MCP wrapper forwards unlisted keys verbatim; it does NOT strip them. Do not refuse an edit because a field is absent from the schema. Phrases like "commonly-edited", "editable fields", "main settings" elsewhere in tool descriptions are GUIDANCE, not restrictions - any column returned on GET can be written on UPDATE.
+**If a field appears in the resource's `get*` / `list*` response but not in the `update*` schema, send it on update and BD will persist it** - the MCP wrapper forwards unlisted keys verbatim; it does NOT strip them. Do not refuse an edit because a field is absent from the schema. Phrases like "commonly-edited", "editable fields", "main settings" appearing in tool descriptions are GUIDANCE, not restrictions - any column returned on GET can be written on UPDATE.
 
 **Workflow when a user asks to change a field not in the update schema:**
 
@@ -87,7 +87,7 @@ Only refuse if the field genuinely doesn't exist on the resource, or the user is
 
 **Updates use PATCH semantics - send ONLY the fields you want to change; omitted fields are untouched.** Never re-send a full record just to tweak one setting. Example: to flip `content_layout` to `1` on a WebPage, send just `seo_id` + `content_layout=1` - don't re-send `content`, `title`, `meta_desc`, etc.
 
-Single narrow exception: the post-type code-group all-or-nothing save rule on `updatePostType` (search-results and profile triplets) - see its tool description. Everywhere else, PATCH.
+Single narrow exception: the post-type code-group all-or-nothing save rule on `updatePostType` (search-results and profile triplets) — see **Rule: Post-type code fields**. Everywhere else, PATCH.
 
 ### Rule: CSV no spaces
 
@@ -264,7 +264,7 @@ Never reach for CSS `display:none`, template string-manipulation, or JS hiding w
 
 **Target Outlook-safe email HTML.** Outlook is the most restrictive mainstream client; if it renders, Apple Mail / Gmail render too.
 
-**`email_body` is content-only.** BD wraps it in a parent `<td>` with full document scaffold (doctype/html/head/body) already in place. Open with content directly (`<p>`, `<div>`, `<h1>`/`<h2>`, `<img>`, or section tables below); do not emit the scaffold. Images follow **Rule: Image URLs**; Pexels stock allowed for decoration.
+**`email_body` is content-only.** BD wraps it in a parent `<td>` with full document scaffold (doctype/html/head/body) already in place. Open with content directly (`<p>`, `<div>`, `<h1>`/`<h2>`, `<img>`, or section tables); do not emit the scaffold. Images follow **Rule: Image URLs**; Pexels stock allowed for decoration.
 
 **Each section is its own top-level `<table>` in `email_body` — no parent element wraps them.** Sibling tables only; any wrapper (table, div, span) collapses the sibling pattern and breaks Froala drag-reorder. Output shape: `<table width="100%" style="width:100%;">...</table>` repeated, one per logical section (hero, intro, member card, CTA, footer). Both HTML `width` attribute AND inline `style` width required (older Outlook reads HTML attribute; modern clients use CSS) — same dual-declaration applies to fixed-pixel `<td>` cells inside multi-column layouts: `<td width="X" style="width:Xpx;">` not just one or the other.
 
@@ -646,11 +646,11 @@ Brand kit - call `getBrandKit` ONCE at the start of any design-related task (bui
 
 When `enable_hero_section` flips from `0`/unset to `1` or `2` (on `createWebPage` or `updateWebPage`) and the user hasn't supplied values, send all fields below atomically — BD's field-level defaults render the hero unreadable against a background image.
 
-- `h1_font_color="rgb(255,255,255)"`
-- `h2_font_color="rgb(255,255,255)"`
-- `hero_content_font_color="rgb(255,255,255)"`
+- `h1_font_color="rgb(255, 255, 255)"`
+- `h2_font_color="rgb(255, 255, 255)"`
+- `hero_content_font_color="rgb(255, 255, 255)"`
 - `hero_content_font_size="18"`
-- `hero_content_overlay_color="rgb(0,0,0)"`
+- `hero_content_overlay_color="rgb(0, 0, 0)"`
 - `hero_content_overlay_opacity="0.5"`
 - `hero_top_padding="100"`
 - `hero_bottom_padding="100"`
@@ -797,7 +797,7 @@ Location + Sidebar CRUD are read-only by design in this MCP (create/delete delib
 
 ### Rule: Post search-results SEO pages (`seo_type=data_category`)
 
-A `seo_type=data_category` page attaches custom SEO content to a post type's main search-results page or to a category-specific page. Pin via `linked_post_type` (post type's `data_id` from `listPostTypes`) plus `linked_post_category` (literal `post_main_page` OR an exact case-sensitive category name from `feature_categories`). Wrapper auto-defaults `linked_post_category=post_main_page` when omitted, and enforces pair-uniqueness on `(linked_post_type, linked_post_category)` — only ONE data_category page per combo. Transitioning AWAY from data_category releases the slot, strips orphan meta, and retires the placeholder-slug redirect; you MUST supply a new `filename` on the transition update because the wrapper-managed placeholder 404s on every other seo_type. `filename` is wrapper-managed on data_category — a fresh 10-char lowercase alphanumeric slug is generated whenever the value isn't already 10-char alphanumeric. The public URL is `<post_type.data_filename>?category[]=<Exact%2BCategory%2BName>` (or just `<data_filename>` for `post_main_page`) — encode spaces as `%2B`. The wrapper auto-creates a 301 redirect from the placeholder to that destination on every successful write, and cascades the redirect-delete on `deleteWebPage`.
+A `seo_type=data_category` page attaches custom SEO content to a post type's main search-results page or to a category-specific page. Pin via `linked_post_type` (REQUIRED — post type's `data_id` from `listPostTypes`) plus `linked_post_category` (literal `post_main_page` OR an exact case-sensitive category name from `feature_categories`). Wrapper auto-defaults `linked_post_category=post_main_page` when omitted, and enforces pair-uniqueness on `(linked_post_type, linked_post_category)` — only ONE data_category page per combo. Transitioning AWAY from data_category releases the slot, strips orphan meta, and retires the placeholder-slug redirect; you MUST supply a new `filename` on the transition update because the wrapper-managed placeholder 404s on every other seo_type. `filename` is wrapper-managed on data_category — a fresh 10-char lowercase alphanumeric slug is generated whenever the value isn't already 10-char alphanumeric. The public URL is `<post_type.data_filename>?category[]=<Exact%2BCategory%2BName>` (or just `<data_filename>` for `post_main_page`) — encode spaces as `%2B`. The wrapper auto-creates a 301 redirect from the placeholder to that destination on every successful write, and cascades the redirect-delete on `deleteWebPage`.
 
 **Wrapper response annotations** (echoed on `_data_category_*` keys on success bodies):
 
