@@ -295,7 +295,20 @@ Claude Code has no MCP GUI — install via terminal. Works in:
 
    Close and reopen your terminal so PATH updates. Verify with `claude --version`.
 
-Once the CLI is installed, you've got the same two options as every other client:
+Once the CLI is installed, you've got three options. The plugin path is fastest if your Claude Code supports plugins; the others work everywhere.
+
+#### ⚡ Easiest path — install as a Claude Code plugin (one command)
+
+If your Claude Code is recent enough to support plugins, install from our self-hosted plugin marketplace:
+
+```text
+/plugin marketplace add brilliantdirectories/brilliant-directories-mcp
+/plugin install brilliant-directories@brilliant-directories-mcp
+```
+
+Run those two slash commands inside an active `claude` session. Claude Code fetches the plugin manifest from this repo, registers the BD MCP server, and tools become available immediately. You'll be prompted for `BD_API_KEY` and `BD_SITE_URL` on first use, or you can set them as environment variables before launching `claude`.
+
+> **Don't see `/plugin` commands in your Claude Code?** Plugin support requires a newer Claude Code build. Update with `npm install -g @anthropic-ai/claude-code@latest`, then restart your terminal. If `/plugin` still isn't recognized, fall back to the Easy or Advanced path below.
 
 #### 🚀 Easy path — hosted Worker (no BD MCP subprocess, no additional install)
 

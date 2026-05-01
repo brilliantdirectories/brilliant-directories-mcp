@@ -426,10 +426,13 @@ The agent does NOT need to add a column to `users_data` to make a custom field s
 
 #### § Wrapper-enforced invariants
 
-The wrapper refuses (throws on the call) 2 silent-failure paths on `createForm` / `updateForm` / `createFormField` / `updateFormField`. Each refusal is an active error, not a warning — the call returns 4xx and no write happens:
+The wrapper refuses (throws on the call) 5 silent-failure paths on `createForm` / `updateForm` / `createFormField` / `updateFormField`. Each refusal is an active error, not a warning — the call returns 4xx and no write happens:
 
 1. `createForm` / `updateForm` with `form_action_type=redirect` AND empty `form_target` → refused (would submit nowhere).
 2. `createFormField` / `updateFormField` with `field_required=1` AND `field_type` ∈ {`HoneyPot`, `HTML`, `Tip`, `Button`} → refused (form unsubmittable). `Hidden` is allowed because its value comes from `field_text`.
+3. `createFormField` / `updateFormField` with `field_type` not in the canonical enum → refused (BD's renderer switches on exact spelling; typos render unpredictably). Strict case match — `textarea` is the lone lowercase value. See § Field anatomy → field_type.
+4. `createFormField` / `updateFormField` with `field_type=Hidden` AND empty `field_name` OR empty `field_text` → refused (Hidden has no UI; without both, it posts nothing).
+5. `createFormField` / `updateFormField` with any of `field_required`, `field_input_view`, `field_display_view`, `field_email_view`, `field_search_view`, `field_grid_view`, `field_input_view_admin_only` set to a non-binary value → refused. Empty / omitted accepted (BD applies per-field defaults).
 
 **Agent-side responsibilities** (NOT wrapper-enforced — agent owns these):
 

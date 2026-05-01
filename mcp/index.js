@@ -2371,7 +2371,7 @@ function validateDatetime14InArgs(args) {
 // ---------------------------------------------------------------------------
 // Form-write invariant validators.
 //
-// 2 silent-failure paths the wrapper actively refuses on createForm /
+// 5 silent-failure paths the wrapper actively refuses on createForm /
 // updateForm / createFormField / updateFormField. See Rule: Forms §
 // Wrapper-enforced invariants for the agent-facing contract. Each returns
 // a non-null error string when the call should be refused; null = pass.
@@ -2383,6 +2383,28 @@ const FIELD_REQUIRED_FORBIDDEN = new Set(["HoneyPot", "HTML", "Tip", "Button"]);
 // Note: Hidden is intentionally NOT in this set; its value comes from field_text
 // at render time, so the requirement is always satisfied. See Rule: Forms §
 // Field anatomy → Hidden field_type.
+
+// Authoritative field_type enum mirrored from bd-api.json (createFormField /
+// updateFormField). Strict case match — BD's form renderer switches on exact
+// spelling; "button" vs "Button" can produce subtly different output.
+// `textarea` is the lone lowercase value (BD legacy).
+const FIELD_TYPE_ENUM = new Set([
+  "Checkbox", "Select", "Radio", "YesNo",
+  "Custom", "Email", "HTML", "Button", "Textbox", "textarea", "Url",
+  "Date", "DateTimeLocal", "File",
+  "FroalaEditor", "FroalaEditorUserUpload", "FroalaEditorUserUploadPreMadeElem", "FroalaEditorAdmin",
+  "Tip", "Hidden", "Country", "State", "Number", "Password",
+  "Phone", "CountryCodePhone", "Pricebox", "ReCaptcha", "HoneyPot", "Category", "Years",
+]);
+
+// Binary 0/1 flag fields on createFormField / updateFormField. Empty/absent
+// passes through (BD applies its own per-field default — varies, e.g. grid
+// defaults 1, search defaults 0). Refuse only when present-and-not-binary.
+const FORM_FIELD_BINARY_FLAGS = [
+  "field_required", "field_input_view", "field_display_view",
+  "field_email_view", "field_search_view", "field_grid_view",
+  "field_input_view_admin_only",
+];
 
 // Truthy-string normalization for the `field_required` flag. Agents may send
 // the value as integer (1), string ("1"), boolean (true), or word ("yes").
@@ -2410,6 +2432,56 @@ function validateRedirectFormPair(toolName, args) {
   const target = String(args.form_target ?? "").trim();
   if (!target) {
     return "form_action_type=redirect requires a non-empty form_target URL. Without form_target, BD accepts the call but submissions silently go nowhere on submit. See Rule: Forms § Form-level recipe.";
+  }
+  return null;
+}
+
+// Strict case-sensitive enum check on field_type. Spec ships the enum but
+// jsonSchemaToZodShape doesn't translate JSON `enum` arrays into Zod
+// constraints, so without this guard typos like "button"/"buttons"/"text"
+// pass to BD which then renders unpredictably. Only enforced on create
+// (update may omit field_type).
+function validateFieldType(toolName, args) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
+  if (!args || typeof args !== "object") return null;
+  const v = args.field_type;
+  if (v === undefined || v === null || v === "") return null;
+  const fieldType = String(v).trim();
+  if (FIELD_TYPE_ENUM.has(fieldType)) return null;
+  return `field_type=${fieldType} is not a valid value. Use one of: ${Array.from(FIELD_TYPE_ENUM).join(", ")}. Note: most are TitleCase but \`textarea\` is lowercase. See Rule: Forms § Field anatomy.`;
+}
+
+// Refuse Hidden field_type with empty field_name OR empty field_text. Hidden
+// has no UI to fill the value at submit — it posts whatever sits in
+// field_text under the field_name key. Without both, BD stores a row that
+// posts nothing. Per Rule: Forms § Field anatomy → Hidden field_type.
+function validateHiddenFieldRequirements(toolName, args) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
+  if (!args || typeof args !== "object") return null;
+  const fieldType = String(args.field_type ?? "").trim();
+  if (fieldType !== "Hidden") return null;
+  const fieldName = String(args.field_name ?? "").trim();
+  const fieldText = String(args.field_text ?? "").trim();
+  if (!fieldName) {
+    return "field_type=Hidden requires a non-empty field_name (the form posts the value under this key). See Rule: Forms § Field anatomy → Hidden field_type.";
+  }
+  if (!fieldText) {
+    return "field_type=Hidden requires a non-empty field_text (its value comes from field_text at render time, NOT default_value). See Rule: Forms § Field anatomy → Hidden field_type.";
+  }
+  return null;
+}
+
+// Refuse non-binary values on the 7 view-flag / required fields. Empty /
+// absent passes through (BD applies per-field defaults). Catches typos like
+// `field_input_view=2` that produce unpredictable rendering.
+function validateBinaryFlags(toolName, args) {
+  if (toolName !== "createFormField" && toolName !== "updateFormField") return null;
+  if (!args || typeof args !== "object") return null;
+  for (const flag of FORM_FIELD_BINARY_FLAGS) {
+    const v = args[flag];
+    if (v === undefined || v === null || v === "") continue;
+    if (v === 0 || v === 1 || v === "0" || v === "1") continue;
+    return `${flag}=${String(v)} is not a valid value — must be 0 or 1 (or omitted to accept BD's per-field default). See Rule: Forms § Field anatomy.`;
   }
   return null;
 }
@@ -4329,10 +4401,22 @@ async function main() {
       }
 
       // Form-write invariants. See Rule: Forms § Wrapper-enforced invariants.
-      // 2 silent-failure paths refused before the call hits BD.
+      // 5 synchronous arg-shape checks refused before the call hits BD.
       const redirectErr = validateRedirectFormPair(name, args);
       if (redirectErr) {
         return { content: [{ type: "text", text: redirectErr }], isError: true };
+      }
+      const fieldTypeErr = validateFieldType(name, args);
+      if (fieldTypeErr) {
+        return { content: [{ type: "text", text: fieldTypeErr }], isError: true };
+      }
+      const hiddenErr = validateHiddenFieldRequirements(name, args);
+      if (hiddenErr) {
+        return { content: [{ type: "text", text: hiddenErr }], isError: true };
+      }
+      const binaryErr = validateBinaryFlags(name, args);
+      if (binaryErr) {
+        return { content: [{ type: "text", text: binaryErr }], isError: true };
       }
       const reqTypeErr = await validateRequiredFieldType(config.domain, config.apiKey, name, args);
       if (reqTypeErr) {

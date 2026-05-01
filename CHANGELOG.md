@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.95] - 2026-05-01
+
+### Added — 3 synchronous form-write validators (5-minion break-test follow-up)
+
+5-minion stress test on v6.41.94 found 3 real wrapper holes (one root cause). All catchable with cheap synchronous arg-shape checks — no BD probe, no `fetch()`, no `waitUntil` (the cancellation trap that drove the v6.41.83-89 rabbit hole). Added:
+
+1. **`validateFieldType`** — strict case-sensitive enum check on `field_type`. Spec ships the enum at lines 6374-6406 / 6536-6568 but `jsonSchemaToZodShape` (line 1045) doesn't translate JSON `enum` arrays into Zod constraints, so typos like `"button"` / `"buttons"` / `"text"` were passing through to BD. BD's renderer switches on exact spelling; mis-cased values rendered unpredictably. 31 canonical values (TitleCase except `textarea` legacy lowercase). Refusal lists all valid values for the agent.
+2. **`validateHiddenFieldRequirements`** — refuses `field_type=Hidden` with empty `field_name` OR empty `field_text`. Hidden has no UI; without both, BD stores a row that posts nothing. Corpus § Field anatomy → Hidden already documented this; wrapper now enforces.
+3. **`validateBinaryFlags`** — refuses non-binary value on any of `field_required` / `field_input_view` / `field_display_view` / `field_email_view` / `field_search_view` / `field_grid_view` / `field_input_view_admin_only`. Empty / omitted accepted (BD applies per-field defaults — varies; e.g. `field_grid_view` defaults `1`, `field_search_view` defaults `0`).
+
+### Why these are NOT the v6.41.83-89 trap
+
+The validators removed in v6.41.90 (`validateFieldNameUnique`, `validateSubmitCount`) failed because they did out-of-band `fetch()` calls to BD that Cloudflare cancelled via `waitUntil`. These three are pure local checks on the args dict — same shape as `validateRedirectFormPair`. No async, no timeout, no probe latency. Zero blast radius.
+
+### Triple-checked dismissals from the 5-minion findings
+
+- **Duplicate `field_name` allowed (Minion C):** by-design as of v6.41.90. Agent owns `field_name` uniqueness via `listFormFields` pre-check. Corpus § Wrapper-enforced invariants → Agent-side responsibilities documents this.
+- **Dual-submit Button-create allowed (Minion D #4):** same as above; agent-owned.
+- **`updateFormField` field_id-only doesn't re-validate field_required (Minion D #5):** false positive. `validateRequiredFieldType` lines 3049-3057 already fetches the existing record and re-validates against the stored `field_type`.
+- **Corpus "lying" about ReCaptcha protection (Minion E):** false positive. ReCaptcha is intentionally NOT in `FIELD_REQUIRED_FORBIDDEN` — Google's widget produces a token, so it CAN be marked required.
+- **`field_options` persists on Textbox (Minion B):** doc drift, not a wrapper bug. BD-side behavior claim. Not addressing in this version.
+- **`json_meta` accepts non-JSON garbage (Minion B):** by-design; matches BD itself. Agent-responsibility under the canonical skeleton in § Field anatomy.
+
+### Net diff
+
+- `brilliant-directories-mcp-hosted/src/index.ts`: +2 top-level constants (`FIELD_TYPE_ENUM`, `FORM_FIELD_BINARY_FLAGS`), +3 validators (`validateFieldType`, `validateHiddenFieldRequirements`, `validateBinaryFlags`), 3 new dispatch checks.
+- `mcp/index.js`: byte-for-byte mirror.
+- `mcp/openapi/bd-api.json`: `createFormField` + `updateFormField` description blocks updated to enumerate all 4 wrapper-enforced refusal categories.
+- `mcp/openapi/mcp-instructions.md`: § Wrapper-enforced invariants — 2 paths → 5 paths.
+- `scripts/schema-drift-check.js`: +3 entries in `MIRROR_FUNCTIONS`, +2 in `MIRROR_CONSTANTS`, +3 in `VERIFIED_EQUIVALENT_DRIFT`.
+- Dispatch comment count `2 silent-failure paths` → `5` in both files.
+
 ## [6.41.94] - 2026-05-01
 
 ### Fixed — 4 stale-truth + 2 redundancy items in spec descriptions (cleanup-pass audit)

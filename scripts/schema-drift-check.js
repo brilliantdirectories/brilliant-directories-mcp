@@ -481,6 +481,9 @@ const MIRROR_FUNCTIONS = [
   "_deleteRedirectByOldFilename",
   "applyDataCategoryGuard",
   "validateRedirectFormPair",
+  "validateFieldType",
+  "validateHiddenFieldRequirements",
+  "validateBinaryFlags",
   "validateRequiredFieldType",
   "_normalizeRequiredFlag",
   "_getFormFieldRecordById",
@@ -506,6 +509,9 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   stripWidgetWrapperTagsInArgs:  { returns:  [2, 1] }, // npm returns args fluent-style; worker mutates void
   _validateSlugFormat:           { ifs: [42, 41], eq3: [7, 4] }, // worker collapses CJK normalization inline
   validateRedirectFormPair:      { accesses: [2, 0] }, // worker uses `(args as any).x` cast
+  validateFieldType:             { accesses: [1, 0] }, // worker uses `(args as any).x` cast
+  validateHiddenFieldRequirements: { accesses: [3, 0] }, // worker uses `(args as any).x` cast (field_type, field_name, field_text)
+  validateBinaryFlags:           { accesses: [1, 0] }, // worker uses `(args as any)[flag]` cast
   validateRequiredFieldType:     { accesses: [3, 0] }, // worker uses `(args as any).x` cast (3 access sites: field_required, field_id, field_type — last 2 added v6.41.85 for updateFormField record lookup)
 };
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
@@ -661,6 +667,8 @@ const MIRROR_CONSTANTS = [
   "SLUG_TOOL_CONFIG",
   "RGB_PATTERN",
   "FIELD_REQUIRED_FORBIDDEN",
+  "FIELD_TYPE_ENUM",
+  "FORM_FIELD_BINARY_FLAGS",
   "FORM_LEAN_INCLUDE_FLAGS",
   "FORM_ALWAYS_KEEP",
   "FORM_FIELD_LEAN_INCLUDE_FLAGS",
