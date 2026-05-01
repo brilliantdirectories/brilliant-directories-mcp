@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.91] - 2026-05-01
+
+### Fixed — 3 stale-claim corpus leftovers from the v6.41.90 validator removal
+
+Audit pass caught 3 places in `mcp-instructions.md` that still claimed the wrapper enforced field_name uniqueness or single-submit invariants — both of which v6.41.90 moved to agent responsibility:
+
+1. **`Rule: Forms § Field anatomy` `field_name`** entry: said *"wrapper refuses non-empty duplicates."* Replaced with the agent-side recipe (`listFormFields` pre-check + `_2`/`_3` suffix on collision).
+2. **`Rule: Forms § Form-level recipe` Tail pattern** paragraph: said *"Wrapper enforces exactly one submit element on the form."* Reworded to *"Exactly one submit element per form (Button or Custom-coded) — agent-checked, see § Wrapper-enforced invariants → Agent-side responsibilities."*
+3. **`Rule: Pre-check natural keys`** `createFormField` row: said *"Wrapper-enforced via `validateFieldNameUnique`."* Replaced with the agent-side recipe.
+
+No code change. Corpus prose only. The wrapper itself is unchanged from v6.41.90 — the 2 invariants (`validateRedirectFormPair`, `validateRequiredFieldType`) remain enforced; `validateFieldNameUnique` and `validateSubmitCount` remain removed.
+
+### Net diff
+
+`mcp-instructions.md`: 3 sentences reworded. Drift clean, JSON valid.
+
 ## [6.41.90] - 2026-05-01
 
 ### Removed — `validateFieldNameUnique` + `validateSubmitCount` wrapper validators (root-cause fix for createFormField intermittent failures)
