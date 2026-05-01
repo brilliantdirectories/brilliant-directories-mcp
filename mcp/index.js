@@ -231,6 +231,17 @@ function parseArgs() {
     process.exit(1);
   }
 
+  // Derive `config.domain` (host only) from `config.apiUrl` (full URL).
+  // Several helpers (`getPostTypesCached`, `getWebsiteInfoCached`,
+  // `_readLinkedPostMeta`, etc.) accept a domain string and concatenate
+  // it as `https://${domain}` internally. Set this once at startup.
+  try {
+    config.domain = new URL(config.apiUrl).hostname;
+  } catch {
+    console.error(`Error: Could not parse BD_SITE_URL='${config.apiUrl}' as a URL.`);
+    process.exit(1);
+  }
+
   return config;
 }
 
@@ -932,7 +943,7 @@ function applyEmailTemplateLean(body, includeFlags) {
 
 const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
 
-// --- REVIEWS (list/get/searchReviews) -------------------------------------
+// --- REVIEWS (list/get) ---------------------------------------------------
 //
 // Reviews have 9 flat scalar fields — no nested buckets to strip. The one
 // unbounded field is `review_description` (no BD-side length cap); at
@@ -972,7 +983,7 @@ function applyReviewLean(body, includeFlags) {
   return body;
 }
 
-const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
+const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview"]);
 
 // --- Form lean shaper -----------------------------------------------------
 // Applies to listForms / getForm. BD's response has ~41 columns per form,
@@ -1863,6 +1874,82 @@ async function _stripLinkedPostMetaOrphans(domain, apiKey, seoId) {
     return { probed_ok: true, deleted };
   } catch (e) { return { probed_ok: false, deleted, reason: e.message }; }
 }
+
+// Generic users_meta cascade cleanup (mirror of Worker's `_cascadeStripUsersMeta`).
+// Used after a parent record is deleted to wipe ALL meta rows pointing at it.
+// Strict (database, database_id) pair invariant: every probe + every delete
+// asserts BOTH columns. Defends against drift to unrelated rows that share a
+// `database_id` value across different parent tables.
+// One-by-one deletion with 50ms gap to stay under BD's 100/min rate limiter
+// on bulk cleanups.
+async function _cascadeStripUsersMeta(domain, apiKey, database, databaseId) {
+  const deleted = [];
+  if (!database || databaseId === undefined || databaseId === null || databaseId === "" || databaseId === 0 || databaseId === "0") {
+    return { probed_ok: false, deleted, reason: "invariant: both database and database_id required (non-empty, non-zero)" };
+  }
+  try {
+    const url = new URL(`/api/v2/users_meta/get`, `https://${domain}`);
+    url.searchParams.append("property[]", "database");
+    url.searchParams.append("property[]", "database_id");
+    url.searchParams.append("property_value[]", String(database));
+    url.searchParams.append("property_value[]", String(databaseId));
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.append("property_operator[]", "=");
+    url.searchParams.set("limit", "100");
+    const resp = await fetch(url.toString(), { method: "GET", headers: { "X-Api-Key": apiKey, Accept: "application/json" } });
+    let body = null;
+    try { body = await resp.json(); } catch {}
+    if (!body) return { probed_ok: false, deleted, reason: `probe returned non-JSON (HTTP ${resp.status})` };
+    // BD returns HTTP 400 + status:error on legitimate empty results — that's
+    // a clean "no orphans" not a probe failure.
+    if (body.status === "error" && typeof body.message === "string" && /not found/i.test(body.message)) {
+      return { probed_ok: true, deleted };
+    }
+    if (body.status !== "success") return { probed_ok: false, deleted, reason: body.message || `probe HTTP ${resp.status}` };
+    const rows = Array.isArray(body.message) ? body.message : [];
+    // Defense-in-depth: re-check every row matches BOTH database and database_id
+    // before issuing the delete. If BD ever silently widens the filter, we
+    // still refuse to delete rows that don't match the pair.
+    const targets = rows.filter(r => r && r.meta_id && r.database === database && String(r.database_id) === String(databaseId));
+    for (const r of targets) {
+      try {
+        const delUrl = new URL(`/api/v2/users_meta/delete`, `https://${domain}`);
+        const form = new URLSearchParams();
+        form.set("meta_id", String(r.meta_id));
+        form.set("database", String(database));
+        form.set("database_id", String(databaseId));
+        const dr = await fetch(delUrl.toString(), {
+          method: "DELETE",
+          headers: { "X-Api-Key": apiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+          body: form.toString(),
+        });
+        if (dr.ok) {
+          const drBody = await dr.json().catch(() => null);
+          if (drBody && drBody.status === "success") deleted.push(String(r.meta_id));
+        }
+        await new Promise((res) => setTimeout(res, 50));
+      } catch { /* swallow per-row */ }
+    }
+    return { probed_ok: true, deleted };
+  } catch (e) { return { probed_ok: false, deleted, reason: e.message }; }
+}
+
+// Map of delete operations → (database, idArgKey) for cascade cleanup.
+// `database` is the LITERAL string BD writes into `users_meta.database`
+// (verified via live probe — NOT always the parent table column name; e.g.
+// membership plans use `subscription_types`). `idArgKey` is the arg name
+// carrying the parent row's PK on the delete tool. Strict pair invariant
+// is enforced in `_cascadeStripUsersMeta`.
+const USERS_META_CASCADE_DELETES = {
+  deleteWebPage: { database: "list_seo", idArgKey: "seo_id" },
+  deleteTopCategory: { database: "list_professions", idArgKey: "profession_id" },
+  deleteSubCategory: { database: "list_services", idArgKey: "service_id" },
+  deletePostType: { database: "data_categories", idArgKey: "data_id" },
+  deleteSingleImagePost: { database: "data_posts", idArgKey: "post_id" },
+  deleteMultiImagePost: { database: "users_portfolio_groups", idArgKey: "group_id" },
+  deleteUser: { database: "users_data", idArgKey: "user_id" },
+  deleteMembershipPlan: { database: "subscription_types", idArgKey: "subscription_id" },
+};
 
 const DATA_CATEGORY_FILENAME_LEN = 10;
 const DATA_CATEGORY_FILENAME_RE = /^[a-z0-9]{10}$/;
@@ -3471,6 +3558,69 @@ async function reserveSiteUrlSlug(config, toolName, args) {
 }
 
 // ---------------------------------------------------------------------------
+// MUTATE THROTTLE — sliding-window token bucket per API key.
+//
+// BD enforces ~100 API requests / 60 seconds default. Hitting that returns
+// HTTP 429. The throttle absorbs bursts: if the in-flight + queued count
+// for an API key would exceed the limit, new mutate calls wait their turn
+// rather than 429-failing.
+//
+// Scope:
+//   - Mutate calls only (create/update/delete prefixes). Reads pass through.
+//   - Keyed by API key. Each customer site has its own bucket.
+//   - Process-scoped Map. The npm package is stdio (one process per Claude
+//     Desktop / Cursor session), so this is best-effort within that
+//     session. Cross-process coordination isn't possible without an
+//     external service. BD's per-key limiter is the authoritative ceiling.
+//   - Surfaces `_request_queued_for_ms: N` on the response when delayed.
+//
+// Window: 60s rolling, capped at 100 mutates per window per key (matches
+// BD's 100/60s). Max wait: 30s — past that, the call fails with a clear
+// error rather than holding indefinitely.
+//
+// Mirrored byte-for-byte from Worker's `src/index.ts`. Keep in sync.
+const MUTATE_WINDOW_MS = 60_000;
+const MUTATE_MAX_PER_WINDOW = 100;
+const MUTATE_MAX_WAIT_MS = 30_000;
+const _mutateTimestamps = new Map();
+
+function isMutateTool(toolName) {
+  return /^(create|update|delete)/.test(toolName);
+}
+
+async function acquireMutateSlot(apiKey) {
+  const now = Date.now();
+  const arr = _mutateTimestamps.get(apiKey) || [];
+  const cutoff = now - MUTATE_WINDOW_MS;
+  let i = 0;
+  while (i < arr.length && arr[i] < cutoff) i++;
+  if (i > 0) arr.splice(0, i);
+
+  if (arr.length < MUTATE_MAX_PER_WINDOW) {
+    arr.push(now);
+    _mutateTimestamps.set(apiKey, arr);
+    return { delayMs: 0 };
+  }
+
+  const oldest = arr[0];
+  const waitUntil = oldest + MUTATE_WINDOW_MS;
+  const waitMs = waitUntil - now;
+  if (waitMs > MUTATE_MAX_WAIT_MS) {
+    return { error: `Rate limit queue full — would wait ${Math.round(waitMs / 1000)}s for a slot. BD allows ${MUTATE_MAX_PER_WINDOW} mutate calls per ${MUTATE_WINDOW_MS / 1000}s per API key. Slow down the bulk operation, batch fewer at a time, or wait 60s.` };
+  }
+  await new Promise((res) => setTimeout(res, Math.max(0, waitMs)));
+  const now2 = Date.now();
+  const arr2 = _mutateTimestamps.get(apiKey) || [];
+  const cutoff2 = now2 - MUTATE_WINDOW_MS;
+  let j = 0;
+  while (j < arr2.length && arr2[j] < cutoff2) j++;
+  if (j > 0) arr2.splice(0, j);
+  arr2.push(now2);
+  _mutateTimestamps.set(apiKey, arr2);
+  return { delayMs: now2 - now };
+}
+
+// ---------------------------------------------------------------------------
 // HTTP client
 // ---------------------------------------------------------------------------
 
@@ -4106,6 +4256,20 @@ async function main() {
         }
       }
 
+      // HARD CAP — clamp `limit > 100` to 100 silently (BD's server-side
+      // max). BD itself silently clamps but doesn't tell the agent, so a
+      // limit=99999 call returns ~100 records with no signal that the
+      // request was capped. Surface `_limit_clamped` so the agent knows to
+      // paginate via `next_page` for the rest.
+      let _limitClamped = null;
+      if (args && typeof args === "object") {
+        const requestedLimit = Number(args.limit);
+        if (Number.isFinite(requestedLimit) && requestedLimit > 100) {
+          _limitClamped = `limit reduced from ${requestedLimit} to 100 (BD's server-side maximum). To get more rows, paginate via the next_page cursor returned in this response.`;
+          args.limit = 100;
+        }
+      }
+
       // TRANSPORT STABILITY GUARD — auto-throttle heavy reads.
       //
       // When ANY include_* flag is true, each row balloons (users: ~5-10KB
@@ -4148,6 +4312,87 @@ async function main() {
       // surface as a response echo.
       if (name === "searchUsers" && args && typeof args === "object") {
         args.output_type = "array";
+      }
+
+      // createRedirect / updateRedirect — wrapper-managed `type`. Spec hides
+      // `type` from input. BD's other type values (`profile`, `post`,
+      // `category`) are reserved for system auto-redirects. Force `custom`.
+      if ((name === "createRedirect" || name === "updateRedirect") && args && typeof args === "object") {
+        args.type = "custom";
+      }
+
+      // getPostTypeCustomFields — accept `system_name` as alternative to
+      // numeric `data_id`. Resolve via post-types cache. Refuse on neither,
+      // both, or unknown system_name.
+      if (name === "getPostTypeCustomFields" && args && typeof args === "object") {
+        const hasDataId = args.data_id !== undefined && args.data_id !== null && args.data_id !== "";
+        const hasSysName = typeof args.system_name === "string" && args.system_name.trim().length > 0;
+        if (!hasDataId && !hasSysName) {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32602, message: "getPostTypeCustomFields requires exactly one of `data_id` (numeric) or `system_name` (string, e.g. `website_blog_article`). Use `listPostTypes` to discover both." }) }] };
+        }
+        if (hasDataId && hasSysName) {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32602, message: "getPostTypeCustomFields accepts `data_id` OR `system_name`, not both. Pick one." }) }] };
+        }
+        if (hasSysName) {
+          const target = String(args.system_name).trim();
+          const rows = await getPostTypesCached(config.domain, config.apiKey);
+          if (!rows) {
+            return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32603, message: `Could not resolve system_name='${target}' — post-types lookup failed (BD unreachable or rate-limited). Retry, or pass numeric data_id directly.` }) }] };
+          }
+          const match = rows.find((r) => (r.system_name || "").trim().toLowerCase() === target.toLowerCase());
+          if (!match) {
+            const known = rows.map((r) => r.system_name).filter(Boolean).slice(0, 12).join(", ");
+            return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32602, message: `system_name='${target}' not found on this site. Known system_names include: ${known}. Use \`listPostTypes\` to see the full list.` }) }] };
+          }
+          args.data_id = Number(match.data_id);
+          delete args.system_name;
+        }
+      }
+
+      // getUserSubscriptions / getUserTransactions — translate agent-friendly
+      // `user_id` to BD-required `client_id`. BD's billing endpoints
+      // (`/api/v2/user/subscriptions`, `/api/v2/user/transactions`) only
+      // accept `client_id` (the WHMCS billing record ID). BD's error message
+      // is misleading: "user_id or client_id is required" implies user_id is
+      // valid; it isn't. Wrapper accepts either: if `user_id` given, fetch
+      // user's `clientid` (set by BD on plan enrollment, null until then).
+      // If user has no clientid, refuse with actionable message rather than
+      // forwarding empty value (BD would reject again with same misleading
+      // error).
+      if ((name === "getUserSubscriptions" || name === "getUserTransactions") && args && typeof args === "object") {
+        const hasClientId = args.client_id !== undefined && args.client_id !== null && args.client_id !== "";
+        const hasUserId = args.user_id !== undefined && args.user_id !== null && args.user_id !== "";
+        if (hasUserId && !hasClientId) {
+          try {
+            const userUrl = new URL(`/api/v2/user/get`, config.apiUrl);
+            userUrl.searchParams.set("user_id", String(args.user_id));
+            const ur = await fetch(userUrl.toString(), { method: "GET", headers: { "X-Api-Key": config.apiKey, Accept: "application/json" } });
+            const ub = ur.ok ? await ur.json().catch(() => null) : null;
+            let row = ub && ub.message;
+            if (Array.isArray(row)) row = row[0];
+            const cid = row && row.clientid;
+            if (cid === null || cid === undefined || cid === "" || cid === "0") {
+              return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32602, message: `User user_id=${args.user_id} has no billing record (clientid is null/0) — they have not enrolled in any paid plan, so no ${name === "getUserSubscriptions" ? "subscriptions" : "transactions"} exist. Verify with getUser, or pass an explicit client_id if known.` }) }] };
+            }
+            args.client_id = cid;
+            delete args.user_id;
+          } catch (err) {
+            return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32603, message: `Could not resolve user_id=${args.user_id} → clientid (lookup failed: ${(err && err.message) || String(err)}). Retry, or pass client_id directly.` }) }] };
+          }
+        }
+      }
+
+      // MUTATE THROTTLE — for create/update/delete only. Absorbs bursts
+      // inside BD's 100/60s rate limit so power-user bulk operations
+      // don't trip 429s. Reads pass through unthrottled. Process-scoped
+      // bucket; see `acquireMutateSlot` for mechanics.
+      let _requestQueuedForMs = 0;
+      if (isMutateTool(name)) {
+        const slot = await acquireMutateSlot(config.apiKey);
+        if (slot && slot.error) {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32000, message: slot.error }) }] };
+        }
+        _requestQueuedForMs = (slot && slot.delayMs) || 0;
       }
 
       // SAFETY GUARD: users_meta writes must pass compound identity.
@@ -4934,6 +5179,15 @@ async function main() {
       if (_throttleWarning && result.body && typeof result.body === "object") {
         result.body._throttled = _throttleWarning;
       }
+      // Attach limit-clamp warning when caller exceeded BD's hard cap of 100.
+      if (_limitClamped && result.body && typeof result.body === "object") {
+        result.body._limit_clamped = _limitClamped;
+      }
+      // Attach mutate-throttle delay so the agent sees queueing happen
+      // and can self-pace bulk operations.
+      if (_requestQueuedForMs > 0 && result.body && typeof result.body === "object") {
+        result.body._request_queued_for_ms = _requestQueuedForMs;
+      }
       // Attach thin-content warning on createWebPage if no SEO/title fields
       // were set (page goes live but Google may index as thin content).
       if (_thinContentWarning && result.body && typeof result.body === "object") {
@@ -5069,6 +5323,35 @@ async function main() {
           result.body._data_category_redirect_deleted = del.redirect_id;
         } else if (!del.ok) {
           result.body._data_category_redirect_delete_failed = del.reason || "unknown";
+        }
+      }
+
+      // users_meta cascade — strip ALL meta rows for the deleted parent.
+      // Webpages/posts/categories/users/plans accumulate EAV/overflow rows
+      // in `users_meta`; without cascade they orphan and accumulate. Strict
+      // (database, database_id) pair invariant — see `_cascadeStripUsersMeta`.
+      // Never blocks the parent delete response; surfaces deleted-count
+      // or skip reason as `_users_meta_orphans_deleted` /
+      // `_users_meta_cascade_skipped`.
+      {
+        const cascade = USERS_META_CASCADE_DELETES[name];
+        if (
+          cascade &&
+          result.body && typeof result.body === "object" &&
+          result.body.status === "success"
+        ) {
+          const parentId = args && args[cascade.idArgKey];
+          if (parentId !== undefined && parentId !== null && parentId !== "" && parentId !== 0 && parentId !== "0") {
+            const cleanup = await _cascadeStripUsersMeta(config.domain, config.apiKey, cascade.database, parentId);
+            if (cleanup.probed_ok) {
+              result.body._users_meta_orphans_deleted = cleanup.deleted.length;
+              if (cleanup.deleted.length > 0) {
+                result.body._users_meta_orphans_meta_ids = cleanup.deleted;
+              }
+            } else {
+              result.body._users_meta_cascade_skipped = cleanup.reason || "probe failed";
+            }
+          }
         }
       }
 

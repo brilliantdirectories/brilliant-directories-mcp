@@ -2578,7 +2578,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of review records. Read-only.\n\n**Lean by default:** `review_description` is truncated to the first 500 chars + `…` when longer. Truncated rows are tagged `review_description_truncated: true`. Pass `include_full_text=1` to restore the full body per call (use sparingly at high `limit` — review text is unbounded and can dominate payload).\n\n**Use when:** building moderation queues (filter `review_status=0` for Pending), exporting all reviews, running review-velocity reports, or paginating through every review on the site. For searching by keyword in review text use `searchReviews`; for a single known review use `getReview`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`.\n\n**See also:** `getReview` (single record by ID), `searchReviews` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object (with `review_description` truncated by default; see **Rule: Lean read responses**).\n\n"
+        "description": "Paginated enumeration of review records. Read-only.\n\n**Lean by default:** `review_description` is truncated to the first 500 chars + `…` when longer. Truncated rows are tagged `review_description_truncated: true`. Pass `include_full_text=1` to restore the full body per call (use sparingly at high `limit` — review text is unbounded and can dominate payload).\n\n**Use when:** building moderation queues (filter `review_status=0` for Pending), exporting all reviews, running review-velocity reports, or paginating through every review on the site. For keyword-in-body matching, use `property=review_description property_operator=LIKE property_value=<word>`. For a single known review use `getReview`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**Enums:** `property_operator`: `=`, `LIKE`, `>`, `<`, `>=`, `<=`.\n\n**See also:** `getReview` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object (with `review_description` truncated by default; see **Rule: Lean read responses**).\n\n"
       }
     },
     "/api/v2/users_reviews/get/{review_id}": {
@@ -2623,7 +2623,7 @@
             }
           }
         },
-        "description": "Fetch a single review record. Read-only.\n\n**Lean by default:** `review_description` is truncated to the first 500 chars + `…` when longer (tagged `review_description_truncated: true`). Pass `include_full_text=1` to get the complete body. For a single-record inspection this is usually the right call.\n\n**Use when:** investigating one specific review (usually from a moderation notification or support ticket that includes the `review_id`). For bulk moderation use `listReviews` with `review_status` filter.\n\n**Required:** `review_id`.\n\n**See also:** `listReviews` (enumerate many), `searchReviews` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single review record. Read-only.\n\n**Lean by default:** `review_description` is truncated to the first 500 chars + `…` when longer (tagged `review_description_truncated: true`). Pass `include_full_text=1` to get the complete body. For a single-record inspection this is usually the right call.\n\n**Use when:** investigating one specific review (usually from a moderation notification or support ticket that includes the `review_id`). For bulk moderation use `listReviews` with `review_status` filter.\n\n**Required:** `review_id`.\n\n**See also:** `listReviews` (enumerate many; supports keyword filter via `property=review_description property_operator=LIKE`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/users_reviews/create": {
@@ -2809,60 +2809,6 @@
           }
         },
         "description": "Permanently delete a review record by ID. Destructive - cannot be undone via API.\n\n**Use when:** the review content violates policy and must be purged (spam, abuse, PII). For \"hide without removing\" use `updateReview` with `review_status=3` (Declined) - preserves the audit trail.\n\n**Required:** `review_id`.\n\n**See also:** `updateReview` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API - records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n"
-      }
-    },
-    "/api/v2/users_reviews/search": {
-      "post": {
-        "operationId": "searchReviews",
-        "summary": "Search reviews",
-        "tags": [
-          "Reviews"
-        ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "user_id": {
-                    "type": "integer"
-                  },
-                  "review_status": {
-                    "type": "integer",
-                    "enum": [
-                      0,
-                      2,
-                      3,
-                      4
-                    ],
-                    "description": "Review status (integer):\n\n- `0` = Pending (awaiting moderation)\n\n- `2` = Accepted (visible on profile)\n\n- `3` = Declined (rejected, not public)\n\n- `4` = Waiting for Admin (member pre-accepted, needs admin sign-off)\n\nValue `1` is NOT documented. BD does NOT reject it - stores `\"1\"` verbatim with undefined render behavior. Stick to documented values. Normal flow: `0` -> `2` (accepted) or `0` -> `3` (declined)."
-                  },
-                  "include_full_text": {
-                    "type": "integer",
-                    "description": "Opt in to return the full `review_description` body. Default is lean: bodies over 500 chars are truncated and tagged `review_description_truncated: true`. Set `1` when matching in body content or exporting full results.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Search review records. Read-only.\n\n**Lean by default:** result rows' `review_description` is truncated to the first 500 chars + `…` when longer (tagged `review_description_truncated: true`). Pass `include_full_text=1` to restore full bodies — needed for keyword-in-body verification and full-content export.\n\n**Use when:** filtering by `user_id` (all reviews for one member) or `review_status` (e.g. moderation queue). For keyword-in-body matching, use `listReviews` with `property=review_description property_operator=LIKE`. For structured filtering by any review column (rating, date, property), sorting, or full enumeration use `listReviews` + `property` / `property_value`. For a single known review use `getReview`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Enums:** `review_status`: `0`=Pending, `2`=Accepted, `3`=Declined, `4`=Waiting for Admin.\n\n**See also:** `getReview` (single record by ID), `listReviews` (full enumeration + LIKE-style keyword filter).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_clicks/get": {
@@ -4170,6 +4116,9 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "data_id"
+                ],
                 "properties": {
                   "q": {
                     "type": "string"
@@ -4179,7 +4128,7 @@
                   },
                   "data_id": {
                     "type": "integer",
-                    "description": "Post type ID (strongly recommended)"
+                    "description": "Post type ID. Required. Use `listPostTypes` to find your `data_id` (BD's search endpoint returns `Post Type not found!` when omitted)."
                   },
                   "user_id": {
                     "type": "integer"
@@ -4239,7 +4188,7 @@
             }
           }
         },
-        "description": "Keyword search across post records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listSingleImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a post by keyword in its title / caption / content, or by author (`user_id`). Pass `data_id` to scope search to one post type - strongly recommended since results depend on per-post-type configuration. For structured filtering by any post column (status, date, category) or sorting use `listSingleImagePosts` + `property` / `property_value`. For a single known post use `getSingleImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Parameter interactions:**\n\n- `data_id` (post type) is strongly recommended - results vary significantly by post type configuration\n\n- `q` - keyword across post title, caption, content\n\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
+        "description": "Keyword search across post records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listSingleImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a post by keyword in its title / caption / content, or by author (`user_id`). For structured filtering by any post column (status, date, category) or sorting use `listSingleImagePosts` + `property` / `property_value`. For a single known post use `getSingleImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Required:** `data_id` - identifies which post type to search. Use `listPostTypes` to find your `data_id`. BD returns `Post Type not found!` when omitted.\n\n**Parameter interactions:**\n\n- `q` - keyword across post title, caption, content\n\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/get": {
@@ -4593,12 +4542,16 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "data_id"
+                ],
                 "properties": {
                   "q": {
                     "type": "string"
                   },
                   "data_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Multi-image post type ID. Required. Use `listPostTypes` to find your `data_id` (BD's search endpoint returns `Post Type not found!` when omitted)."
                   },
                   "include_content": {
                     "type": "integer",
@@ -4649,7 +4602,7 @@
             }
           }
         },
-        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listMultiImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a multi-image post (photo album, classified, property, product) by keyword in its name / description, or by author (pass `property=user_id property_value=<id>`). Pass `data_id` to scope search to one multi-image post type. For structured filtering by any post column (status, date, category) or sorting use `listMultiImagePosts` + `property` / `property_value`. For a single known post use `getMultiImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
+        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listMultiImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a multi-image post (photo album, classified, property, product) by keyword in its name / description, or by author (pass `property=user_id property_value=<id>`). For structured filtering by any post column (status, date, category) or sorting use `listMultiImagePosts` + `property` / `property_value`. For a single known post use `getMultiImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Required:** `data_id` - identifies which multi-image post type to search. Use `listPostTypes` to find your `data_id`. BD returns `Post Type not found!` when omitted.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_portfolio/get": {
@@ -4959,12 +4912,14 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "data_id"
-                ],
                 "properties": {
                   "data_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Post type primary key. Pass this OR `system_name` (exactly one)."
+                  },
+                  "system_name": {
+                    "type": "string",
+                    "description": "Post type system name (e.g. `website_blog_article`). Wrapper resolves to `data_id` via `listPostTypes`. Pass this OR `data_id` (exactly one)."
                   }
                 }
               }
@@ -4983,7 +4938,7 @@
             }
           }
         },
-        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Use when:** building a create/update payload for a post type that has custom fields (most do). Returns the exact per-type schema to send. Pass `data_id` of the target post type.\n\n**Required:** `data_id`.\n\n**Parameter interactions:**\n\n- `data_id` - the post type to introspect; get via `listPostTypes`\n\n- Returns custom field definitions specific to this post type - use to build create/update payloads for matching posts\n\n**Discovering enumerated field values (e.g. `post_category`):** per-post-type dropdowns like `post_category` are configured by the site admin and live in this schema. There is NO `createPostCategory` API tool - if the user needs a new dropdown option, that is admin-side work. Call this before a create/update to see the exact allowed values for select/radio/checkbox fields, and pass only those values verbatim.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single posttypecustomfields record. Read-only.\n\n**Use when:** building a create/update payload for a post type that has custom fields (most do). Returns the exact per-type schema to send.\n\n**Required:** exactly one of `data_id` (numeric post-type ID) OR `system_name` (string, e.g. `website_blog_article`). When `system_name` is given the wrapper resolves it to `data_id` via `listPostTypes` before calling BD.\n\n**Parameter interactions:**\n\n- `data_id` - the post type to introspect; get via `listPostTypes`\n- `system_name` - friendlier alternative; the wrapper does the lookup\n- Returns custom field definitions specific to this post type - use to build create/update payloads for matching posts\n\n**Discovering enumerated field values (e.g. `post_category`):** per-post-type dropdowns like `post_category` are configured by the site admin and live in this schema. There is NO `createPostCategory` API tool - if the user needs a new dropdown option, that is admin-side work. Call this before a create/update to see the exact allowed values for select/radio/checkbox fields, and pass only those values verbatim.\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/data_categories/update": {
@@ -11112,7 +11067,7 @@
       "post": {
         "operationId": "createRedirect",
         "summary": "Create a redirect",
-        "description": "Create a new 301 redirect rule. type, old_filename, and new_filename are required.\n\n**Use when:** preserving SEO after any URL change - slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `old_filename`, `new_filename`. (`type` defaults to `custom` when omitted.)\n\n**Pre-check before create - TWO checks (redirects are uniquely dangerous: wrong rules cause infinite loops and SEO damage):**\n\n**Check 1 - exact-pair skip (idempotent):** Do a **server-side filter-find**: `listRedirects property=old_filename property_value=<proposed old> property_operator==`. If a row exists where `new_filename` also matches the proposed new, **skip the create** - the rule is already there; creating a duplicate just bloats the redirect table. If a row exists with the same `old_filename` but a DIFFERENT `new_filename`, that's a conflict: reuse via `updateRedirect` with the new target, OR ask the user which destination wins. Never silently create a duplicate or conflicting `old_filename`.\n\n**Check 2 - reverse-rule loop prevention (CRITICAL):** Do a second filter-find: `listRedirects property=old_filename property_value=<proposed NEW> property_operator==`. If a row exists where `new_filename` equals your proposed `old_filename`, creating this rule would produce an **infinite redirect loop** (A->B and B->A). **STOP.** Flag to the user, explain the reverse rule in place, and ask whether to delete the existing reverse rule first or abandon the create.\n\n**Do NOT paginate unfiltered redirect lists** - filtered lookups are two tiny responses. On any site with a large redirect history, dumping the full table wastes rate limit and context.\n\n**Parameter interactions:**\n\n- `type` - source category: `profile`, `post`, `category`, `custom`, etc.\n\n- `old_filename` / `new_filename` - URL paths relative to the domain root (not full URLs)\n\n- `db_id` - database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n**`type` default: `custom`** - use `custom` unless you're explicitly mirroring BD's auto-generated redirect types (`profile`, `post`, `category`). Most API-created redirects should use `custom` since they're not tied to an auto-rename event from the BD admin UI.\n\n",
+        "description": "Create a new 301 redirect rule.\n\n**Use when:** preserving SEO after any URL change - slug rename on a member profile, post, page, or category. BD auto-creates some redirects on its own (admin-triggered renames), but you must create them manually for API-triggered changes. Avoid duplicate `old_filename` values.\n\n**Required:** `old_filename`, `new_filename`.\n\n**`type` is wrapper-managed:** the wrapper hardcodes `type=custom` on every create. The other BD `type` values (`profile`, `post`, `category`) are reserved for BD's own auto-redirect logic on admin-triggered renames and are not exposed here.\n\n**Pre-check before create - TWO checks (redirects are uniquely dangerous: wrong rules cause infinite loops and SEO damage):**\n\n**Check 1 - exact-pair skip (idempotent):** Do a **server-side filter-find**: `listRedirects property=old_filename property_value=<proposed old> property_operator==`. If a row exists where `new_filename` also matches the proposed new, **skip the create** - the rule is already there; creating a duplicate just bloats the redirect table. If a row exists with the same `old_filename` but a DIFFERENT `new_filename`, that's a conflict: reuse via `updateRedirect` with the new target, OR ask the user which destination wins. Never silently create a duplicate or conflicting `old_filename`.\n\n**Check 2 - reverse-rule loop prevention (CRITICAL):** Do a second filter-find: `listRedirects property=old_filename property_value=<proposed NEW> property_operator==`. If a row exists where `new_filename` equals your proposed `old_filename`, creating this rule would produce an **infinite redirect loop** (A->B and B->A). **STOP.** Flag to the user, explain the reverse rule in place, and ask whether to delete the existing reverse rule first or abandon the create.\n\n**Do NOT paginate unfiltered redirect lists** - filtered lookups are two tiny responses. On any site with a large redirect history, dumping the full table wastes rate limit and context.\n\n**Parameter interactions:**\n\n- `old_filename` / `new_filename` - URL paths relative to the domain root (not full URLs)\n\n- `db_id` - database record ID of the source content if the redirect ties to one; otherwise 0\n\n**See also:** `updateRedirect` (modify existing).\n\n",
         "tags": [
           "Redirects"
         ],
@@ -11127,11 +11082,6 @@
                   "new_filename"
                 ],
                 "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "Redirect type category. Default: `custom` for API-created redirects. Other values (`profile`, `post`, `category`) are typically set by BD's auto-redirect logic on admin-triggered renames.",
-                    "default": "custom"
-                  },
                   "old_filename": {
                     "type": "string",
                     "description": "The old URL path being redirected from, relative to the domain root (e.g. old-slug, not the full URL)"
@@ -11188,10 +11138,6 @@
                     "type": "integer",
                     "description": "Redirect primary key (required to identify record)"
                   },
-                  "type": {
-                    "type": "string",
-                    "description": "Redirect type category. Default: `custom` for API-created redirects. Other values (`profile`, `post`, `category`) are typically set by BD's auto-redirect logic on admin-triggered renames."
-                  },
                   "old_filename": {
                     "type": "string",
                     "description": "The old URL path being redirected from, relative to the domain root (e.g. old-slug, not the full URL)"
@@ -11228,7 +11174,7 @@
             }
           }
         },
-        "description": "Update an existing redirect record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** adjusting an existing rule's destination or source path. Rare - most redirects are create-once.\n\n**Required:** `redirect_id`.\n\n**See also:** `createRedirect` (add new), `deleteRedirect` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
+        "description": "Update an existing redirect record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** adjusting an existing rule's destination or source path. Rare - most redirects are create-once.\n\n**Required:** `redirect_id`.\n\n**`type` is wrapper-managed:** not exposed as an input. All redirects created via this MCP are `custom`; other BD `type` values are reserved for system-generated redirects.\n\n**See also:** `createRedirect` (add new), `deleteRedirect` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
       }
     },
     "/api/v2/redirect_301/delete": {

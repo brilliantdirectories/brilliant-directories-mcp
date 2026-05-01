@@ -117,7 +117,7 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
-const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview", "searchReviews"]);
+const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview"]);
 
 // BD column-name note — if any future CHECK validates PLAN membership
 // display flags, be aware `show_sofware` (missing "t") is spelled that way

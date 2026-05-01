@@ -580,9 +580,9 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_body=1` - restores `email_body`. Required when reading template HTML to edit it.
 
-**Reviews** (`listReviews` / `getReview` / `searchReviews`): 9 flat scalar fields; `review_description` is the only unbounded field (no BD-side length cap). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
+**Reviews** (`listReviews` / `getReview`): 9 flat scalar fields; `review_description` is the only unbounded field (no BD-side length cap). Default truncates `review_description` to 500 chars + `…` and tags the row `review_description_truncated: true`. Flags:
 
-- `include_full_text=1` - restores full `review_description`. Use for single-record inspection, keyword-in-body verification on `searchReviews` results, or full-content export; skip on moderation sweeps and re-fetch individual reviews with `getReview` instead.
+- `include_full_text=1` - restores full `review_description`. Use for single-record inspection or full-content export; skip on moderation sweeps and re-fetch individual reviews with `getReview` instead. For keyword-in-body matching across reviews, use `listReviews` with `property=review_description property_operator=LIKE`.
 
 **Forms** (`listForms` / `getForm`): 11 essential fields always returned (`form_id`, `form_name`, `form_title`, `form_table`, `form_action_type`, `form_target`, `form_email_on`, `form_url`, `form_success_message`, `label_to_placeholder`, `revision_timestamp`). Admin-form-builder breadcrumbs (`copy_from`, `subaction`, `method`, `save`, `form`, `edit_form`, `newsite`, `is_master`) and legacy columns (`form_desc`, `form_database`, `form_email_recipient`, `form_style`, `short_code`, `form_fields_name`, `old_form_name`) stripped. No `include_*` flags — payload is small enough to always return.
 

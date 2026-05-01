@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.0] - 2026-05-01
+
+### Fixed — 5-minion stress-test findings (truth probe + surgical fixes)
+
+Post-v6.42.5 stress test surfaced bugs and rough edges across read paths, guards, and lifecycle ops. This release closes the actionable items, with no behavior change to anything that was working. Core fixes verified live via direct curl probes against `find-fitness-pros.directoryup.com` before implementation.
+
+**`getPostTypeCustomFields` — accept `system_name` as alternative to numeric `data_id`.**
+
+Agents naturally try `getPostTypeCustomFields system_name="website_blog_article"` because that's the field name they see in `listPostTypes` rows. The previous wrapper rejected with `"data_id" Required`. Now: pass exactly one of `data_id` (numeric) OR `system_name` (string). The wrapper resolves `system_name` → `data_id` via the existing post-types cache (5-min TTL, same probe `getPostTypesCached` already runs elsewhere). Refuses on both, neither, or unknown system_name with actionable error listing known names.
+
+**`searchSingleImagePosts` / `searchMultiImagePosts` — `data_id` is required (was: "strongly recommended").**
+
+BD's actual behavior: omitting `data_id` returns `Post Type not found!`. The wrapper said "strongly recommended" — naive callers thought zero results when the call never ran. Now: schema-level required, description points at `listPostTypes`.
+
+**`createRedirect` / `updateRedirect` — wrapper-managed `type` field.**
+
+Drop `type` from input schemas entirely. The wrapper hardcodes `type: "custom"` on every call. Other BD `type` values (`profile`, `post`, `category`) are reserved for BD's own auto-redirect logic on admin-triggered renames; agents had no business setting them. Spec descriptions updated; behavior identical for any caller that previously sent `type=custom` or omitted it.
+
+**`searchReviews` — removed entirely.**
+
+BD's `/api/v2/users_reviews/search` returns rendered HTML widget output, not records. `listReviews` already supports keyword-in-body matching via `property=review_description property_operator=LIKE`, plus structured filters by `user_id`/`review_status`, plus the same lean+`include_full_text` flag. Removed from spec, Worker, npm, drift-check, and instructions. Documented in `brilliant-directories-mcp-VISION.md` under new "Tools omitted by design" section so future contributors don't re-add it.
+
+**`limit > 100` clamps with `_limit_clamped` warning.**
+
+BD silently clamps `limit > 100` to 100 server-side, never tells the agent. A `limit=99999` request returns 100 records (or fewer) with no signal that 99,898 records weren't returned. Now: when caller sends `limit > 100`, wrapper clamps to 100 AND surfaces `_limit_clamped: "limit reduced from N to 100..."` so the agent knows to paginate via `next_page` for the rest. Pagination semantics unchanged; only adds visibility on the previously-silent BD behavior.
+
+**`getUserSubscriptions` / `getUserTransactions` — accept `user_id`, translate to `client_id`.**
+
+BD's billing endpoints only honor `client_id` (the WHMCS billing record ID), but their error message lies — `"user_id or client_id is required"` makes `user_id` look like a valid alternative; it isn't. Wrapper now accepts either input. When only `user_id` is given, the wrapper fetches `clientid` via `getUser` and translates before sending. If user has no billing record (`clientid` null/0 — they never enrolled in any plan), the wrapper refuses with a clear actionable message instead of silently forwarding the empty value (which BD would reject again with the same misleading error). `client_id` direct input still works.
+
+**`deleteWebPage` / `deleteSingleImagePost` / `deleteMultiImagePost` / `deleteSubCategory` / `deleteTopCategory` / `deletePostType` / `deleteUser` / `deleteMembershipPlan` — cascade-clean `users_meta` orphans.**
+
+EAV/overflow rows in `users_meta` (hero, h1, h2, disable_*, custom-field overflow) survive their parent's deletion, accumulating as orphans with no parent to bind to. Now every parent-delete tool that has overflow runs a cascade strip after BD's parent delete succeeds. Strict pair invariant: every cascade query and every per-row delete passes BOTH `database` (verified column value, e.g. `list_seo`, `subscription_types`) AND `database_id` (parent PK), and the wrapper re-checks each row matches before issuing each delete. Defends against drift across tables sharing the same `database_id` value. One-by-one deletion (BD requires per-row `meta_id`), 50ms gap to stay under rate limit on bulk cleanups. Surfaces `_users_meta_orphans_deleted: N` and (when non-empty) `_users_meta_orphans_meta_ids: [...]` on the response so the agent sees exactly what was cleaned. On probe failure, surfaces `_users_meta_cascade_skipped` reason instead of blocking the parent delete.
+
+**Mutate throttle — sliding-window token bucket per API key.**
+
+BD enforces ~100 API requests / 60 seconds default. Power-user bulk operations (delete 1,000 rows, batch update categories) tripped 429s before reaching the wrapper. New: per-API-key sliding-window bucket caps mutate calls (`create*`/`update*`/`delete*`) at 100 per 60s. When at cap, new mutate calls wait their turn (max 30s) rather than 429-failing. Surfaces `_request_queued_for_ms: N` on response when delayed so the agent sees the queueing and can self-pace. Reads pass through unthrottled. Worker: isolate-scoped Map (best-effort across isolates; BD's per-key limiter is the authoritative ceiling). npm: process-scoped Map (best-effort within one stdio session).
+
+**npm package — `config.domain` derivation fix.**
+
+`config.domain` was never assigned in the npm package despite multiple helpers (`getPostTypesCached`, `getWebsiteInfoCached`, `_readLinkedPostMeta`, etc.) accepting it as a parameter. Existing helpers had been silently building `https://undefined/...` URLs. Now derived from `config.apiUrl` at startup via `new URL(config.apiUrl).hostname`. Pre-existing latent issue surfaced during stress test.
+
+### Net diff
+
+- Spec (`bd-api.json`): `searchReviews` operation removed; `searchSingleImagePosts`/`searchMultiImagePosts` `data_id` required; `getPostTypeCustomFields` accepts `data_id` OR `system_name`; `createRedirect`/`updateRedirect` `type` removed from input schema. ~30 lines net.
+- Worker (`src/index.ts`): added `MUTATE_WINDOW_MS`/throttle helpers, `_cascadeStripUsersMeta` + `USERS_META_CASCADE_DELETES` map, four new pre-call transforms (1c/1d/1e/1f), three new response annotations (`_limit_clamped`, `_request_queued_for_ms`, `_users_meta_orphans_deleted`). ~250 lines net.
+- npm (`mcp/index.js`): byte-mirror of all Worker changes + `config.domain` derivation. ~250 lines net.
+- Drift-check, instructions, VISION: small targeted edits matching the source-of-truth changes.
+
 ## [6.42.5] - 2026-05-01
 
 ### Fixed — `_eav_partial_write_warning` on EAV bundle partial writes
