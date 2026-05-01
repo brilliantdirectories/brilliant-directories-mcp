@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.0] - 2026-05-01
+
+### Added — `_clear_fields` directive on every `update*` tool
+
+Customer report (Claude Desktop): `updateWebPage h1="" h2=""` accepted (HTTP 200, `revision_timestamp` updated) but stored values unchanged. Root cause: the wrapper drops empty/null/undefined values before forwarding to BD's form-encoded body, so `h1=""` becomes "field omitted" on the wire and BD treats omitted fields as no-change. Empty-string filtering is load-bearing for normal optional-field semantics; can't simply remove it.
+
+Fix: wrapper-only convention `_clear_fields`, an array of field names to write as explicit empty strings. Bypasses the empty-string filter for those keys only. Available on every `update*` operation (32 tools).
+
+**Agent contract:** `updateWebPage seo_id=123 _clear_fields=["h1","h2"]` writes `h1=&h2=` on the wire; BD persists empty values for both. Names not accepted by the underlying tool are ignored. See **Rule: Clearing fields** in the corpus.
+
+**Implementation shape (single source of truth, 32 references):**
+- `components/schemas/_ClearFields` defines the array shape once.
+- Each `update*` tool's request body adds one `$ref` line pointing at the shared schema.
+- Worker (`src/index.ts`): `toFormBody(obj, clearFields?)` accepts optional clear list; appends explicit empty entries after the existing filter. Dispatch peels `_clear_fields` off args before any distribution loop.
+- npm (`mcp/index.js`): `makeRequest(...args, clearFields)` byte-mirror.
+- Corpus: 1 new rule (**Rule: Clearing fields**) sited next to **Rule: Empty-string filtering**.
+
+### Net diff
+
+- `mcp/openapi/bd-api.json`: 1 schema added, 32 `$ref` lines on update tools.
+- `brilliant-directories-mcp-hosted/src/index.ts` + `mcp/index.js`: ~12 lines each (peel-off + body-build).
+- `mcp/openapi/mcp-instructions.md`: 1 new rule (~3 lines).
+
 ## [6.41.97] - 2026-05-01
 
 ### Fixed — 3-minion review pass on v6.41.96 (prose-only, no behavior change)

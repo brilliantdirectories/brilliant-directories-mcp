@@ -400,6 +400,12 @@
           }
         }
       },
+      "_ClearFields": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
       "SuccessResponse": {
         "type": "object",
         "properties": {
@@ -2174,6 +2180,9 @@
                   "filename": {
                     "type": "string",
                     "description": "Override BD's auto-generated URL slug. **Usually OMIT** - let BD derive. BD may REGENERATE the slug on future updates (when city/category/name change), silently overwriting your override. Only set if you must control the public URL and will re-set it after every future update."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -2738,6 +2747,9 @@
                       4
                     ],
                     "description": "Review status (integer):\n\n- `0` = Pending (awaiting moderation)\n\n- `2` = Accepted (visible on profile)\n\n- `3` = Declined (rejected, not public)\n\n- `4` = Waiting for Admin (member pre-accepted, needs admin sign-off)\n\nValue `1` is NOT documented. BD does NOT reject it - stores `\"1\"` verbatim with undefined render behavior. Stick to documented values. Normal flow: `0` -> `2` (accepted) or `0` -> `3` (declined)."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -3014,6 +3026,9 @@
                   },
                   "click_url": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -3345,6 +3360,9 @@
                       8
                     ],
                     "description": "Lead status (integer). NON-SEQUENTIAL enum - `3` does NOT exist; do not assume gaps are fillable:\n\n- `1` = Pending (received, awaiting action)\n\n- `2` = Matched (assigned to members)\n\n- `4` = Follow-Up (in progress)\n\n- `5` = Sold Out (no capacity)\n\n- `6` = Closed (resolved - converted or won't convert)\n\n- `7` = Bad Leads (spam/invalid)\n\n- `8` = Delete (soft-delete - hides from views)\n\n\"Sold\" / \"won\" -> `6` (Closed). Spam -> `7`. BD does NOT validate this enum - out-of-set integers are accepted and stored with undefined render behavior. Always use documented values."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -3600,6 +3618,9 @@
                   },
                   "lead_response": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -4078,6 +4099,9 @@
                       1
                     ],
                     "description": "Set to `1` to fetch external image URLs in `post_image` into site storage. Supports JPG/PNG/GIF/WebP and SVG."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -4496,6 +4520,9 @@
                   "post_image": {
                     "type": "string",
                     "description": "Comma-separated image URLs — APPENDS new photos (does NOT replace existing). **LANDSCAPE only — never portrait/vertical; source via `https://www.pexels.com/search/<term>/?orientation=landscape`; bare URLs, no `?query`, each must end in `.jpg`/`.jpeg`/`.png`/`.webp` — see **Rule: Image URLs**.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -4772,6 +4799,9 @@
                   },
                   "order": {
                     "type": "integer"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -5099,6 +5129,9 @@
                   "comments_code": {
                     "type": "string",
                     "description": "**CODE FIELD** - additional detail-page footer/embed code (HTML/CSS/JS/iframe/PHP; widget-equivalent trust). Renders directly AFTER `search_results_layout` on the single-record detail page - for embed widgets, schema markup, analytics pixels, structured data, auxiliary footer code.\n\nApplies ONLY to post types with per-record detail pages (blog, event, coupon, property, product, etc.). **NOT applicable to Member Listings (`data_type=10`)** - no post-type-driven detail page; do not send on Member Listings updates.\n\nStandalone - NOT in the profile triplet or search-results group; saves independently. Uses master-fallback-on-read like other code fields."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -5298,6 +5331,9 @@
                       0,
                       1
                     ]
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -5522,6 +5558,9 @@
                   "widget_javascript": {
                     "type": "string",
                     "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. No backslash-strip on this field — regex literals (`\\d`, `\\w`, `\\s`) AND string escapes (`\\n`, `\\t`, `\\\\`) survive intact. See **Rule: Widget code fields**."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -5923,6 +5962,9 @@
                       0,
                       1
                     ]
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -6251,6 +6293,9 @@
                       "1"
                     ],
                     "description": "Form-level toggle. When `\"1\"`, BD collapses each field's `field_text` (label) into placeholder text inside the input. Per-field `field_placeholder` is overridden when this is on."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -6699,6 +6744,9 @@
                   "input_class": {
                     "type": "string",
                     "description": "HTML `class=` attribute. On `field_type=Button`, must be `btn btn-lg btn-block <variant>` - e.g. `btn btn-lg btn-block btn-secondary`. Variant is one of `btn-primary`/`btn-secondary`/`btn-danger`/`btn-success`/`btn-warning`/`btn-info`/`btn-dark`, OR a custom class targeted by site CSS. See `createFormField`."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -7117,6 +7165,9 @@
                   "custom_checkout_url": {
                     "type": "string",
                     "description": "Optional custom checkout URL for this plan. Stored in `users_meta` (`database=subscription_types`, `key=custom_checkout_url`); MCP wrapper handles EAV upsert on update. Must be unique across all plans. Pre-check: `listUserMeta(database=\"subscription_types\", key=\"custom_checkout_url\")` then client-filter for any row whose `value` matches yours; ignore the row where `database_id` equals this plan's `subscription_id`. Any OTHER hit = taken. Safe to leave blank."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -7341,6 +7392,9 @@
                   },
                   "menu_active": {
                     "type": "integer"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -7575,6 +7629,9 @@
                   },
                   "menu_active": {
                     "type": "integer"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -7816,6 +7873,9 @@
                   },
                   "master_id": {
                     "type": "integer"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -8029,6 +8089,9 @@
                   "date": {
                     "type": "string",
                     "description": "Format: `YYYYMMDDHHmmss` in the site's timezone. BD silently truncates other formats, corrupting the value. Optional — omit unless backfilling historical data."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -8233,6 +8296,9 @@
                       "photo",
                       "cover_photo"
                     ]
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -8487,6 +8553,9 @@
                   "database_id": {
                     "type": "integer",
                     "description": "REQUIRED - PK of the parent record this meta row is attached to. MUST match the `database_id` value stored on the row being updated. Same safety rule as `database`: the same numeric ID can belong to unrelated rows on different tables."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -8692,6 +8761,9 @@
                   },
                   "tag_name": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -8885,6 +8957,9 @@
                   },
                   "group_tag_name": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -9146,6 +9221,9 @@
                   },
                   "object_id": {
                     "type": "integer"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -9365,6 +9443,9 @@
                   },
                   "schedule": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -9659,6 +9740,9 @@
                   },
                   "country_sn": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -9789,6 +9873,9 @@
                   },
                   "country_sn": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -9920,6 +10007,9 @@
                       0,
                       1
                     ]
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -10869,6 +10959,9 @@
                   "page_render_widget": {
                     "type": "string",
                     "description": "**OMIT** — internal widget reference for `seo_type=custom_widget_page` only. No public widget-ID lookup; setting on other page types breaks rendering."
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -11093,6 +11186,9 @@
                   "id": {
                     "type": "integer",
                     "description": "Legacy secondary identifier; typically 0 for system-generated redirects"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -11370,6 +11466,9 @@
                       1
                     ],
                     "description": "1 = membership-plan posting limits apply to this data type; 0 = no per-plan limits"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }
@@ -11617,6 +11716,9 @@
                   },
                   "image": {
                     "type": "string"
+                  },
+                  "_clear_fields": {
+                    "$ref": "#/components/schemas/_ClearFields"
                   }
                 }
               }

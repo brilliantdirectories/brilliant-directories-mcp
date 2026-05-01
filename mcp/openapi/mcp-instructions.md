@@ -726,6 +726,10 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL): paginate with `limit=100` and filter client-side. `is_null` is rejected; `is_not_null` matches empty strings as populated. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
 
+### Rule: Clearing fields
+
+**Sending a field with `""` does not clear it.** The wrapper drops empty values before forwarding to BD; BD then treats the field as unchanged and the existing value is preserved. To explicitly blank a field on any `update*` call, pass `_clear_fields` with the names to clear: `_clear_fields=["h1","h2"]`. Names of fields the tool does not accept are ignored.
+
 ### Rule: Category taxonomy
 
 Member category assignment on `createUser` / `updateUser` (3-tier classification: Top → Sub → Sub-sub).

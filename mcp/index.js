@@ -3462,7 +3462,7 @@ async function reserveSiteUrlSlug(config, toolName, args) {
 // HTTP client
 // ---------------------------------------------------------------------------
 
-function makeRequest(config, method, urlPath, queryParams, bodyParams) {
+function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFields) {
   return new Promise((resolve, reject) => {
     const fullUrl = new URL(urlPath, config.apiUrl);
 
@@ -3487,10 +3487,16 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams) {
     const transport = isHttps ? https : http;
 
     let bodyStr = "";
-    if (bodyParams && Object.keys(bodyParams).length > 0) {
-      bodyStr = new URLSearchParams(
-        Object.entries(bodyParams).filter(([, v]) => v !== undefined && v !== null && v !== "")
-      ).toString();
+    const hasClear = clearFields && clearFields.length > 0;
+    if ((bodyParams && Object.keys(bodyParams).length > 0) || hasClear) {
+      const params = new URLSearchParams(
+        Object.entries(bodyParams || {}).filter(([, v]) => v !== undefined && v !== null && v !== "")
+      );
+      // _clear_fields contract: each name becomes an explicit empty-string
+      // entry, bypassing the empty-string filter above so BD writes the
+      // empty value instead of treating the field as unchanged.
+      if (hasClear) for (const name of clearFields) params.append(name, "");
+      bodyStr = params.toString();
     }
 
     const options = {
@@ -4272,6 +4278,16 @@ async function main() {
         }
       }
 
+      // Peel off the wrapper-only `_clear_fields` array before any distribution
+      // loop runs — it's not a BD-API param, it's a directive to makeRequest
+      // telling it which fields to write as explicit empty strings. See
+      // **Rule: Clearing fields**.
+      let clearFields;
+      if (args && Array.isArray(args._clear_fields)) {
+        clearFields = args._clear_fields.filter((n) => typeof n === "string" && n.length > 0);
+        delete args._clear_fields;
+      }
+
       // Build URL path with path params substituted
       let urlPath = toolDef.path;
       const queryParams = {};
@@ -4777,7 +4793,7 @@ async function main() {
         queryParams["property_operator[]"] = metaFilterPairs.map(() => "=");
       }
 
-      const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams);
+      const result = await makeRequest(config, toolDef.method, urlPath, queryParams, bodyParams, clearFields);
 
       // EAV follow-up: parent update succeeded AND we had EAV fields queued.
       // Resolve parent PK (agent always supplies it on updateWebPage) and
