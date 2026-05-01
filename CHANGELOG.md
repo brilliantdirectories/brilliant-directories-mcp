@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.1] - 2026-05-01
+
+### Fixed — `_clear_fields` hardening (3 silent-corruption paths from v6.42.0 break-test)
+
+3-minion adversarial audit on v6.42.0 surfaced 3 paths where `_clear_fields` looked successful (HTTP 200) but corrupted state OR silently no-op'd. All 3 closed as upfront refusals at the dispatch peel-off seam — same shape as the existing form/validator guards.
+
+1. **EAV-routed fields silently no-op'd.** BD's `users_meta/update` endpoint silently ignores empty-string values (the wrapper has explicit knowledge of this at `index.ts:4252-4269`). `_clear_fields=["hero_link_color"]` on `updateWebPage` flowed to the parent `list_seo` update body where BD ignored the unknown key, while the EAV write path was never invoked because `_clear_fields` doesn't carry a value. Net: the row was unchanged and the agent saw `success`. **Hero fields are the most-likely-clearable family** — feature was silently broken for its primary use case. Now refused with a clear pointer at `deleteUserMeta`.
+
+2. **Wrapper-managed-field overwrite.** The wrapper auto-injects timestamps (`revision_timestamp`, `date_updated`, etc.) and unconditionally overwrites a small set of invariants (`content_active=1`, `master_id=0`, `status=1`). `_clear_fields` appended its empty entry AFTER these, producing duplicate-key form bodies where PHP's `$_POST` last-wins → the empty value won → wrapper invariants violated. New `WRAPPER_RESERVED_FIELDS` set refuses these names upfront.
+
+3. **Value+clear of same field.** Passing `{h1: "Hello", _clear_fields: ["h1"]}` produced `h1=Hello&h1=` on the wire; same last-wins semantics meant the explicit value was silently overwritten by the clear. Ambiguous intent now refused at the dispatch site with a clear "use one or the other" message.
+
+**Also tightened on the same pass:** `_clear_fields` names now `.trim()`d before the length filter (was `n.length > 0` only), so whitespace-padded names no longer dead-letter to BD as unknown keys.
+
+### Net diff
+
+`src/index.ts` + `mcp/index.js`: +3 dispatch-time guards (~30 lines each, byte-mirrored), +1 constant `WRAPPER_RESERVED_FIELDS`. `scripts/schema-drift-check.js`: +1 entry in `MIRROR_CONSTANTS`. No spec change. No corpus change. Smoke-test 14/14 pass.
+
 ## [6.42.0] - 2026-05-01
 
 ### Added — `_clear_fields` directive on every `update*` tool

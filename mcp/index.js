@@ -1240,6 +1240,18 @@ const EAV_ROUTES = {
   },
 };
 
+// Fields the wrapper auto-injects or unconditionally overwrites. Refused on
+// `_clear_fields` (would silently violate wrapper invariants — duplicate-key
+// form bodies last-wins to the empty append). Mirrored in Worker src/index.ts.
+const WRAPPER_RESERVED_FIELDS = new Set([
+  "revision_timestamp", "date_updated", "date_added",
+  "review_added", "review_updated",
+  "lead_matched", "lead_updated",
+  "modtime",
+  "content_active", "master_id",
+  "status",
+]);
+
 function splitEavParams(operation, params) {
   const route = EAV_ROUTES[operation];
   if (!route) return { direct: params, eav: {}, route: null };
@@ -4284,8 +4296,34 @@ async function main() {
       // **Rule: Clearing fields**.
       let clearFields;
       if (args && Array.isArray(args._clear_fields)) {
-        clearFields = args._clear_fields.filter((n) => typeof n === "string" && n.length > 0);
+        clearFields = args._clear_fields
+          .filter((n) => typeof n === "string" && n.trim().length > 0)
+          .map((n) => n.trim());
         delete args._clear_fields;
+      }
+      // Three guards on _clear_fields, all return clear refusals.
+      if (clearFields && clearFields.length > 0) {
+        // (A) EAV-routed fields can't be cleared via empty-string append — BD
+        // silently no-ops empty-string updates on users_meta.
+        const route = EAV_ROUTES[name];
+        if (route) {
+          const eavHits = clearFields.filter((n) => route.eavFields.has(n));
+          if (eavHits.length > 0) {
+            return { content: [{ type: "text", text: `_clear_fields cannot clear EAV-routed field(s) [${eavHits.join(", ")}] on ${name} — BD silently no-ops empty-string updates on users_meta. Use deleteUserMeta with database=${route.eavDatabase} and database_id=<parent id> to clear an EAV row.` }], isError: true };
+          }
+        }
+        // (B) Wrapper-managed fields (auto-injected timestamps + unconditional
+        // overwrites). Clearing them violates wrapper invariants.
+        const reservedHits = clearFields.filter((n) => WRAPPER_RESERVED_FIELDS.has(n));
+        if (reservedHits.length > 0) {
+          return { content: [{ type: "text", text: `_clear_fields cannot clear wrapper-managed field(s) [${reservedHits.join(", ")}] — BD-mandatory plumbing.` }], isError: true };
+        }
+        // (C) Overlap: a name in _clear_fields also passed as a regular arg
+        // creates ambiguous intent and a duplicate-key form body.
+        const overlap = clearFields.filter((n) => Object.prototype.hasOwnProperty.call(args, n));
+        if (overlap.length > 0) {
+          return { content: [{ type: "text", text: `_clear_fields conflict: field(s) [${overlap.join(", ")}] also passed as value(s). Use one or the other.` }], isError: true };
+        }
       }
 
       // Build URL path with path params substituted
