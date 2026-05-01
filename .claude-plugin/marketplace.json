@@ -1,0 +1,18 @@
+{
+  "name": "brilliant-directories-mcp",
+  "owner": {
+    "name": "Brilliant Directories",
+    "email": "support@brilliantdirectories.com"
+  },
+  "metadata": {
+    "description": "Official Brilliant Directories plugin for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "brilliant-directories",
+      "description": "Manage your Brilliant Directories website from Claude Code via the public hosted MCP at brilliantmcp.com. Members, posts, leads, reviews, web pages, redirects, email templates, forms, menus, tags, widgets, and post-type configurations.",
+      "source": "./"
+    }
+  ]
+}

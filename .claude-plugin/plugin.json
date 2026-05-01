@@ -1,0 +1,21 @@
+{
+  "name": "brilliant-directories",
+  "version": "1.0.0",
+  "description": "Brilliant Directories integration. Manage members, posts, leads, reviews, web pages, redirects, email templates, forms, menus, tags, widgets, and post-type configurations on any Brilliant Directories website via the public hosted MCP at brilliantmcp.com.",
+  "author": {
+    "name": "Brilliant Directories",
+    "url": "https://github.com/brilliantdirectories"
+  },
+  "homepage": "https://www.brilliantdirectories.com",
+  "repository": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
+  "license": "MIT",
+  "keywords": [
+    "brilliant-directories",
+    "membership",
+    "directory",
+    "mcp",
+    "model-context-protocol",
+    "cms",
+    "crm"
+  ]
+}

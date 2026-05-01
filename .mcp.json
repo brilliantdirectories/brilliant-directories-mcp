@@ -1,11 +1,11 @@
 {
   "mcpServers": {
     "brilliant-directories": {
-      "command": "npx",
-      "args": ["-y", "--prefer-online", "brilliant-directories-mcp@latest"],
-      "env": {
-        "BD_API_KEY": "${BD_API_KEY}",
-        "BD_API_URL": "${BD_API_URL}"
+      "type": "http",
+      "url": "https://brilliantmcp.com",
+      "headers": {
+        "X-Api-Key": "${BD_API_KEY}",
+        "X-BD-Site-URL": "${BD_SITE_URL}"
       }
     }
   }

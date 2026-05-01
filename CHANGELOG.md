@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.80] - 2026-04-30
+
+### Added — Claude Code Plugin manifest + marketplace registration
+
+Repo now ships as a Claude Code Plugin AND a self-hosted plugin marketplace. Three new/changed files at the repo root:
+
+- **`.claude-plugin/plugin.json`** (new) — Claude Code plugin manifest. Required for Claude Code's plugin system to detect this repo as a plugin source.
+- **`.claude-plugin/marketplace.json`** (new) — marketplace registration manifest. Lets users add this repo as a marketplace via `/plugin marketplace add brilliantdirectories/brilliant-directories-mcp` and install the plugin from it.
+- **`.mcp.json`** (changed) — replaced npx-stdio config with Streamable HTTP transport pointing at the public hosted endpoint (`https://brilliantmcp.com`) with per-user auth headers (`X-Api-Key`, `X-BD-Site-URL`). No Node.js install required for plugin users; existing npm-package install paths unaffected (npm consumers don't read `.mcp.json`).
+
+Pattern matches the established working precedents: CockroachDB's `cockroachdb/claude-plugin` repo, Shopify's `Shopify/Shopify-AI-Toolkit`, and the in-tree Anthropic external_plugins (asana, linear, github).
+
+### Why
+
+Anthropic's official directory listings are gated by manual edits to a single file (`.claude-plugin/marketplace.json` in `anthropics/claude-plugins-official`), and only Anthropic team members can edit it — community PRs are auto-rejected. The in-app submission portals at `claude.ai/settings/plugins/submit` and `platform.claude.com/plugins/submit` show "Published" for this plugin (Apr 18, 2026) but the official `marketplace.json` has not been updated. Other developers report the same gap (issues #1628 Cosmos DB, #1660 mercadopago — both open with no response).
+
+The self-hosted marketplace path (this commit) bypasses that queue: users get a one-line install today via `/plugin marketplace add brilliantdirectories/brilliant-directories-mcp` + `/plugin install brilliant-directories@brilliant-directories-mcp`. When the official listing eventually lands, no further repo changes are needed — Anthropic's marketplace.json entry will simply point at this same repo.
+
+### Net diff
+
+Three files. No code change. Drift clean, JSON valid, TS clean. Worker fetches corpus from main branch at runtime — no Worker redeploy needed.
+
 ## [6.41.79] - 2026-04-30
 
 ### Fixed — Annotation contract: `_thin_content_warning` doc-emit name match
