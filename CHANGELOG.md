@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.84] - 2026-05-01
+
+### Fixed — `_listFormFieldsByFormName` empty-result quirk regression (HOTFIX)
+
+v6.41.83's hostile-agent hardening changed `_listFormFieldsByFormName` from `return []` on `!resp.ok` to `return null` (fail-closed against transient BD outages). Live stress-test caught a regression: BD's `/api/v2/form_fields/list` endpoint returns HTTP 400 + `{status:"error", message:"<table> not found"}` when a filter matches zero rows (the documented BD empty-result quirk — see `reference_bd_empty_result_quirk.md`). The fail-closed change misread this legitimate "no fields exist on this form yet" response as a fetch failure and refused 100% of `createFormField` writes on fresh/empty forms.
+
+Fix: `_listFormFieldsByFormName` now distinguishes the empty-result quirk shape (HTTP 400 + `status:"error"` + `message:` ending in "not found") from real fetch failures. Empty-result quirk → return `[]` (legitimate zero rows; uniqueness check passes). Real failure (network error, malformed response, other 5xx) → return `null` (fail-closed, refuse the write).
+
+Mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`.
+
+`_getFormFieldFormNameById` is NOT affected — it fetches a single field by `field_id`; HTTP 400 there means the agent supplied a bad id, which is correctly fail-closed.
+
+### Net diff
+
+Two functions, one in each mirror file. No spec change. No corpus change. Drift clean.
+
 ## [6.41.83] - 2026-05-01
 
 ### Forms surface — full consolidation, hardening, exposure, and lean reads

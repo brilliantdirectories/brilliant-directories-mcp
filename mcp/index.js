@@ -2445,15 +2445,32 @@ async function _getFormFieldFormNameById(domain, apiKey, fieldId) {
 // Returns null on fetch failure OR malformed response shape (caller treats
 // null as "fail-closed" — we refuse the write rather than allow a duplicate
 // to slip through during a transient BD outage or unexpected response).
-// Returns [] only when BD legitimately reports zero matching rows (HTTP 200
-// with the canonical `{message: []}` empty-array shape).
+// Returns [] when BD legitimately reports zero matching rows.
+//
+// BD empty-result quirk: when a /list endpoint filter matches zero rows, BD
+// returns HTTP 400 + `{status:"error", message:"<table> not found"}` instead
+// of HTTP 200 + `{message: []}`. A naive `!resp.ok` check misreads this
+// legitimate-zero-rows case as a fetch failure and incorrectly fail-closes
+// every uniqueness probe on fresh forms (zero existing fields). See
+// reference_bd_empty_result_quirk.md.
 async function _listFormFieldsByFormName(domain, apiKey, formName) {
   const url = `https://${domain}/api/v2/form_fields/list?property=form_name&property_value=${encodeURIComponent(formName)}&property_operator=%3D&limit=200`;
   try {
     const resp = await fetch(url, { headers: { "X-API-KEY": apiKey } });
-    if (!resp.ok) return null;
-    const body = await resp.json();
-    if (!Array.isArray(body?.message)) return null;
+    const body = await resp.json().catch(() => null);
+    // BD's empty-result quirk: zero rows returns 400 + status:"error" +
+    // message:"<table> not found". This is legitimately "zero rows match
+    // your filter" — return [] so the uniqueness check passes (no collision).
+    if (!resp.ok) {
+      const isEmptyResultQuirk =
+        body !== null &&
+        body.status === "error" &&
+        typeof body.message === "string" &&
+        /not found$/i.test(body.message);
+      if (isEmptyResultQuirk) return [];
+      return null; // real failure — fail-closed
+    }
+    if (!body || !Array.isArray(body.message)) return null;
     return body.message;
   } catch {
     return null;
