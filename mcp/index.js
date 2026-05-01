@@ -4319,6 +4319,16 @@ async function main() {
         args.type = "custom";
       }
 
+      // createTag / updateTag — wrapper-managed audit fields. `added_by`
+      // and `updated_by` are audit-trail columns BD never FK-enforces;
+      // hardcode to 0 (AI-as-system-actor semantics). Spec hides from input.
+      if (name === "createTag" && args && typeof args === "object") {
+        args.added_by = 0;
+      }
+      if (name === "updateTag" && args && typeof args === "object") {
+        args.updated_by = 0;
+      }
+
       // getPostTypeCustomFields — accept `system_name` as alternative to
       // numeric `data_id`. Resolve via post-types cache. Refuse on neither,
       // both, or unknown system_name.

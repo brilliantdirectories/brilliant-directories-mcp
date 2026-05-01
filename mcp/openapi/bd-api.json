@@ -8502,8 +8502,7 @@
                 "type": "object",
                 "required": [
                   "tag_name",
-                  "group_tag_id",
-                  "added_by"
+                  "group_tag_id"
                 ],
                 "properties": {
                   "tag_name": {
@@ -8512,10 +8511,6 @@
                   "group_tag_id": {
                     "type": "integer",
                     "description": "Tag group this tag belongs to (from `listTagGroups`). **BD does NOT enforce FK** — passing `0` or a nonexistent group_tag_id is silently accepted and produces an orphan tag (live observed). Verify the group exists before passing."
-                  },
-                  "added_by": {
-                    "type": "integer",
-                    "description": "User ID of the admin creating the tag. **BD does NOT enforce FK** — any integer is accepted, including nonexistent user_ids (live observed: `197609` stored when max user_id was 69). Pass a real admin user_id from `listUsers`."
                   }
                 }
               }
@@ -8534,7 +8529,7 @@
             }
           }
         },
-        "description": "Create a new tag record. Writes live data.\n\n**Use when:** adding a new tag. Group (`group_tag_id`) must exist - discover via `listTagGroups`.\n\n**Required:** `tag_name`, `group_tag_id`, `added_by`.\n\n**Duplicate `tag_name` silent-accept:** BD does NOT enforce a uniqueness constraint on `tag_name` within a `group_tag_id`. Two `createTag` calls with the same `tag_name` + `group_tag_id` both succeed and produce two rows with different `tag_id`s. Downstream `createTagRelationship` calls then become ambiguous (which of the two tags?). **Recommended pre-check pattern:** call `listTags` with `property=tag_name&property_value=<name>&property_operator==` (optionally filtered further by `group_tag_id`) BEFORE create. If a match exists, reuse that `tag_id` rather than creating a duplicate.\n\n**Parameter interactions:**\n\n- `tag_name` - the visible label\n\n- `group_tag_id` - tag group from `listTagGroups`\n\n- `added_by` - user ID of the admin creating the tag\n\n**See also:** `updateTag` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` - includes the server-assigned ID. Use this ID for follow-up operations.\n\n"
+        "description": "Create a new tag record. Writes live data.\n\n**Use when:** adding a new tag. Group (`group_tag_id`) must exist - discover via `listTagGroups`.\n\n**Required:** `tag_name`, `group_tag_id`.\n\n**`added_by` is wrapper-managed:** the audit-trail `added_by` field is hardcoded to `0` by the wrapper on every create. Not exposed as an input.\n\n**Duplicate `tag_name` silent-accept:** BD does NOT enforce a uniqueness constraint on `tag_name` within a `group_tag_id`. Two `createTag` calls with the same `tag_name` + `group_tag_id` both succeed and produce two rows with different `tag_id`s. Downstream `createTagRelationship` calls then become ambiguous (which of the two tags?). **Recommended pre-check pattern:** call `listTags` with `property=tag_name&property_value=<name>&property_operator==` (optionally filtered further by `group_tag_id`) BEFORE create. If a match exists, reuse that `tag_id` rather than creating a duplicate.\n\n**Parameter interactions:**\n\n- `tag_name` - the visible label\n\n- `group_tag_id` - tag group from `listTagGroups`\n\n**See also:** `updateTag` (modify existing).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` - includes the server-assigned ID. Use this ID for follow-up operations.\n\n"
       }
     },
     "/api/v2/tags/update": {
@@ -8580,7 +8575,7 @@
             }
           }
         },
-        "description": "Update an existing tag record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** renaming a tag without losing the tag-to-member relationships.\n\n**Required:** `id`.\n\n**See also:** `createTag` (add new), `deleteTag` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
+        "description": "Update an existing tag record by ID. Fields omitted are untouched. Writes live data.\n\n**Use when:** renaming a tag without losing the tag-to-member relationships.\n\n**Required:** `id`.\n\n**`updated_by` is wrapper-managed:** the audit-trail `updated_by` field is hardcoded to `0` by the wrapper on every update. Not exposed as an input.\n\n**See also:** `createTag` (add new), `deleteTag` (remove permanently).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord} }` - the full updated record after changes applied.\n\n"
       }
     },
     "/api/v2/tags/delete": {
