@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.87] - 2026-05-01
+
+### Fixed — Live README + npm env-var compatibility (no Worker code change)
+
+Surfaced via customer field-creation reports + README audit:
+
+**README — Codex Desktop section** (root + mcp READMEs):
+- URL was `https://brilliantmcp.com/mcp` → corrected to `https://brilliantmcp.com` (no `/mcp` path; Codex's MCP client 404s on the wrong path).
+- Header keys were lowercase (`x-api-key`, `x-bd-site-url`) → corrected to TitleCase (`X-Api-Key`, `X-BD-Site-URL`) for consistency with every other platform's example.
+
+**Env var name compatibility (backwards-compatible — no breaking change):**
+- `BD_SITE_URL` is now the canonical env var name for the site URL on the npm-package stdio path. Clearer customer-facing intent than the previous `BD_API_URL` (which sounded like an API endpoint).
+- `BD_API_URL` continues to work as a legacy alias indefinitely so existing customer configs (Claude Desktop Advanced, Cursor Directory installs) don't break.
+- Resolution order in `mcp/index.js` `parseArgs`: `process.env.BD_SITE_URL || process.env.BD_API_URL || ""`.
+- `server.json` (MCP Registry submission) now declares `BD_SITE_URL` as the primary env var; description notes `BD_API_URL` is also accepted.
+- README leads with `BD_SITE_URL` in every JSON example. The `.mcp.json` Claude Code Plugin install manifest already used `${BD_SITE_URL}` — this rename aligns the rest of the surface.
+- Design decision documented as a comment block at the top of `mcp/index.js` and a one-liner in `brilliant-directories-mcp-VISION.md` auth section.
+
+### Net diff
+
+README.md, mcp/README.md, mcp/index.js (parseArgs only), server.json, plus the version stamps. No Worker code change. Drift clean, JSON valid.
+
 ## [6.41.86] - 2026-05-01
 
 ### Fixed — CRITICAL: Worker `domain is not defined` ReferenceError on every form-write tool call (HOTFIX)
