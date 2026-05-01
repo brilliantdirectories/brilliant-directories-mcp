@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.81] - 2026-04-30
+
+### Added — Plugin category hint (`productivity`)
+
+Both Claude Code plugin manifests now declare `"category": "productivity"`:
+
+- `.claude-plugin/plugin.json` — top-level `category` field.
+- `.claude-plugin/marketplace.json` — `category` on the plugin entry inside `plugins[]`.
+
+`productivity` matches the established Plugins-marketplace taxonomy (single lowercase token, alongside `development`, `database`, `deployment`, `monitoring`, `design`, `testing`, `learning`, `security`, `location`, `migration`). Anthropic's master `marketplace.json` is the authoritative source for directory filtering, and they overwrite the plugin's local field server-side when listing — this commit is correct hygiene so the value matches what they'll record. The `Sales and marketing` taxonomy from the Connectors directory does not apply here; that's a separate surface with a separate submission flow.
+
+### Net diff
+
+Two files, two field additions. No code change. Drift clean, JSON valid.
+
 ## [6.41.80] - 2026-04-30
 
 ### Added — Claude Code Plugin manifest + marketplace registration

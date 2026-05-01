@@ -12,6 +12,7 @@
     {
       "name": "brilliant-directories",
       "description": "Manage your Brilliant Directories website from Claude Code via the public hosted MCP at brilliantmcp.com. Members, posts, leads, reviews, web pages, redirects, email templates, forms, menus, tags, widgets, and post-type configurations.",
+      "category": "productivity",
       "source": "./"
     }
   ]
