@@ -2462,12 +2462,14 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "user_id"
-                ],
                 "properties": {
                   "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Member ID (the standard input). Pass this OR `client_id`."
+                  },
+                  "client_id": {
+                    "type": "integer",
+                    "description": "WHMCS billing record ID. Power-user alternative to `user_id`. Pass this OR `user_id`."
                   }
                 }
               }
@@ -2486,7 +2488,7 @@
             }
           }
         },
-        "description": "Fetch the billing transaction history (invoices) for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** `user_id` (POST body).\n\n**Use when:** you need to see a member's paid/unpaid invoices, payment methods, billing history, or reconcile billing status. Common reasons: answering a member's \"what did I pay for?\" question, exporting billing history, auditing revenue per member.\n\n**See also:** `getUserSubscriptions` (active/past membership plan signups - different resource from invoices), `getUser` (member profile).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, invoices: [{...invoice records}] } }`. Each invoice includes `id`, `invoicenum` (may be empty string), `date`, `duedate`, `datepaid`, `subtotal`, `credit`, `tax`, `total`, `status` (`Paid`, `Unpaid`, etc.), `paymentmethod`, `notes` (admin-facing; may contain internal comments - redact before surfacing to end users), and an `items` array with per-line `description`, `amount`, `type`. NOT a simple list of rows - the `message` is an object containing `invoices` as the array. **Unpaid invoices** have `datepaid: \"0000-00-00 00:00:00\"` (MariaDB zero-date sentinel) - do NOT parse as ISO-8601; check `status === 'Unpaid'` or `datepaid.startsWith('0000')` first. `subscription_details` may be `false` (literal boolean) when absent.\n\n**Reference support articles:**\n\n"
+        "description": "Fetch the billing transaction history (invoices) for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** exactly one of `user_id` (standard — the BD member ID) OR `client_id` (power-user — the WHMCS billing record ID stored on the user as `users_data.clientid`). Default to `user_id`; reach for `client_id` only when you already have one in hand and want to bypass the user lookup.\n\n**Empty result with misleading error:** if the member has no billing record yet (never enrolled in any paid plan), BD returns HTTP 400 + `{status:\"error\", message:\"user_id or client_id is required\"}` even though the identifier WAS sent. The error wording is BD's, not the wrapper's. Treat that exact error message on this endpoint as \"no billing data for this member\" rather than \"missing parameter\".\n\n**Use when:** you need to see a member's paid/unpaid invoices, payment methods, billing history, or reconcile billing status. Common reasons: answering a member's \"what did I pay for?\" question, exporting billing history, auditing revenue per member.\n\n**See also:** `getUserSubscriptions` (active/past membership plan signups - different resource from invoices), `getUser` (member profile).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, invoices: [{...invoice records}] } }`. Each invoice includes `id`, `invoicenum` (may be empty string), `date`, `duedate`, `datepaid`, `subtotal`, `credit`, `tax`, `total`, `status` (`Paid`, `Unpaid`, etc.), `paymentmethod`, `notes` (admin-facing; may contain internal comments - redact before surfacing to end users), and an `items` array with per-line `description`, `amount`, `type`. NOT a simple list of rows - the `message` is an object containing `invoices` as the array. **Unpaid invoices** have `datepaid: \"0000-00-00 00:00:00\"` (MariaDB zero-date sentinel) - do NOT parse as ISO-8601; check `status === 'Unpaid'` or `datepaid.startsWith('0000')` first. `subscription_details` may be `false` (literal boolean) when absent.\n\n**Reference support articles:**\n\n"
       }
     },
     "/api/v2/user/subscriptions": {
@@ -2502,12 +2504,14 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "user_id"
-                ],
                 "properties": {
                   "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Member ID (the standard input). Pass this OR `client_id`."
+                  },
+                  "client_id": {
+                    "type": "integer",
+                    "description": "WHMCS billing record ID. Power-user alternative to `user_id`. Pass this OR `user_id`."
                   }
                 }
               }
@@ -2526,7 +2530,7 @@
             }
           }
         },
-        "description": "Fetch the subscription / membership-plan history for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** `user_id` (POST body).\n\n**Use when:** checking a member's current membership plan, their billing cycle (Monthly/Yearly), next due date, plan upgrade history, whether auto-renewal is on, or past canceled subscriptions.\n\n**See also:** `getUserTransactions` (invoice-level billing records - different resource), `getUser` (member profile - profile-level subscription references `subscription_id`), `listMembershipPlans` (all plan definitions on the site).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, subscriptions: [{...subscription records}] } }`. Each subscription includes `id`, `userid`, `packageid` (membership plan ID), `regdate`, `nextduedate`, `billingcycle` (e.g. `Monthly`, `Yearly`), `paymentmethod`, `amount`, `domainstatus` (`Active`, `Cancelled`, etc.), and related fields. NOT a simple list of rows - the `message` is an object containing `subscriptions` as the array.\n\n**Reference support articles:**\n\n"
+        "description": "Fetch the subscription / membership-plan history for a specific member. Read-only. Backed by the WHMCS billing integration.\n\n**Required:** exactly one of `user_id` (standard — the BD member ID) OR `client_id` (power-user — the WHMCS billing record ID stored on the user as `users_data.clientid`). Default to `user_id`; reach for `client_id` only when you already have one in hand and want to bypass the user lookup.\n\n**Empty result with misleading error:** if the member has no billing record yet (never enrolled in any paid plan), BD returns HTTP 400 + `{status:\"error\", message:\"user_id or client_id is required\"}` even though the identifier WAS sent. The error wording is BD's, not the wrapper's. Treat that exact error message on this endpoint as \"no billing data for this member\" rather than \"missing parameter\".\n\n**Use when:** checking a member's current membership plan, their billing cycle (Monthly/Yearly), next due date, plan upgrade history, whether auto-renewal is on, or past canceled subscriptions.\n\n**See also:** `getUserTransactions` (invoice-level billing records - different resource), `getUser` (member profile - profile-level subscription references `subscription_id`), `listMembershipPlans` (all plan definitions on the site).\n\n**Returns:** `{ status: \"success\", message: { total: <count>, subscriptions: [{...subscription records}] } }`. Each subscription includes `id`, `userid`, `packageid` (membership plan ID), `regdate`, `nextduedate`, `billingcycle` (e.g. `Monthly`, `Yearly`), `paymentmethod`, `amount`, `domainstatus` (`Active`, `Cancelled`, etc.), and related fields. NOT a simple list of rows - the `message` is an object containing `subscriptions` as the array.\n\n**Reference support articles:**\n\n"
       }
     },
     "/api/v2/users_reviews/get": {

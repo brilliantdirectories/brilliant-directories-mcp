@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.1] - 2026-05-01
+
+### Fixed — `getUserSubscriptions` / `getUserTransactions` retract clientid translation
+
+v6.43.0 added a wrapper-side `user_id` → `client_id` translation under the assumption that BD's billing endpoints only accepted `client_id`. That assumption was wrong. BD's documented behavior — re-verified live via direct curl — is that both endpoints accept either `user_id` OR `client_id` (form-urlencoded). The misleading `"user_id or client_id is required"` 400 response is what BD returns when the member has NO billing record at all (never enrolled in a paid plan), regardless of which identifier was sent.
+
+Retracted in this release:
+
+- The clientid lookup path in the Worker and npm dispatch is removed. `user_id` flows straight through to BD as it should.
+- Spec for both endpoints now declares `user_id` AND `client_id` as alternatives (was: `user_id` only required); description explains BD's misleading-error behavior on the empty-billing case so agents stop misreading it as a missing-param bug.
+
+`client_id` is documented as a power-user input — most callers should keep using `user_id`.
+
+### Net diff
+
+- Spec (`bd-api.json`): both endpoints' request bodies + descriptions updated to reflect the BD docs (user_id OR client_id, no required[]).
+- Worker (`src/index.ts`): removed the section 1e clientid translation block.
+- npm (`mcp/index.js`): byte-mirror removal.
+
 ## [6.43.0] - 2026-05-01
 
 ### Fixed — 5-minion stress-test findings (truth probe + surgical fixes)

@@ -4347,41 +4347,6 @@ async function main() {
         }
       }
 
-      // getUserSubscriptions / getUserTransactions — translate agent-friendly
-      // `user_id` to BD-required `client_id`. BD's billing endpoints
-      // (`/api/v2/user/subscriptions`, `/api/v2/user/transactions`) only
-      // accept `client_id` (the WHMCS billing record ID). BD's error message
-      // is misleading: "user_id or client_id is required" implies user_id is
-      // valid; it isn't. Wrapper accepts either: if `user_id` given, fetch
-      // user's `clientid` (set by BD on plan enrollment, null until then).
-      // If user has no clientid, refuse with actionable message rather than
-      // forwarding empty value (BD would reject again with same misleading
-      // error).
-      if ((name === "getUserSubscriptions" || name === "getUserTransactions") && args && typeof args === "object") {
-        const hasClientId = args.client_id !== undefined && args.client_id !== null && args.client_id !== "";
-        const hasUserId = args.user_id !== undefined && args.user_id !== null && args.user_id !== "";
-        if (hasUserId && !hasClientId) {
-          try {
-            // BD's `/user/get?user_id=N` query-param form is silently
-            // ignored — returns the first user record regardless. Use
-            // path-param form `/user/get/{user_id}` which actually
-            // filters. Verified live 2026-05-01.
-            const userUrl = new URL(`/api/v2/user/get/${encodeURIComponent(String(args.user_id))}`, config.apiUrl);
-            const ur = await fetch(userUrl.toString(), { method: "GET", headers: { "X-Api-Key": config.apiKey, Accept: "application/json" } });
-            const ub = ur.ok ? await ur.json().catch(() => null) : null;
-            let row = ub && ub.message;
-            if (Array.isArray(row)) row = row[0];
-            const cid = row && row.clientid;
-            if (cid === null || cid === undefined || cid === "" || cid === "0") {
-              return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32602, message: `User user_id=${args.user_id} has no billing record (clientid is null/0) — they have not enrolled in any paid plan, so no ${name === "getUserSubscriptions" ? "subscriptions" : "transactions"} exist. Verify with getUser, or pass an explicit client_id if known.` }) }] };
-            }
-            args.client_id = cid;
-            delete args.user_id;
-          } catch (err) {
-            return { content: [{ type: "text", text: JSON.stringify({ status: "error", code: -32603, message: `Could not resolve user_id=${args.user_id} → clientid (lookup failed: ${(err && err.message) || String(err)}). Retry, or pass client_id directly.` }) }] };
-          }
-        }
-      }
 
       // MUTATE THROTTLE — for create/update/delete only. Absorbs bursts
       // inside BD's 100/60s rate limit so power-user bulk operations
