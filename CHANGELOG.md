@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.79] - 2026-04-30
+
+### Fixed — Annotation contract: `_thin_content_warning` doc-emit name match
+
+Worker emits `_thin_content_warning` annotation on `createWebPage` thin-content responses (`index.ts:5234`). createWebPage description called the field `_warning` (substring match would still find it, but imprecise). Renamed in description to match actual emit key. 1-token correction; +21 chars; doc accuracy match with worker reality.
+
 ## [6.41.78] - 2026-04-30
 
 ### Fixed — Semantic-correctness audit catches 1 cross-ref misdirection
