@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.93] - 2026-05-01
+
+### Fixed — `website_contacts` canonical `field_name` rule was buried in `createFormField` description
+
+Customer report (Claude Desktop): created a `website_contacts` form with `field_name=name` and `field_name=email` instead of the canonical `yourname` / `inquiry_email`. Submissions persisted but didn't appear in the admin form inbox columns (the `form_inquiries` table indexes on the canonical column names). Customer-facing failure mode.
+
+The canonical names WERE in the spec (`createFormField` description) but as a parenthetical inside a paragraph of cross-references — easy to miss next to 4 other `§ Form classes` / `§ Field anatomy` / `§ Lead-match` / `§ Member-dashboard` pointers. Promoted to a top-level bold callout with the explicit "use these EXACTLY (NOT `name` / `email` / `message`)" phrasing.
+
+Same callout added to `updateFormField` description for the rename case.
+
+No code change. No wrapper validation added — wrapper-side validation of `field_name` against `form_table` would require pre-fetching the parent form's `form_table` (same fail-mode that v6.41.83-89 had with the now-removed validators). The corpus rule + spec callout is the right fix.
+
+### Net diff
+
+`bd-api.json`: 2 operation descriptions extended with a bold `field_name` mapping callout.
+
 ## [6.41.92] - 2026-05-01
 
 ### Cleanup — 3-minion audit pass on v6.41.91
