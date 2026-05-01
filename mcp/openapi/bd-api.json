@@ -3669,7 +3669,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of post records. Read-only.\n\n**Lean by default:** each row strips `post_content` (HTML body), `post_meta_*` (SEO bundle), the full nested `user` author object, the full nested `data_category` post-type config, `user_clicks_schema.clicks` array, `list_service`, and ~25 admin-form residue fields. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads; call `getPostType` with `data_id` if you need it. Replaces full `user` with `author: {...}` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`). Replaces click array with `total_clicks: N`. Use `include_*` flags to restore specific nested fields.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of post records. Read-only.\n\n**Lean by default:** each row strips `post_content` (HTML body), `post_meta_*` (SEO bundle), the full nested `user` author object, the full nested `data_category` post-type config, `user_clicks_schema.clicks` array, `list_service`, and ~25 admin-form residue fields. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads; call `getPostType` with `data_id` if you need it. Replaces full `user` with `author: {...}` summary (`user_id`, `first_name`, `last_name`, `company`, `email`, `phone_number`, `filename`, `image_main_file`, `subscription_id`, `active`). Replaces click array with `total_clicks: N`. Use `include_*` flags to restore specific nested fields.\n\n**Use when:** enumerating posts of single-image families - blog articles, events, jobs, coupons, videos, discussions. Filter by `user_id` for one member's posts, or `data_id` to scope to one post type. Before using, confirm the target post type has `data_type` 9 or 20 (single-image); `data_type=4` means multi-image and you want `listMultiImagePosts` instead.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getSingleImagePost` (single record by ID). For keyword-in-body matching, use this tool with `property=post_title property_operator=LIKE` (or `post_caption`/`post_content`).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/data_posts/get/{post_id}": {
@@ -3716,7 +3716,7 @@
             }
           }
         },
-        "description": "Fetch a single post record. Read-only.\n\n**Lean by default:** response strips the same heavy nested buckets as `listSingleImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one post by `post_id`. For enumeration use `listSingleImagePosts`; for keyword search use `searchSingleImagePosts`.\n\n**Required:** `post_id`.\n\n**See also:** `listSingleImagePosts` (enumerate many), `searchSingleImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single post record. Read-only.\n\n**Lean by default:** response strips the same heavy nested buckets as `listSingleImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one post by `post_id`. For enumeration or keyword search use `listSingleImagePosts` (with `property=post_title property_operator=LIKE` for keyword-in-body).\n\n**Required:** `post_id`.\n\n**See also:** `listSingleImagePosts` (enumerate many; supports keyword filter via `property` + `property_operator=LIKE`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/data_posts/fields": {
@@ -3910,7 +3910,7 @@
             }
           }
         },
-        "description": "Create a new post record. Writes live data.\n\n**Use when:** creating a blog article, event, job listing, coupon, or any other single-image post type. Look up `data_id` + `data_type` via `listPostTypes` first - the post type's `data_type` field determines which create endpoint is correct. If `data_type=4` on the post type, use `createMultiImagePost` instead. For posts with scraped external image URLs, include `auto_image_import=1` to fetch and store them locally.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `post_title`, and BD auto-generates `filename` (the URL slug) from the title - so a duplicate title produces a URL collision (two posts fighting for the same public URL, unpredictable which one resolves). Do a **server-side filter-find**: `searchSingleImagePosts property=post_title property_value=<proposed> property_operator==` (or `listSingleImagePosts` with the same filter). Zero rows = title free; >=1 row = taken. **Do NOT paginate unfiltered lists** - sites in the wild have thousands of posts; filtered lookup is one tiny response. If taken: reuse via `updateSingleImagePost`, OR ask the user, OR pick an alternate `post_title` and re-check. Never silently create a duplicate.\n\n**Parameter interactions:**\n\n- `user_id` - owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n\n- `data_id` - post type category ID; get via `listPostTypes`\n\n- `data_type` - data type classification; usually matches the post type's data type\n\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n\n- Response includes both `post_id` and `post_token` - the token is used for sharable URLs\n\n**See also:** `updateSingleImagePost` (modify existing).\n\n---\n\n**Which endpoint to use - `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings - e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) - NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) -> `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) -> `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n**Picking `post_category` (and other per-type dropdowns):** `post_category` values are configured PER POST TYPE by the site admin in the post type's `feature_categories` CSV. Before create, call `getSingleImagePostFields(form_name=<post type's form_name>)` and read `post_category.choices[].key`. Pass ONLY values from that list, VERBATIM - BD does not trim whitespace when splitting `feature_categories`, so options after the first may have a leading space (e.g. `\" Category 2\"`). If the user names a category that isn't in the list: ask whether to pick the closest existing option or have them add the new option in BD admin first - do NOT invent a new value. WARNING: if `form_name` does not match a real post type form, `getSingleImagePostFields` silently returns a generic SUPER-UNION field list (HTTP 200, no error) - verify `form_name` exists in `listPostTypes` first.\n\n"
+        "description": "Create a new post record. Writes live data.\n\n**Use when:** creating a blog article, event, job listing, coupon, or any other single-image post type. Look up `data_id` + `data_type` via `listPostTypes` first - the post type's `data_type` field determines which create endpoint is correct. If `data_type=4` on the post type, use `createMultiImagePost` instead. For posts with scraped external image URLs, include `auto_image_import=1` to fetch and store them locally.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `post_title`, and BD auto-generates `filename` (the URL slug) from the title - so a duplicate title produces a URL collision (two posts fighting for the same public URL, unpredictable which one resolves). Do a **server-side filter-find**: `listSingleImagePosts property=post_title property_value=<proposed> property_operator==`. Zero rows = title free; >=1 row = taken. **Do NOT paginate unfiltered lists** - sites in the wild have thousands of posts; filtered lookup is one tiny response. If taken: reuse via `updateSingleImagePost`, OR ask the user, OR pick an alternate `post_title` and re-check. Never silently create a duplicate.\n\n**Parameter interactions:**\n\n- `user_id` - owner; must be an existing member (discover via `listUsers` or `searchUsers`)\n\n- `data_id` - post type category ID; get via `listPostTypes`\n\n- `data_type` - data type classification; usually matches the post type's data type\n\n- `post_status`: `0`=Draft (not visible), `1`=Published (public)\n\n- Response includes both `post_id` and `post_token` - the token is used for sharable URLs\n\n**See also:** `updateSingleImagePost` (modify existing).\n\n---\n\n**Which endpoint to use - `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings - e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) - NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**For \"make a blog post\" intent:** look up `data_categories` for `data_name` matching \"blog\" (commonly `data_id=14` with `data_type=20`) -> `createSingleImagePost` with that `data_id` + `data_type`.\n\n**For \"make a photo album\" / \"gallery\" intent:** look up the album post type (often `data_id=10`, `data_type=4`) -> `createMultiImagePost` with that `data_id` + `data_type`. Photos are added separately via `createMultiImagePostPhoto` using the returned `group_id`.\n\n**Picking `post_category` (and other per-type dropdowns):** `post_category` values are configured PER POST TYPE by the site admin in the post type's `feature_categories` CSV. Before create, call `getSingleImagePostFields(form_name=<post type's form_name>)` and read `post_category.choices[].key`. Pass ONLY values from that list, VERBATIM - BD does not trim whitespace when splitting `feature_categories`, so options after the first may have a leading space (e.g. `\" Category 2\"`). If the user names a category that isn't in the list: ask whether to pick the closest existing option or have them add the new option in BD admin first - do NOT invent a new value. WARNING: if `form_name` does not match a real post type form, `getSingleImagePostFields` silently returns a generic SUPER-UNION field list (HTTP 200, no error) - verify `form_name` exists in `listPostTypes` first.\n\n"
       }
     },
     "/api/v2/data_posts/update": {
@@ -4104,93 +4104,6 @@
         "description": "Permanently delete a post record by ID. Destructive - cannot be undone via API.\n\n**Use when:** removing a post permanently. For \"hide without deleting\" use `updateSingleImagePost` with `post_status=0` (Draft). Deleting also removes the post_token, breaking any external links to the share URL.\n\n**Required:** `post_id`.\n\n**See also:** `updateSingleImagePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API - records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n"
       }
     },
-    "/api/v2/data_posts/search": {
-      "post": {
-        "operationId": "searchSingleImagePosts",
-        "summary": "Search posts",
-        "tags": [
-          "Posts"
-        ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "data_id"
-                ],
-                "properties": {
-                  "q": {
-                    "type": "string"
-                  },
-                  "category": {
-                    "type": "string"
-                  },
-                  "data_id": {
-                    "type": "integer",
-                    "description": "Post type ID. Required. Use `listPostTypes` to find your `data_id` (BD's search endpoint returns `Post Type not found!` when omitted)."
-                  },
-                  "user_id": {
-                    "type": "integer"
-                  },
-                  "page": {
-                    "type": "integer"
-                  },
-                  "limit": {
-                    "type": "integer"
-                  },
-                  "include_content": {
-                    "type": "integer",
-                    "description": "Opt in to return `post_content` HTML body.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_post_seo": {
-                    "type": "integer",
-                    "description": "Opt in to return `post_meta_*` SEO bundle.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_author_full": {
-                    "type": "integer",
-                    "description": "Opt in to return full `user` nested object instead of curated `author` summary.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_clicks": {
-                    "type": "integer",
-                    "description": "Opt in to return `user_clicks_schema.clicks` array.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Keyword search across post records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listSingleImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a post by keyword in its title / caption / content, or by author (`user_id`). For structured filtering by any post column (status, date, category) or sorting use `listSingleImagePosts` + `property` / `property_value`. For a single known post use `getSingleImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Required:** `data_id` - identifies which post type to search. Use `listPostTypes` to find your `data_id`. BD returns `Post Type not found!` when omitted.\n\n**Parameter interactions:**\n\n- `q` - keyword across post title, caption, content\n\n- Fields exposed in search depend on the post type; use `getSingleImagePostFields` with `form_name` to discover them\n\n**See also:** `getSingleImagePost` (single record by ID), `listSingleImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
-      }
-    },
     "/api/v2/users_portfolio_groups/get": {
       "get": {
         "operationId": "listMultiImagePosts",
@@ -4236,7 +4149,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Lean by default:** each row strips `group_desc` (HTML body, field name differs from Single posts), nested `user` author object, nested `data_category`, `user_clicks_schema.clicks`, and nested `users_portfolio` photo array (keeps `cover_photo_url`, `cover_thumbnail_url`, `total_photos` summary from the first photo). Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config is NOT returned; call `getPostType` with `data_id` if you need it. Strips ~25 admin-form residue fields. Replaces `user` with `author: {...}` summary. Replaces clicks with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of portfoliogroup records. Read-only.\n\n**Lean by default:** each row strips `group_desc` (HTML body, field name differs from Single posts), nested `user` author object, nested `data_category`, `user_clicks_schema.clicks`, and nested `users_portfolio` photo array (keeps `cover_photo_url`, `cover_thumbnail_url`, `total_photos` summary from the first photo). Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing - full post-type config is NOT returned; call `getPostType` with `data_id` if you need it. Strips ~25 admin-form residue fields. Replaces `user` with `author: {...}` summary. Replaces clicks with `total_clicks: N`. Use `include_*` flags to restore anything stripped.\n\n**Use when:** enumerating photo-album / gallery-style posts (Photo Album, Classified, Property, Product - any post type with `data_type=4`). For single-image post types use `listSingleImagePosts`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getMultiImagePost` (single record by ID). For keyword-in-body matching, use this tool with `property=group_name property_operator=LIKE` (or `group_desc`).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/get/{group_id}": {
@@ -4280,7 +4193,7 @@
             }
           }
         },
-        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Lean by default:** response strips the same heavy nested buckets as `listMultiImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one multi-image post by `group_id`. Photos in this post are loaded separately via `listMultiImagePostPhotos` with `group_id` filter.\n\n**Required:** `group_id`.\n\n**See also:** `listMultiImagePosts` (enumerate many), `searchMultiImagePosts` (keyword search).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
+        "description": "Fetch a single portfoliogroup record. Read-only.\n\n**Lean by default:** response strips the same heavy nested buckets as `listMultiImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** fetching one multi-image post by `group_id`. Photos in this post are loaded separately via `listMultiImagePostPhotos` with `group_id` filter.\n\n**Required:** `group_id`.\n\n**See also:** `listMultiImagePosts` (enumerate many; supports keyword filter via `property` + `property_operator=LIKE`).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record when found. Empty or HTTP 404 when not found.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/fields": {
@@ -4401,7 +4314,7 @@
             }
           }
         },
-        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Use when:** creating a photo album, gallery, product listing with multiple photos, or any post type with `data_type=4`. Confirm the target post type's `data_type` via `listPostTypes` first - `data_type=4` belongs here; 9/20 belongs in `createSingleImagePost`. **For external image URLs, always use the bulk `post_image` CSV + `auto_image_import=1` here** - this is the only path that imports externals into site storage. `createMultiImagePostPhoto` does NOT import and is only suitable for already-hosted-on-site URLs.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `group_name`, and the public URL slug is derived from it — duplicate names produce a URL collision (unpredictable which resolves). Do a **server-side filter-find**: `searchMultiImagePosts property=group_name property_value=<proposed> property_operator==` (or `listMultiImagePosts` with the same filter). Zero rows = name free; >=1 = taken. If taken: reuse via `updateMultiImagePost`, ask the user, or pick an alternate. Never silently create a duplicate.\n\n**Parameter interactions:**\n\n- `data_id` + `data_type` - specify the post type this album belongs to (from `listPostTypes`; `data_type` must be `4`)\n\n- `group_status`: `0`=Hidden, `1`=Published\n\n- `post_image` - comma-separated image URLs imported as child photos at create time\n\n- `auto_image_import=1` - fetches the `post_image` URLs into site storage (required for external sources to survive)\n\n**Post-create verification (critical):** HTTP 200 does NOT mean every photo imported. After create, call `listMultiImagePostPhotos property=group_id&property_value=<new_group_id>&property_operator==`; row count must equal CSV count and every row needs non-empty `file` + `image_imported=2` (success; `0` = silent-failure row). Fix failed row: `deleteMultiImagePostPhoto`, then `updateMultiImagePost group_id=<same>&post_image=<replacement>&auto_image_import=1` (appends). Do NOT delete and recreate the album.\n\n**See also:** `updateMultiImagePost` (modify existing), `createMultiImagePostPhoto` (already-hosted URLs only).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` - includes the server-assigned `group_id`.\n\n---\n\n**Which endpoint to use - `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings - e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) - NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**Category for multi-image posts:** multi-image posts do NOT expose `post_category` like single-image posts do. Album-level categorization is configured differently in BD admin and is not cleanly writable via the create payload. If categorization is needed, add it via a follow-up `updateMultiImagePost` or BD admin.\n\n"
+        "description": "Create a new portfoliogroup record. Writes live data.\n\n**Use when:** creating a photo album, gallery, product listing with multiple photos, or any post type with `data_type=4`. Confirm the target post type's `data_type` via `listPostTypes` first - `data_type=4` belongs here; 9/20 belongs in `createSingleImagePost`. **For external image URLs, always use the bulk `post_image` CSV + `auto_image_import=1` here** - this is the only path that imports externals into site storage. `createMultiImagePostPhoto` does NOT import and is only suitable for already-hosted-on-site URLs.\n\n**Required:** `user_id`, `data_id`, `data_type`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `group_name`, and the public URL slug is derived from it — duplicate names produce a URL collision (unpredictable which resolves). Do a **server-side filter-find**: `listMultiImagePosts property=group_name property_value=<proposed> property_operator==`. Zero rows = name free; >=1 = taken. If taken: reuse via `updateMultiImagePost`, ask the user, or pick an alternate. Never silently create a duplicate.\n\n**Parameter interactions:**\n\n- `data_id` + `data_type` - specify the post type this album belongs to (from `listPostTypes`; `data_type` must be `4`)\n\n- `group_status`: `0`=Hidden, `1`=Published\n\n- `post_image` - comma-separated image URLs imported as child photos at create time\n\n- `auto_image_import=1` - fetches the `post_image` URLs into site storage (required for external sources to survive)\n\n**Post-create verification (critical):** HTTP 200 does NOT mean every photo imported. After create, call `listMultiImagePostPhotos property=group_id&property_value=<new_group_id>&property_operator==`; row count must equal CSV count and every row needs non-empty `file` + `image_imported=2` (success; `0` = silent-failure row). Fix failed row: `deleteMultiImagePostPhoto`, then `updateMultiImagePost group_id=<same>&post_image=<replacement>&auto_image_import=1` (appends). Do NOT delete and recreate the album.\n\n**See also:** `updateMultiImagePost` (modify existing), `createMultiImagePostPhoto` (already-hosted URLs only).\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }` - includes the server-assigned `group_id`.\n\n---\n\n**Which endpoint to use - `data_type` family decides:**\n\nEvery post type in `data_categories` has a `data_type` field that classifies its family. Call `listPostTypes` or `getPostType` to see the `data_type` of your target post type, then choose:\n\n| `data_type` value | Family | Use endpoint |\n|---|---|---|\n| `4` | Multi-image (albums, galleries, photo-heavy listings - e.g. Classified, Photo Album, Property, Product) | `createMultiImagePost` |\n| `9` | Single-image video | `createSingleImagePost` |\n| `20` | Single-image article / event / blog / job / coupon | `createSingleImagePost` |\n| `10`, `13`, `21`, `28`, `29` (and similar) | Internal admin types (Member Listings, Reviews, Sub Accounts, Specialties, Favorites) - NOT posts | Use the resource-specific endpoint (e.g. `createReview` for `data_type=13`) |\n\nIf you call the wrong create endpoint for a given post type, BD may accept the row but it won't render on the public site correctly.\n\n**Category for multi-image posts:** multi-image posts do NOT expose `post_category` like single-image posts do. Album-level categorization is configured differently in BD admin and is not cleanly writable via the create payload. If categorization is needed, add it via a follow-up `updateMultiImagePost` or BD admin.\n\n"
       }
     },
     "/api/v2/users_portfolio_groups/update": {
@@ -4528,81 +4441,6 @@
           }
         },
         "description": "Permanently delete a portfoliogroup record by ID. Destructive - cannot be undone via API.\n\n**Use when:** removing the entire album. **Recommended sequence: delete child photos first via `deleteMultiImagePostPhoto` (enumerate via `listMultiImagePostPhotos property=group_id&property_value=<id>&property_operator==`), THEN delete the group.** BD does not cascade — skipping this leaves orphan `users_portfolio` rows.\n\n**Required:** `group_id`.\n\n**See also:** `updateMultiImagePost` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API - records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n"
-      }
-    },
-    "/api/v2/users_portfolio_groups/search": {
-      "post": {
-        "operationId": "searchMultiImagePosts",
-        "summary": "Search album groups",
-        "tags": [
-          "Portfolio Groups"
-        ],
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "data_id"
-                ],
-                "properties": {
-                  "q": {
-                    "type": "string"
-                  },
-                  "data_id": {
-                    "type": "integer",
-                    "description": "Multi-image post type ID. Required. Use `listPostTypes` to find your `data_id` (BD's search endpoint returns `Post Type not found!` when omitted)."
-                  },
-                  "include_content": {
-                    "type": "integer",
-                    "description": "Opt in to return `group_desc` HTML body.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_author_full": {
-                    "type": "integer",
-                    "description": "Opt in to return full `user` nested object instead of curated `author` summary.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_clicks": {
-                    "type": "integer",
-                    "description": "Opt in to return `user_clicks_schema.clicks` array.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  },
-                  "include_photos": {
-                    "type": "integer",
-                    "description": "Opt in to return `users_portfolio` full photo array.",
-                    "enum": [
-                      0,
-                      1
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Keyword search across portfoliogroup records. Read-only.\n\n**Lean by default:** rows strip the same heavy nested buckets as `listMultiImagePosts` (see **Rule: Lean read responses**). Pass `include_*=1` flags to restore specific nested fields.\n\n**Use when:** finding a multi-image post (photo album, classified, property, product) by keyword in its name / description, or by author (pass `property=user_id property_value=<id>`). For structured filtering by any post column (status, date, category) or sorting use `listMultiImagePosts` + `property` / `property_value`. For a single known post use `getMultiImagePost`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Required:** `data_id` - identifies which multi-image post type to search. Use `listPostTypes` to find your `data_id`. BD returns `Post Type not found!` when omitted.\n\n**See also:** `getMultiImagePost` (single record by ID), `listMultiImagePosts` (full enumeration).\n\n**Returns:** `{ status: \"success\", message: [...records] }`. Supports pagination fields when result set is large.\n\n"
       }
     },
     "/api/v2/users_portfolio/get": {

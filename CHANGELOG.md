@@ -17,9 +17,9 @@ Post-v6.42.5 stress test surfaced bugs and rough edges across read paths, guards
 
 Agents naturally try `getPostTypeCustomFields system_name="website_blog_article"` because that's the field name they see in `listPostTypes` rows. The previous wrapper rejected with `"data_id" Required`. Now: pass exactly one of `data_id` (numeric) OR `system_name` (string). The wrapper resolves `system_name` → `data_id` via the existing post-types cache (5-min TTL, same probe `getPostTypesCached` already runs elsewhere). Refuses on both, neither, or unknown system_name with actionable error listing known names.
 
-**`searchSingleImagePosts` / `searchMultiImagePosts` — `data_id` is required (was: "strongly recommended").**
+**`searchSingleImagePosts` / `searchMultiImagePosts` — removed entirely.**
 
-BD's actual behavior: omitting `data_id` returns `Post Type not found!`. The wrapper said "strongly recommended" — naive callers thought zero results when the call never ran. Now: schema-level required, description points at `listPostTypes`.
+Both BD endpoints (`/api/v2/data_posts/search`, `/api/v2/users_portfolio_groups/search`) return rendered HTML widget output, not records — verified live. Same disposition as `searchReviews`: this MCP exists to read and mutate records as structured JSON, not to ship rendered widget HTML. Replaced by `listSingleImagePosts` / `listMultiImagePosts` with `property=post_title property_operator=LIKE` (or `post_caption`/`post_content`/`group_name`/`group_desc`) for keyword-in-body matching, plus existing `property=user_id`/`property=data_id`/etc. structured filters and the same lean+include flag set. Removed from spec, Worker `POST_READ_TOOLS`, npm dispatch, drift-check, READMEs, and `docs/`. VISION's "Tools omitted by design" section updated to list both alongside `searchReviews`.
 
 **`createRedirect` / `updateRedirect` — wrapper-managed `type` field.**
 

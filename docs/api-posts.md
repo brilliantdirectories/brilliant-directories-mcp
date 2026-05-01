@@ -1,6 +1,6 @@
 # BD API — Single-Image Posts Endpoints
 
-**Tools:** `listSingleImagePosts`, `getSingleImagePost`, `createSingleImagePost`, `updateSingleImagePost`, `deleteSingleImagePost`, `searchSingleImagePosts`, `getSingleImagePostFields`
+**Tools:** `listSingleImagePosts`, `getSingleImagePost`, `createSingleImagePost`, `updateSingleImagePost`, `deleteSingleImagePost`, `getSingleImagePostFields`
 **Underlying endpoint:** `/api/v2/data_posts/*`
 **BD table:** `data_posts`
 **Primary key:** `post_id`

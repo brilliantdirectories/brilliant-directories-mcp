@@ -679,10 +679,8 @@ function applyPostLean(body, includeFlags) {
 const POST_READ_TOOLS = new Set([
   "listSingleImagePosts",
   "getSingleImagePost",
-  "searchSingleImagePosts",
   "listMultiImagePosts",
   "getMultiImagePost",
-  "searchMultiImagePosts",
 ]);
 
 // --- CATEGORIES (top + sub) -----------------------------------------------

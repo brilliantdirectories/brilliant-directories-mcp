@@ -898,8 +898,8 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Clicks | `/api/v2/users_clicks/` | list, get, create, update, delete |
 | Leads | `/api/v2/leads/` | list, get, create, match, update, delete |
 | Lead Matches | `/api/v2/lead_matches/` | list, get, create, update, delete |
-| Single-Image Posts | `/api/v2/data_posts/` | listSingleImagePosts, getSingleImagePost, createSingleImagePost, updateSingleImagePost, deleteSingleImagePost, searchSingleImagePosts, getSingleImagePostFields |
-| Multi-Image Posts | `/api/v2/users_portfolio_groups/` | listMultiImagePosts, getMultiImagePost, createMultiImagePost, updateMultiImagePost, deleteMultiImagePost, searchMultiImagePosts, getMultiImagePostFields |
+| Single-Image Posts | `/api/v2/data_posts/` | listSingleImagePosts, getSingleImagePost, createSingleImagePost, updateSingleImagePost, deleteSingleImagePost, getSingleImagePostFields |
+| Multi-Image Posts | `/api/v2/users_portfolio_groups/` | listMultiImagePosts, getMultiImagePost, createMultiImagePost, updateMultiImagePost, deleteMultiImagePost, getMultiImagePostFields |
 | Multi-Image Post Photos | `/api/v2/users_portfolio/` | listMultiImagePostPhotos, getMultiImagePostPhoto, createMultiImagePostPhoto, updateMultiImagePostPhoto, deleteMultiImagePostPhoto |
 | Post Types | `/api/v2/data_categories/` | list, get, create, update, delete, custom_fields |
 | Top Categories | `/api/v2/list_professions/` | listTopCategories, getTopCategory, createTopCategory, updateTopCategory, deleteTopCategory |

@@ -1,6 +1,6 @@
 # BD API — Multi-Image Posts Endpoints
 
-**Tools:** `listMultiImagePosts`, `getMultiImagePost`, `createMultiImagePost`, `updateMultiImagePost`, `deleteMultiImagePost`, `searchMultiImagePosts`, `getMultiImagePostFields`
+**Tools:** `listMultiImagePosts`, `getMultiImagePost`, `createMultiImagePost`, `updateMultiImagePost`, `deleteMultiImagePost`, `getMultiImagePostFields`
 **Underlying endpoint:** `/api/v2/users_portfolio_groups/*`
 **BD table:** `users_portfolio_groups`
 **Primary key:** `group_id`

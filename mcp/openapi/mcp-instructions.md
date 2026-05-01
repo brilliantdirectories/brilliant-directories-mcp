@@ -555,7 +555,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 - `include_seo_hidden=1` - SEO meta bundle
 - `include_about=1` - `about_me` HTML bio
 
-**Posts** (`listSingleImagePosts` / `getSingleImagePost` / `searchSingleImagePosts` / `listMultiImagePosts` / `getMultiImagePost` / `searchMultiImagePosts`, ~1.5-2KB lean row): core columns + `author: {...}` 10-field summary (replaces full `user` nested object) + `total_clicks` + (Multi only) `cover_photo_url` / `cover_thumbnail_url` / `total_photos`. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call `getPostType` with `data_id` if you need it. Flags:
+**Posts** (`listSingleImagePosts` / `getSingleImagePost` / `listMultiImagePosts` / `getMultiImagePost`, ~1.5-2KB lean row): core columns + `author: {...}` 10-field summary (replaces full `user` nested object) + `total_clicks` + (Multi only) `cover_photo_url` / `cover_thumbnail_url` / `total_photos`. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call `getPostType` with `data_id` if you need it. Flags:
 
 - `include_content=1` - HTML body (`post_content` on Single, `group_desc` on Multi)
 - `include_post_seo=1` - `post_meta_title` / `post_meta_description` / `post_meta_keywords` (Single only)

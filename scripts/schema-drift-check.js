@@ -107,8 +107,8 @@ const HIDDEN_TOOLS = new Set(["createUserMeta"]);
 // Read-tool families: operationIds that each lean shaper handles.
 const USER_READ_TOOLS = new Set(["listUsers", "getUser", "searchUsers"]);
 const POST_READ_TOOLS = new Set([
-  "listSingleImagePosts", "getSingleImagePost", "searchSingleImagePosts",
-  "listMultiImagePosts", "getMultiImagePost", "searchMultiImagePosts",
+  "listSingleImagePosts", "getSingleImagePost",
+  "listMultiImagePosts", "getMultiImagePost",
 ]);
 const CATEGORY_READ_TOOLS = new Set([
   "listTopCategories", "getTopCategory", "listSubCategories", "getSubCategory",
