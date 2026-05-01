@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.41.86] - 2026-05-01
+
+### Fixed — CRITICAL: Worker `domain is not defined` ReferenceError on every form-write tool call (HOTFIX)
+
+v6.41.85's `validateRequiredFieldType` async refactor introduced a scope bug at the dispatch site: the call referenced bare `domain` and `apiKey` instead of `auth.domain` / `auth.apiKey`. Every other validator at the same site (`validateFieldNameUnique`, `validateSubmitCount`) correctly destructures from `auth`, but the new async `validateRequiredFieldType` was missed. Result: every `createForm` / `updateForm` / `createFormField` / `updateFormField` call hit the dispatch site and threw `ReferenceError: domain is not defined` BEFORE reaching BD. End-user symptom: dup-check appears "transient" in agent narration, but the wrapper actually never reached the BD call at all.
+
+Fix: change line 5123 to `auth.domain, auth.apiKey`. One-character-per-arg fix.
+
+### Documented — `form_name` vs `form_title` clarification
+
+Corpus rule `Rule: Forms § Form-level recipe` and spec descriptions on `createForm.form_name` / `createForm.form_title` now explicitly distinguish:
+
+- `form_name` = system slug (lowercase alphanumerics + hyphens + underscores, NO spaces). Used in `[form=<form_name>]` shortcodes. Must be unique per site.
+- `form_title` = human-friendly nickname (free text — spaces and any characters allowed).
+
+Real-world prompt: agents were defaulting `form_name` to a free-text title with spaces, which broke shortcode resolution downstream. Both spec field descriptions now lead with the format constraint and an example.
+
+### Net diff
+
+One Worker line edit (the dispatch scope fix), two spec field descriptions tightened, one corpus paragraph added. Drift clean, JSON valid.
+
 ## [6.41.85] - 2026-05-01
 
 ### Fixed — Two real regressions surfaced by 5-minion live stress test (HOTFIX)

@@ -6026,10 +6026,11 @@
                 "properties": {
                   "form_name": {
                     "type": "string",
-                    "description": "Form slug used by `[form=Name]` shortcodes and child `createFormField` calls. Must be unique per site."
+                    "description": "System slug (lowercase alphanumerics + hyphens + underscores; NO spaces). Used in `[form=<form_name>]` shortcodes and as the parent reference on `createFormField` calls. Must be unique per site. For the human-readable nickname use `form_title`. Example: `form_name=strength_blueprint_ebook`."
                   },
                   "form_title": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Human-friendly nickname (free text — spaces and any characters allowed). Surfaced in admin UI and form-listing screens. Example: `form_title=\"Strength Blueprint Ebook\"`. NOT the same as `form_name` (the system slug)."
                   },
                   "form_action": {
                     "type": "string",

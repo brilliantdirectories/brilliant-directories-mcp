@@ -235,6 +235,8 @@ Read-back tools per class: inquiries via the site's forms inbox, leads via `list
 
 This recipe applies to the **Standard public class only** (`form_table=website_contacts`; see § Form classes). Lead-saving forms always start from `bootstrap_get_match` (see § Lead-match special case). Member-dashboard forms are never created (see § Member-dashboard special case).
 
+**`form_name` is a system slug, NOT a display name.** Allowed characters: lowercase alphanumerics, hyphens, underscores. NO spaces. The slug appears in `[form=<form_name>]` shortcodes and as a URL-safe identifier; spaces or special characters break shortcode resolution. Use `form_title` for the human-friendly nickname (free text — spaces and any characters allowed). Example: `form_name="strength_blueprint_ebook"` + `form_title="Strength Blueprint Ebook"`.
+
 Required values on a `createForm` for a Standard public form:
 
 1. `form_url` = `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form` (exact, `%20` literal).
