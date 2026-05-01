@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.42.2] - 2026-05-01
+
+### Fixed — create/update prose parity audit (11 confirmed items, prose-only)
+
+Independent re-verification of the 3-minion parity audit against the live spec. All 11 HIGH/MED items confirmed real and shipped here. Pattern: `update*` tools were under-documenting context that exists on the matching `create*` — agent reading the update path missed warnings, discovery hints, and enum values.
+
+**Mirrored richer side onto bare side:**
+
+1. `createMembershipPlan.sub_active` — added "new-signup vs grandfather behavior" description (was bare; updateMembershipPlan already had it).
+2. `createMembershipPlan.searchable` — added "public member search visibility" description (was bare; updateMembershipPlan already had it).
+3. `updateSingleImagePost.auto_image_import` — mirrored create's full description with "Recommended default when supplying external image URLs" + processing-delay note.
+4. `updateMultiImagePost.auto_image_import` — was bare; mirrored create's description.
+5. `updateSmartList.smart_list_query_params` — was bare; mirrored create's full format guide (newsletter URL vs JSON, "NA" sentinel, "do NOT pre-encrypt" warning) + `schedule` 1-liner.
+6. `updateSingleImagePost.post_status` — added `3` (Pending Approval) to enum + normalized vocab to "Not Published / Published / Pending Approval" (was 0/1 only with "Draft" wording).
+7. `updateMultiImagePost.group_status` — same fix shape as #6.
+8. `updateSingleImagePost.post_caption` — added "Deprecated. Leave unset" warning (was bare; create had it).
+9. `updateSingleImagePost.post_category` — mirrored create's full discovery prose with `feature_categories` + `getSingleImagePostFields(form_name=…)` pointer.
+10. `updateTagRelationship.object_id` — mirrored create's table-routing prose ("which table depends on tag_type_id - look up via listTagTypes").
+11. `updateRedirect.type` — mirrored create's "Default: `custom` for API-created redirects" + auto-redirect-logic note.
+
+### Net diff
+
+`bd-api.json` only. 11 description edits across 9 update tools and 2 create tools. No code change. No schema change. No corpus change. No Worker deploy needed.
+
 ## [6.42.1] - 2026-05-01
 
 ### Fixed — `_clear_fields` hardening (3 silent-corruption paths from v6.42.0 break-test)
