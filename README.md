@@ -109,7 +109,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
 
-Save. Fully quit and reopen the AI app. Done. Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
+**Save, then fully quit and reopen the AI app.** Saving alone is not enough — every AI client loads MCP servers only at fresh launch, not on hot-reload. Done. Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
 Need a client-specific walkthrough? Jump to your platform's section below.
 
@@ -211,7 +211,7 @@ Paste one of these into the file (Easy is recommended):
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Claude Desktop.** Saving alone is not enough — Claude loads MCP servers only at fresh launch.
 
 #### Scenario B — file already has content (preferences, Google connectors, other MCP servers)
 
@@ -253,7 +253,7 @@ Merge — don't overwrite. Two rules:
 }
 ```
 
-Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
+Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers` block added before the final `}`. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Claude Desktop.**
 
 > **Paste your final file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a> before restarting to ensure correct formatting.**
 >
@@ -377,8 +377,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
    }
    ```
 
-3. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file.**
-4. **Fully quit and reopen Cursor** so the Claude extension picks up the new config.
+3. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file, then fully quit and reopen Cursor** so the Claude extension picks up the new config. Saving alone is not enough.
 5. Chat with Claude and ask "what tools do you have?" — you should see `brilliant-directories` tools listed.
 
 > **Cursor's Tools & MCP panel will stay empty — that's expected.** Claude's extension uses `~/.claude.json`, which is a separate host from the one Cursor's panel shows. That panel only reflects `~/.cursor/mcp.json`. If you want BD tools in BOTH surfaces, do the [Cursor section](#cursor) install too.
@@ -428,7 +427,7 @@ Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 | **Headers** — Value (row 2) | `https://www.your-site.com` |
 | **Headers from environment variables** | *leave empty — don't touch* |
 
-Click **Save**.
+**Click Save, then fully quit and reopen Codex.** Saving alone is not enough — Codex loads MCP servers only at fresh launch.
 
 **🛠️ Advanced (STDIO — runs on your machine, needs Node.js):**
 
@@ -451,9 +450,7 @@ Click the **STDIO** tab. Fill the form top-to-bottom:
 | **Environment variable passthrough** | *leave empty — don't touch* |
 | **Working directory** | *leave empty — don't touch* |
 
-Click **Save**.
-
-**3. Fully quit and reopen Codex Desktop.** Codex loads MCP servers only at fresh launch — saving the form is not enough.
+**Click Save, then fully quit and reopen Codex.** Saving alone is not enough — Codex loads MCP servers only at fresh launch.
 
 > **"Fully quit" means more than closing the window.** On Windows: right-click the Codex icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Codex** → **Quit Codex**. Then relaunch.
 
@@ -512,9 +509,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
-
-6. **Fully quit and reopen Windsurf.**
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Windsurf.** Saving alone is not enough — Windsurf loads MCP servers only at fresh launch.
 
    > **"Fully quit" means more than closing the window.** On Windows: right-click the Windsurf icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Windsurf** → **Quit Windsurf**. Then relaunch.
 
@@ -565,10 +560,9 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen VS Code.** Saving alone is not enough — Cline loads MCP servers only at fresh launch, not on panel reload or toggle.
 
 6. Back in the MCP Servers panel, confirm `brilliant-directories` appears — toggle it **on** if not already.
-7. **Fully quit and reopen VS Code.** Cline loads MCP servers only at fresh launch — toggling on or reloading the panel is not enough.
 
    > **"Fully quit" means more than closing the window.** On Windows: right-click the VS Code icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Code** → **Quit Visual Studio Code**. Then relaunch.
 
@@ -629,8 +623,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 3. In the sidebar, click **Tools & MCP**.
 4. Click **New MCP Server**.
 5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
-6. Click **Save**.
-7. **Fully quit and reopen Cursor.**
+6. **Click Save, then fully quit and reopen Cursor.** Saving alone is not enough — Cursor loads MCP servers only at fresh launch.
 
 ### Alternative B — Edit the config file directly
 
@@ -645,8 +638,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
 3. Type `~/.cursor` → Enter.
    - If "Folder doesn't exist": navigate to `~/` and create a new folder named exactly `.cursor` (leading dot). Retry.
 4. Inside `.cursor`, open `mcp.json` in TextEdit / any text editor. If missing: create it. TextEdit users: File → New → Format menu → **Make Plain Text** first, then save as `mcp.json` (not `mcp.json.txt`).
-5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
-6. **Fully quit and reopen Cursor.**
+5. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Cursor.**
 
 #### Windows
 
@@ -655,8 +647,7 @@ Cursor reads from `mcp.json` in a hidden `.cursor` folder in your home directory
    - If "Windows can't find": go to `%USERPROFILE%`, right-click → **New** → **Folder** → name it exactly `.cursor` (leading dot). Retry.
 3. Inside `.cursor`, open `mcp.json` in Notepad. If missing: right-click empty area → **New** → **Text Document** → rename to `mcp.json` (click Yes to the extension warning).
    - Can't see `.txt` / `.json` extensions? File Explorer → **View** menu → check **File name extensions**.
-4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Save.
-5. **Fully quit and reopen Cursor.**
+4. Paste [the config block](#the-config-block). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Cursor.**
 
 </details>
 
@@ -704,7 +695,7 @@ Make.com ships an **MCP Client** app (currently Open Beta) that connects to remo
 2. Click **+ New MCP Server** (we're not yet on Make's verified-servers list).
 3. **URL:** `https://brilliantmcp.com`
 4. **API Key / Access token:** your 32-char BD API key.
-5. Save.
+5. **Save, then refresh the scenario** so Make picks up the new connection.
 
 ⚠️ **Known limitation as of Make's beta release:** the MCP Client UI exposes a single token field. Our Worker requires **two** custom headers (`X-Api-Key` AND `X-BD-Site-URL`). If Make sends only the API key, the Worker will reject with `Missing X-BD-Site-URL header`. Test the connection before building production scenarios — if it fails, fall back to the HTTP path below.
 

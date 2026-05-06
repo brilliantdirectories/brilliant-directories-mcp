@@ -164,6 +164,20 @@ const INSTRUCTIONS = (() => {
 const IN_FLIGHT_REQUESTS = new Set();
 
 // ---------------------------------------------------------------------------
+// URL helpers
+// ---------------------------------------------------------------------------
+
+// Trim + strip trailing slashes. Customer ticket #578506: trailing-slash on
+// the env var (`https://site.com/`) was bypassing the strip in setup mode,
+// breaking URL composition downstream. Single source of truth used by
+// parseArgs, the setup wizard, and the request boundary in makeRequest.
+// Whatever protocol the user supplied (`http://`, `https://`, or none) is
+// respected as-is; this helper does not coerce.
+function normalizeUrl(input) {
+  return (input || "").trim().replace(/\/+$/, "");
+}
+
+// ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
@@ -209,15 +223,17 @@ function parseArgs() {
     process.exit(0);
   }
 
+  // Normalize URL once before any code path branches — applies to setup,
+  // verify, and run modes. Single source of truth at `normalizeUrl()`.
+  // Customer ticket #578506: trailing slash on the env var (`https://site.com/`)
+  // was bypassing the strip in setup mode and causing connection failures
+  // downstream. Fix collapses the two inline implementations (here and in the
+  // setup wizard) onto one helper and applies it before the setup early-return.
+  config.apiUrl = normalizeUrl(config.apiUrl);
+
   // Setup mode skips the API-key-required check - wizard will prompt for them
   if (config.setup) {
     return config;
-  }
-
-  // Normalize URL: strip trailing slash, ensure protocol
-  config.apiUrl = config.apiUrl.replace(/\/+$/, "");
-  if (config.apiUrl && !/^https?:\/\//i.test(config.apiUrl)) {
-    config.apiUrl = "https://" + config.apiUrl;
   }
 
   if (!config.apiKey) {
@@ -3624,7 +3640,12 @@ async function acquireMutateSlot(apiKey) {
 
 function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFields) {
   return new Promise((resolve, reject) => {
-    const fullUrl = new URL(urlPath, config.apiUrl);
+    // Defensive trailing-slash strip at the request boundary — guarantees
+    // no trailing slash on the base URL even if a future code path sets
+    // config.apiUrl directly without going through parseArgs/normalizeUrl.
+    // Customer ticket #578506.
+    const baseUrl = (config.apiUrl || "").replace(/\/+$/, "");
+    const fullUrl = new URL(urlPath, baseUrl);
 
     // Add query params. Arrays expand as repeated keys — BD's multi-condition
     // filter wants `property[]=X&property[]=Y` (via callers passing `key="property[]"`
@@ -3771,12 +3792,6 @@ function prompt(question, { hidden = false } = {}) {
       });
     }
   });
-}
-
-function normalizeUrl(input) {
-  let u = (input || "").trim().replace(/\/+$/, "");
-  if (u && !/^https?:\/\//i.test(u)) u = "https://" + u;
-  return u;
 }
 
 function getClientConfigPath(client) {

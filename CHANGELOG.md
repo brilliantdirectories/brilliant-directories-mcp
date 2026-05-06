@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.3] - 2026-05-06
+
+### Fixed — URL normalization (customer ticket #578506)
+
+A customer reported MCP connection failure when the configured site URL contained a trailing slash (e.g. `https://www.example.com/`). The bug class was wider than the ticket: URL handling was scattered across two parallel implementations — an inline strip in `parseArgs()` and a separate `normalizeUrl()` helper in the setup wizard — and the inline strip was bypassed by an early-return in setup mode. The setup wizard's helper also auto-upgraded any input lacking a protocol prefix to `https://`, which broke HTTP-only BD customer sites when an agent or env var contained just a bare hostname.
+
+This release consolidates URL normalization to a single hoisted `normalizeUrl()` helper applied unconditionally before any code-path branching. It does exactly one thing: trim whitespace and strip trailing slashes. Whatever protocol the user supplied (`http://`, `https://`, or none) is respected as-is; the wrapper does not coerce. A defensive trailing-slash strip was also added at the request boundary in `makeRequest()` so the bug class cannot reappear from any future code path that sets `config.apiUrl` directly without going through `parseArgs`.
+
+Verified end-to-end against two real customer sites (one HTTPS, one HTTP-only) — all input shapes (`https://site.com/`, `https://site.com`, `http://site.com/`, `http://site.com`, `https://site.com///`, with leading/trailing whitespace) now produce the correct outcome. 12/12 unit-test shapes pass; 6/6 live `--verify` calls pass.
+
+### Net diff
+
+`mcp/index.js`: ~25 lines net (added `normalizeUrl` helper + comment block above `parseArgs`, replaced inline strip with one call to the helper, removed duplicate `normalizeUrl` definition later in the file, added defensive boundary strip in `makeRequest`). No spec change. No corpus change. No drift-check change. No Worker change (Worker URL handling is independent and unaffected by this ticket).
+
+### README — also updated this release (docs-only carry-over)
+
+`README.md` + `mcp/README.md`: install instructions now make the "Save **then fully quit and reopen** the AI app" step unmissable across every supported client (Claude Desktop, Claude Code, Codex, Windsurf, Cline, Cursor). Multiple support tickets traced to customers saving the config but not restarting; tightening the wording catches that class of issue.
+
 ## [6.43.2] - 2026-05-01
 
 ### Fixed — `createTag` / `updateTag` audit fields hidden + hardcoded
