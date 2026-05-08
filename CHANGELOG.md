@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.8] - 2026-05-08
+
+### Fixed — README continuity + truth pass (docs-only)
+
+Combined batch: customer-reported corrections + contract-attorney audit findings.
+
+**Customer-reported:**
+- Node.js install final bullet: "Double-click the file → click Next through every prompt **to fully install Node.js**" (×7) — clearer that the click-Next sequence is the install completion.
+- Stale 🔨 hammer-icon verification → version-agnostic step: "ask 'what tools do you have?'" + Settings check + hammer noted as fallback for older Claude Desktop builds.
+- Claude-extension-in-Cursor JSON config unified to flag-based shape (`--api-key` / `--url` in args, no separate `env` block). Now byte-similar to the Claude Desktop config — no more "why are these different?" confusion.
+
+**Audit findings:**
+- Dead anchor `#openapi-spec` (line 729) → corrected to `#stable-asset-urls`.
+- TOC missing three sections (Field Discovery, Stable asset URLs, Security) → added.
+- Curl section auth headers unexplained → added a one-line note: direct-to-BD calls only need `X-Api-Key`; the Worker path needs both because `X-BD-Site-URL` is the routing key.
+- Requirements: HTTP-only sites (`http://mysite.com`) now listed as supported. Trailing slash kept as ❌ — defensive guidance even though the Worker strips it (cleaner config + works on non-Worker paths).
+- Codex tab framing: "STDIO (Advanced)" / "Streamable HTTP (Easy)" labels added in the intro line so Easy/Advanced mapping is consistent across the doc.
+- Plugin vs `mcp add` credential paths: connecting line added so the two mechanisms don't look contradictory.
+- Claude extension vs Claude Code CLI: explicit note that they share `~/.claude.json` (already set up via Claude Code? Already loaded for the extension).
+- Available Resources table: one-line note above explaining the verb-vs-explicit-name pattern (verbs map to `verbResource` tool names; explicit names used where one base path serves multiple resource sub-types).
+
+### Net diff
+
+`README.md` + `mcp/README.md`: ~25 lines net. No behavior change. No spec/Worker change.
+
 ## [6.43.7] - 2026-05-08
 
 ### Fixed — README readability + accuracy follow-ups (docs-only)

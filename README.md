@@ -12,10 +12,11 @@ This guide walks you through connecting your AI of choice (Claude, Cursor, etc.)
 
 ## ⚠️ REQUIREMENTS — Before you start
 
-1. **Your BD site URL.** Use the full canonical URL exactly as it loads in a browser — include `https://`, include `www.` if your site uses it, no trailing slash.
+1. **Your BD site URL.** Use the full canonical URL exactly as it loads in a browser — include `https://` (or `http://` if your site has no SSL), include `www.` if your site uses it, no trailing slash.
    - ✅ `https://www.mysite.com` (most BD sites)
    - ✅ `https://mysite.com` (only if your site has no `www.`)
-   - ❌ `mysite.com` (missing `https://`)
+   - ✅ `http://mysite.com` (HTTP-only sites — protocol respected)
+   - ❌ `mysite.com` (missing protocol)
    - ❌ `https://mysite.com/` (trailing slash)
    - ❌ `https://mysite.com` if the site actually serves at `www.mysite.com` — use the form your site canonically responds at
 2. **Your BD API key.**
@@ -72,6 +73,9 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 - [Filtering](#filtering)
 - [Sorting](#sorting)
 - [Available Resources](#available-resources)
+- [Field Discovery](#field-discovery)
+- [Stable asset URLs](#stable-asset-urls)
+- [Security](#security)
 - [Support](#support)
 
 ## Setup by Platform
@@ -118,7 +122,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 > ⚠️ **STEP 1 — Install Node.js FIRST** (the Advanced path runs an `npx` command on your machine):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -160,7 +164,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 > ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -250,11 +254,12 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
    > **"Fully quit" means more than closing the window** — Claude loads MCP servers only at a true relaunch:
    > - **Windows:** right-click the Claude icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
    > - **Mac:** `Cmd+Q` or menu bar → **Claude** → **Quit Claude**, then reopen
-5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
+5. **Verify the BD MCP loaded.** The exact UI varies by Claude Desktop version:
+   - In any chat, ask **"what tools do you have?"** — you should see `brilliant-directories` tools listed.
+   - OR check **Settings → Developer → MCP servers** — `brilliant-directories` should show as connected (no error status).
+   - Older builds also show a **🔨 hammer icon** with a tool count near the chat input — click it to see the tools.
 
-   That's your tool count. Click to see BD tools listed.
-
-> **No hammer?** Check **Settings → Developer → MCP servers** for the error. Common causes:
+> **Not connected?** Check **Settings → Developer → MCP servers** for the error. Common causes:
 > - JSON typo — paste your file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>
 > - Wrong API key, or URL missing `https://` / has trailing slash
 > - Node.js not installed (Claude Desktop spawns `npx`)
@@ -292,7 +297,7 @@ Inside an active `claude` session, run these two slash commands:
 /plugin install brilliant-directories@brilliant-directories-mcp
 ```
 
-Claude Code fetches the plugin manifest, registers the BD MCP server, and tools become available immediately. You'll be prompted for `BD_API_KEY` and `BD_SITE_URL` on first use, or set them as environment variables before launching `claude`.
+Claude Code fetches the plugin manifest, registers the BD MCP server, and tools become available immediately. You'll be prompted for `BD_API_KEY` and `BD_SITE_URL` on first use, or set them as environment variables before launching `claude`. (The Easy and Advanced paths below take credentials inline in the `claude mcp add` command instead — different paths, same end result.)
 
 > **Don't see `/plugin` commands?** Plugin support requires a recent build. Run `npm install -g @anthropic-ai/claude-code@latest` and restart the terminal. If still missing, use the Easy or Advanced path below.
 
@@ -322,6 +327,8 @@ Same shape, but runs the MCP server as an `npx` child process on your machine. R
 
 If you chat with Claude inside Cursor (the Anthropic "Claude" extension installed from the Cursor extension marketplace), that extension has its OWN MCP config — **separate from Cursor's native agent.** Installing in one doesn't install in the other.
 
+> **Note:** the Claude extension and the Claude Code CLI both read the SAME file — `~/.claude.json` (Windows: `C:\Users\<you>\.claude.json`). If you've already set up Claude Code per the section above, the BD MCP is already loaded for the Claude extension too. This section covers customers who only use the Claude extension and don't have the CLI installed.
+
 **Two different MCP configs. Two different places the tools show up.**
 
 **1. Claude extension (inside Cursor or Claude Code CLI)**
@@ -339,7 +346,7 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension installe
 > ⚠️ **STEP 1 — Install Node.js FIRST** (before editing the config below):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -350,13 +357,14 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension installe
    {
      "mcpServers": {
        "brilliant-directories": {
-         "type": "stdio",
          "command": "npx",
-         "args": ["-y", "--prefer-online", "brilliant-directories-mcp@latest"],
-         "env": {
-           "BD_SITE_URL": "https://www.your-site.com",
-           "BD_API_KEY": "ENTER_API_KEY"
-         }
+         "args": [
+           "-y",
+           "--prefer-online",
+           "brilliant-directories-mcp@latest",
+           "--api-key", "ENTER_API_KEY",
+           "--url", "https://www.your-site.com"
+         ]
        }
      }
    }
@@ -393,7 +401,7 @@ For BD automation in the OpenAI ecosystem, use **Codex Desktop**. ChatGPT itself
 
 **2. Open Codex Desktop** → **File** → **Settings** → **MCP Servers** → **+ Add Server**.
 
-A "Connect to a custom MCP" form opens with two tabs: **STDIO** and **Streamable HTTP**. Either works — pick one.
+A "Connect to a custom MCP" form opens with two tabs: **STDIO** (Advanced — runs locally, needs Node.js) and **Streamable HTTP** (Easy — hosted Worker, no Node.js). Either works — pick one.
 
 **🚀 Easy (Streamable HTTP — recommended, no Node.js install required):**
 
@@ -418,7 +426,7 @@ Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 > ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -484,7 +492,7 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 > ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -542,7 +550,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 > ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -586,7 +594,7 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 > ⚠️ **STEP 1 — Install Node.js FIRST** (the Cursor Directory installer wires up an `npx` child process):
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
-> - Double-click the file → click Next through every prompt
+> - Double-click the file → click Next through every prompt to fully install Node.js
 >
 > Skip this and Cursor will show *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -724,7 +732,7 @@ X-BD-Site-URL: https://www.your-site.com
 
 This hits BD's REST API directly. Skips MCP entirely; every endpoint reachable.
 
-You can also build a custom Make app from our [OpenAPI spec](#openapi-spec) (link below) for a more polished UX.
+You can also build a custom Make app from our [OpenAPI spec](#stable-asset-urls) for a more polished UX.
 
 ---
 
@@ -741,6 +749,8 @@ Use one of these paths instead:
 ### curl / Any HTTP Client
 
 Paste these in a terminal (Mac: Terminal.app · Windows: PowerShell). Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
+
+> **Why these examples only need `X-Api-Key` (and not `X-BD-Site-URL`):** these calls go DIRECTLY to your BD site (`your-site.com/api/v2/...`), bypassing the MCP Worker. The `X-BD-Site-URL` header is only needed when calling the hosted Worker at `https://brilliantmcp.com` — the Worker uses it to route to the right BD site. When you call your BD site directly, the URL itself IS the routing.
 
 ```bash
 # Verify your API key
@@ -881,6 +891,8 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 ```
 
 ## Available Resources
+
+> **About the `Operations` column:** short verbs like `list, get, create, update, delete` map to MCP tool names by prefixing the verb to the resource (e.g. Reviews → `listReviews`, `getReview`, `createReview`...). Where the same verb covers multiple resource sub-types (e.g. single-image posts vs multi-image posts share `/api/v2/data_posts/` and `/api/v2/users_portfolio_groups/` paths but are distinct tools), the full tool names are spelled out in this table so there's no ambiguity.
 
 | Resource | Base Path | Operations |
 |----------|-----------|------------|
