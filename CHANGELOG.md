@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.6] - 2026-05-08
+
+### Fixed — README readability pass (docs-only)
+
+Twelve targeted trims to make the install instructions less scary and easier to follow without losing the load-bearing details:
+
+1. **API permissions paragraph** — collapsed run-on sentences to one line naming the toggle and the exact 403 error.
+2. **"Claude Desktop is the exception" callout** — single-line warning instead of a paragraph.
+3. **Node.js install — bulleted everywhere** (Claude Desktop, Codex Desktop ×2, Windsurf, Cline, Cursor Directory). Steps 1-line each: visit nodejs.org → download installer → double-click → reboot → verify with `node --version`.
+4. **`--prefer-online + @latest` explainer** — kept (it's load-bearing) but cut from 4 sentences to 2.
+5. **"Fully quit" instructions — bulleted everywhere** with Windows / Mac per-OS sub-bullets.
+6. **Claude Desktop section opening** — three nested paragraph-warnings collapsed to three single-line `⚠️` notes.
+7. **"No hammer?" troubleshooting** — bulleted causes instead of run-on prose.
+8. **"Claude extension inside Cursor" promoted to its own H3** (peer of "Claude Code", not nested under it). Added to TOC. The two surfaces are genuinely different MCP hosts and conflating them under "Claude Code" was confusing.
+9. **Codex multi-site Pro tip** — trimmed.
+10. **Cursor multi-site Pro tip** — trimmed.
+11. **n8n SSE-vs-HTTP-Streamable explainer** — bulleted instead of one long paragraph.
+12. **Compatibility table corrected** — Claude Desktop now shows `❌ Remote / ✅ Stdio` (was incorrectly `✅ Works` for HTTP). Added "Claude extension inside Cursor" as its own row. The "Common issues" line about "Microsoft Store sandbox" rewritten to lead with the real cause (Claude Desktop doesn't accept `url` blocks at all).
+
+Also tightened the URL guidance throughout — agents and customers should supply the full canonical URL (`https://`, exact host, no trailing slash) rather than relying on Worker normalization. The Worker still normalizes defensively.
+
+No code change. README ships in the npm tarball; customers on `@latest` see the cleanup on next process start.
+
 ## [6.43.5] - 2026-05-08
 
 ### Fixed — Claude Code section trimmed (docs-only)

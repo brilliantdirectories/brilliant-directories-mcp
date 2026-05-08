@@ -30,7 +30,7 @@ This guide walks you through connecting your AI of choice (Claude, Cursor, etc.)
 
 **New BD API keys ship locked down — only member read/write is enabled by default.**
 
-Every other resource (web pages, forms, menus, tags, email templates, reviews, leads, categories, post types, widgets, etc.) is **opt-in** and lives behind an "Advanced Endpoints" toggle. Until you flip it, the AI will appear to work for member queries, then fail with `403 API Key does not have permission to access this endpoint` the moment it touches anything else.
+Every other resource (web pages, forms, menus, tags, email templates, reviews, leads, categories, post types, widgets, etc.) lives behind an **"Advanced Endpoints"** toggle and returns `403 API Key does not have permission to access this endpoint` until you flip it on.
 
 **This catches almost every first-time user.** If your AI can list members but can't create a page or update a form, stop debugging — it's this.
 
@@ -53,7 +53,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
 - [Setup by Platform](#setup-by-platform)
   - [Claude Desktop](#claude-desktop)
   - [Claude Code](#claude-code)
-    - [Using Claude extension inside Cursor](#using-the-claude-extension-inside-cursor)
+  - [Claude extension inside Cursor](#claude-extension-inside-cursor)
   - [OpenAI (Codex Desktop)](#openai-codex-desktop)
   - [Windsurf](#windsurf)
   - [Cline (VS Code extension)](#cline-vs-code-extension)
@@ -107,7 +107,7 @@ In your AI client's MCP config (Cursor, Windsurf, Cline, Codex, n8n, etc.), add 
 
 Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (full canonical form — `https://`, exact host, no trailing slash, see [Requirements](#requirements--before-you-start)).
 
-> ⚠️ **Claude Desktop is the exception** — its `claude_desktop_config.json` does NOT accept `url`-shaped blocks. Pasting the Easy block above in Claude Desktop produces *"Some MCP servers could not be loaded… not valid MCP server configurations"* at startup. **For Claude Desktop, install Node.js and use the Advanced block** — see the [Claude Desktop section](#claude-desktop) for the working config.
+> ⚠️ **Claude Desktop doesn't accept the Easy block** — use the Advanced block in the [Claude Desktop section](#claude-desktop).
 
 **Save, then fully quit and reopen the AI app.** Saving alone is not enough — every AI client loads MCP servers only at fresh launch, not on hot-reload. Done. Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
@@ -119,7 +119,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 >
 > Verify Node works: open Command Prompt (Windows: `Win+R` → type `cmd` → Enter) or Terminal (Mac), then run `node --version`. Should print `v18.x` or higher. If it says "command not found", Node didn't install — try again.
 
-> **Why `--prefer-online` + `@latest`?** `--prefer-online` forces npm to revalidate against the registry on every launch instead of serving stale cached metadata. Combined with `@latest` (which targets the freshest version), it eliminates the `ETARGET No matching version found` error that hits when we publish a new version and your local npm cache hasn't refreshed yet. Adds ~200ms to startup; saves you from `npm cache clean --force` debugging.
+> **Why `--prefer-online` + `@latest`?** Forces npm to revalidate against the registry on every launch so you always pull the newest version. Prevents the `ETARGET No matching version found` error that hits when your local npm cache is stale.
 
 **STEP 2 — Paste this config:**
 
@@ -140,21 +140,28 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 }
 ```
 
-**STEP 3 — Fully quit the AI app, then reopen.** On Windows, closing the window with the X button keeps the app running in the system tray (bottom-right corner of taskbar). Right-click the app's tray icon → **Quit**. Then reopen. The AI loads MCP servers only at fresh launch — without a true quit, it keeps the old config.
+**STEP 3 — Fully quit the AI app, then reopen.** Closing the window is NOT enough — the AI loads MCP servers only at a true relaunch:
+- **Windows:** right-click the app's icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+- **Mac:** `Cmd+Q` or menu bar → **<App>** → **Quit <App>**, then reopen
 
 ---
 
 ### Claude Desktop
 
-> ⚠️ **Claude Desktop only supports stdio MCP servers in `claude_desktop_config.json`** — meaning the config file expects `command` + `args` (a local Node.js process), NOT `url` + `headers` (a hosted endpoint). Pasting a `url`-shaped block will produce **"Some MCP servers could not be loaded… not valid MCP server configurations and were skipped"** at app launch and silently disable the BD MCP. Anthropic's "Custom Connectors" (Settings → Connectors) is a separate surface that handles remote URL servers via OAuth — that path is NOT compatible with our header-auth Worker.
+> ⚠️ **Claude Desktop requires Node.js + the Advanced (npm) config.** It doesn't accept the Easy `url`-shaped block — only stdio (`command` + `args`).
+
+> ⚠️ **Windows users:** install Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>, NOT the Microsoft Store (the Store version sandboxes the config file).
+
+> **Banner saying "Tool result could not be submitted… connection interrupted"?** Cosmetic UI bug across every MCP connector ([anthropics/claude-code #51874](https://github.com/anthropics/claude-code/issues/51874)) — your tools still work. Safe to ignore.
+
+> ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
-> **Bottom line for Claude Desktop:** install **Node.js** + use the npm package config below. There is no "no Node.js" path that works in Claude Desktop today.
-
-> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update.
-
-> ⚠️ **Windows users — install Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>, not the Microsoft Store.** The Microsoft Store version sandboxes the config file in a way that can break MCP server loading silently. The direct `.exe` install from `claude.ai/download` is the version we test against.
-
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then `Windows Installer (.msi)` — Mac: `macOS Installer` — DOUBLE-CLICK to install), then **reboot your computer**. Without Node + reboot the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 **Steps (no terminal):**
 
@@ -239,12 +246,18 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 
 4. **Fully quit and reopen Claude Desktop.** Start a new chat.
 
-   > **"Fully quit" means more than closing the window.** On Windows: right-click the Claude icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Claude** → **Quit Claude**. Then relaunch.
+   > **"Fully quit" means more than closing the window** — Claude loads MCP servers only at a true relaunch:
+   > - **Windows:** right-click the Claude icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+   > - **Mac:** `Cmd+Q` or menu bar → **Claude** → **Quit Claude**, then reopen
 5. **Verify:** look bottom-right of the chat input for a **🔨 hammer icon with a number**.
 
    That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → MCP servers** shows `brilliant-directories` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash, Node.js not installed (Claude Desktop spawns the npm package via `npx`). Saw **"Some MCP servers could not be loaded… not valid MCP server configurations"** at startup? You almost certainly pasted a `url`-shaped block — Claude Desktop's `claude_desktop_config.json` only accepts the stdio shape (`command` + `args`) shown above; remote URL servers are an entirely separate Anthropic surface (claude.ai → Settings → Connectors with OAuth) that's not compatible with our header-auth Worker.
+> **No hammer?** Check **Settings → Developer → MCP servers** for the error. Common causes:
+> - JSON typo — paste your file into <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>
+> - Wrong API key, or URL missing `https://` / has trailing slash
+> - Node.js not installed (Claude Desktop spawns `npx`)
+> - Saw *"not valid MCP server configurations"*? You pasted a `url`-shaped block — Claude Desktop only accepts the stdio (`command` + `args`) shape shown above.
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -302,7 +315,9 @@ Same shape, but runs the MCP server as an `npx` child process on your machine. R
 
 > **Credentials live inside the `claude mcp add` command.** They're written into your user-level Claude config file and passed to BD automatically on every tool call. To rotate: `claude mcp remove brilliant-directories`, then re-run `claude mcp add` with new values.
 
-#### Using the Claude extension inside Cursor
+---
+
+### Claude extension inside Cursor
 
 If you chat with Claude inside Cursor (the Anthropic "Claude" extension installed from the Cursor extension marketplace), that extension has its OWN MCP config — **separate from Cursor's native agent.** Installing in one doesn't install in the other.
 
@@ -320,7 +335,14 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension installe
 
 **Easiest setup — edit the JSON file in Notepad (NO terminal, NO `claude` CLI needed):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>, install, then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (before editing the config below):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
+>
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 1. **Open the file.** Paste the path into File Explorer's address bar (Windows) or Finder's **Go → Go to Folder** (Mac). If it doesn't exist yet, create a new empty text file at that path named exactly `.claude.json`.
 2. **Paste this inside.** If the file already has content with an `mcpServers` key, merge the `"brilliant-directories": {...}` entry into the existing `mcpServers` object — don't overwrite other entries.
@@ -394,7 +416,14 @@ Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 
 **🛠️ Advanced (STDIO — runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
+>
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 Click the **STDIO** tab. Fill the form top-to-bottom:
 
@@ -415,11 +444,13 @@ Click the **STDIO** tab. Fill the form top-to-bottom:
 
 **Click Save, then fully quit and reopen Codex.** Saving alone is not enough — Codex loads MCP servers only at fresh launch.
 
-> **"Fully quit" means more than closing the window.** On Windows: right-click the Codex icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Codex** → **Quit Codex**. Then relaunch.
+> **"Fully quit" means more than closing the window** — Codex loads MCP servers only at a true relaunch:
+> - **Windows:** right-click the Codex icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+> - **Mac:** `Cmd+Q` or menu bar → **Codex** → **Quit Codex**, then reopen
 
 **4. Test the connection:** in a new Codex chat, ask *"list my first 5 members on my BD site"*. Tools invoke, data comes back.
 
-> **Pro tip — multi-site management:** repeat this setup with a different **Name** and credentials per BD site you manage (e.g. `brilliant-directories-main` / `brilliant-directories-staging` / `brilliant-directories-client-acme`). Codex loads each as a separate MCP server. You can then tell Codex things like *"on brilliant-directories-main, list the top categories"* or *"copy these 3 email templates from brilliant-directories-main to brilliant-directories-staging"* — Codex routes each tool call to the correct site. Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
+> **Pro tip — multi-site management:** repeat this setup with a different **Name** + credentials per BD site (e.g. `brilliant-directories-main` / `brilliant-directories-staging`). Then tell Codex *"on brilliant-directories-main, list the top categories"* or *"copy these email templates from -main to -staging"*. Useful for agencies and multi-brand operators.
 
 ---
 
@@ -453,7 +484,14 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
+>
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 ```json
 {
@@ -474,7 +512,9 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 
 Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. **Save, then fully quit and reopen Windsurf.** Saving alone is not enough — Windsurf loads MCP servers only at fresh launch.
 
-   > **"Fully quit" means more than closing the window.** On Windows: right-click the Windsurf icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Windsurf** → **Quit Windsurf**. Then relaunch.
+   > **"Fully quit" means more than closing the window** — Windsurf loads MCP servers only at a true relaunch:
+   > - **Windows:** right-click the Windsurf icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+   > - **Mac:** `Cmd+Q` or menu bar → **Windsurf** → **Quit Windsurf**, then reopen
 
 ---
 
@@ -504,7 +544,14 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 **🛠️ Advanced (runs on your machine, needs Node.js):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (before pasting the config below):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
+>
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 ```json
 {
@@ -527,7 +574,9 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 6. Back in the MCP Servers panel, confirm `brilliant-directories` appears — toggle it **on** if not already.
 
-   > **"Fully quit" means more than closing the window.** On Windows: right-click the VS Code icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Code** → **Quit Visual Studio Code**. Then relaunch.
+   > **"Fully quit" means more than closing the window** — Cline loads MCP servers only at a true VS Code relaunch:
+   > - **Windows:** right-click the VS Code icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+   > - **Mac:** `Cmd+Q` or menu bar → **Code** → **Quit Visual Studio Code**, then reopen
 
 ---
 
@@ -541,7 +590,14 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 
 **Cursor Directory one-click install for the Advanced path (no terminal, no file editing):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. The Cursor Directory installer wires up an `npx` child process; without Node + reboot, Cursor will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (the Cursor Directory installer wires up an `npx` child process):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
+> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
+> - Verify in a terminal: `node --version` should print `v18.x` or higher
+>
+> Skip this and Cursor will show *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 1. **Open** → <a href="https://cursor.directory/plugins/brilliant-directories" target="_blank" rel="noopener noreferrer">cursor.directory/plugins/brilliant-directories</a>
 2. Click **Install** / **Add to Cursor** → allow browser to open Cursor.
@@ -566,10 +622,12 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 4. Click **Install**.
 5. **Fully quit and reopen Cursor.**
 
-   > **"Fully quit" means more than closing the window.** On Windows: right-click the Cursor icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**. On Mac: `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**. Then relaunch.
+   > **"Fully quit" means more than closing the window** — Cursor loads MCP servers only at a true relaunch:
+   > - **Windows:** right-click the Cursor icon in the system tray (bottom-right, may be hidden under `^`) → **Quit**, then reopen
+   > - **Mac:** `Cmd+Q` or menu bar → **Cursor** → **Quit Cursor**, then reopen
 6. Tools appear in **Settings → Tools & MCP**.
 
-> **Pro tip — multi-site management:** you can install the BD MCP *multiple times* with different API keys + URLs, one per BD site you manage. Give each install a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-81245`, `brilliant-directories-marketing`). Cursor will load them as separate servers, each with their own tool set. You can then tell Cursor things like *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"* or *"copy these 3 email templates from brilliant-directories-60031 to brilliant-directories-81245"* — Cursor routes each tool call to the correct site. Works the same way in Claude Desktop / Claude Code (each install gets its own server entry in the config). Useful for agencies, multi-brand operators, or anyone running a portfolio of BD sites.
+> **Pro tip — multi-site management:** install the BD MCP multiple times with different API keys + URLs, each with a unique Name (e.g. `brilliant-directories-60031`, `brilliant-directories-marketing`). Then tell Cursor *"on brilliant-directories-60031, list the top categories"* or *"compare member counts between the two sites"*. Same pattern works in Claude Desktop and Claude Code. Useful for agencies and multi-brand operators.
 
 ---
 
@@ -632,7 +690,11 @@ n8n's built-in **MCP Client Tool** node connects to our server and loads every B
 
 Save the node. Click the **Tool** dropdown — should populate with every BD tool. Pick any tool, click Execute.
 
-> **Why "SSE (Deprecated)" and not "HTTP Streamable"?** The MCP spec deprecated legacy SSE in favor of Streamable HTTP. n8n's SSE client works today against our server; n8n's Streamable HTTP client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed. Our server supports BOTH transports — when n8n fixes their Streamable HTTP client, customers can optionally switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed on our side.
+> **Why "SSE (Deprecated)" and not "HTTP Streamable"?**
+> - The MCP spec deprecated SSE in favor of HTTP Streamable
+> - n8n's SSE client works today against our server
+> - n8n's HTTP Streamable client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed
+> - Our server supports BOTH transports — when n8n fixes their HTTP Streamable client, you can switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed.
 
 > **Why `brilliantmcp.com`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. It's the single canonical URL for the hosted MCP endpoint.
 
@@ -760,14 +822,13 @@ Logs every API request and response to stderr (your API key is automatically red
 - **`403 API Key does not have permission to access this endpoint`** — this specific endpoint isn't granted on your key. Edit the key in BD Admin → Developer Hub and enable the missing endpoint (the error names it).
 - **`404 Not Found`** — your site URL is wrong. Must include `https://` and NO trailing slash, and match the canonical form your site responds at (include `www.` if your site uses it). Correct: `https://www.mysite.com`. Wrong: `mysite.com`, `https://mysite.com/`, or `https://mysite.com` when the site actually serves at `www.mysite.com`.
 - **`429 Too Many Requests`** — rate limit hit (100 req/60s default). Wait 60 seconds, or email BD support to raise your site's limit up to 1,000/min.
-- **`Unknown tool` (from Claude)** — the MCP server didn't load the OpenAPI spec. Usually fixed by fully quitting the AI app (not just closing the window) and reopening. If that doesn't fix it, your npx cache may have a broken install — delete the cache and try again:
+- **`Unknown tool` (from Claude)** — the MCP server didn't load. Fully quit + reopen the AI app first. If still broken, the npx cache has a stale install:
   - **Windows PowerShell:** `Remove-Item -Recurse -Force "$env:LOCALAPPDATA\npm-cache\_npx"`
   - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
-  - Then fully quit + reopen the AI app. On next launch `npx` will re-download `brilliant-directories-mcp@latest` automatically (that's what the `-y` in your config means — no manual install needed).
-  - You do NOT need to run `npm install -g brilliant-directories-mcp` — the MCP installs itself when the AI app launches it via `npx`. That command is only for developers who want a standalone CLI.
-- **`npx: command not found` OR `spawn npx ENOENT`** — Node.js isn't installed (or installed but not on your system PATH). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then `Windows Installer (.msi)` or `macOS Installer`, then double-click the downloaded file to install). **Reboot Windows after install** — without a reboot, your AI app won't see the new PATH. Verify with `node --version` in Command Prompt; should print `v18.x` or higher.
+  - Then fully quit + reopen. The `-y` in your config makes `npx` re-download automatically — you do NOT need `npm install -g brilliant-directories-mcp`.
+- **`npx: command not found` or `spawn npx ENOENT`** — Node.js isn't installed or not on PATH. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>, **reboot** (Windows needs it for `PATH` to update), verify with `node --version`.
 - **`ETARGET No matching version found`** — your local npm cache is stale. Adding `--prefer-online` to your config args (per the snippets above) prevents this; if your config doesn't have it yet, run `npm cache clean --force` and restart your AI app.
-- **"not valid MCP server configurations" (Windows, Microsoft Store Claude Desktop)** — the Microsoft Store version of Claude Desktop sandboxes the config and may reject the Easy (hosted) config syntax. **Fix:** uninstall the Microsoft Store version, then install the direct .exe from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>. The direct .exe accepts both Easy and Advanced configs without sandbox issues.
+- **"not valid MCP server configurations" (Claude Desktop)** — `claude_desktop_config.json` doesn't accept `url`-shaped blocks. Use the Advanced (npm/stdio) config from the [Claude Desktop section](#claude-desktop). Windows users on the Microsoft Store version of Claude Desktop should also uninstall and reinstall from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a> (the Store version sandboxes the config in ways that can break MCP loading silently).
 
 ---
 
@@ -798,9 +859,10 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 
 | Client | Remote HTTP MCP | Status | Notes |
 |---|---|---|---|
-| **Claude Desktop** (v0.8+) | ✅ | Works | Settings → Developer → Edit Config. See [Claude Desktop setup](#claude-desktop). |
+| **Claude Desktop** | ❌ Remote / ✅ Stdio | Stdio only | `claude_desktop_config.json` doesn't accept `url`-shaped blocks — pasting one produces *"not valid MCP server configurations"* at startup. Use the npm/Advanced (stdio) config instead. See [Claude Desktop setup](#claude-desktop). |
+| **Claude Code CLI** | ✅ | Works | Both `claude mcp add --transport http` (remote) and `--transport stdio` (npm) work. See [Claude Code setup](#claude-code). |
+| **Claude extension inside Cursor** | ✅ | Works | Reads `~/.claude.json`. See [setup](#claude-extension-inside-cursor). |
 | **Cursor** | ✅ | Works | Settings → MCP → Add Server. See [Cursor setup](#cursor). |
-| **Claude Code CLI** | ✅ | Works | `claude mcp add --transport http ...`. See [Claude Code setup](#claude-code). |
 | **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
 | **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
 | **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
