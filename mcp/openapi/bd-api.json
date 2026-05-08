@@ -5902,12 +5902,18 @@
                   "form_title",
                   "form_action",
                   "form_layout",
-                  "form_table"
+                  "form_table",
+                  "form_url",
+                  "form_class",
+                  "table_index",
+                  "form_action_div",
+                  "form_email_on",
+                  "form_success_message"
                 ],
                 "properties": {
                   "form_name": {
                     "type": "string",
-                    "description": "System slug (lowercase alphanumerics + hyphens + underscores; NO spaces). Used in `[form=<form_name>]` shortcodes and as the parent reference on `createFormField` calls. Must be unique per site. For the human-readable nickname use `form_title`. Example: `form_name=strength_blueprint_ebook`."
+                    "description": "System slug (lowercase alphanumerics + hyphens + underscores; NO spaces). Hyphens and underscores are NOT interchangeable — the stored value is the lookup key, byte-exact, in `[form=<form_name>]` shortcodes and on `createFormField` parent references. Immutable post-create. Must be unique per site. For the human-readable nickname use `form_title`. Example: `form_name=strength_blueprint_ebook`."
                   },
                   "form_title": {
                     "type": "string",
@@ -5929,7 +5935,7 @@
                       "bootstrapvertical",
                       "bootstrap"
                     ],
-                    "description": "**bootstrapvertical** = Labels Above Inputs (default). **bootstrap** = Labels Left of Inputs."
+                    "description": "**bootstrapvertical** = Labels Above Inputs (canonical default). **bootstrap** = Labels Left of Inputs (canonical default for Member-dashboard class — `form_action_type=default`). User override wins in either case."
                   },
                   "form_table": {
                     "type": "string",
@@ -5938,11 +5944,13 @@
                       "leads",
                       "users_data"
                     ],
-                    "description": "Database table the form submissions post into. `website_contacts` = generic contact inbox (default). `leads` = lead-system inbox (pairs with `form_action_type` matching/distribution). `users_data` = member-account forms (signup, profile-edit, member-dashboard `default` class). Once set on create, treat as immutable (BD does not migrate submissions across tables).",
+                    "description": "Database table the form submissions post into. `website_contacts` = Standard public class (default for ALL public capture; free-create with this tool). `leads` = Lead-saving class (BD's Get-Matched member-routing ONLY) — never free-create from scratch; clone `bootstrap_get_match` per **Rule: Forms** § Lead-match special case. `users_data` = Member-dashboard class — never free-create from scratch; clone-and-assign one of the 3 canonical dashboard forms per § Member-dashboard special case. See § Form classes for the picking rule. Once set on create, treat as immutable.",
                     "default": "website_contacts"
                   },
                   "form_class": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "form-control",
+                    "description": "CSS class applied to every field — UI consistency insurance. Canonical: `form-control`. Per-field `input_class` layers extra CSS on top."
                   },
                   "form_email_on": {
                     "type": "integer",
@@ -5954,7 +5962,8 @@
                     "description": "Send admin notification email on each submission. `0` = OFF (default when an agent creates a form - safer: spammy forms won't flood the admin inbox). `1` = ON. Admin UI defaults this to ON; agents default it to OFF unless user explicitly requests notifications."
                   },
                   "form_email_recipient": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Comma-separated email list to receive submission notifications. Used only when `form_email_on=1`. Empty = site default admin recipient."
                   },
                   "form_action_type": {
                     "type": "string",
@@ -5980,16 +5989,17 @@
                   "table_index": {
                     "type": "string",
                     "default": "ID",
-                    "description": "Unique field identifier column for the `form_table`. **Required exact value for every form an agent creates:** `ID`. This tells BD which column is the primary key on the submissions table. Without it, BD can't look up or update individual submission records."
+                    "description": "Primary key column matching `form_table`: `website_contacts` → `ID`, `leads` → `lead_id`, `users_data` → `user_id`. Required exact match — BD uses this to look up individual submissions."
                   },
                   "form_action_div": {
                     "type": "string",
                     "default": "#main-content",
-                    "description": "Target element ID (CSS selector including `#`) swapped in the DOM on form submit. **Required when `form_action_type=widget`** (Success Pop-Up); ignored otherwise. Default: `#main-content`. Must include leading `#`. Without it, the success pop-up has no target and user sees nothing happen."
+                    "description": "Target element ID (CSS selector including `#`) swapped in the DOM on form submit by the `widget` (Success Pop-Up) action type; harmlessly ignored on `notification` / `redirect`. **Always send `#main-content`** unless the user explicitly names a different target — it's the canonical default for every `form_action_type`. Must include leading `#`."
                   },
                   "form_success_message": {
                     "type": "string",
-                    "description": "Optional custom success-message text (free text). Empty falls back to the site's default `message_sent_label`. Applies to `form_action_type` ∈ {`widget`, `notification`, `redirect`}; not used by `default` (member-dashboard) class. Leave empty unless user asks for custom copy."
+                    "default": "Your Message has been Received",
+                    "description": "Post-submit success copy. Canonical default for Standard public AND Lead-saving classes: `Your Message has been Received`. Override only on explicit user request. Applies to `form_action_type` ∈ {`widget`, `notification`, `redirect`}; not used by `default` (member-dashboard) class."
                   },
                   "label_to_placeholder": {
                     "type": "string",
@@ -6017,7 +6027,7 @@
             }
           }
         },
-        "description": "Create a new form record. Writes live data. Add fields afterward via `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`.\n\nSee **Rule: Forms** § Form-level recipe for the canonical creation recipe (Standard public class only). Lead-routing forms — see § Lead-match special case (clone `bootstrap_get_match`, never rebuild). Member-dashboard listing forms — see § Member-dashboard special case (only `member_listing_details` / `about` / `member_contact_details` are supported; never created via this tool).\n\nMandatory `form_name` pre-check per **Rule: Pre-check natural keys** — BD does NOT enforce uniqueness; duplicate `form_name` produces ambiguous `[form=…]` shortcode resolution.\n\nWrapper-enforced refusal: `form_action_type=redirect` AND empty `form_target` → call refused (see **Rule: Forms** § Wrapper-enforced invariants).\n\n**See also:** `updateForm`, `createFormField`, `listFormFields`.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }`.\n\n"
+        "description": "Create a new form record. Writes live data. Add fields afterward via `createFormField`.\n\n**Required:** `form_name`, `form_title`, `form_action`, `form_layout`, `form_table`, `form_url`, `form_class`, `table_index`, `form_action_div`, `form_email_on`, `form_success_message`.\n\nClass selection — see **Rule: Forms** § Form classes before picking `form_table`. Follow § Form-level recipe for the canonical creation recipe.\n\nMandatory `form_name` pre-check per **Rule: Pre-check natural keys** — BD does NOT enforce uniqueness; duplicate `form_name` produces ambiguous `[form=…]` shortcode resolution.\n\nWrapper-enforced refusal: `form_action_type=redirect` AND empty `form_target` → call refused (see **Rule: Forms** § Wrapper-enforced invariants).\n\n**See also:** `updateForm`, `createFormField`, `listFormFields`.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord} }`.\n\n"
       }
     },
     "/api/v2/form/update": {
@@ -6072,15 +6082,15 @@
                   },
                   "table_index": {
                     "type": "string",
-                    "description": "Unique field identifier. Canonical value: `ID`. Leave alone on update unless repairing a broken form."
+                    "description": "Primary key column matching `form_table`: `website_contacts` → `ID`, `leads` → `lead_id`, `users_data` → `user_id`. Leave alone on update unless repairing a broken form."
                   },
                   "form_action_div": {
                     "type": "string",
-                    "description": "Target element ID (CSS selector with `#`) replaced on submit. Canonical value: `#main-content`. **Required when `form_action_type=widget`**. If flipping `form_action_type` TO `widget`, make sure this is set."
+                    "description": "Target element ID (CSS selector with `#`) swapped on submit by the `widget` action type; harmlessly ignored on `notification` / `redirect`. Canonical value: `#main-content`. Override only when the user explicitly names a different target."
                   },
                   "form_success_message": {
                     "type": "string",
-                    "description": "Optional custom success-message text (free text). Empty falls back to the site's default `message_sent_label`. Applies to `form_action_type` ∈ {`widget`, `notification`, `redirect`}."
+                    "description": "Post-submit success copy. Canonical default for Standard public AND Lead-saving classes: `Your Message has been Received`. If the existing record already has a value and the user hasn't flagged the message as a problem, leave it alone. Only set this on update when (a) the user asks for different copy, or (b) the field is empty and you're filling in the canonical default. Applies to `form_action_type` ∈ {`widget`, `notification`, `redirect`}; not used by `default` class."
                   },
                   "label_to_placeholder": {
                     "type": "string",

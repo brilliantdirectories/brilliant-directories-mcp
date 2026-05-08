@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.44.0] - 2026-05-08
+
+### Forms — corpus + spec hardening (agent-behavior changes)
+
+Two minion sweeps (15-scenario + 12-edge-case quizzes, both rounds) drove a focused pass on `**Rule: Forms**` and the four Forms-tag operations. Net effect: agents pick the right class on first try, set the canonical defaults the wrapper now enforces, and stop fabricating fields that BD doesn't expose.
+
+**Class-selection clarity:**
+- § Form classes — picking rule promoted above the table; "the bare word 'lead' / 'lead capture' / 'lead form' is NOT a trigger" stated explicitly. Ambiguity prompt remains as the verbatim ask string.
+- Member-dashboard wording fixed across 5 surfaces — was "never created via this tool" (factually wrong; cloning IS via `createForm`); now "never free-create from scratch — clone an existing dashboard form via `createForm`."
+- `form_table` enum-value descriptions strengthened — `leads` and `users_data` flagged "never free-create" with cross-refs to § Lead-match / § Member-dashboard.
+
+**Canonical defaults locked in:**
+- `form_action_type=widget` — canonical default for Standard public AND Lead-saving classes.
+- `form_action_div=#main-content` — always set, harmless on `notification`/`redirect`. Resolved the prior schema-default ↔ recipe contradiction.
+- `form_success_message=Your Message has been Received` — canonical default for both classes; updateForm version has the "leave alone if already set + user not flagging" clause.
+- `form_class=form-control` — UI consistency insurance, schema default + description filled (was empty).
+- `form_layout=bootstrapvertical` (Standard public + Lead-saving) / `bootstrap` (Member-dashboard `form_action_type=default`).
+- `table_index` — class-aware: `website_contacts` → `ID`, `leads` → `lead_id`, `users_data` → `user_id`. Fixed across createForm, updateForm, recipe step 4, and Lead-match signature table.
+
+**Wrapper-enforced scope expanded:**
+- `createForm` `required` array expanded from 5 → 11 fields: added `form_url`, `form_class`, `table_index`, `form_action_div`, `form_email_on`, `form_success_message`. Calls that omit any of these are now refused. **This is the breaking-ish change driving the minor bump** — previously-passing calls that relied on BD's silent defaults will now fail validation. The new failures produce better-built forms.
+
+**`form_name` shortcode lookup hardened:**
+- `[form=<form_name>]` shortcode value must match `form_name` byte-for-byte. Hyphens and underscores are NOT interchangeable — explicit rule added to § Placement and the field description (was implicit before, caused real customer breakage).
+- `form_name` now flagged "Immutable post-create" — closes the rename-attempt failure mode.
+
+**Field-level surface improvements:**
+- `field_order` — tail uses `+10/+20/+30` spacing (was `+1/+2/+3`); body fields stay consecutive. Insert-mid-form rule added with the "why."
+- `Pricebox` field_type clarified inline — "currency input, formatted per site currency" (was undocumented).
+- `File` field_type accepts list added — images (gif, jpeg, jpg, png, svg, webp), PDF, txt, rtf, Word, Excel, PowerPoint.
+- § Form-level recipe tail-pattern paragraph collapsed from 6-rule prose paragraph to 5 bullets (zero info loss; just readable).
+- § Field anatomy "Defaults by form class" Lead-saving cell trimmed to "see § Lead-match" pointer (was prose stuffed in a table cell).
+- § Lead-match signature table now 9 rows — added `form_action_type=widget` row (was missing; made it ambiguous whether `widget` was part of the lock or just a default).
+- § Cloning recipe step 2 — explicit "do NOT override cloned `form_action_type` / `form_action_div` / `form_success_message` with the canonical defaults" (resolves clone-vs-canonical tension).
+- `form_email_recipient` field description filled in createForm (was empty).
+
+### Migration
+
+The schema-required expansion is the only hot zone: any caller that creates forms via `createForm` and currently omits one of the 6 newly-required fields will start getting 400 refusals. The fix is to send the canonical defaults — which are now stamped in every field's `default` and / or description, and listed in § Form-level recipe steps 1-12. Cloners (`bootstrap_get_match` clone path, member-dashboard clones) are unaffected because the source form supplies all values.
+
+### Net diff
+
+`mcp-instructions.md` + `bd-api.json` only. No tool surface changes (all 171 ops, 1 hidden — drift check clean). No README change. No Worker change.
+
 ## [6.43.8] - 2026-05-08
 
 ### Fixed — README continuity + truth pass (docs-only)

@@ -221,11 +221,15 @@ For member custom fields, `getUserFields` returns the per-site member field sche
 
 Every form belongs to ONE of three classes, keyed on `form_table` (and `form_action_type` for the dashboard class). Class determines defaults, recipe, and special-case rules.
 
-| Class | `form_table` | `form_action_type` | Submissions persist to | Use case |
+**Picking rule.** Default to **Standard public** for every public-facing capture form. Pick **Lead-saving** ONLY when the user explicitly invokes BD's matching flow (phrases like "Get Matched" / "match leads to members" / "route leads to providers" / "auto-route to my members"). The bare word "lead" / "lead capture" / "lead form" is NOT a trigger — those default to Standard public. **Member-dashboard** forms are clone-only (never free-created from scratch). If genuinely ambiguous, ask before creating.
+
+| Class | `form_table` | `form_action_type` | Persists to | Use case |
 |---|---|---|---|---|
-| Standard public | `website_contacts` | `widget` / `notification` / `redirect` | Forms inbox of the site (the `form_inquiries` table) | Public inquiry capture (contact, quote request, generic forms). Canonical submitter-name field is `yourname`. |
-| Lead-saving | `leads` | `widget` | The `leads` table | Public Get-Matched flow that auto-routes to matching members. See § Lead-match special case. |
-| Member-dashboard | `users_data` | `default` | The `users_data` row of the logged-in member (overflow / custom fields auto-route to `users_meta`) | Forms inside a logged-in member's dashboard (Contact Details / About Me / Additional Details). See § Member-dashboard special case. |
+| Standard public | `website_contacts` | `widget` / `notification` / `redirect` | `form_inquiries` (forms inbox) | Default for ALL public-facing capture: contact, quote request, ebook / lead-magnet, newsletter, survey, waitlist, generic email capture. Submitter-name field: `yourname`. |
+| Lead-saving | `leads` | `widget` | `leads` | BD's Get-Matched member-routing flow ONLY. Clone `bootstrap_get_match`. See § Lead-match special case. |
+| Member-dashboard | `users_data` | `default` | `users_data` (+ `users_meta` for custom fields) | Logged-in member dashboard (Contact Details / About Me / Additional Details). Never free-create from scratch — clone an existing dashboard form via `createForm`. See § Member-dashboard special case. |
+
+Ambiguity prompt: "Standard public form (saves to your forms inbox) or Lead-saving form (auto-routes to matching members via BD's Get-Matched flow)?"
 
 Read-back tools per class: inquiries via the site's forms inbox, leads via `listLeadMatches` / `listLeads`, member fields via `getUser` / `listUserMeta`.
 
@@ -248,7 +252,7 @@ Read-back tools per class: inquiries via the site's forms inbox, leads via `list
 There is no `cloneForm` tool — clone is a 4-step recipe agents run themselves. Use this when the user asks to "duplicate this form", "copy form X", or to create a Lead-saving form (always start from `bootstrap_get_match` per § Lead-match special case):
 
 1. `listForms property=form_name property_value=<source> property_operator==` — find the source form's `form_id`, then `getForm form_id=<id>` for full settings (or use the `listForms` row directly if it has every needed field).
-2. `createForm` with the source's settings, swapping `form_name` to a new unique slug (run **Rule: Pre-check natural keys** first) and `form_title` to the user's chosen display name.
+2. `createForm` with the source's settings verbatim, swapping ONLY `form_name` (run **Rule: Pre-check natural keys** first) and `form_title` (user's display name). Do NOT override the source's `form_action_type` / `form_action_div` / `form_success_message` with the § Form-level recipe canonical defaults — the cloned values are authoritative.
 3. `listFormFields property=form_name property_value=<source> property_operator==` — read every field row (use `include_view_flags=true include_meta=true` if the source uses non-default view flags or validators).
 4. For each row in field_order: `createFormField form_name=<new>` carrying `field_name`, `field_text`, `field_type`, `field_order`, plus any view-flags / `field_options` / `default_value` / `json_meta` / `input_class` the source had set. Preserve `[widget=...]` shortcodes and `%%%token%%%` translations verbatim — no canonicalization.
 
@@ -256,35 +260,43 @@ There is no `cloneForm` tool — clone is a 4-step recipe agents run themselves.
 
 #### § Form-level recipe (every public form)
 
-This recipe applies to the **Standard public class only** (`form_table=website_contacts`; see § Form classes). Lead-saving forms always start from `bootstrap_get_match` (see § Lead-match special case). Member-dashboard forms are never created (see § Member-dashboard special case).
+This recipe applies to the **Standard public class only** (`form_table=website_contacts`; see § Form classes). Lead-saving forms always start from `bootstrap_get_match` (see § Lead-match special case). Member-dashboard forms are clone-only — never free-create from scratch (see § Member-dashboard special case).
 
-**`form_name` is a system slug, NOT a display name.** Allowed characters: lowercase alphanumerics, hyphens, underscores. NO spaces. The slug appears in `[form=<form_name>]` shortcodes and as a URL-safe identifier; spaces or special characters break shortcode resolution. Use `form_title` for the human-friendly nickname (free text — spaces and any characters allowed). Example: `form_name="strength_blueprint_ebook"` + `form_title="Strength Blueprint Ebook"`.
+**`form_name` is a system slug, NOT a display name.** Allowed characters: lowercase alphanumerics, hyphens, underscores. NO spaces. Hyphens and underscores are NOT interchangeable — `free_consult` and `free-consult` are distinct slugs and the shortcode lookup is byte-exact (see § Placement). Pick one form once and reuse the stored value verbatim everywhere downstream. Use `form_title` for the human-friendly nickname (free text — spaces and any characters allowed). Example: `form_name="strength_blueprint_ebook"` + `form_title="Strength Blueprint Ebook"`.
 
 Required values on a `createForm` for a Standard public form:
 
 1. `form_action` = `post` (HTTP method; almost always `post`. `get` only for bookmarkable search/filter forms).
 2. `form_url` = `/api/widget/json/post/Bootstrap%20Theme%20-%20Function%20-%20Save%20Form` (exact, `%20` literal).
 3. `form_class` = `form-control` (cascades to every field; do NOT set `input_class` on fields just for CSS).
-4. `table_index` = `ID`.
+4. `table_index` = primary key matching `form_table`: `website_contacts`→`ID`, `leads`→`lead_id`, `users_data`→`user_id`.
 5. `form_table` = `website_contacts`.
-6. `form_action_type` — pick by submit-time UX:
-   - `widget` (default) — DOM target swapped inline with a success pop-up; user stays on the page.
+6. `form_action_type` = `widget` (canonical default for Standard public AND Lead-saving). Override only on explicit user request:
    - `notification` — inline success alert; no DOM swap, no redirect.
    - `redirect` — browser navigates to `form_target` URL after submit.
    - (`default` = member-dashboard class only; never used outside § Member-dashboard special case.)
-7. If `form_action_type=widget`: `form_action_div` = `#main-content` (leading `#` required). When `form_action_type` is `notification` or `redirect`, leave `form_action_div` empty — it's only consumed by the widget DOM-swap path.
+7. `form_action_div` = `#main-content` (canonical default; leading `#` required). Always set this — `#main-content` is consumed by the `widget` DOM-swap path and harmlessly ignored on `notification` / `redirect`. Override only when the user explicitly names a different target.
 8. If `form_action_type=redirect`: `form_target` = destination URL. Wrapper refuses the call without it.
 9. `form_email_on` = `0`.
-10. `form_success_message` — optional custom success-message text (free text). Empty falls back to the site's default `message_sent_label`. Applies to `widget` / `notification` / `redirect`; not used by `default` class. Leave empty unless user asks for custom copy.
+10. `form_success_message` = `Your Message has been Received` (canonical default for Standard public AND Lead-saving). Override with custom copy only on explicit user request. Empty would fall back to the site's `message_sent_label`, but always set this to the canonical string for predictable post-submit UX. Not used by `default` class.
 11. `label_to_placeholder` — optional `"0"`/`"1"` toggle (default `"0"`). When `"1"`, BD collapses each field's `field_text` (label) into placeholder text inside the input; per-field `field_placeholder` is overridden. Use only when the user explicitly requests a compact / no-label form layout.
+12. `form_layout` = `bootstrapvertical` (Labels Above Inputs — canonical default). Use `bootstrap` (Labels Left of Inputs) on Member-dashboard forms (`form_action_type=default`). User override wins.
 
-**Tail pattern** (Standard public class only): 3 trailing fields — ReCaptcha, HoneyPot, Button — at the highest `field_order` slots. Only `Button`-last is hard-required; ReCaptcha-vs-HoneyPot order between them is flexible. `field_order` = `listFormFields` max + 1/+2/+3. ReCaptcha and HoneyPot need only `field_type` (omit `field_required` and all 5 view-flag columns — BD auto-handles them). `Button` `input_class` required, pattern `btn btn-lg btn-block <variant>` (Bootstrap variant or site-CSS class). Exactly one submit element per form (Button or Custom-coded) — agent-checked, see § Wrapper-enforced invariants → Agent-side responsibilities.
+**Tail pattern** (Standard public class only): 3 trailing fields — ReCaptcha, HoneyPot, Button.
+
+- `field_order` = `listFormFields` max + 10 / +20 / +30 — wide spacing leaves gaps for future inserts without renumbering.
+- Order: `Button`-last is hard-required; ReCaptcha-vs-HoneyPot order between them is flexible.
+- `ReCaptcha` / `HoneyPot`: send only `field_type` + `field_order`. Omit `field_required` and all 5 view-flag columns — BD auto-handles them.
+- `Button`: `input_class` required, pattern `btn btn-lg btn-block <variant>` (Bootstrap variant or site-CSS class).
+- Exactly one submit element per form (Button or Custom-coded) — agent-checked, see § Wrapper-enforced invariants → Agent-side responsibilities.
 
 **Lead-saving class** has its own tail pattern — see § Lead-match special case. **Member-dashboard class** has NO security tail (auth-gated) — see § Member-dashboard special case.
 
 #### § Placement (rendering a form on the front end)
 
 Standard public + Lead-saving forms render via shortcode: `[form=<form_name>]` placed in a WebPage's body content (or any other shortcode-aware surface). After creating a custom form, the agent surfaces it on the user's chosen page by inserting the shortcode into that page's content.
+
+**The shortcode value must match `form_name` byte-for-byte.** Do not transform underscores to hyphens (or vice versa), do not change case, do not strip prefixes. `form_name=free_consult` → `[form=free_consult]` only; `[form=free-consult]` silently fails to resolve. When inserting the shortcode, copy the stored `form_name` as-is.
 
 Member-dashboard forms (`form_action_type=default`) do NOT use shortcode placement — they render via the `subscription_types.contact_details_form` / `listing_details_form` / `about_form` plan-assignment lookup, only inside the member dashboard. See § Member-dashboard special case.
 
@@ -294,13 +306,15 @@ Member-dashboard forms (`form_action_type=default`) do NOT use shortcode placeme
 
 | Group | Values |
 |---|---|
-| Text inputs | `Textbox` (Single Line), `textarea` (Paragraph), `Email`, `Phone`, `CountryCodePhone` (Phone + Country Code), `Url`, `Password`, `Number`, `Pricebox`, `Hidden` |
+| Text inputs | `Textbox` (Single Line), `textarea` (Paragraph), `Email`, `Phone`, `CountryCodePhone` (Phone + Country Code), `Url`, `Password`, `Number`, `Pricebox` (currency input, formatted per site currency), `Hidden` |
 | Selectors | `Select` (Dropdown), `Radio`, `Checkbox`, `YesNo` |
 | Date/time | `Date`, `DateTimeLocal`, `Years` |
 | Geo | `Country`, `State`, `Category` (Top Category list) |
 | Rich/file | `File`, `FroalaEditor`, `FroalaEditorUserUpload`, `FroalaEditorUserUploadPreMadeElem`, `FroalaEditorAdmin` |
 | Display-only (no posted value) | `HTML` (Section Title — formatted subheading), `Custom` (Custom HTML — escape hatch), `Tip` (Help Alert Box) |
 | Tail / security | `ReCaptcha`, `HoneyPot`, `Button` (renders as `<input type="submit">`) |
+
+`File` accepts: images (gif, jpeg, jpg, png, svg, webp), PDF, txt, rtf, Word, Excel, PowerPoint.
 
 **The 5 view flags** — every flag is binary `0`/`1`. Send the integer / string `0` or `1`, NOT JSON `true` / `false` (booleans are refused by the wrapper). Same rule applies to `field_required` and `field_input_view_admin_only`.
 
@@ -317,7 +331,7 @@ Member-dashboard forms (`form_action_type=default`) do NOT use shortcode placeme
 | Form class | input | display | search | email | grid |
 |---|---|---|---|---|---|
 | Standard public | `1` (omit OK) | `1` (omit OK) | `0` (send explicit) | `1` (omit OK) | `1` (omit OK) |
-| Lead-saving | always work from `bootstrap_get_match` canonical or a clone of it; modify view-flag settings only on explicit user request | | | | |
+| Lead-saving | see § Lead-match special case | | | | |
 | Member-dashboard | `1` (omit OK) | `0` (send explicit, PII opt-in) | `0` (send explicit) | `0` (send explicit) | `0` (send explicit) |
 
 User-ask → flag: "hide from email" → `field_email_view=0`; "hide from confirmation page" → `field_display_view=0`; "hide from admin table" → `field_grid_view=0`. Never use CSS `display:none`.
@@ -360,6 +374,8 @@ To attach a validator, preserve the full skeleton above but populate the relevan
 - `Custom` field_type (admin: "Custom HTML") — escape hatch: widget shortcodes (`[widget=…]`), arbitrary HTML, `<style>`, PHP, structural opens/closes for step wizards, custom-coded submit buttons.
 - `Tip` field_type (admin: "Help Alert Box") — styled Bootstrap alert.
 
+**Insert mid-form:** number body fields consecutively (1, 2, 3…); the tail's wide spacing is what leaves room. To insert, pick any unused integer between neighbors. Renumber neighbors only if there's no gap.
+
 Step-wizard layouts use `Custom` field_types to open and close `<div>` wrappers. Every open MUST have its closer in another `Custom` field_type at higher `field_order`. CSS that hides/shows steps lives in the page or theme. Example for a 3-step wizard:
 
 | `field_order` | `field_type` | `field_text` |
@@ -381,17 +397,18 @@ Step-wizard layouts use `Custom` field_types to open and close `<div>` wrappers.
 
 - **No-change request** → recommend shortcode `[form=bootstrap_get_match]` on the target page; no new form created.
 - **Any structural change** (add/remove fields, rename `field_name`, change `field_options`, anything beyond label/placeholder tweaks on the canonical) → clone `bootstrap_get_match` (form record + all fields), edit only the clone.
-- **Never mutate `form_table` to convert** a Standard public form ↔ Lead-saving. The 8-field form-level signature, runtime widget shortcodes, and `%%%token%%%` translations cannot be backfilled by changing one column. If asked, refuse and offer: "Clone `bootstrap_get_match` and migrate the customer-relevant fields onto the clone, or keep the existing form and route leads separately."
+- **Never mutate `form_table` to convert** a Standard public form ↔ Lead-saving. The 9-field form-level signature, runtime widget shortcodes, and `%%%token%%%` translations cannot be backfilled by changing one column. If asked, refuse and offer: "Clone `bootstrap_get_match` and migrate the customer-relevant fields onto the clone, or keep the existing form and route leads separately."
 
-**Form-level signature** (8 fields together trigger lead-match auto-routing on submit):
+**Form-level signature** (9 fields together trigger lead-match auto-routing on submit):
 
 | Field | Standard public | Lead-saving |
 |---|---|---|
 | `form_table` | `website_contacts` | `leads` |
 | `table_index` | `ID` | `lead_id` |
+| `form_action_type` | `widget` | `widget` |
 | `form_element_id` | empty | `myform` |
 | `data_flow_name` | empty | `default_flow` |
-| `form_action_div` | `#main-content` | empty |
+| `form_action_div` | `#main-content` | `#main-content` |
 | `return_data_type` | `json` | null |
 | `noheader` | `1` | null |
 | `trigger_data_flow` | empty | `Yes` |
@@ -411,7 +428,7 @@ Step-wizard layouts use `Custom` field_types to open and close `<div>` wrappers.
 
 #### § Member-dashboard special case
 
-**3 canonical forms power every member's dashboard. Never recreate; only get / edit / clone-and-assign.**
+**3 canonical forms power every member's dashboard. Never free-create from scratch; only get / edit / clone-and-assign via `createForm`.**
 
 | Form name | Tab |
 |---|---|
