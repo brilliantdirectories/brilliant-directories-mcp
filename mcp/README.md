@@ -83,7 +83,7 @@ Each platform has **two options**:
 - **🚀 Easy config block** — points at our hosted MCP at `https://brilliantmcp.com`. No Node.js, no install, no terminal. Starts working the moment you save and restart your AI app.
 - **🛠️ Advanced config block** — spawns the MCP as a `npx` child process on your machine. Use when you want the MCP on your own hardware.
 
-  **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then reboot before continuing.
+  **Needs Node.js installed first** — get it from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it).
 
 **Both give the full BD tool surface, same instructions, same lean shapers, same safety guards.**
 
@@ -115,9 +115,12 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 
 ### 🛠️ Advanced config block (requires Node.js install)
 
-> **STEP 1 — Install Node.js BEFORE pasting the config below.** The Advanced path runs an `npx` command on your machine. If Node.js isn't installed, you'll get `spawn npx ENOENT` and the AI will show "no MCP servers" with no helpful error. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> — click the green `Get Node.js®` button to download, then on the download page click `Windows Installer (.msi)` (Mac: `macOS Installer`), then DOUBLE-CLICK the downloaded file to RUN the installer, click Next through every prompt (defaults are correct). **Reboot your computer after install** — Windows needs the restart for Node to be available to your AI app.
+> ⚠️ **STEP 1 — Install Node.js FIRST** (the Advanced path runs an `npx` command on your machine):
+> - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
+> - Download: **Windows Installer (.msi)** or **macOS Installer**
+> - Double-click the file → click Next through every prompt
 >
-> Verify Node works: open Command Prompt (Windows: `Win+R` → type `cmd` → Enter) or Terminal (Mac), then run `node --version`. Should print `v18.x` or higher. If it says "command not found", Node didn't install — try again.
+> Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
 > **Why `--prefer-online` + `@latest`?** Forces npm to revalidate against the registry on every launch so you always pull the newest version. Prevents the `ETARGET No matching version found` error that hits when your local npm cache is stale.
 
@@ -158,8 +161,6 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -271,7 +272,7 @@ Claude Code has no MCP GUI — install via terminal. Works in Terminal.app (Mac)
 
 **Prerequisites — one-time install:**
 
-1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` → `Windows Installer (.msi)` or `macOS Installer` → double-click to install, click Next through the prompts). **Reboot your computer** so `PATH` updates. Verify with `node --version` (should print `v18.x` or higher).
+1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` → `Windows Installer (.msi)` or `macOS Installer` → double-click to install, click Next through the prompts).
 2. **The `claude` CLI** — in any terminal, run:
 
    ```bash
@@ -339,8 +340,6 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension installe
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -420,8 +419,6 @@ Click the **Streamable HTTP** tab. Fill the form top-to-bottom:
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -488,8 +485,6 @@ Windsurf's AI pane is called **Cascade**. MCP servers plug into Cascade.
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -548,8 +543,6 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and you'll see *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -594,8 +587,6 @@ Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` wit
 > - Go to <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> → click **Get Node.js®**
 > - Download: **Windows Installer (.msi)** or **macOS Installer**
 > - Double-click the file → click Next through every prompt
-> - **Reboot your computer** (Windows needs the restart for `PATH` to update)
-> - Verify in a terminal: `node --version` should print `v18.x` or higher
 >
 > Skip this and Cursor will show *"no MCP servers"* with `spawn npx ENOENT` in the log.
 
@@ -696,7 +687,7 @@ Save the node. Click the **Tool** dropdown — should populate with every BD too
 > - n8n's HTTP Streamable client has <a href="https://github.com/n8n-io/n8n/issues/28924" target="_blank" rel="noopener noreferrer">known upstream bugs</a> we filed
 > - Our server supports BOTH transports — when n8n fixes their HTTP Streamable client, you can switch to `https://brilliantmcp.com` (no `/sse` path) with Transport = `HTTP Streamable`. No server changes needed.
 
-> **Why `brilliantmcp.com`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. It's the single canonical URL for the hosted MCP endpoint.
+> **Why `https://brilliantmcp.com/sse`?** The main `brilliantdirectories.com` domain has zone-level security rules (bot challenges, geo blocks) that protect our marketing site but silently blocked n8n's SSE handshake. `brilliantmcp.com` is a dedicated zone with no inherited security posture — n8n connects cleanly. It's the single canonical URL for the hosted MCP endpoint.
 
 **Don't want MCP? Alternative paths for n8n:**
 
@@ -796,7 +787,7 @@ Comprehensive coverage across members, posts, leads, reviews, pages, forms, menu
 
 ## Updates are automatic
 
-Once set up, you get new MCP versions automatically the next time you fully quit and reopen your AI app. No reinstall needed.
+Once set up, you get new MCP versions automatically the next time you fully quit and reopen your AI app.
 
 ---
 
@@ -826,7 +817,7 @@ Logs every API request and response to stderr (your API key is automatically red
   - **Windows PowerShell:** `Remove-Item -Recurse -Force "$env:LOCALAPPDATA\npm-cache\_npx"`
   - **Mac/Linux Terminal:** `rm -rf ~/.npm/_npx`
   - Then fully quit + reopen. The `-y` in your config makes `npx` re-download automatically — you do NOT need `npm install -g brilliant-directories-mcp`.
-- **`npx: command not found` or `spawn npx ENOENT`** — Node.js isn't installed or not on PATH. Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>, **reboot** (Windows needs it for `PATH` to update), verify with `node --version`.
+- **`npx: command not found` or `spawn npx ENOENT`** — Node.js isn't installed (or your AI app started before Node was installed). Install from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>, then fully quit and reopen your AI app. Still seeing it? Reboot your computer (rare, but fixes a Windows `PATH`-cache issue that occasionally lingers after install).
 - **`ETARGET No matching version found`** — your local npm cache is stale. Adding `--prefer-online` to your config args (per the snippets above) prevents this; if your config doesn't have it yet, run `npm cache clean --force` and restart your AI app.
 - **"not valid MCP server configurations" (Claude Desktop)** — `claude_desktop_config.json` doesn't accept `url`-shaped blocks. Use the Advanced (npm/stdio) config from the [Claude Desktop section](#claude-desktop). Windows users on the Microsoft Store version of Claude Desktop should also uninstall and reinstall from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a> (the Store version sandboxes the config in ways that can break MCP loading silently).
 
@@ -838,8 +829,8 @@ Two credentials, sent as HTTP headers on every request. No OAuth, no Bearer toke
 
 | Header | Value | Required | Notes |
 |---|---|---|---|
-| `X-Api-Key` | your BD API key | Yes | Admin → **Developer Hub** → **Generate API Key**. Permissions are scoped per key — you choose which endpoints it can reach. |
-| `X-BD-Site-URL` | `https://www.your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Use the full canonical URL (`https://`, exact host, no trailing slash). Not needed for the npx/Advanced path (already in the `--url` flag). |
+| `X-Api-Key` | your BD API key | Yes | Authenticates the request. Admin → **Developer Hub** → **Generate API Key**. |
+| `X-BD-Site-URL` | `https://www.your-site.com` | Yes | Pairs the API key with its BD site. Full canonical URL (`https://`, exact host, no trailing slash). |
 
 ### Universal MCP Client Reference
 
@@ -855,23 +846,7 @@ Any generic MCP client (LibreChat, custom agents, etc.) asks the same four quest
 
 > **n8n is the exception.** n8n's Streamable HTTP client has upstream bugs, so n8n users must use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse` (with the `/sse` path). See the [n8n section](#n8n) for the exact field values. Our server supports both transports — n8n just happens to need the legacy one today.
 
-### MCP Client Compatibility
-
-| Client | Remote HTTP MCP | Status | Notes |
-|---|---|---|---|
-| **Claude Desktop** | ❌ Remote / ✅ Stdio | Stdio only | `claude_desktop_config.json` doesn't accept `url`-shaped blocks — pasting one produces *"not valid MCP server configurations"* at startup. Use the npm/Advanced (stdio) config instead. See [Claude Desktop setup](#claude-desktop). |
-| **Claude Code CLI** | ✅ | Works | Both `claude mcp add --transport http` (remote) and `--transport stdio` (npm) work. See [Claude Code setup](#claude-code). |
-| **Claude extension inside Cursor** | ✅ | Works | Reads `~/.claude.json`. See [setup](#claude-extension-inside-cursor). |
-| **Cursor** | ✅ | Works | Settings → MCP → Add Server. See [Cursor setup](#cursor). |
-| **Windsurf** | ✅ | Works | Uses `serverUrl` (not `url`). See [Windsurf setup](#windsurf). |
-| **Cline** (VS Code) | ✅ | Works | Settings → MCP → Add Remote Server. See [Cline setup](#cline-vs-code-extension). |
-| **n8n MCP Client Tool node** | ✅ | Works via SSE | n8n's Streamable HTTP client has [upstream bugs](https://github.com/n8n-io/n8n/issues/28924), so use Transport = `Server Sent Events (Deprecated)` + URL `https://brilliantmcp.com/sse`. See [n8n setup](#n8n) for exact field values. |
-| **Make.com MCP Client** (Open Beta) | ⚠️ | Untested at scale | Make's MCP Client UI exposes a single API-Key field; our Worker requires two custom headers. Test the connection first; if it fails, use Make's HTTP module with both headers against the BD REST API. See [Make.com setup](#makecom). |
-| **Zapier MCP Client by Zapier** | ❌ | Not supported | Zapier's MCP Client UI only exposes **OAuth** + **Bearer Token**. No custom-headers field. Our Worker requires `X-Api-Key` + `X-BD-Site-URL` custom headers, so Zapier MCP cannot authenticate. Use **Webhooks by Zapier** with `X-Api-Key` + `X-BD-Site-URL` headers against `https://www.your-site.com/api/v2/*` instead (bypasses MCP entirely, hits BD's REST API directly). |
-| **ChatGPT (web / desktop / mobile)** | ❌ | Not supported | OpenAI hasn't shipped MCP connector support in consumer ChatGPT. Codex Desktop works — see [OpenAI section](#openai-codex-desktop). |
-| **ChatGPT Custom GPTs** | ❌ | Not possible | Custom GPTs speak OpenAPI Actions, not MCP. Import the OpenAPI spec directly as a Custom Action. |
-
-> **Why Zapier doesn't work and how to know if a client will:** the blocker is always "can this client send custom HTTP headers to an MCP server?" If the UI shows a **Custom Headers** / **Multiple Headers** / **HTTP Headers** field — you're good, plug in our two headers. If the UI only offers OAuth or Bearer Token — that client cannot reach our Worker today. We evaluate OAuth/Bearer support on request.
+> **How to tell if any other MCP client will work:** the blocker is always "can this client send custom HTTP headers?" If the UI shows a **Custom Headers** / **Multiple Headers** / **HTTP Headers** field, you're good — plug in our two headers. If the UI only offers OAuth or Bearer Token, that client cannot reach our Worker today.
 
 ## Rate Limits
 

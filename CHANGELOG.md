@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.7] - 2026-05-08
+
+### Fixed — README readability + accuracy follow-ups (docs-only)
+
+Eight targeted fixes after a customer-eyes-on review of v6.43.6:
+
+1. **Last paragraph-form Node.js Step 1 missed in v6.43.6** (in the universal Advanced config block) → bulleted to match every other section.
+2. **"Verify in a terminal: `node --version`"** removed from all 6 install blocks (assumes terminal knowledge customers don't have).
+3. **"Verify Node works: open Command Prompt..." paragraph** removed from the Advanced block opener (same reason).
+4. **Reboot dropped from install steps** in 9 places. It's not actually required for most users — fully quitting and reopening the AI app is sufficient. Relocated to Troubleshooting as a "still seeing `spawn npx ENOENT`?" recovery step where the rare PATH-cache scenario actually applies.
+5. **n8n callout heading** → `Why https://brilliantmcp.com/sse?` (was `Why brilliantmcp.com?`) for consistency with the URL form n8n actually uses.
+6. **Updates section** → dropped trailing "No reinstall needed." (redundant with the preceding sentence).
+7. **Authentication table — `X-BD-Site-URL` corrected** from `Yes (Remote path only)` to `Yes`. Both the Worker AND the npm package require it; the npm package just accepts it via `--url` flag instead of a header. Also tightened both row descriptions to one short sentence each.
+8. **`### MCP Client Compatibility` section removed** — the per-client status was redundant with the per-platform sections in the Setup TOC. Kept the one-line "how to tell if any other MCP client will work" note about custom-headers support.
+
+### Net diff
+
+`README.md` + `mcp/README.md`: ~40 lines net trim. No behavior change. No spec change. No Worker change. Customers on `npx --prefer-online brilliant-directories-mcp@latest` see the cleanup on next process start.
+
 ## [6.43.6] - 2026-05-08
 
 ### Fixed — README readability pass (docs-only)
