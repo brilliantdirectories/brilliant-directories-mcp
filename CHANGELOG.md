@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.5] - 2026-05-08
+
+### Fixed — Claude Code section trimmed (docs-only)
+
+The Claude Code section was ~118 lines vs ~55 for sibling sections (Cline, Windsurf). Verbose intro paragraphs and duplicated Node.js install walkthroughs dropped while preserving every actionable step. All three install paths (Plugin, Easy/HTTP, Advanced/stdio) and the "Claude extension inside Cursor" subsection retained — both `claude mcp add` paths verified live against a real BD site (HTTP transport: `✓ Connected`; stdio transport: `✓ Connected`) before the trim.
+
+Also struck the "accepts the URL with or without `https://` — Worker normalizes it" reassurance from the README. Customers should provide the full canonical URL (`https://`, exact host, no trailing slash) per the Requirements section. The Worker still normalizes defensively, but documenting that lenience encouraged sloppy input.
+
+### Net diff
+
+`README.md` + `mcp/README.md`: Claude Code section 118 → 105 lines, two reassurance lines tightened to "use the full canonical URL". No behavior change, no spec change, no Worker change.
+
 ## [6.43.4] - 2026-05-06
 
 ### Fixed — Claude Desktop README correctness (docs-only)

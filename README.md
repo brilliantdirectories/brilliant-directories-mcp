@@ -105,9 +105,7 @@ In your AI client's MCP config (Cursor, Windsurf, Cline, Codex, n8n, etc.), add 
 }
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
-
-The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (full canonical form — `https://`, exact host, no trailing slash, see [Requirements](#requirements--before-you-start)).
 
 > ⚠️ **Claude Desktop is the exception** — its `claude_desktop_config.json` does NOT accept `url`-shaped blocks. Pasting the Easy block above in Claude Desktop produces *"Some MCP servers could not be loaded… not valid MCP server configurations"* at startup. **For Claude Desktop, install Node.js and use the Advanced block** — see the [Claude Desktop section](#claude-desktop) for the working config.
 
@@ -256,39 +254,35 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 
 ### Claude Code
 
-Claude Code has no MCP GUI — install via terminal. Works in:
+Claude Code has no MCP GUI — install via terminal. Works in Terminal.app (Mac), PowerShell (Windows), or Cursor / VS Code's built-in terminal (open with ``Ctrl+` `` / ``Cmd+` `` or **View → Terminal**).
 
-- **Terminal.app** (Mac)
-- **PowerShell** (Windows)
-- **Cursor / VS Code's built-in terminal** — open with ``Ctrl+` `` (Win/Linux), ``Cmd+` `` (Mac), or **View → Terminal**
+**Prerequisites — one-time install:**
 
-**Prerequisites:** the `claude` CLI must be installed (it's itself an npm package, so Node.js is required for the CLI). One-time install:
-
-1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — double-click the downloaded file to install, Next through the prompts). Verify with `node --version` (should print `v18.x` or higher).
-2. **The `claude` CLI:**
+1. **Node.js** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` → `Windows Installer (.msi)` or `macOS Installer` → double-click to install, click Next through the prompts). **Reboot your computer** so `PATH` updates. Verify with `node --version` (should print `v18.x` or higher).
+2. **The `claude` CLI** — in any terminal, run:
 
    ```bash
    npm install -g @anthropic-ai/claude-code
    ```
 
-   Close and reopen your terminal so PATH updates. Verify with `claude --version`.
+   Close and reopen the terminal. Verify with `claude --version`.
 
-Once the CLI is installed, you've got three options. The plugin path is fastest if your Claude Code supports plugins; the others work everywhere.
+Three options below — pick whichever fits.
 
-#### ⚡ Easiest path — install as a Claude Code plugin (one command)
+#### ⚡ Plugin (one-line install, recommended if your Claude Code supports it)
 
-If your Claude Code is recent enough to support plugins, install from our self-hosted plugin marketplace:
+Inside an active `claude` session, run these two slash commands:
 
 ```text
 /plugin marketplace add brilliantdirectories/brilliant-directories-mcp
 /plugin install brilliant-directories@brilliant-directories-mcp
 ```
 
-Run those two slash commands inside an active `claude` session. Claude Code fetches the plugin manifest from this repo, registers the BD MCP server, and tools become available immediately. You'll be prompted for `BD_API_KEY` and `BD_SITE_URL` on first use, or you can set them as environment variables before launching `claude`.
+Claude Code fetches the plugin manifest, registers the BD MCP server, and tools become available immediately. You'll be prompted for `BD_API_KEY` and `BD_SITE_URL` on first use, or set them as environment variables before launching `claude`.
 
-> **Don't see `/plugin` commands in your Claude Code?** Plugin support requires a newer Claude Code build. Update with `npm install -g @anthropic-ai/claude-code@latest`, then restart your terminal. If `/plugin` still isn't recognized, fall back to the Easy or Advanced path below.
+> **Don't see `/plugin` commands?** Plugin support requires a recent build. Run `npm install -g @anthropic-ai/claude-code@latest` and restart the terminal. If still missing, use the Easy or Advanced path below.
 
-#### 🚀 Easy path — hosted Worker (no BD MCP subprocess, no additional install)
+#### 🚀 Easy (hosted Worker — no local BD MCP subprocess)
 
 ```bash
 claude mcp add brilliant-directories --transport http https://brilliantmcp.com \
@@ -296,29 +290,21 @@ claude mcp add brilliant-directories --transport http https://brilliantmcp.com \
   --header "X-BD-Site-URL: https://www.your-site.com"
 ```
 
-Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Verify with `claude mcp list` — `brilliant-directories` should appear. Close and reopen Claude Code.
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Verify with `claude mcp list` — `brilliant-directories` should show `✓ Connected`. Close and reopen Claude Code.
 
-No `npx` child process, no BD MCP install on your machine. Claude Code hits our hosted Worker over HTTP.
-
-#### 🛠️ Advanced path — BD MCP runs as an `npx` child process on your machine
-
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+#### 🛠️ Advanced (BD MCP runs locally via `npx`)
 
 ```bash
 claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 
-Same command shape as the Easy path, but runs the MCP server locally. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code. The `-y` flag auto-accepts the first-time npx install prompt so the spawn doesn't hang.
+Same shape, but runs the MCP server as an `npx` child process on your machine. Replace the placeholders. Verify with `claude mcp list`. Close and reopen Claude Code. The `-y` flag auto-accepts the first-time npx install prompt so the spawn doesn't hang.
 
-> **Credentials live in that one command.**
->
-> The header / flag values are baked into the MCP server config in your user-level Claude config file — passed automatically to BD on every tool call, no separate step.
->
-> To rotate: `claude mcp remove brilliant-directories`, then re-run `claude mcp add` with new values.
+> **Credentials live inside the `claude mcp add` command.** They're written into your user-level Claude config file and passed to BD automatically on every tool call. To rotate: `claude mcp remove brilliant-directories`, then re-run `claude mcp add` with new values.
 
 #### Using the Claude extension inside Cursor
 
-If you chat with Claude inside Cursor (the Anthropic "Claude" extension you install into Cursor from the extension marketplace), that extension has its OWN MCP config — **separate from Cursor's native agent.** Installing in one doesn't install in the other.
+If you chat with Claude inside Cursor (the Anthropic "Claude" extension installed from the Cursor extension marketplace), that extension has its OWN MCP config — **separate from Cursor's native agent.** Installing in one doesn't install in the other.
 
 **Two different MCP configs. Two different places the tools show up.**
 
@@ -334,10 +320,10 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
 
 **Easiest setup — edit the JSON file in Notepad (NO terminal, NO `claude` CLI needed):**
 
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>, install, then **reboot your computer**. This config spawns `npx` as a child process; without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
-1. **Open the file.** Paste the path into File Explorer's address bar (Windows) or Finder's Go → Go to Folder (Mac). If it doesn't exist yet, create a new empty text file at that path named exactly `.claude.json`.
-2. **Paste this inside** (if the file already has content with a `mcpServers` key, merge the `"brilliant-directories": {...}` entry into the existing `mcpServers` object — don't overwrite other entries):
+1. **Open the file.** Paste the path into File Explorer's address bar (Windows) or Finder's **Go → Go to Folder** (Mac). If it doesn't exist yet, create a new empty text file at that path named exactly `.claude.json`.
+2. **Paste this inside.** If the file already has content with an `mcpServers` key, merge the `"brilliant-directories": {...}` entry into the existing `mcpServers` object — don't overwrite other entries.
 
    ```json
    {
@@ -355,20 +341,19 @@ If you chat with Claude inside Cursor (the Anthropic "Claude" extension you inst
    }
    ```
 
-3. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (include `https://`, no trailing slash). **Save the file, then fully quit and reopen Cursor** so the Claude extension picks up the new config. Saving alone is not enough.
-5. Chat with Claude and ask "what tools do you have?" — you should see `brilliant-directories` tools listed.
+3. Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL (include `https://`, no trailing slash).
+4. **Save the file, then fully quit and reopen Cursor** so the Claude extension picks up the new config. Saving alone is not enough.
+5. Chat with Claude and ask *"what tools do you have?"* — you should see `brilliant-directories` tools listed.
 
-> **Cursor's Tools & MCP panel will stay empty — that's expected.** Claude's extension uses `~/.claude.json`, which is a separate host from the one Cursor's panel shows. That panel only reflects `~/.cursor/mcp.json`. If you want BD tools in BOTH surfaces, do the [Cursor section](#cursor) install too.
+> **Cursor's Tools & MCP panel will stay empty — that's expected.** Claude's extension reads `~/.claude.json`; Cursor's panel only reflects `~/.cursor/mcp.json`. If you want BD tools in BOTH surfaces, also do the [Cursor section](#cursor) install.
 
-**Alternative — if you have the `claude` CLI installed** (most users don't — skip this if you don't know what it is):
-
-Run this in any terminal (PowerShell, Terminal.app, Cursor's built-in terminal — any works):
+**Alternative — if you have the `claude` CLI installed** (most users don't — skip if you don't know what it is): run this in any terminal:
 
 ```bash
 claude mcp add brilliant-directories -- npx -y --prefer-online brilliant-directories-mcp@latest --api-key ENTER_API_KEY --url https://www.your-site.com
 ```
 
-The CLI writes the same JSON to `~/.claude.json` for you — same end result as editing the file by hand. If `claude` isn't installed (`command not found`), just use the Notepad method above — you don't need the CLI.
+The CLI writes the same JSON to `~/.claude.json` for you — same end result as editing by hand.
 
 ---
 
@@ -793,7 +778,7 @@ Two credentials, sent as HTTP headers on every request. No OAuth, no Bearer toke
 | Header | Value | Required | Notes |
 |---|---|---|---|
 | `X-Api-Key` | your BD API key | Yes | Admin → **Developer Hub** → **Generate API Key**. Permissions are scoped per key — you choose which endpoints it can reach. |
-| `X-BD-Site-URL` | `https://www.your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Accepts the URL with or without `https://` — the Worker normalizes it. Not needed for the npx/Advanced path (already in the `--url` flag). |
+| `X-BD-Site-URL` | `https://www.your-site.com` | Yes (Remote path only) | Tells our Worker which BD site to proxy to. Use the full canonical URL (`https://`, exact host, no trailing slash). Not needed for the npx/Advanced path (already in the `--url` flag). |
 
 ### Universal MCP Client Reference
 
