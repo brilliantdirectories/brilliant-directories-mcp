@@ -89,7 +89,7 @@ Each platform has **two options**:
 
 ### 🚀 Easy config block (recommended — 30-second install)
 
-In your AI client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, etc.), add this entry:
+In your AI client's MCP config (Cursor, Windsurf, Cline, Codex, n8n, etc.), add this entry:
 
 ```json
 {
@@ -108,6 +108,8 @@ In your AI client's MCP config (Claude Desktop, Cursor, Windsurf, Cline, etc.), 
 Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL.
 
 The `X-BD-Site-URL` accepts the URL with or without `https://` — our Worker normalizes it.
+
+> ⚠️ **Claude Desktop is the exception** — its `claude_desktop_config.json` does NOT accept `url`-shaped blocks. Pasting the Easy block above in Claude Desktop produces *"Some MCP servers could not be loaded… not valid MCP server configurations"* at startup. **For Claude Desktop, install Node.js and use the Advanced block** — see the [Claude Desktop section](#claude-desktop) for the working config.
 
 **Save, then fully quit and reopen the AI app.** Saving alone is not enough — every AI client loads MCP servers only at fresh launch, not on hot-reload. Done. Working? [Skip to "What you can ask the AI"](#what-you-can-ask-the-ai).
 
@@ -146,17 +148,15 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 
 ### Claude Desktop
 
-> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update. If the banner bothers you, use the Easy path below — it skips the `npx` subprocess spawn and the latency that triggers it.
+> ⚠️ **Claude Desktop only supports stdio MCP servers in `claude_desktop_config.json`** — meaning the config file expects `command` + `args` (a local Node.js process), NOT `url` + `headers` (a hosted endpoint). Pasting a `url`-shaped block will produce **"Some MCP servers could not be loaded… not valid MCP server configurations and were skipped"** at app launch and silently disable the BD MCP. Anthropic's "Custom Connectors" (Settings → Connectors) is a separate surface that handles remote URL servers via OAuth — that path is NOT compatible with our header-auth Worker.
+>
+> **Bottom line for Claude Desktop:** install **Node.js** + use the npm package config below. There is no "no Node.js" path that works in Claude Desktop today.
 
-> ⚠️ **Do NOT use Settings → Connectors** (that's the OAuth UI — our MCP uses header auth, not OAuth).
->
-> ✅ Go to **Settings → Developer → Edit Config** instead — works for both Easy and Advanced paths.
->
-> **After initial connection, fully quit and reopen the app after editing the config.**
->
-> Claude loads MCP servers only at app launch.
+> **Seeing "Tool result could not be submitted. The request may have expired or the connection was interrupted" in Claude Desktop?** That's a known Claude Desktop UI bug affecting every MCP connector (not just BD) — Anthropic is tracking it at <a href="https://github.com/anthropics/claude-code/issues/51874" target="_blank" rel="noopener noreferrer">anthropics/claude-code issue #51874</a>. **Your tools still work** — the banner is cosmetic and fires before the tool result renders. Safe to ignore; will resolve on Claude's next update.
 
-> ⚠️ **Windows users — install Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>, not the Microsoft Store.** The Microsoft Store version puts your config in a sandboxed location that can silently reject the Easy (hosted) config with "not valid MCP server configurations." The direct .exe install from `claude.ai/download` doesn't have this issue and is the version we test against.
+> ⚠️ **Windows users — install Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">claude.ai/download</a>, not the Microsoft Store.** The Microsoft Store version sandboxes the config file in a way that can break MCP server loading silently. The direct `.exe` install from `claude.ai/download` is the version we test against.
+
+> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then `Windows Installer (.msi)` — Mac: `macOS Installer` — DOUBLE-CLICK to install), then **reboot your computer**. Without Node + reboot the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
 
 **Steps (no terminal):**
 
@@ -170,29 +170,7 @@ Need a client-specific walkthrough? Jump to your platform's section below.
 
 #### Scenario A — file is empty `{}` or has no `mcpServers` entry
 
-Select all (`Cmd+A` / `Ctrl+A`) and delete.
-
-Paste one of these into the file (Easy is recommended):
-
-**🚀 Easy (recommended — no Node.js install required):**
-
-```json
-{
-  "mcpServers": {
-    "brilliant-directories": {
-      "url": "https://brilliantmcp.com",
-      "headers": {
-        "X-Api-Key": "ENTER_API_KEY",
-        "X-BD-Site-URL": "https://www.your-site.com"
-      }
-    }
-  }
-}
-```
-
-**🛠️ Advanced (runs on your machine, needs Node.js):**
-
-> ⚠️ **Install Node.js FIRST** — from <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a> (click `Get Node.js®` to download, then click `Windows Installer (.msi)` — Mac: `macOS Installer` — and DOUBLE-CLICK the downloaded file to install it), then **reboot your computer**. Without Node + reboot, the AI will show "no MCP servers" and the log will say `spawn npx ENOENT`. Verify with `node --version` in Command Prompt before continuing.
+Select all (`Cmd+A` / `Ctrl+A`) and delete. Paste this:
 
 ```json
 {
@@ -268,7 +246,7 @@ Two changes: `,` added after the `preferences` closing `}`, and the `mcpServers`
 
    That's your tool count. Click to see BD tools listed.
 
-> **No hammer?** **Settings → Developer → MCP servers** shows `brilliant-directories` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash. For the Advanced path also: Node.js not installed. For the Easy path also: firewall blocking outbound to `brilliantmcp.com` (unlikely — it's HTTPS to a Cloudflare edge).
+> **No hammer?** **Settings → Developer → MCP servers** shows `brilliant-directories` with an error status. Common causes: JSON typo (run through <a href="https://jsonlint.com" target="_blank" rel="noopener noreferrer">jsonlint.com</a>), wrong API key, URL missing `https://` or has trailing slash, Node.js not installed (Claude Desktop spawns the npm package via `npx`). Saw **"Some MCP servers could not be loaded… not valid MCP server configurations"** at startup? You almost certainly pasted a `url`-shaped block — Claude Desktop's `claude_desktop_config.json` only accepts the stdio shape (`command` + `args`) shown above; remote URL servers are an entirely separate Anthropic surface (claude.ai → Settings → Connectors with OAuth) that's not compatible with our header-auth Worker.
 
 **Direct config file path** (if you skip Settings):
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`

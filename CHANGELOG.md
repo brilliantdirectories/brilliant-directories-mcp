@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.43.4] - 2026-05-06
+
+### Fixed — Claude Desktop README correctness (docs-only)
+
+The Claude Desktop section advertised a "🚀 Easy (no Node.js required)" config block using `url` + `headers` shape pointing at `https://brilliantmcp.com`. Claude Desktop's `claude_desktop_config.json` does NOT accept that shape — it produces *"Some MCP servers could not be loaded… not valid MCP server configurations and were skipped: brilliant-directories"* at app launch and silently disables the BD MCP. Customers were saving the config, restarting, seeing no tools, and giving up.
+
+Anthropic's `claude_desktop_config.json` only supports stdio servers (`command` + `args`). Their separate "Custom Connectors" UI (claude.ai → Settings → Connectors) handles remote URL servers but only via OAuth — not compatible with our header-auth Worker.
+
+Changes:
+
+- **Removed the broken `url`-shaped block** from the Claude Desktop section (Scenario A). The npm/stdio config is now the only path shown for Claude Desktop, with Node.js install correctly framed as required.
+- **Universal "Easy config block" headline** updated: removed Claude Desktop from the list of clients that block works in (Cursor, Windsurf, Cline, Codex, n8n still listed). Added an explicit `⚠️ Claude Desktop is the exception` note pointing readers at the working Claude Desktop section.
+- **Top-of-section warning** added explaining why the Easy block fails in Claude Desktop and what error message customers see — so the next person Googling that error string lands on a clean answer.
+- **"No hammer?" troubleshooting line** updated to name the exact error message and root cause.
+
+No code changes. README fix only — but README ships in the npm tarball, so customers via `npx --prefer-online brilliant-directories-mcp@latest` see the corrected text on the next process start.
+
+### Net diff
+
+`README.md` + `mcp/README.md`: ~30 lines net (removed ~12-line Easy block from Claude Desktop section, added warning + universal-block exception note, tightened troubleshooting line).
+
 ## [6.43.3] - 2026-05-06
 
 ### Fixed — URL normalization (customer ticket #578506)
