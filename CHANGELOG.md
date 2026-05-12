@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.15] - 2026-05-12
+
+### Prose fix — `listFormFields` filter guidance
+
+`listFormFields` description claimed `Filter by form_id or form_name`. Live verification shows `form_id` is NOT a column on `form_fields` — the table joins to `forms` by `form_name` (text slug). Filtering by `form_id` returns empty silently, mimicking "no records exist." Agents building forms hit this trap and wasted a probe.
+
+**Fix:** updated description to `Filter by form_name (text slug — form_fields joins to forms by form_name, not form_id).` Spec-only change; no code, no schema shape change.
+
 ## [6.45.14] - 2026-05-12
 
 ### Lean — user `photos_schema` nested array (getUser, listUsers, searchUsers)

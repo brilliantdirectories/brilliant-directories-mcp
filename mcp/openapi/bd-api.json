@@ -6243,7 +6243,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of formfield records. Read-only.\n\n**Use when:** listing fields on a form. Filter by `form_id` or `form_name`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getFormField` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
+        "description": "Paginated enumeration of formfield records. Read-only.\n\n**Use when:** listing fields on a form. Filter by `form_name` (text slug — `form_fields` joins to `forms` by `form_name`, not `form_id`).\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability.\n\n**See also:** `getFormField` (single record by ID).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record is the full resource object.\n\n"
       }
     },
     "/api/v2/form_fields/get/{field_id}": {
