@@ -1170,6 +1170,17 @@ const WRITE_KEEP_SETS = {
   // Smart lists
   createSmartList: ["smart_list_id","smart_list_name","smart_list_type","smart_list_created"],
   updateSmartList: ["smart_list_id","smart_list_name","smart_list_type","smart_list_created"],
+
+  // Leads
+  createLead: ["lead_id","lead_name","lead_email","lead_phone","lead_message","lead_location","status","lead_price","top_id","sub_id","token","date_added","revision_timestamp"],
+  updateLead: ["lead_id","lead_name","lead_email","lead_phone","lead_message","lead_location","status","lead_price","top_id","sub_id","token","date_added","revision_timestamp"],
+
+  // Reviews — keep set is top-level only. Nested `user_schema` (full member
+  // record including bcrypt password, token, cookie, last_login) gets stripped
+  // by omission. Security-relevant: review responses no longer leak member
+  // password hashes.
+  createReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
+  updateReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the

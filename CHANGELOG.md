@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.9] - 2026-05-12
+
+### Security — review responses no longer leak member password hashes
+
+`createReview` / `updateReview` responses embedded the full member record under a nested `user_schema` key, including the member's bcrypt password hash, session token, cookie, and last_login. Anyone calling create/update review got the reviewer's full auth surface in the response payload. Not strictly a data leak (the API caller has `getUser` access by definition), but unnecessary exposure on every review write.
+
+**Fix:** added review tools to `WRITE_KEEP_SETS` with a top-level-only keep set. Nested `user_schema` (and admin-UI plumbing fields) get stripped by omission — the existing keep-set mechanism handles nested objects for free. No new code path needed.
+
+### Lean — leads + reviews
+
+Same round added lean responses for `createLead` / `updateLead` — was ~50% null/empty including embedded geocode placeholders, parent `list_profession` object, and EAV form-field nulls.
+
+**Keep set columns verified live against `listLeads` / `listReviews` probes.** Field name `status` (not `lead_status`) used on the leads keep set — matches what BD actually returns.
+
+**Worker:** SERVER_INFO 3.1.12 → 3.1.13. Byte-mirrored with npm.
+
 ## [6.45.8] - 2026-05-12
 
 ### Lean write responses extended to forms, menus, redirects, smart lists
