@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.16] - 2026-05-12
+
+### Fix — `seo_type` runtime enum guard on createWebPage / updateWebPage
+
+Spec declares `seo_type` as an enum but `jsonSchemaToZodShape` drops enum constraints on string properties, so Zod only caught `undefined`. Empty string, literal `"null"`, and arbitrary off-enum values all passed through; BD stored them verbatim and the resulting page 404'd on the public renderer (BD's router keys off `seo_type`).
+
+Verified live by minion probe: `seo_type=""` → success with empty `seo_type` in DB → 404. `seo_type="notarealtype"` → success with garbage stored → 404. Same pattern as the existing hero-enum and filter-operator runtime guards.
+
+**Fix:** `validateSeoTypeInArgs` rejects empty/null/off-enum values with the documented enum list + the "use 'content' for generic pages" guidance. Same reject-don't-coerce pattern used elsewhere — guides toward success without silent defaults that mask agent intent.
+
+**Worker:** SERVER_INFO 3.1.19 → 3.1.20. Byte-mirrored npm + Worker.
+
 ## [6.45.15] - 2026-05-12
 
 ### Prose fix — `listFormFields` filter guidance

@@ -1762,6 +1762,32 @@ const HERO_ENUM_FIELDS = {
 };
 const HERO_ENUM_TOOLS = new Set(["createWebPage", "updateWebPage"]);
 
+// seo_type runtime enum guard. Spec declares the enum on createWebPage /
+// updateWebPage but jsonSchemaToZodShape drops enum constraints on string
+// properties, so Zod only catches `undefined`. Empty string, literal "null",
+// and arbitrary off-enum garbage all pass through and BD stores them verbatim
+// — the page is created but routes to a 404 because BD's public renderer
+// keys off seo_type. Runtime guard rejects with the documented enum + the
+// "use 'content' for generic pages" guidance from the field description.
+const SEO_TYPE_ENUM = ["content", "data_category", "profile_search_results", "custom_widget_page", "password_retrieval_page", "unsubscribed"];
+function validateSeoTypeInArgs(toolName, args) {
+  if (toolName !== "createWebPage" && toolName !== "updateWebPage") return null;
+  if (!args || typeof args !== "object") return null;
+  // updateWebPage: seo_type is optional (PATCH semantics — omit to leave unchanged).
+  // Only validate if the agent sent a value. createWebPage: Zod's Required check
+  // catches undefined; here we catch empty/null/off-enum.
+  if (!Object.prototype.hasOwnProperty.call(args, "seo_type")) return null;
+  const v = args.seo_type;
+  if (v === null || v === "" || v === "null") {
+    return `seo_type cannot be empty or null. Must be one of: ${SEO_TYPE_ENUM.map((x) => `"${x}"`).join(", ")}. For landing/static/about/contact/generic pages, use "content".`;
+  }
+  const s = String(v);
+  if (!SEO_TYPE_ENUM.includes(s)) {
+    return `seo_type="${s}" is not a valid value. Must be one of: ${SEO_TYPE_ENUM.map((x) => `"${x}"`).join(", ")}. For landing/static/about/contact/generic pages, use "content".`;
+  }
+  return null;
+}
+
 // Reject-don't-coerce on hero enums. Silent coercion (e.g. `#ffffff` →
 // `"primary"`, numeric → `"btn-lg"`) is a false-success failure mode: the
 // validator passes because the value was already coerced, agent gets
@@ -4783,6 +4809,13 @@ async function main() {
       if (heroEnumErr) {
         return {
           content: [{ type: "text", text: heroEnumErr }],
+          isError: true,
+        };
+      }
+      const seoTypeErr = validateSeoTypeInArgs(name, args);
+      if (seoTypeErr) {
+        return {
+          content: [{ type: "text", text: seoTypeErr }],
           isError: true,
         };
       }
