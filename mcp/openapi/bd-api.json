@@ -237,6 +237,19 @@
           ]
         }
       },
+      "include_marketplace": {
+        "name": "include_marketplace",
+        "in": "query",
+        "description": "Opt in to return the photo's marketplace/shop columns (`price`, `manufacturer`, `availability`, `product_category`, `product_type`, `condition`, `inv_id`, `link`, `additional_fields`). Default stripped — use when the site treats photos as a shop catalog (BD's marketplace feature).",
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
       "include_post_seo": {
         "name": "include_post_seo",
         "in": "query",
@@ -4467,6 +4480,9 @@
           },
           {
             "$ref": "#/components/parameters/property_value"
+          },
+          {
+            "$ref": "#/components/parameters/include_marketplace"
           }
         ],
         "responses": {
@@ -4499,6 +4515,9 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "$ref": "#/components/parameters/include_marketplace"
           }
         ],
         "responses": {

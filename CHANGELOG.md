@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.11] - 2026-05-12
+
+### Lean — multi-image post photos (read side + tightened write keep set)
+
+v6.45.10 leaned the write responses but `listMultiImagePostPhotos` / `getMultiImagePostPhoto` still returned ~39 fields per row. On a 50-photo album, that's 1,950 fields with ~800 null/empty — bloat compounds linearly with photo count.
+
+**Fix:** new read-shaper (`applyPhotoLean`) following the established `include_*` opt-in pattern (same shape as `applyFormFieldLean`, `applyUserLean`, etc.). Default returns 9 lean fields per row; `include_marketplace=true` restores the marketplace/shop columns (`price`, `manufacturer`, `availability`, `product_category`, `product_type`, `condition`, `inv_id`, `link`, `additional_fields`) for sites using photos as a catalog.
+
+**Write keep set trimmed:** dropped `file_main_full_url` and `file_thumbnail_full_url` from `createMultiImagePostPhoto` / `updateMultiImagePostPhoto` responses. These are derivable from `file` + the site URL pattern (`{site}/photos/main/{file}`, `{site}/photos/display/{file}`); agents who need them post-create can call `getMultiImagePostPhoto`.
+
+**Net response shape (default):** 9 fields per photo on create/update/read — `photo_id`, `user_id`, `group_id`, `file`, `title`, `order`, `status`, `image_imported`, `revision_timestamp`.
+
+**Worker:** SERVER_INFO 3.1.14 → 3.1.15. Byte-mirrored npm + Worker.
+
 ## [6.45.10] - 2026-05-12
 
 ### Lean — multi-image post photos

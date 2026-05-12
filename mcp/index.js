@@ -1093,6 +1093,39 @@ function applyFormFieldLean(body, includeFlags) {
   return body;
 }
 
+// --- Multi-image post photos read lean -------------------------------------
+// listMultiImagePostPhotos + getMultiImagePostPhoto return ~39 fields per
+// row; default-strip the marketplace/product columns + admin plumbing.
+// `include_marketplace=true` opt-in restores the marketplace columns for
+// sites using photos as a shop catalog.
+const PHOTO_LEAN_INCLUDE_FLAGS = ["include_marketplace"];
+const PHOTO_LEAN_ALWAYS_KEEP = [
+  "photo_id", "user_id", "group_id", "file", "title",
+  "order", "status", "image_imported", "revision_timestamp",
+  "file_main_full_url", "file_thumbnail_full_url",
+];
+const PHOTO_MARKETPLACE_FIELDS = [
+  "price", "manufacturer", "availability", "product_category",
+  "product_type", "condition", "inv_id", "link", "additional_fields",
+];
+const PHOTO_READ_TOOLS = new Set(["listMultiImagePostPhotos", "getMultiImagePostPhoto"]);
+
+function applyPhotoLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = { marketplace: !!includeFlags.include_marketplace };
+  const allow = new Set(PHOTO_LEAN_ALWAYS_KEEP);
+  if (include.marketplace) for (const k of PHOTO_MARKETPLACE_FIELDS) allow.add(k);
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    const out = {};
+    for (const k of Object.keys(row)) if (allow.has(k)) out[k] = row[k];
+    return out;
+  };
+  if (Array.isArray(body.message)) body.message = body.message.map(shapeRow);
+  else if (body.message && typeof body.message === "object") body.message = shapeRow(body.message);
+  return body;
+}
+
 // --- WRITE-RESPONSE LEAN-SHAPING -------------------------------------------
 //
 // BD's create/update endpoints echo the full updated/created record in the
@@ -1184,10 +1217,11 @@ const WRITE_KEEP_SETS = {
 
   // Multi-image post photos — return ~39 fields with ~16 null/empty
   // (product/marketplace columns, facebook_photo_id, photo_filename, etc.)
-  // Keep set covers identity + parent linkage + content + state + the
-  // public CDN URLs agents need to render photos.
-  createMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp","file_main_full_url","file_thumbnail_full_url"],
-  updateMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp","file_main_full_url","file_thumbnail_full_url"],
+  // Keep set: identity + parent linkage + content + state. CDN URLs
+  // derivable from `file` + site URL; agents needing them can call
+  // getMultiImagePostPhoto.
+  createMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp"],
+  updateMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the
@@ -4311,6 +4345,7 @@ async function main() {
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
       const isFormReadTool = FORM_READ_TOOLS.has(name);
       const isFormFieldReadTool = FORM_FIELD_READ_TOOLS.has(name);
+      const isPhotoReadTool = PHOTO_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
         : isPostReadTool
@@ -4331,7 +4366,9 @@ async function main() {
                         ? FORM_LEAN_INCLUDE_FLAGS
                         : isFormFieldReadTool
                           ? FORM_FIELD_LEAN_INCLUDE_FLAGS
-                          : null;
+                          : isPhotoReadTool
+                            ? PHOTO_LEAN_INCLUDE_FLAGS
+                            : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -5253,6 +5290,7 @@ async function main() {
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (isFormReadTool) result.body = applyFormLean(result.body, includeFlags);
         else if (isFormFieldReadTool) result.body = applyFormFieldLean(result.body, includeFlags);
+        else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
       }
 
