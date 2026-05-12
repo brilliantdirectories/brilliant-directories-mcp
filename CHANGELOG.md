@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.3] - 2026-05-12
+
+### Hotfix — `_clear_fields` no longer creates spurious `users_meta` rows on typo'd column names
+
+v6.45.2's wire fix (emit `col=&__clear_fields=col`) made BD's `isset()` precondition fire — but it also meant typo'd column names now pass that check, and BD's EAV-routing fallback writes them to `users_meta` as empty rows. Agent typing `_clear_fields: ["nonexistant_typo"]` would silently create `users_meta(database='list_seo', database_id=2, key='nonexistant_typo', value='')`. Different shape of pollution than v6.45.0's `_clear_fields` rows, but pollution nonetheless.
+
+**Fix:** new Guard D validates every name in `_clear_fields` against the tool's declared `bodyProps` OR `EAV_ROUTES.eavFields`. Any unknown name → wrapper refuses the whole call with a clear "unknown column name(s)" message naming the typo and the tool. Agent fixes spelling and retries; no partial success, no spurious row written.
+
+Pairs with Guards B (wrapper-reserved fields) and C (value+clear overlap). Four guards total now.
+
+**Worker:** SERVER_INFO 3.1.9 → 3.1.10.
+
 ## [6.45.2] - 2026-05-11
 
 ### Hotfix — `_clear_fields` needs `field=` companion on wire for BD to act on it

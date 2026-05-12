@@ -3695,13 +3695,11 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFiel
       const params = new URLSearchParams(
         Object.entries(bodyParams || {}).filter(([, v]) => v !== undefined && v !== null && v !== "")
       );
-      // Agent passes `_clear_fields: [...]` (single underscore, array).
-      // Wrapper translates to BD's native wire parameter
-      // `__clear_fields=col1,col2` (DOUBLE underscore, CSV). BD's update
-      // controller checks `isset($arguments[$column]) && ($value !== "" || in_array($column, $clearFields))`.
-      // We must emit BOTH (a) `field=` per clear-target so isset() is true,
-      // AND (b) `__clear_fields=csv` so BD knows the empty is intentional.
-      // Without (a), BD's foreach loop skips the column entirely. CEO-directive shape.
+      // BD update controllers gate clears on:
+      //   isset($arguments[$column]) && ($value !== "" || in_array($column, $clearFields))
+      // Both halves required on the wire: `col=` (so isset is true) AND
+      // `__clear_fields=csv` (so BD treats the empty as intentional, not
+      // just an unset value to drop).
       if (hasClear) {
         for (const name of clearFields) params.append(name, "");
         params.append("__clear_fields", clearFields.join(","));
@@ -4555,13 +4553,10 @@ async function main() {
         }
       }
 
-      // Peel off the wrapper-only `_clear_fields` array before any distribution
-      // loop runs — it's not a BD-API param, it's a directive to makeRequest.
-      // ALWAYS strip the key first (even if malformed), THEN parse. Without
-      // unconditional strip, a non-array `_clear_fields` would leak into the
-      // body dispatch, be sent as a regular form param, and BD would route the
-      // unknown column name to users_meta as a spurious EAV row — the exact
-      // pollution we shipped v6.45.1 to fix. See **Rule: Clearing fields**.
+      // Peel off `_clear_fields` (agent-facing, single underscore) before any
+      // distribution loop runs. ALWAYS strip first, THEN parse — malformed
+      // shapes must not leak to BD as a regular form param (would create a
+      // spurious users_meta row). See **Rule: Clearing fields**.
       let clearFields;
       let rawClear;
       if (args && Object.prototype.hasOwnProperty.call(args, "_clear_fields")) {
@@ -4589,9 +4584,8 @@ async function main() {
             .filter((n) => n.length > 0);
         }
       }
-      // Two guards on _clear_fields. (BD v6.45.0+ natively handles clears on
-      // base AND EAV-routed fields via __clear_fields=csv on the wire; EAV
-      // refusal removed.)
+      // Three guards on _clear_fields. (BD v6.45.0+ natively handles clears on
+      // base AND EAV-routed fields via __clear_fields=csv on the wire.)
       if (clearFields && clearFields.length > 0) {
         // (B) Wrapper-managed fields (auto-injected timestamps + unconditional
         // overwrites). Clearing them violates wrapper invariants.
@@ -4605,6 +4599,18 @@ async function main() {
         const overlap = clearFields.filter((n) => Object.prototype.hasOwnProperty.call(args, n));
         if (overlap.length > 0) {
           return { content: [{ type: "text", text: `_clear_fields conflict: field(s) [${overlap.join(", ")}] also passed as value(s). Use one or the other.` }], isError: true };
+        }
+        // (D) Unknown column names — refuse. With the v6.45.2 wire fix
+        // (col=&__clear_fields=col), an unknown name passes BD's isset() check
+        // and gets routed to users_meta as a spurious EAV row. Validate against
+        // the tool's bodyProps OR EAV_ROUTES.eavFields (legitimate EAV-routed
+        // columns not in base bodyProps). Any unknown → refuse the whole call
+        // so the agent fixes the typo and retries — never partial success.
+        const eavSet = EAV_ROUTES[name]?.eavFields;
+        const isKnown = (n) => (bodyProps && n in bodyProps) || (eavSet ? eavSet.has(n) : false);
+        const unknownNames = clearFields.filter((n) => !isKnown(n));
+        if (unknownNames.length > 0) {
+          return { content: [{ type: "text", text: `_clear_fields contains unknown column name(s) for ${name}: [${unknownNames.join(", ")}]. Check spelling against the tool schema or EAV-routed field list.` }], isError: true };
         }
       }
 
