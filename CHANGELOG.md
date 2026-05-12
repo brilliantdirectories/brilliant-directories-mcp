@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.6] - 2026-05-12
+
+### `field_order` + security tail — pattern-adaptive rules (corpus + spec, no code)
+
+Two related findings surfaced from live form-building:
+
+1. **`field_order` was being assigned consecutively** (1, 2, 3…) per the old "number body consecutively" rule. Defeats the purpose of spacing — every insert forces an N-write renumber across all later fields. New forms now use multiples of 10 (10, 20, 30…). Existing forms (whether 10-step or legacy consecutive) keep their pattern; agents adapt rather than normalize.
+
+2. **Security tail (ReCaptcha + HoneyPot + Button) wasn't being added by default** on Standard public forms. Sample forms on the live site lack the tail, so agents that introspect for examples learn the wrong pattern. Rule tightened: default-on for `form_table=website_contacts`; user must explicitly opt out.
+
+**Changes:**
+
+- `createFormField` / `updateFormField` `field_order` parameter description filled (was empty): "New forms: multiples of 10 (10, 20, 30…), security tail included. Adding to an existing form: continue its pattern — don't renumber unrelated fields."
+- § Field anatomy "Insert mid-form" rewritten: 10-step forms use midpoints (55 between 50 and 60); legacy consecutive forms bump only immediate neighbors; never renumber unrelated fields.
+- § Form-level recipe tail-pattern: "MANDATORY on Standard public class" → "default-on for Standard public class" (consistent framing for the opt-out carve-out).
+
+No code changes, no wrapper changes, no Worker version bump needed. Corpus + spec descriptions only.
+
 ## [6.45.5] - 2026-05-12
 
 ### Hotfix — strict array-only shape guard on `_clear_fields`

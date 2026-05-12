@@ -6309,7 +6309,8 @@
                     "description": "Form field type. Copy spelling exactly — most are TitleCase but `textarea` is lowercase. Grouping + use cases at **Rule: Forms** § Field anatomy → Valid field_type values."
                   },
                   "field_order": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Display position (lower = earlier). New forms: multiples of 10 (10, 20, 30…), security tail included. Adding to an existing form: continue its pattern — don't renumber unrelated fields."
                   },
                   "field_required": {
                     "type": "integer",
@@ -6471,7 +6472,8 @@
                     "description": "Form field type. Copy spelling exactly — most are TitleCase but `textarea` is lowercase. Grouping + use cases at **Rule: Forms** § Field anatomy → Valid field_type values."
                   },
                   "field_order": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Display position (lower = earlier). New forms: multiples of 10 (10, 20, 30…), security tail included. Adding to an existing form: continue its pattern — don't renumber unrelated fields."
                   },
                   "field_required": {
                     "type": "integer",

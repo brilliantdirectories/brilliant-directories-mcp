@@ -282,9 +282,9 @@ Required values on a `createForm` for a Standard public form:
 11. `label_to_placeholder` — optional `"0"`/`"1"` toggle (default `"0"`). When `"1"`, BD collapses each field's `field_text` (label) into placeholder text inside the input; per-field `field_placeholder` is overridden. Use only when the user explicitly requests a compact / no-label form layout.
 12. `form_layout` = `bootstrapvertical` (Labels Above Inputs — canonical default). Use `bootstrap` (Labels Left of Inputs) on Member-dashboard forms (`form_action_type=default`). User override wins.
 
-**Tail pattern** (Standard public class only): 3 trailing fields — ReCaptcha, HoneyPot, Button.
+**Tail pattern** — **default-on for Standard public class**: 3 trailing fields — ReCaptcha, HoneyPot, Button. Always include on `form_table=website_contacts` unless user explicitly opts out of security.
 
-- `field_order` = `listFormFields` max + 10 / +20 / +30 — wide spacing leaves gaps for future inserts without renumbering.
+- `field_order` = body's last value + 10 / +20 / +30. **All fields step by 10 (body AND tail).**
 - Order: `Button`-last is hard-required; ReCaptcha-vs-HoneyPot order between them is flexible.
 - `ReCaptcha` / `HoneyPot`: send only `field_type` + `field_order`. Omit `field_required` and all 5 view-flag columns — BD auto-handles them.
 - `Button`: `input_class` required, pattern `btn btn-lg btn-block <variant>` (Bootstrap variant or site-CSS class).
@@ -374,7 +374,7 @@ To attach a validator, preserve the full skeleton above but populate the relevan
 - `Custom` field_type (admin: "Custom HTML") — escape hatch: widget shortcodes (`[widget=…]`), arbitrary HTML, `<style>`, PHP, structural opens/closes for step wizards, custom-coded submit buttons.
 - `Tip` field_type (admin: "Help Alert Box") — styled Bootstrap alert.
 
-**Insert mid-form:** number body fields consecutively (1, 2, 3…); the tail's wide spacing is what leaves room. To insert, pick any unused integer between neighbors. Renumber neighbors only if there's no gap.
+**Insert mid-form:** match the form's existing pattern. On 10-step forms, pick the midpoint (55 between 50 and 60). On legacy consecutive forms (1, 2, 3…), bump only the immediate neighbors to open one slot — never renumber unrelated fields. Appending to the end: next value in the existing pattern (consecutive → N+1, 10-step → max+10).
 
 Step-wizard layouts use `Custom` field_types to open and close `<div>` wrappers. Every open MUST have its closer in another `Custom` field_type at higher `field_order`. CSS that hides/shows steps lives in the page or theme. Example for a 3-step wizard:
 
