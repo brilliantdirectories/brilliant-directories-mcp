@@ -1773,11 +1773,19 @@ const SEO_TYPE_ENUM = ["content", "data_category", "profile_search_results", "cu
 function validateSeoTypeInArgs(toolName, args) {
   if (toolName !== "createWebPage" && toolName !== "updateWebPage") return null;
   if (!args || typeof args !== "object") return null;
-  // updateWebPage: seo_type is optional (PATCH semantics — omit to leave unchanged).
-  // Only validate if the agent sent a value. createWebPage: Zod's Required check
-  // catches undefined; here we catch empty/null/off-enum.
-  if (!Object.prototype.hasOwnProperty.call(args, "seo_type")) return null;
-  const v = args.seo_type;
+  const has = Object.prototype.hasOwnProperty.call(args, "seo_type");
+  const v = has ? args.seo_type : undefined;
+  // createWebPage: seo_type is required. Reject omitted/undefined/empty/null
+  // directly here — do NOT rely on Zod's Required check (some client schemas
+  // strip undefined fields before Zod sees them, letting the omission slip
+  // through and BD store null → public 404).
+  // updateWebPage: PATCH semantics. Omitting seo_type means "leave unchanged"
+  // and is valid. But if the agent SENT seo_type with empty/null/off-enum,
+  // reject (same failure mode as create).
+  if (toolName === "createWebPage" && (!has || v === undefined || v === null || v === "" || v === "null")) {
+    return `seo_type is required. Must be one of: ${SEO_TYPE_ENUM.map((x) => `"${x}"`).join(", ")}. For landing/static/about/contact/generic pages, use "content".`;
+  }
+  if (!has) return null; // updateWebPage with omitted seo_type — no-op
   if (v === null || v === "" || v === "null") {
     return `seo_type cannot be empty or null. Must be one of: ${SEO_TYPE_ENUM.map((x) => `"${x}"`).join(", ")}. For landing/static/about/contact/generic pages, use "content".`;
   }

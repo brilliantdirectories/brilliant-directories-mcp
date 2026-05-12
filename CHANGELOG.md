@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.18] - 2026-05-12
+
+### Hotfix — `seo_type` presence guard hardened
+
+v6.45.16's `validateSeoTypeInArgs` trusted Zod's "Required" check to catch omitted `seo_type` on `createWebPage` and only handled empty/null/off-enum in the runtime guard. Live verification on the Worker showed Zod IS catching omissions — but a real Claude session via the npm stdio transport reported pages created with `seo_type=null` after omitting the field. Some client/transport combination is stripping the `undefined` before Zod sees it.
+
+**Fix:** runtime guard now explicitly checks for omission on `createWebPage` (no longer relies on Zod). `if (!hasOwnProperty || v === undefined || v === null || v === "" || v === "null")` → reject with "seo_type is required" + enum + "content" guidance. PATCH semantics preserved on `updateWebPage` (omitted seo_type = no-op).
+
+**Worker:** SERVER_INFO 3.1.21 → 3.1.22. Byte-mirrored npm + Worker.
+
 ## [6.45.17] - 2026-05-12
 
 ### Prose — misnamed-field disambiguation on WebPage tools
