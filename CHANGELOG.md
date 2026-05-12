@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.8] - 2026-05-12
+
+### Lean write responses extended to forms, menus, redirects, smart lists
+
+Audit surfaced 6 resource families whose `create*` / `update*` responses were 30-70% null/empty noise — forms, form fields, menus, menu items, redirects, smart lists. Forms specifically were the worst offender: 12-field form build = ~300 lines, ~192 null. None of these tools had `WRITE_KEEP_SETS` entries.
+
+**Fix:** added 12 keep-set entries (6 create + 6 update pairs) with verified column names probed live against BD. Plus an agent-sent merge in `applyWriteLean` — any field the agent explicitly passed in the request is always echoed back regardless of the keep set, so a missing or wrong keep-set name can't silently drop an agent's input from the response.
+
+**Why agent-sent merge matters:** keep sets are hand-curated and could miss a field. The merge means worst case is "agent's input echoes, plus the keep set is incomplete" — never "agent set X=value and the response acts like they didn't."
+
+**Corpus rule extended:** `Rule: Lean write responses` now names the 6 new families, calls out the agent-sent echo guarantee, and adds an "absent ≠ unsupported" line so agents reasoning from response shape don't conclude unset columns don't exist.
+
+**Worker:** SERVER_INFO 3.1.11 → 3.1.12. Byte-mirrored — same keep sets, same `applyWriteLean` signature, same agent-sent merge.
+
 ## [6.45.7] - 2026-05-12
 
 ### Hotfix — legacy-insert wording was self-contradictory

@@ -1148,6 +1148,28 @@ const WRITE_KEEP_SETS = {
   updateMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
   createEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
   updateEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
+
+  // Forms
+  createForm: ["form_id","form_name","form_title","form_table","form_action_type","revision_timestamp"],
+  updateForm: ["form_id","form_name","form_title","form_table","form_action_type","revision_timestamp"],
+
+  // Form fields
+  createFormField: ["field_id","form_name","field_name","field_text","field_type","field_order","field_required","revision_timestamp"],
+  updateFormField: ["field_id","form_name","field_name","field_text","field_type","field_order","field_required","revision_timestamp"],
+
+  // Menus + menu items
+  createMenu: ["menu_id","menu_name","menu_title","menu_active","revision_timestamp"],
+  updateMenu: ["menu_id","menu_name","menu_title","menu_active","revision_timestamp"],
+  createMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","menu_display","revision_timestamp"],
+  updateMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","menu_display","revision_timestamp"],
+
+  // Redirects (BD does not return a timestamp on this resource)
+  createRedirect: ["redirect_id","type","old_filename","new_filename"],
+  updateRedirect: ["redirect_id","type","old_filename","new_filename"],
+
+  // Smart lists
+  createSmartList: ["smart_list_id","smart_list_name","smart_list_type","smart_list_created"],
+  updateSmartList: ["smart_list_id","smart_list_name","smart_list_type","smart_list_created"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the
@@ -1161,16 +1183,21 @@ const WRITE_KEEP_SETS = {
 // return an empty object — agent would see a confusing "success but no
 // fields" echo. Hasn't been observed in any write endpoint; revisit if it
 // appears.
-function applyWriteLean(toolName, body) {
+function applyWriteLean(toolName, body, sentKeys) {
   const keep = WRITE_KEEP_SETS[toolName];
   if (!keep) return body;
   if (!body || body.status !== "success") return body;
 
+  // Agent-sent merge: any field the agent explicitly passed in the request
+  // body survives the strip, even if not in the keep set. Self-correcting
+  // safety net — if a keep set ever misses a real field, the agent's own
+  // input still echoes back.
   const keepSet = new Set(keep);
+  if (sentKeys) for (const k of sentKeys) keepSet.add(k);
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
     const out = {};
-    for (const k of keep) {
+    for (const k of keepSet) {
       if (k in row) out[k] = row[k];
     }
     return out;
@@ -5208,7 +5235,7 @@ async function main() {
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (isFormReadTool) result.body = applyFormLean(result.body, includeFlags);
         else if (isFormFieldReadTool) result.body = applyFormFieldLean(result.body, includeFlags);
-        else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body);
+        else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
       }
 
       // Attach throttle warning if we lowered the limit. Visible to the agent
