@@ -4559,33 +4559,27 @@ async function main() {
       // spurious users_meta row). See **Rule: Clearing fields**.
       let clearFields;
       let rawClear;
+      let hadClearKey = false;
       if (args && Object.prototype.hasOwnProperty.call(args, "_clear_fields")) {
         rawClear = args._clear_fields;
+        hadClearKey = true;
         delete args._clear_fields;
+      }
+      // (A) Shape guard — strict array-only. Any non-array shape (object,
+      // string, number, null, boolean) is refused loudly. Defensive parse
+      // branches were the source of past silent-clear bugs; canonical shape
+      // is unambiguous and stable.
+      if (hadClearKey && !Array.isArray(rawClear)) {
+        return { content: [{ type: "text", text: `_clear_fields must be a JSON array of column names. Got: ${rawClear === null ? "null" : typeof rawClear}. Example: ["h2", "hero_link_url"].` }], isError: true };
       }
       if (Array.isArray(rawClear)) {
         clearFields = rawClear
           .filter((n) => typeof n === "string" && n.trim().length > 0)
           .map((n) => n.trim());
-      } else if (typeof rawClear === "string" && rawClear.trim().length > 0) {
-        // Tolerate JSON-stringified array (some MCP clients serialize array
-        // inputs as strings when the schema isn't fully resolved). Parse then
-        // fall through; if it's CSV, that's also supported.
-        const s = rawClear.trim();
-        let parsed;
-        try { parsed = JSON.parse(s); } catch { parsed = null; }
-        if (Array.isArray(parsed)) {
-          clearFields = parsed
-            .filter((n) => typeof n === "string" && n.trim().length > 0)
-            .map((n) => n.trim());
-        } else {
-          clearFields = s.split(",")
-            .map((n) => n.trim())
-            .filter((n) => n.length > 0);
-        }
       }
-      // Three guards on _clear_fields. (BD v6.45.0+ natively handles clears on
-      // base AND EAV-routed fields via __clear_fields=csv on the wire.)
+      // Three guards run on validated array (B reserved, C overlap, D unknown).
+      // Shape guard A runs above before this block. BD v6.45.0+ natively handles
+      // clears on base AND EAV-routed fields via __clear_fields=csv on the wire.
       if (clearFields && clearFields.length > 0) {
         // (B) Wrapper-managed fields (auto-injected timestamps + unconditional
         // overwrites). Clearing them violates wrapper invariants.

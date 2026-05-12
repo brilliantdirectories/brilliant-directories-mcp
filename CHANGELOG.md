@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.5] - 2026-05-12
+
+### Hotfix — strict array-only shape guard on `_clear_fields`
+
+Claude Desktop testing v6.45.4 surfaced silent-clear behavior on malformed shapes (object, number, null) that bypassed the array-parse path. Defensive fallbacks added in v6.45.1 (JSON-stringified-array, CSV split) were the source — they accepted malformed input, sometimes silently no-op'd, sometimes clobbered unrelated fields via downstream tokenization quirks.
+
+**Fix:** new Guard A at the top of the `_clear_fields` handler — strict array-only. Any non-array shape (object, string, number, null, boolean) refuses with `"_clear_fields must be a JSON array of column names. Got: <type>. Example: [\"h2\", \"hero_link_url\"]."`. Removes ~17 lines of defensive parsing.
+
+The canonical shape is the only valid shape. Four guards total: A shape, B reserved, C overlap, D unknown column.
+
+**Worker:** SERVER_INFO 3.1.10 → 3.1.11.
+
 ## [6.45.4] - 2026-05-12
 
 ### Hotfix — npm-only ReferenceError on `_clear_fields`
