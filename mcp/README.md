@@ -897,19 +897,19 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Resource | Base Path | Operations |
 |----------|-----------|------------|
 | Users/Members | `/api/v2/user/` | list, get, create, update, delete, search, login, transactions, subscriptions, fields |
-| Reviews | `/api/v2/users_reviews/` | list, get, create, update, delete, search |
+| Reviews | `/api/v2/users_reviews/` | list, get, create, update, delete |
 | Clicks | `/api/v2/users_clicks/` | list, get, create, update, delete |
 | Leads | `/api/v2/leads/` | list, get, create, match, update, delete |
 | Lead Matches | `/api/v2/lead_matches/` | list, get, create, update, delete |
 | Single-Image Posts | `/api/v2/data_posts/` | listSingleImagePosts, getSingleImagePost, createSingleImagePost, updateSingleImagePost, deleteSingleImagePost, getSingleImagePostFields |
 | Multi-Image Posts | `/api/v2/users_portfolio_groups/` | listMultiImagePosts, getMultiImagePost, createMultiImagePost, updateMultiImagePost, deleteMultiImagePost, getMultiImagePostFields |
 | Multi-Image Post Photos | `/api/v2/users_portfolio/` | listMultiImagePostPhotos, getMultiImagePostPhoto, createMultiImagePostPhoto, updateMultiImagePostPhoto, deleteMultiImagePostPhoto |
-| Post Types | `/api/v2/data_categories/` | list, get, create, update, delete, custom_fields |
+| Post Types | `/api/v2/data_categories/` | list, get, update, delete, custom_fields |
 | Top Categories | `/api/v2/list_professions/` | listTopCategories, getTopCategory, createTopCategory, updateTopCategory, deleteTopCategory |
 | Sub Categories | `/api/v2/list_services/` | listSubCategories, getSubCategory, createSubCategory, updateSubCategory, deleteSubCategory |
 | Member ↔ Sub Category Links | `/api/v2/rel_services/` | listMemberSubCategoryLinks, getMemberSubCategoryLink, createMemberSubCategoryLink, updateMemberSubCategoryLink, deleteMemberSubCategoryLink |
 | User Photos | `/api/v2/users_photo/` | list, get, create, update, delete |
-| User Metadata | `/api/v2/users_meta/` | list, get, create, update, delete |
+| User Metadata | `/api/v2/users_meta/` | list, get, update, delete |
 | Tags | `/api/v2/tags/` | list, get, create, update, delete |
 | Tag Groups | `/api/v2/tag_groups/` | list, get, create, update, delete |
 | Tag Types | `/api/v2/tag_types/` | list, get |

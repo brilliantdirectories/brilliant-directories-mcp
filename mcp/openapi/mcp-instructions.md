@@ -745,7 +745,18 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Clearing fields
 
-**Sending a field with `""` does not clear it.** The wrapper drops empty values before forwarding to BD; BD then treats the field as unchanged and the existing value is preserved. To explicitly blank a field on any `update*` call, pass `_clear_fields` with the names to clear: `_clear_fields=["h1","h2"]`. Names of fields the tool does not accept are ignored.
+Four distinct intents on any `update*` call:
+
+| Intent | Convention |
+|---|---|
+| Leave a field unchanged | Omit it. |
+| Send a non-empty value | Pass it as a regular arg. **Empty `""` is a no-op** — BD's update controller drops empty values unless paired with `_clear_fields`. |
+| Clear a field to empty string | Pass `_clear_fields: ["col1","col2"]`. Works on base columns AND EAV-routed fields (the `users_meta` row is preserved with `value=""`). |
+| Remove a `users_meta` row entirely | Use `deleteUserMeta meta_id=<id>` — separate operation. `_clear_fields` does NOT delete rows. |
+
+**Wrapper refuses** if a name appears in both `_clear_fields` AND as a value arg (pick one), or if it targets a wrapper-reserved field (PKs, security-sensitive fields like `password`, or auto-managed columns like `revision_timestamp`).
+
+**Typo trap:** unknown field names are silently ignored by BD — no error, no clear. Always verify column names via `getUserFields` / `getSingleImagePostFields` / etc. (or the schema of the relevant `update*` tool) before sending `_clear_fields` for an unfamiliar name. A typo'd name reports "success" while doing nothing.
 
 ### Rule: Category taxonomy
 

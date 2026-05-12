@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.0] - 2026-05-11
+
+### `_clear_fields` — BD-native cutover (behavior change)
+
+BD's dev team shipped native `__clear_fields` support on the `update()` controller across all resources. This release rewires the wrapper to use it. Agent-facing parameter name unchanged (`_clear_fields`, single underscore, array); wire format swapped to BD's native `__clear_fields=col1,col2` (double underscore, CSV string).
+
+**What previously failed silently now works:**
+
+- Clearing base columns (e.g. `h2`, `meta_desc`, `lead_notes`) — was a silent no-op; now writes empty string.
+- Clearing EAV/`users_meta`-routed fields (e.g. hero CTA fields, custom user fields) — was refused with a "use deleteUserMeta" pointer; now writes empty string while preserving the `users_meta` row.
+
+**Behavior changes for callers:**
+
+- Customers on ≤ v6.44.x who passed `_clear_fields` and saw it appear to "work" (no error response) but found their field still populated will now see the field actually cleared. Verify any automation that relied on the silent-no-op behavior as an unintentional safety net.
+- The `_ClearFields` schema component is now described once and propagates to all 32 `update*` operations via `$ref`. No per-operation drift.
+
+**Wrapper guards:**
+
+- **Removed:** EAV-refusal guard (Guard A). EAV clears are now valid.
+- **Kept:** wrapper-reserved field refusal (Guard B). Expanded to cover ~28 primary-key names across every BD resource AND the `password` field on `updateUser`. Clearing any of these silently corrupts row identity or locks accounts — now refused at the wrapper.
+- **Kept:** value-and-clear-overlap refusal (Guard C). Passing the same field name in both args AND `_clear_fields` still refused (pick one).
+
+**Doc surface:**
+
+- `Rule: Clearing fields` in the corpus rewritten as a 4-row decision tree (omit / non-empty value / `_clear_fields` / `deleteUserMeta`). Adds an explicit "typo trap" warning — unknown field names are silently ignored by BD, so misspellings produce false "success" reports.
+- `_ClearFields` schema description trimmed and made the single source of truth.
+
+**Worker:** SERVER_INFO 3.1.6 → 3.1.7 (no protocol change; reflects clear-path rewire).
+
+**Net diff:** ~60 lines changed across `mcp/index.js`, `src/index.ts`, `bd-api.json`, `mcp-instructions.md`. Drift check clean (171 ops, 1 hidden).
+
 ## [6.44.0] - 2026-05-08
 
 ### Forms — corpus + spec hardening (agent-behavior changes)

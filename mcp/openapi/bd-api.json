@@ -404,7 +404,8 @@
         "type": "array",
         "items": {
           "type": "string"
-        }
+        },
+        "description": "Column names to clear to empty string. Available on every `update*` operation. Works on base columns AND EAV/`users_meta` rows (rows preserved with `value=\"\"`). To actually clear a field you MUST use this parameter — sending the field with `\"\"` alone is a no-op (BD drops empty values). To remove a `users_meta` row entirely, use `deleteUserMeta`. See **Rule: Clearing fields**. Example: `_clear_fields: [\"h2\", \"hero_link_url\"]`."
       },
       "SuccessResponse": {
         "type": "object",

@@ -1265,16 +1265,33 @@ const EAV_ROUTES = {
   },
 };
 
-// Fields the wrapper auto-injects or unconditionally overwrites. Refused on
-// `_clear_fields` (would silently violate wrapper invariants — duplicate-key
-// form bodies last-wins to the empty append). Mirrored in Worker src/index.ts.
+// Fields refused on `_clear_fields`. Three categories:
+//   1. Wrapper-managed (auto-injected timestamps + unconditional overwrites) —
+//      clearing them violates wrapper invariants.
+//   2. Primary keys — clearing a PK corrupts row identity. Listed across every
+//      BD resource so a typo on the wrong tool still trips the guard.
+//   3. Security-sensitive — clearing `password` locks the user out (or worse
+//      if BD treats empty-hash specially).
+// Mirrored byte-for-byte in Worker src/index.ts.
 const WRAPPER_RESERVED_FIELDS = new Set([
+  // wrapper-managed
   "revision_timestamp", "date_updated", "date_added",
   "review_added", "review_updated",
   "lead_matched", "lead_updated",
   "modtime",
   "content_active", "master_id",
   "status",
+  // primary keys
+  "seo_id", "form_id", "field_id", "user_id", "meta_id",
+  "lead_id", "lead_match_id", "review_id", "click_id",
+  "tag_id", "tag_group_id", "tag_type_id", "tag_rel_id",
+  "widget_id", "email_template_id", "subscription_id",
+  "menu_id", "menu_item_id", "unsubscribe_id",
+  "smart_list_id", "redirect_id", "data_type_id",
+  "data_id", "top_id", "sub_id", "link_id",
+  "photo_id", "multi_post_id", "single_post_id", "multi_photo_id",
+  // security-sensitive
+  "password",
 ]);
 
 function splitEavParams(operation, params) {
@@ -3673,10 +3690,11 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFiel
       const params = new URLSearchParams(
         Object.entries(bodyParams || {}).filter(([, v]) => v !== undefined && v !== null && v !== "")
       );
-      // _clear_fields contract: each name becomes an explicit empty-string
-      // entry, bypassing the empty-string filter above so BD writes the
-      // empty value instead of treating the field as unchanged.
-      if (hasClear) for (const name of clearFields) params.append(name, "");
+      // Agent passes `_clear_fields: [...]` (single underscore, array).
+      // Wrapper translates to BD's native wire parameter
+      // `__clear_fields=col1,col2` (DOUBLE underscore, CSV). BD's update
+      // controller writes "" to base columns AND EAV/users_meta rows.
+      if (hasClear) params.append("__clear_fields", clearFields.join(","));
       bodyStr = params.toString();
     }
 
@@ -4537,17 +4555,10 @@ async function main() {
           .map((n) => n.trim());
         delete args._clear_fields;
       }
-      // Three guards on _clear_fields, all return clear refusals.
+      // Two guards on _clear_fields. (BD v6.45.0+ natively handles clears on
+      // base AND EAV-routed fields via __clear_fields=csv on the wire; EAV
+      // refusal removed.)
       if (clearFields && clearFields.length > 0) {
-        // (A) EAV-routed fields can't be cleared via empty-string append — BD
-        // silently no-ops empty-string updates on users_meta.
-        const route = EAV_ROUTES[name];
-        if (route) {
-          const eavHits = clearFields.filter((n) => route.eavFields.has(n));
-          if (eavHits.length > 0) {
-            return { content: [{ type: "text", text: `_clear_fields cannot clear EAV-routed field(s) [${eavHits.join(", ")}] on ${name} — BD silently no-ops empty-string updates on users_meta. Use deleteUserMeta with database=${route.eavDatabase} and database_id=<parent id> to clear an EAV row.` }], isError: true };
-          }
-        }
         // (B) Wrapper-managed fields (auto-injected timestamps + unconditional
         // overwrites). Clearing them violates wrapper invariants.
         const reservedHits = clearFields.filter((n) => WRAPPER_RESERVED_FIELDS.has(n));
@@ -4555,7 +4566,8 @@ async function main() {
           return { content: [{ type: "text", text: `_clear_fields cannot clear wrapper-managed field(s) [${reservedHits.join(", ")}] — BD-mandatory plumbing.` }], isError: true };
         }
         // (C) Overlap: a name in _clear_fields also passed as a regular arg
-        // creates ambiguous intent and a duplicate-key form body.
+        // creates ambiguous intent. BD's behavior on overlap is value-wins;
+        // we refuse upfront so the agent picks one explicitly.
         const overlap = clearFields.filter((n) => Object.prototype.hasOwnProperty.call(args, n));
         if (overlap.length > 0) {
           return { content: [{ type: "text", text: `_clear_fields conflict: field(s) [${overlap.join(", ")}] also passed as value(s). Use one or the other.` }], isError: true };
