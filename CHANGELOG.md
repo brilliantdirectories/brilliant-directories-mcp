@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.12] - 2026-05-12
+
+### Hotfix — photo read shaper had CDN URLs in keep set, write didn't
+
+v6.45.11 shipped with the read shaper's `PHOTO_LEAN_ALWAYS_KEEP` including `file_main_full_url` and `file_thumbnail_full_url` (11 fields), while the write keep set explicitly dropped them (9 fields). Inconsistent across read vs write — the user's spec was 9 fields both paths.
+
+**Fix:** removed CDN URLs from the read shaper too. Reads + writes now both default to the same 9 fields. CDN URLs are constructible from `file` + site URL pattern (`{site}/photos/main/{file}`, `{site}/photos/display/{file}`).
+
+**Worker:** SERVER_INFO 3.1.15 → 3.1.16. Byte-mirrored npm + Worker.
+
 ## [6.45.11] - 2026-05-12
 
 ### Lean — multi-image post photos (read side + tightened write keep set)

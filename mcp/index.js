@@ -1102,7 +1102,6 @@ const PHOTO_LEAN_INCLUDE_FLAGS = ["include_marketplace"];
 const PHOTO_LEAN_ALWAYS_KEEP = [
   "photo_id", "user_id", "group_id", "file", "title",
   "order", "status", "image_imported", "revision_timestamp",
-  "file_main_full_url", "file_thumbnail_full_url",
 ];
 const PHOTO_MARKETPLACE_FIELDS = [
   "price", "manufacturer", "availability", "product_category",
