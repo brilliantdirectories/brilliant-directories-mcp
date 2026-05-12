@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.7] - 2026-05-12
+
+### Hotfix — legacy-insert wording was self-contradictory
+
+v6.45.6's § Field anatomy "Insert mid-form" said "bump only the immediate neighbors to open one slot" for legacy consecutive forms (1, 2, 3…) — but with no gap, bumping field-at-4 to field_order=5 collides with the field already at 5. Minion comprehension test caught the contradiction (conf 2).
+
+**Fix:** rewrote to make cascade-shift explicit. "Bump every field at-or-after the insert point by one (insert at 4 → shift 4→5, 5→6, 6→7); never touch fields BEFORE the insert." Preserves the safety property (no upward-direction renumbering) while giving a concrete recipe for the no-gap case.
+
+Corpus-only change. No code, no Worker change.
+
 ## [6.45.6] - 2026-05-12
 
 ### `field_order` + security tail — pattern-adaptive rules (corpus + spec, no code)

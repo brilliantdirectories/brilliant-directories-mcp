@@ -374,7 +374,7 @@ To attach a validator, preserve the full skeleton above but populate the relevan
 - `Custom` field_type (admin: "Custom HTML") — escape hatch: widget shortcodes (`[widget=…]`), arbitrary HTML, `<style>`, PHP, structural opens/closes for step wizards, custom-coded submit buttons.
 - `Tip` field_type (admin: "Help Alert Box") — styled Bootstrap alert.
 
-**Insert mid-form:** match the form's existing pattern. On 10-step forms, pick the midpoint (55 between 50 and 60). On legacy consecutive forms (1, 2, 3…), bump only the immediate neighbors to open one slot — never renumber unrelated fields. Appending to the end: next value in the existing pattern (consecutive → N+1, 10-step → max+10).
+**Insert mid-form:** match the form's existing pattern. On 10-step forms, pick the midpoint (55 between 50 and 60) — no renumbering. On legacy consecutive forms (1, 2, 3…) with no gap, bump every field at-or-after the insert point by one (insert at 4 → shift 4→5, 5→6, 6→7); never touch fields BEFORE the insert. Appending to the end: next value in the existing pattern (consecutive → N+1, 10-step → max+10) — no renumbering.
 
 Step-wizard layouts use `Custom` field_types to open and close `<div>` wrappers. Every open MUST have its closer in another `Custom` field_type at higher `field_order`. CSS that hides/shows steps lives in the page or theme. Example for a 3-step wizard:
 
