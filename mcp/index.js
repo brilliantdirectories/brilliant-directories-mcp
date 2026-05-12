@@ -1181,6 +1181,13 @@ const WRITE_KEEP_SETS = {
   // password hashes.
   createReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
   updateReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
+
+  // Multi-image post photos — return ~39 fields with ~16 null/empty
+  // (product/marketplace columns, facebook_photo_id, photo_filename, etc.)
+  // Keep set covers identity + parent linkage + content + state + the
+  // public CDN URLs agents need to render photos.
+  createMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp","file_main_full_url","file_thumbnail_full_url"],
+  updateMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp","file_main_full_url","file_thumbnail_full_url"],
 };
 
 // Apply ONLY to success responses. Errors pass through untouched so the

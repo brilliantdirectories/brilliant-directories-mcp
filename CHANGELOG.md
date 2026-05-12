@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.10] - 2026-05-12
+
+### Lean — multi-image post photos
+
+`createMultiImagePostPhoto` / `updateMultiImagePostPhoto` returned ~39 fields with ~16 null/empty (product/marketplace columns, `facebook_photo_id`, `photo_filename`, `inv_id`, `manufacturer`, `availability`, etc.) — ~41% noise. Photo-album workflows (which call this tool N times per album) compounded the bloat.
+
+Added keep set: `photo_id`, `user_id`, `group_id`, `file`, `title`, `order`, `status`, `image_imported`, `revision_timestamp`, `file_main_full_url`, `file_thumbnail_full_url`. Public CDN URLs preserved (needed for downstream rendering).
+
+**Worker:** SERVER_INFO 3.1.13 → 3.1.14. Byte-mirrored npm + Worker.
+
 ## [6.45.9] - 2026-05-12
 
 ### Security — review responses no longer leak member password hashes
