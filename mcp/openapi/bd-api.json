@@ -198,6 +198,19 @@
           ]
         }
       },
+      "include_legacy_fields": {
+        "name": "include_legacy_fields",
+        "in": "query",
+        "description": "Return image-import state on `photos_schema` rows: `original`, `resized`, `error`. Requires `include_photos=1`.",
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
       "include_content": {
         "name": "include_content",
         "in": "query",
@@ -1548,6 +1561,9 @@
           },
           {
             "$ref": "#/components/parameters/include_about"
+          },
+          {
+            "$ref": "#/components/parameters/include_legacy_fields"
           }
         ],
         "responses": {
@@ -1609,6 +1625,9 @@
           },
           {
             "$ref": "#/components/parameters/include_about"
+          },
+          {
+            "$ref": "#/components/parameters/include_legacy_fields"
           }
         ],
         "responses": {
@@ -2394,6 +2413,14 @@
                   "include_about": {
                     "type": "integer",
                     "description": "Opt in to return the `about_me` HTML bio. Heavy — when set, `limit` is auto-capped at 25 for transport stability.",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
+                  "include_legacy_fields": {
+                    "type": "integer",
+                    "description": "Return image-import state on `photos_schema` rows: `original`, `resized`, `error`. Requires `include_photos=1`.",
                     "enum": [
                       0,
                       1

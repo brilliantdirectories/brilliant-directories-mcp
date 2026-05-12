@@ -487,9 +487,13 @@ const USER_LEAN_INCLUDE_FLAGS = [
   "include_services",
   "include_seo_hidden",
   "include_about",
+  "include_legacy_fields",
 ];
 
 const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", "result"];
+
+const USER_PHOTO_LEAN_KEEP = ["photo_id", "user_id", "file", "type", "date_added", "compliant"];
+const USER_PHOTO_LEGACY_FIELDS = ["original", "resized", "error"];
 
 const USER_LEAN_SEO_BUNDLE = [
   "seo_page_title_hidden",
@@ -513,6 +517,7 @@ function applyUserLean(body, includeFlags) {
     services: !!includeFlags.include_services,
     seo_hidden: !!includeFlags.include_seo_hidden,
     about: !!includeFlags.include_about,
+    legacy_fields: !!includeFlags.include_legacy_fields,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
@@ -521,6 +526,16 @@ function applyUserLean(body, includeFlags) {
     if (!include.password) delete row.password;
     if (!include.subscription) delete row.subscription_schema;
     if (!include.photos) delete row.photos_schema;
+    else if (Array.isArray(row.photos_schema)) {
+      const photoKeep = new Set(USER_PHOTO_LEAN_KEEP);
+      if (include.legacy_fields) for (const k of USER_PHOTO_LEGACY_FIELDS) photoKeep.add(k);
+      row.photos_schema = row.photos_schema.map((p) => {
+        if (!p || typeof p !== "object") return p;
+        const out = {};
+        for (const k of Object.keys(p)) if (photoKeep.has(k)) out[k] = p[k];
+        return out;
+      });
+    }
     if (!include.transactions) delete row.transactions;
     if (!include.profession) delete row.profession_schema;
     if (!include.tags) delete row.tags;

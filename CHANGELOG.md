@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.14] - 2026-05-12
+
+### Lean — user `photos_schema` nested array (getUser, listUsers, searchUsers)
+
+When `include_photos=1`, each row in `photos_schema` returned all 9 BD columns including 3 image-import state fields (`original`, `resized`, `error`) that are empty on most rows. Same nested-bloat shape as the multi-image-post photos fix in v6.45.13, different table.
+
+Default keep set on `photos_schema` rows: `photo_id`, `user_id`, `file`, `type`, `date_added`, `compliant` (6 fields — identity, classification, recency, moderation). Image-import state moves behind a new `include_legacy_fields=1` opt-in, mirroring the `include_marketplace` precedent on photo tools. The fields are not deprecated — BD's auto-image-import path populates `original`; flagging them ensures sites with in-flight imports or legacy state can still see them.
+
+**Worker:** SERVER_INFO 3.1.17 → 3.1.18. Byte-mirrored npm + Worker.
+
 ## [6.45.13] - 2026-05-12
 
 ### Lean — write-response wrapper-internal denylist + nested-photo shaping
