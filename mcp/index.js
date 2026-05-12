@@ -671,7 +671,10 @@ function applyPostLean(body, includeFlags) {
     if (!include.post_seo) stripKeys(row, POST_LEAN_SEO_BUNDLE);
 
     // Multi-image posts nest the full photo array under `users_portfolio`.
-    // Strip by default, surface total_photos count, keep cover photo URLs from first entry.
+    // Off: strip array, surface total_photos + cover URLs from first entry.
+    // On: shape each photo to PHOTO_LEAN_ALWAYS_KEEP (9 fields) — same shape
+    // as the standalone photo tools. Marketplace columns are not exposed
+    // nested; agents needing them call getMultiImagePostPhoto directly.
     if (Array.isArray(row.users_portfolio)) {
       const totalPhotos = row.users_portfolio.length;
       if (!include.photos) {
@@ -684,6 +687,14 @@ function applyPostLean(body, includeFlags) {
         }
         row.total_photos = totalPhotos;
         delete row.users_portfolio;
+      } else {
+        const photoKeep = new Set(PHOTO_LEAN_ALWAYS_KEEP);
+        row.users_portfolio = row.users_portfolio.map((p) => {
+          if (!p || typeof p !== "object") return p;
+          const out = {};
+          for (const k of Object.keys(p)) if (photoKeep.has(k)) out[k] = p[k];
+          return out;
+        });
       }
     }
 
@@ -1234,6 +1245,11 @@ const WRITE_KEEP_SETS = {
 // return an empty object — agent would see a confusing "success but no
 // fields" echo. Hasn't been observed in any write endpoint; revisit if it
 // appears.
+// Wrapper-internal names that must NEVER appear in a write response, even
+// if they leak into sentKeys via force-injection (content_active) or other
+// internal plumbing (_clear_fields directive).
+const WRITE_LEAN_NEVER_KEEP = new Set(["_clear_fields", "content_active"]);
+
 function applyWriteLean(toolName, body, sentKeys) {
   const keep = WRITE_KEEP_SETS[toolName];
   if (!keep) return body;
@@ -1242,9 +1258,9 @@ function applyWriteLean(toolName, body, sentKeys) {
   // Agent-sent merge: any field the agent explicitly passed in the request
   // body survives the strip, even if not in the keep set. Self-correcting
   // safety net — if a keep set ever misses a real field, the agent's own
-  // input still echoes back.
+  // input still echoes back. Wrapper internals are excluded.
   const keepSet = new Set(keep);
-  if (sentKeys) for (const k of sentKeys) keepSet.add(k);
+  if (sentKeys) for (const k of sentKeys) if (!WRITE_LEAN_NEVER_KEEP.has(k)) keepSet.add(k);
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
     const out = {};

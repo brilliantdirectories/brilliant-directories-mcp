@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.13] - 2026-05-12
+
+### Lean — write-response wrapper-internal denylist + nested-photo shaping
+
+Two surgical lean-response fixes surfaced by a contract-lawyer audit of v6.45.12.
+
+**Fix 1 — wrapper internals leaking into write responses.** `updateWebPage` / `createWebPage` responses echoed `_clear_fields: null` (when an agent passed `_clear_fields`) and `content_active: "1"` (wrapper-mandatory plumbing that's hidden from the input schema). Both bypassed the lean shaper via the agent-sent merge — a safety net that adds any agent-passed field to the keep set so real fields never get accidentally stripped. The merge was too permissive: it didn't distinguish wrapper internals from agent intent.
+
+Added `WRITE_LEAN_NEVER_KEEP = {"_clear_fields", "content_active"}` — a denylist the agent-sent merge respects. Wrapper internals are stripped from response echoes regardless of how they entered `bodyParams`. Cosmetic-only: clears still work, writes still land, agents just don't see two stray wrapper-internal keys in the response.
+
+**Fix 2 — nested `users_portfolio` array bloat on `include_photos=1`.** `getMultiImagePost` and `listMultiImagePosts` with `include_photos=1` returned the full BD photo schema (~35 fields) per nested photo, while the standalone photo tools were already lean at 9 fields. Nested array fell through unshaped.
+
+When `include_photos=1`, each entry in `users_portfolio` is now shaped to `PHOTO_LEAN_ALWAYS_KEEP` (the same 9 fields as the standalone photo tools): `photo_id`, `user_id`, `group_id`, `file`, `title`, `order`, `status`, `image_imported`, `revision_timestamp`. Marketplace columns are not exposed on the nested array — agents needing them call `getMultiImagePostPhoto` with `include_marketplace=1`. Default (`include_photos=0`) behavior unchanged: array stripped, `total_photos` count and cover URLs surfaced.
+
+**Worker:** SERVER_INFO 3.1.16 → 3.1.17. Byte-mirrored npm + Worker.
+
 ## [6.45.12] - 2026-05-12
 
 ### Hotfix — photo read shaper had CDN URLs in keep set, write didn't
