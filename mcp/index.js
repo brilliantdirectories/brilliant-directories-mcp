@@ -403,7 +403,12 @@ function buildTools(spec) {
         const schema = content?.["application/x-www-form-urlencoded"]?.schema;
         if (schema && schema.properties) {
           for (const [key, val] of Object.entries(schema.properties)) {
-            properties[key] = { ...val };
+            // Resolve $ref so agent-facing schema sees the actual type (e.g.
+            // `_ClearFields` resolves to {type: "array", items: ...}). Without
+            // this, MCP clients see {$ref: "..."} and treat the input as opaque
+            // string — Array.isArray fails downstream and guards skip.
+            const resolved = val && val.$ref ? resolveRef(spec, val.$ref) : val;
+            properties[key] = { ...resolved };
           }
           if (schema.required) {
             for (const r of schema.required) {
@@ -4545,15 +4550,38 @@ async function main() {
       }
 
       // Peel off the wrapper-only `_clear_fields` array before any distribution
-      // loop runs — it's not a BD-API param, it's a directive to makeRequest
-      // telling it which fields to write as explicit empty strings. See
-      // **Rule: Clearing fields**.
+      // loop runs — it's not a BD-API param, it's a directive to makeRequest.
+      // ALWAYS strip the key first (even if malformed), THEN parse. Without
+      // unconditional strip, a non-array `_clear_fields` would leak into the
+      // body dispatch, be sent as a regular form param, and BD would route the
+      // unknown column name to users_meta as a spurious EAV row — the exact
+      // pollution we shipped v6.45.1 to fix. See **Rule: Clearing fields**.
       let clearFields;
-      if (args && Array.isArray(args._clear_fields)) {
-        clearFields = args._clear_fields
+      let rawClear;
+      if (args && Object.prototype.hasOwnProperty.call(args, "_clear_fields")) {
+        rawClear = args._clear_fields;
+        delete args._clear_fields;
+      }
+      if (Array.isArray(rawClear)) {
+        clearFields = rawClear
           .filter((n) => typeof n === "string" && n.trim().length > 0)
           .map((n) => n.trim());
-        delete args._clear_fields;
+      } else if (typeof rawClear === "string" && rawClear.trim().length > 0) {
+        // Tolerate JSON-stringified array (some MCP clients serialize array
+        // inputs as strings when the schema isn't fully resolved). Parse then
+        // fall through; if it's CSV, that's also supported.
+        const s = rawClear.trim();
+        let parsed;
+        try { parsed = JSON.parse(s); } catch { parsed = null; }
+        if (Array.isArray(parsed)) {
+          clearFields = parsed
+            .filter((n) => typeof n === "string" && n.trim().length > 0)
+            .map((n) => n.trim());
+        } else {
+          clearFields = s.split(",")
+            .map((n) => n.trim())
+            .filter((n) => n.length > 0);
+        }
       }
       // Two guards on _clear_fields. (BD v6.45.0+ natively handles clears on
       // base AND EAV-routed fields via __clear_fields=csv on the wire; EAV

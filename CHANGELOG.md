@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.1] - 2026-05-11
+
+### Hotfix — `_clear_fields` was polluting `users_meta` with literal `_clear_fields` rows
+
+Live stress test against production immediately after the v6.45.0 ship revealed two compounding bugs:
+
+**Bug 1: `$ref` not resolved in agent-facing tool schema.** The tool-listing code merged `requestBody` properties as-is, leaving `_clear_fields` as `{ "$ref": "#/components/schemas/_ClearFields" }`. MCP clients couldn't see the actual `type: array` and serialized inputs as opaque strings. Wrapper's `Array.isArray()` check failed → guards skipped → the `_clear_fields` key reached dispatch.
+
+**Bug 2: Dispatch leak when shape is malformed.** The `delete args._clear_fields` call lived INSIDE the `if (Array.isArray)` branch. When the check failed (always, given Bug 1), the key was never stripped. It flowed into the body-dispatch loop, hit the EAV-routing path for unknown column names, and BD wrote a new `users_meta` row with `key="_clear_fields"` and `value=<the array contents>` — a literal pollution row every time `_clear_fields` was called. Customers running automation against v6.45.0 accumulated one row per failed call.
+
+**Fix:**
+1. `$ref` resolution added in the tool-listing property-merge loop (npm `mcp/index.js:405`, Worker `src/index.ts:976`). Agent-facing schema now correctly shows `_clear_fields` as `type: array`.
+2. `delete args._clear_fields` moved BEFORE the `Array.isArray` check — unconditional strip. A malformed `_clear_fields` can no longer leak to the wire.
+3. Bonus tolerance for JSON-stringified arrays and CSV strings — some MCP clients serialize array inputs as strings when the schema isn't fully resolved. Wrapper now parses both shapes correctly.
+
+**Behavioral verification:** post-fix, both base-column and EAV-routed clears succeed, guards fire on PK/password/wrapper-managed-field attempts, value+clear overlap refused, no spurious `users_meta` rows created.
+
+**Worker:** SERVER_INFO 3.1.7 → 3.1.8.
+
+**Cleanup for affected sites:** customers who ran `_clear_fields` calls against v6.45.0 should `listUserMeta property=key property_value=_clear_fields property_operator==` per affected table and `deleteUserMeta` the resulting rows. No data outside `users_meta` was touched.
+
 ## [6.45.0] - 2026-05-11
 
 ### `_clear_fields` — BD-native cutover (behavior change)
