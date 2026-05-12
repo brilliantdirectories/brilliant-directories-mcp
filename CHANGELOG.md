@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.17] - 2026-05-12
+
+### Prose — misnamed-field disambiguation on WebPage tools
+
+Three surgical edits to existing field descriptions, no new prose surfaces:
+
+- **`content`**: shortcode list (`[form=<form_name>]`, `[widget=<widget_name>]`, `%%%token%%%`) promoted to top of description (was buried after Froala strip rules). Agents reading the body field now see the form-embed mechanism at read time.
+- **`form_name`**: existing MISLEADING NAME callout extended with one sentence pointing to `[form=<form_name>]` inside `content` for body-form embedding.
+- **`show_form`**: same pattern — existing "NOT a contact-form toggle" extended with the `[form=...]` pointer; reworded to "NOT a form-render toggle" (more specific to actual agent confusion).
+
+Closes the gap surfaced in v6.45.16 minion audit: agent's mental task ("render a form on this page") had no read-time pointer to the actual mechanism. The misnamed-field-with-pointer pattern keeps prose surgical (one sentence each) while addressing the specific confusion that produced an empty page body.
+
+**Worker:** SERVER_INFO 3.1.20 → 3.1.21. Spec-only change; no wrapper code touched.
+
 ## [6.45.16] - 2026-05-12
 
 ### Fix — `seo_type` runtime enum guard on createWebPage / updateWebPage

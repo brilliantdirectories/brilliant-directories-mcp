@@ -10069,7 +10069,7 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body - Froala rich-text editor. **HTML only** - Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS -> `content_css` (target classes, not inline styles), JS -> `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) -> `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode.\n\nSupports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`."
+                    "description": "Main page body - Froala rich-text editor. **Shortcodes:** `[form=<form_name>]` embeds a BD form; `[widget=<widget_name>]` embeds a widget; `%%%template_tokens%%%` for site vars. **HTML only** - Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS -> `content_css` (target classes, not inline styles), JS -> `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) -> `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode."
                   },
                   "content_css": {
                     "type": "string",
@@ -10131,11 +10131,11 @@
                       0,
                       1
                     ],
-                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a contact-form toggle** despite the field name - BD repurposed this column."
+                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a form-render toggle** despite the field name — BD repurposed this column. To render a form in the body, use `[form=<form_name>]` inside `content`."
                   },
                   "form_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page - BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar. Valid values: a Master Default Sidebar OR a custom sidebar `name` from `listSidebars`. See **Rule: Sidebars** for the canonical Master Default list and selection workflow.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` - that's for profile/detail pages, not search results)."
+                    "description": "**SIDEBAR name** for this page - BD's field is misnamed; controls sidebar slot, NOT a contact form. NOT for rendering forms on this page — to embed a form in the body, use `[form=<form_name>]` inside `content`. Pass exact sidebar `name` string. `\"\"` = no sidebar. Valid values: a Master Default Sidebar OR a custom sidebar `name` from `listSidebars`. See **Rule: Sidebars** for the canonical Master Default list and selection workflow.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` - that's for profile/detail pages, not search results)."
                   },
                   "hide_from_menu": {
                     "type": "integer",
@@ -10496,7 +10496,7 @@
                   },
                   "content": {
                     "type": "string",
-                    "description": "Main page body - Froala rich-text editor. **HTML only** - Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS -> `content_css` (target classes, not inline styles), JS -> `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) -> `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode.\n\nSupports `[widget=Name]` / `[form=Name]` shortcodes and `%%%template_tokens%%%`."
+                    "description": "Main page body - Froala rich-text editor. **Shortcodes:** `[form=<form_name>]` embeds a BD form; `[widget=<widget_name>]` embeds a widget; `%%%template_tokens%%%` for site vars. **HTML only** - Froala strips `<style>`, `<script>`, `<form>`, `<input>`, `<select>`, `<textarea>`, `contenteditable=`, AND inline `style=\"...\"` attributes on save.\n\nRoute all non-body assets to their dedicated fields: CSS -> `content_css` (target classes, not inline styles), JS -> `content_footer_html`, head deps (`<link>`, fonts, `<meta>`, JSON-LD) -> `content_head`. SVG/canvas also stripped; for charts/diagrams use a custom Widget embedded via `[widget=Name]` shortcode."
                   },
                   "content_css": {
                     "type": "string",
@@ -10558,11 +10558,11 @@
                       0,
                       1
                     ],
-                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a contact-form toggle** despite the field name - BD repurposed this column."
+                    "description": "**Apply NoIndex,NoFollow.** `1` = adds `<meta name=\"robots\" content=\"noindex,nofollow\">` to the page. Auto-applied to protected pages. **NOT a form-render toggle** despite the field name — BD repurposed this column. To render a form in the body, use `[form=<form_name>]` inside `content`."
                   },
                   "form_name": {
                     "type": "string",
-                    "description": "**SIDEBAR name** for this page - BD's field is misnamed; controls sidebar slot, NOT a contact form. Pass exact sidebar `name` string. `\"\"` = no sidebar. Valid values: a Master Default Sidebar OR a custom sidebar `name` from `listSidebars`. See **Rule: Sidebars** for the canonical Master Default list and selection workflow.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` - that's for profile/detail pages, not search results)."
+                    "description": "**SIDEBAR name** for this page - BD's field is misnamed; controls sidebar slot, NOT a contact form. NOT for rendering forms on this page — to embed a form in the body, use `[form=<form_name>]` inside `content`. Pass exact sidebar `name` string. `\"\"` = no sidebar. Valid values: a Master Default Sidebar OR a custom sidebar `name` from `listSidebars`. See **Rule: Sidebars** for the canonical Master Default list and selection workflow.\n\n`menu_layout` controls position when `form_name` is set. **Default on `profile_search_results` pages:** `Member Search Result` (NOT `Member Profile Page` - that's for profile/detail pages, not search results)."
                   },
                   "hide_from_menu": {
                     "type": "integer",
