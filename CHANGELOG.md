@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.2] - 2026-05-11
+
+### Hotfix — `_clear_fields` needs `field=` companion on wire for BD to act on it
+
+v6.45.1 stopped the pollution and fixed the guards but the clears themselves still didn't fire. Live forensic trace revealed BD's update controller logic:
+
+```php
+$shouldUpdate = isset($arguments[$column]) && ($value !== "" || $shouldClear);
+```
+
+The `isset()` requires the field name to be present in `$arguments`. The wrapper's `toFormBody` filters out empty values BEFORE building the body, so a bare `__clear_fields=h2` arrived at BD without any `h2=` companion. BD's foreach loop never even looked at the `h2` column.
+
+**Fix:** when `_clear_fields` is set, the wrapper now emits BOTH a `field=` empty entry per clear-target AND the `__clear_fields=csv` directive. Verified live: `seo_id=1&h2=&__clear_fields=h2` clears h2; bare `seo_id=1&__clear_fields=h2` does not.
+
+This is the shape the CEO directive prescribed end-to-end. Wrapper now matches.
+
+**Worker:** SERVER_INFO 3.1.8 → 3.1.9.
+
 ## [6.45.1] - 2026-05-11
 
 ### Hotfix — `_clear_fields` was polluting `users_meta` with literal `_clear_fields` rows

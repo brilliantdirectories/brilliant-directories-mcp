@@ -3698,8 +3698,14 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFiel
       // Agent passes `_clear_fields: [...]` (single underscore, array).
       // Wrapper translates to BD's native wire parameter
       // `__clear_fields=col1,col2` (DOUBLE underscore, CSV). BD's update
-      // controller writes "" to base columns AND EAV/users_meta rows.
-      if (hasClear) params.append("__clear_fields", clearFields.join(","));
+      // controller checks `isset($arguments[$column]) && ($value !== "" || in_array($column, $clearFields))`.
+      // We must emit BOTH (a) `field=` per clear-target so isset() is true,
+      // AND (b) `__clear_fields=csv` so BD knows the empty is intentional.
+      // Without (a), BD's foreach loop skips the column entirely. CEO-directive shape.
+      if (hasClear) {
+        for (const name of clearFields) params.append(name, "");
+        params.append("__clear_fields", clearFields.join(","));
+      }
       bodyStr = params.toString();
     }
 
