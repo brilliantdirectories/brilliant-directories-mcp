@@ -4607,7 +4607,7 @@ async function main() {
         // columns not in base bodyProps). Any unknown → refuse the whole call
         // so the agent fixes the typo and retries — never partial success.
         const eavSet = EAV_ROUTES[name]?.eavFields;
-        const isKnown = (n) => (bodyProps && n in bodyProps) || (eavSet ? eavSet.has(n) : false);
+        const isKnown = (n) => (toolDef.bodyProps && n in toolDef.bodyProps) || (eavSet ? eavSet.has(n) : false);
         const unknownNames = clearFields.filter((n) => !isKnown(n));
         if (unknownNames.length > 0) {
           return { content: [{ type: "text", text: `_clear_fields contains unknown column name(s) for ${name}: [${unknownNames.join(", ")}]. Check spelling against the tool schema or EAV-routed field list.` }], isError: true };

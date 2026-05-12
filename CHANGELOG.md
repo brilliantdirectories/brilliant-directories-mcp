@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.4] - 2026-05-12
+
+### Hotfix — npm-only ReferenceError on `_clear_fields`
+
+Guard D in `mcp/index.js` referenced bare `bodyProps` but the in-scope variable is `toolDef.bodyProps`. Every `_clear_fields: [...]` call via the npm stdio transport threw `ReferenceError: bodyProps is not defined` before the clear could fire. Live-confirmed by Claude Desktop testing v6.45.3.
+
+The Worker (Streamable HTTP at `brilliantmcp.com`) was correct — `tool.bodyProps` was already prefixed. So the bug was npm-only; Cursor users (Worker transport) were unaffected.
+
+**Fix:** one-line — change `bodyProps` to `toolDef.bodyProps` at line 4610 in `mcp/index.js`.
+
+No Worker change. No schema change. No doc change.
+
 ## [6.45.3] - 2026-05-12
 
 ### Hotfix — `_clear_fields` no longer creates spurious `users_meta` rows on typo'd column names
