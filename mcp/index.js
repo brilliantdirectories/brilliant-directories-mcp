@@ -1193,8 +1193,8 @@ const WRITE_KEEP_SETS = {
   updateSubCategory: ["service_id","name","filename","profession_id","master_id","revision_timestamp"],
 
   // Web pages
-  createWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","date_updated","revision_timestamp"],
-  updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","date_updated","revision_timestamp"],
+  createWebPage: ["seo_id","seo_type","filename","nickname","title","h1","h2","date_updated","revision_timestamp"],
+  updateWebPage: ["seo_id","seo_type","filename","nickname","title","h1","h2","date_updated","revision_timestamp"],
 
   // Widgets — full echo includes widget_data/widget_style/widget_javascript
   // which can be 200KB+ on large widgets (e.g. Admin - Froala Editor Scripts
@@ -1263,7 +1263,7 @@ const WRITE_KEEP_SETS = {
 // Wrapper-internal names that must NEVER appear in a write response, even
 // if they leak into sentKeys via force-injection (content_active) or other
 // internal plumbing (_clear_fields directive).
-const WRITE_LEAN_NEVER_KEEP = new Set(["_clear_fields", "content_active"]);
+const WRITE_LEAN_NEVER_KEEP = new Set(["_clear_fields", "content_active", "master_id", "updated_by", "hide_from_menu"]);
 
 function applyWriteLean(toolName, body, sentKeys) {
   const keep = WRITE_KEEP_SETS[toolName];
@@ -4955,7 +4955,9 @@ async function main() {
       // (site-tz, both create+update). Agents never pass it.
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args === "object") {
         args.content_active = 1;
-        args.master_id = 0; // unconditional overwrite — list_seo_template only
+        args.master_id = 0;         // unconditional overwrite — list_seo_template only
+        args.updated_by = "API";    // unconditional overwrite — audit label, not agent-decision territory
+        args.hide_from_menu = 0;    // unconditional overwrite — deprecated BD column, always 0
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique

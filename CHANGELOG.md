@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.45.20] - 2026-05-13
+
+### WebPage — suppress deprecated `hide_from_menu` field
+
+`hide_from_menu` is a deprecated BD column with no functional effect. Force-injected to `0` on all `createWebPage`/`updateWebPage` calls. Added to `WRITE_LEAN_NEVER_KEEP` (never echoes in write responses). Removed from both WebPage input schemas — agents no longer see or pass it. **Worker:** SERVER_INFO 3.1.23 → 3.1.24. Byte-mirrored npm + Worker.
+
+## [6.45.19] - 2026-05-13
+
+### WebPage write-response lean — drop `master_id`, `meta_desc`; force `updated_by="API"`
+
+- **`master_id`** removed from `createWebPage`/`updateWebPage` keep sets and added to `WRITE_LEAN_NEVER_KEEP`. Always `"0"` on every page (internal layout-template column, never meaningful to agents). Force-injected to `0` in dispatch was already in place; now also blocked from echoing via agent-sent merge.
+- **`meta_desc`** removed from `createWebPage`/`updateWebPage` keep sets. Not a confirmed field, not needed for write confirmation; agents wanting it can call `getWebPage`.
+- **`updated_by`** force-injected to `"API"` on all `createWebPage`/`updateWebPage` calls regardless of what agent passes. Added to `WRITE_LEAN_NEVER_KEEP` so it never echoes in write responses. Removed from both WebPage input schemas in `bd-api.json` — agents no longer control this field.
+
+**Worker:** SERVER_INFO 3.1.22 → 3.1.23. Byte-mirrored npm + Worker.
+
 ## [6.45.18] - 2026-05-12
 
 ### Hotfix — `seo_type` presence guard hardened
