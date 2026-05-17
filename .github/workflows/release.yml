@@ -102,10 +102,20 @@ jobs:
       - name: Build skill zip
         run: node scripts/build-skill-zip.js
 
-      - name: Upload skill zip to GitHub Release
+      - name: Upload skill zip to GitHub Release (create release if it does not exist)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          gh release upload "v${VERSION}" bd-skill-content/bd-skill-content.zip --clobber
+          TAG="v${VERSION}"
+          # If the Release does not exist yet for this tag, create it with a
+          # minimal auto-generated body. Then upload the zip with --clobber so
+          # re-runs are idempotent.
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Auto-created on tag push. See [CHANGELOG.md](https://github.com/brilliantdirectories/brilliant-directories-mcp/blob/main/CHANGELOG.md) for release notes." \
+              --verify-tag
+          fi
+          gh release upload "$TAG" bd-skill-content/bd-skill-content.zip --clobber
 
