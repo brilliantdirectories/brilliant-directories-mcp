@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.3] - 2026-05-17
+
+### MCP corpus — Pexels sourcing workflow hardened
+
+Real-world skill runs surfaced two failure modes in the existing Pexels workflow: agents defaulted to the first search result on every post (no rotation), and any photo stored as PNG/WebP rather than JPEG 404'd silently. v6.47.3 closes both inside `### Rule: Image URLs`:
+
+- **Grid-href rotation.** Workflow now extracts photo IDs from the server-rendered `/photo/<slug>-<id>/` hrefs in the search-results grid (10+ IDs per fetch). Explicit instruction to rotate across posts in the same run, vary search terms (`pilates class` vs `pilates reformer` vs `pilates studio`), paginate with `&page=2` etc. when the pool runs short, and never reuse an ID from earlier in the run.
+- **Format fallback.** Pexels stores ~10-15% of photos as PNG or WebP originals; only the matching extension serves. Workflow now says: if the canonical `.jpeg` URL HEAD-checks as 404, try `.png` then `.webp`. If none of the three return 200, pick a different photo ID.
+- **og:image extraction removed from the Pexels fallback list.** og:image returns a single ID always, which is the path-of-least-resistance that breaks rotation. The og:image reference inside **Rule: Image sourcing** step 2(d) — pulling a named entity's own headshot from their homepage — remains unchanged (different context, no rotation involved).
+- **Assurance line up top:** "This workflow works in agent runtimes. Attempt it before any fallback." Removes the false-negative skip where agents previously declared "Pexels won't work in this runtime" and fell straight to lower-quality alternatives.
+
+**No code changes.** Corpus-only update to `mcp/openapi/mcp-instructions.md`. Worker fetches the corpus from GitHub raw and auto-refreshes on a 5-minute TTL, so the change goes live on `main` without a redeploy. Worker `SERVER_INFO` bumped 3.1.25 → 3.1.26 for HTTP-server traceability; npm package SemVer is independent (expected and fine — see drift note in `src/index.ts`).
+
 ## [6.47.2] - 2026-05-17
 
 ### Skill image-strategy hardening
