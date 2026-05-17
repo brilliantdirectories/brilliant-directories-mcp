@@ -312,12 +312,36 @@ function loadSpec() {
   process.exit(1);
 }
 
+// MCP ToolAnnotations hints — let clients gate confirmation prompts intelligently.
+// readOnly/destructive/idempotent flags computed from operation name. openWorldHint
+// is always true (every tool hits an external BD site). Mirrored byte-for-byte in
+// Worker src/index.ts.
+const READ_ONLY_TOOL_PREFIXES = ["get", "list", "search", "render"];
+const READ_ONLY_TOOL_EXACT = new Set(["verifyToken", "loginUser", "getBrandKit", "getSiteInfo"]);
+function getToolAnnotations(toolName) {
+  const isReadOnly =
+    READ_ONLY_TOOL_EXACT.has(toolName) ||
+    READ_ONLY_TOOL_PREFIXES.some((p) => toolName.startsWith(p));
+  if (isReadOnly) {
+    return { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
+  }
+  if (toolName.startsWith("delete")) {
+    return { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true };
+  }
+  if (toolName.startsWith("update")) {
+    return { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true };
+  }
+  // create*, matchLead, refreshSiteCache, createClick, createUnsubscribe, etc.
+  return { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
+}
+
 /**
  * Convert OpenAPI path operations to MCP tool definitions.
  * Each operation becomes one tool with:
  *   - name: operationId
  *   - description: summary + description
  *   - inputSchema: merged path params + query params + requestBody properties
+ *   - annotations: ToolAnnotations hints (readOnlyHint, destructiveHint, etc.)
  */
 function buildTools(spec) {
   const tools = [];
@@ -426,6 +450,7 @@ function buildTools(spec) {
           type: "object",
           properties,
         },
+        annotations: getToolAnnotations(op.operationId),
       };
       if (required.length > 0) {
         tool.inputSchema.required = required;

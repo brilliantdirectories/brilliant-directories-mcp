@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.46.0] - 2026-05-13
+
+### MCP ToolAnnotations — confirmation-gating hints for clients
+
+Every registered tool now ships with `annotations: { readOnlyHint, destructiveHint, idempotentHint, openWorldHint }` per the MCP spec. Mature clients (Claude Code, increasingly Cursor) use these to:
+
+- Skip confirmation prompts on read-only tools (`get*`, `list*`, `search*`, `render*`, `verifyToken`, `loginUser`, `getBrandKit`, `getSiteInfo`)
+- Force confirmation prompts on destructive tools (`delete*`)
+- Mark `update*` as idempotent (PATCH semantics = safe to retry)
+- Mark `create*` as non-idempotent
+
+Single classifier function `getToolAnnotations(toolName)` mirrored byte-for-byte in npm + Worker. No tool descriptions, schemas, or behavior changed — additive metadata only. Clients that don't read annotations see no difference.
+
+**Worker:** SERVER_INFO 3.1.24 → 3.1.25. Byte-mirrored npm + Worker.
+
 ## [6.45.20] - 2026-05-13
 
 ### WebPage — suppress deprecated `hide_from_menu` field
