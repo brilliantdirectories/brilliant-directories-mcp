@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.4] - 2026-05-17
+
+### MCP corpus — Pexels workflow + named-entity og:image: drop unreachable paths, route via WebSearch + verify orientation on body URL
+
+v6.47.3 left two paths in the corpus that real-runtime testing shows are unreachable. v6.47.4 replaces them with verified-working alternatives.
+
+**Path 1: `www.pexels.com/search/?orientation=landscape` returns HTTP 403 to agent-side WebFetch on claude.ai** (the runtime our skill ships to). Pexels' WAF gates that host on user-agent / IP / TLS fingerprint. The fetch happened to succeed on Claude Code's WebFetch in spot tests, which masked the failure — but Claude Code is not the runtime that runs the skill bundle.
+
+**Path 2: `<head>` `og:image` is stripped by WebFetch's markdown extraction on every runtime tested.** Both Pexels photo pages and arbitrary named-entity homepages return NOT FOUND when prompted for `og:image`. The previous corpus told agents to read this tag in two places — neither worked.
+
+**Fixes — surgical, in `mcp/openapi/mcp-instructions.md`:**
+
+- **`### Rule: Image URLs` Pexels workflow rewritten** as a 5-step WebSearch-primary procedure:
+  1. `WebSearch query="site:pexels.com/photo <topic> wide landscape"` — goes through Google's index, not Pexels' WAF; returns ~10 photo-page URLs with IDs in the slug
+  2. Extract ID from each result's slug (trailing digits)
+  3. **Verify orientation** by `WebFetch <photo-page-URL>` and parsing `w=`/`h=` from the body's `images.pexels.com/photos/<id>/...` URL (the body img URL survives markdown extraction; the `<head>` og:image does not)
+  4. Rotate IDs across posts in the same run; vary topic phrases; never reuse
+  5. Construct bare `images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and send to BD; `.jpeg → .png → .webp` format fallback unchanged
+
+- **Orientation rule is now slot-aware.** Feature image slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) require strict `w > h` — reject square along with portrait, since square crops badly in article/card/hero/album-grid layouts. Inline `<img>` in Froala body (`post_content`, `group_desc`) and email-template body (`email_body`) accept `w >= h` — landscape OR square, reject portrait only. `profile_photo`/`logo` unchanged (orientation rule doesn't apply, identity-confirming).
+
+- **`### Rule: Image sourcing` step 2(d) dropped.** "og:image meta tag from their homepage HTML head" is removed from the named-entity image ladder; replaced with an explicit "do NOT attempt `<head>` meta tags — WebFetch strips `<head>`" caveat. Ladder is now 3 tiers (homepage / brand-asset page; About/team page; verified social profile), not 4.
+
+**No code changes.** Corpus-only update. Worker auto-refreshes the corpus from GitHub raw on a 5-minute TTL; change is live on `brilliantmcp.com` within 5 minutes of this release. Worker `SERVER_INFO` bumped 3.1.26 → 3.1.27 for HTTP-server traceability.
+
 ## [6.47.3] - 2026-05-17
 
 ### MCP corpus — Pexels sourcing workflow hardened
