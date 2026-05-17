@@ -100,7 +100,7 @@ BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack
 ```
 WebFetch(
   url="https://nominatim.openstreetmap.org/search?q=<URL-encoded-address>&format=json&limit=1&addressdetails=1",
-  prompt="Extract from this Nominatim JSON response: (1) lat as a decimal, (2) lon as a decimal, (3) country_code (ISO 2-letter), (4) state code or full state name from the address breakdown if present. Return as a flat object with keys: lat, lon, country_sn, state_sn. Omit keys whose values are not present in the response."
+  prompt="Extract from this Nominatim JSON response: (1) lat as a decimal, (2) lon as a decimal, (3) country_code (ISO 2-letter), (4) state name from the address breakdown (full name as returned, e.g. 'New York', 'California', 'Ontario'). Return as a flat object with keys: lat, lon, country_code, state_name. Omit keys whose values are not present in the response."
 )
 ```
 
@@ -110,7 +110,16 @@ Rules:
 - No-result → skip `lat`/`lon` on that event. Post still creates. Note in audit.
 - Never fabricate coords. Never use LLM-knowledge coordinates.
 
-On success, pass `lat`, `lon`, and `country_sn`/`state_sn` if Nominatim returned them. Do NOT pass `auto_geocode=1`.
+### Normalize Nominatim output before passing to BD
+
+Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as a full name (`"New York"`, `"Ontario"`). BD's `country_sn` and `state_sn` expect ISO 2-letter codes (`"US"`, `"NY"`). Normalize before passing:
+
+1. **`country_sn`**: uppercase the Nominatim `country_code`. `"us"` → `"US"`. Done.
+2. **`state_sn`**: map the Nominatim state name to its 2-letter code via `listStates`. The BD `location_states` table fields are `state_sn` (2-letter code, e.g. `"NY"`), `state_ln` (full name, e.g. `"New York"`), `country_sn` (2-letter, e.g. `"US"`). Once per skill run per country, cache: `listStates property=country_sn property_value=<uppercased_country_code> property_operator=eq` (paginate if >25 rows; e.g. US has 50+). Build a `state_ln → state_sn` map. Look up the Nominatim state name in the map (case-insensitive); use the matched `state_sn`. If no match (some countries don't have first-admin subdivisions BD tracks, or Nominatim returned an unmappable region name), OMIT `state_sn`.
+3. Cache the per-country state map for the rest of the run.
+4. International addresses with no state/region equivalent → pass `country_sn` only, OMIT `state_sn`.
+
+On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn` (if mapped). Do NOT pass `auto_geocode=1`.
 
 ---
 
@@ -200,10 +209,8 @@ What `createSingleImagePost` receives.
 | `original_image_url` | The original source image URL the skill ATTEMPTED to use (before any fallback). Forensic field. Always populate this with the FIRST image URL the skill considered (the source image candidate), even if the skill ended up falling through to Pexels or omitting. If the skill never considered any source image (page had no image candidate at all), pass empty string. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
-| `post_start_date` | event start date `YYYYMMDD` |
-| `post_expire_date` | event end date `YYYYMMDD` (same as start for single-day) |
-| `start_time` | event start time, source-verbatim format ("6:15 AM" or "18:15") |
-| `end_time` | event end time, source-verbatim format |
+| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, site timezone). Date AND time both live here. BD silently truncates other formats. |
+| `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, site timezone). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | venue name ("Stubb's BBQ", "Staples Center") |
 | `post_location` | full address text ("Stubb's BBQ, 801 Red River St, Austin, TX 78701") |
 | `lat` | latitude float (from Nominatim, skip if geocoding failed) |
@@ -218,9 +225,11 @@ What `createSingleImagePost` receives.
 
 ### Date/time formats
 
-- `post_live_date`: `YYYYMMDDHHmmss` (14 digits)
-- `post_start_date` / `post_expire_date`: `YYYYMMDD` (8 digits)
-- `start_time` / `end_time`: source-verbatim, no normalization
+All three fields use `YYYYMMDDHHmmss` (14 digits, site timezone). BD silently truncates other formats, corrupting the value.
+
+- `post_live_date`: when the post becomes visible (now, or future for scheduled publish)
+- `post_start_date`: event start (date AND time)
+- `post_expire_date`: event end (date AND time)
 
 ---
 

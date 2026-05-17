@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.5] - 2026-05-17
+
+### Events skill — three field-reference + URL-pattern bugs surfaced by real-run, all fixed
+
+Real autonomous skill run on a customer fitness site created 3 event posts (post_id 91-93). Direct inspection of the posts + comparison against the source docs surfaced three doc bugs that bit the agent but didn't break the run (agent figured out the right format on its own).
+
+**Bug 1 — `post_start_date` / `post_expire_date` format wrong in events.md (8-digit instead of 14-digit).** The doc said `YYYYMMDD` (8 digits, date only) and added `start_time` / `end_time` as separate fields. Reality (verified against the live `createSingleImagePost` schema and the agent's actual posts on the site): both fields are `YYYYMMDDHHmmss` (14 digits, date AND time in the same field). BD silently truncates other formats. There is no `start_time` / `end_time` field; checked `users_meta` for the agent's posts — only 3 rows total (`post_meta_title`, `post_meta_description`, `auto_image_import`), no time fields. The field-reference table in `content-types/events.md` now correctly shows 14-digit format; `start_time` and `end_time` rows removed.
+
+**Bug 2 — Nominatim output not normalized before passing to BD.** Nominatim returns `country_code` lowercase (`"us"`) and state as a full name (`"New York"`). BD's `country_sn` and `state_sn` expect ISO 2-letter codes (`"US"`, `"NY"`). The doc didn't say to normalize, so every run would have silently shipped malformed `state_sn` values. New "Normalize Nominatim output" subsection added: uppercase country code; `listStates property=country_sn property_value=<UPPERCASE> property_operator=eq` builds a cached `state_ln → state_sn` map per country; OMIT `state_sn` if no match or country has no first-admin subdivisions BD tracks. Cache map for the run.
+
+**Bug 3 — URL-PATTERNS Pattern 5 (member-search URL) had no explicit fallback.** Doc said "must exist; do not fabricate" but the agent ran on a site without a `profile_search_results` WebPage and fabricated `/listing` anyway. Pattern 5 row strengthened: "Site-customized: every site uses a different filename. Never hardcode (`/listing`, `/find`, `/members`, etc.). If no `profile_search_results` WebPage exists, OMIT the link — do not substitute another URL." Added matching banned-URL bullet to the existing `Don't` block alongside the geo-param ban.
+
+**No code changes.** Skill content changes inside `bd-skill-content/`. Worker auto-refreshes the MCP corpus from GitHub raw (no redeploy needed for corpus updates, though the corpus didn't change in this release). `SERVER_INFO` bumped 3.1.27 → 3.1.28 for HTTP-server traceability. Released skill zip rebuilt and auto-attached to the GitHub Release.
+
 ## [6.47.4] - 2026-05-17
 
 ### MCP corpus — Pexels workflow + named-entity og:image: drop unreachable paths, route via WebSearch + verify orientation on body URL
