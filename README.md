@@ -795,43 +795,42 @@ Comprehensive coverage across members, posts, leads, reviews, pages, forms, menu
 
 > ⚠️ **The AI can also DELETE and MODIFY live data.** Writes go directly to your live site — no undo. Before running bulk or destructive operations, test on ONE record first. Consider a backup. If unsure, ask the AI to *preview* (list/show) before it *acts*.
 
-## Growth-automation skills
+## Growth-automation skill (bd-skill-content)
 
-The plugin bundles "skills" — high-level workflows that orchestrate the underlying tools into a single invocation. Each skill is invoked via `/bd:<verb>` in Claude Code.
+This repo ships a companion **Claude Skill** that uses the BD MCP to do high-leverage content workflows for you: researching public sources, manufacturing SEO-rich posts, deduplicating, and posting to your BD site.
 
-### `/bd:events` — Research and post local events
+### Download
 
-Researches local events from public web sources (chamber sites, tourism boards, civic calendars, public Eventbrite pages, etc.), then creates SEO-rich event posts on your BD site. Each post includes a structured FAQ, internal links to related events, external attribution to the source, geocoded coordinates (via OpenStreetMap), and quality-gated content (date sanity, source credibility, no fabrication).
+Get the latest skill zip from the GitHub Releases page: **[bd-skill-content.zip](https://github.com/brilliantdirectories/brilliant-directories-mcp/releases/latest)**.
 
-**Quick start (interactive):**
+### Install
+
+1. Open claude.ai → Settings → Customize → Skills → Upload Skill.
+2. Upload the `bd-skill-content.zip` file you downloaded.
+3. Ensure your BD MCP is connected (either the hosted `https://brilliantmcp.com` or the npm-installed local server).
+4. Start a chat and tell Claude what you want: "create event posts for upcoming fitness events in Austin."
+
+### Content types in v0.1
+
+- **Events** — researches local events from public web sources (chamber sites, tourism boards, civic calendars, public Eventbrite pages, etc.), creates structured event posts with FAQ, internal links to related events, source attribution, and Nominatim-geocoded coordinates.
+
+More content types (jobs, properties, blog, SEO landing pages) coming in future releases. They will share the same shared methodology and ship in the same zip.
+
+### Defaults
+
+- Drafts by default in autonomous runs (you review before publishing)
+- Free to run (no API keys, no paid services)
+- Whitehat scraping (facts only, public pages only, attribution always)
+- Realistic run time: 30-60 minutes for 10-20 posts
+
+### Build from source
+
+The skill source lives in [`bd-skill-content/`](./bd-skill-content/). Rebuild the zip yourself:
+
+```bash
+node scripts/build-skill-zip.js
+# Output: dist/bd-skill-content.zip
 ```
-/bd:events
-```
-The skill asks you a few questions (which member should author the posts, which cities and categories to target, publish or save as drafts), then researches and creates.
-
-**Autonomous (cron-style, no human present):**
-```
-/bd:events --autonomous --author-id=12 --cities="Austin" --categories="music,fitness" --limit=10 --status=draft
-```
-Researches Austin music + fitness events, creates up to 10 draft posts authored by user 12. Drafts let you review before publishing.
-
-**Realistic expectations:**
-- Run time: 30-60 minutes for 10-20 events (web research + geocoding + content generation take time)
-- SEO payoff timeline: weeks to months (new BD subsite needs to age and gather indexing signals)
-- The skill competes for long-tail queries the source's thin listing doesn't target — not day-one domain authority
-
-**Defaults:**
-- Drafts in autonomous mode (you review before publishing)
-- Free to run (no API keys, no paid services required)
-- Whitehat scraping (facts only, attribution always, public pages only)
-
-### More skills coming
-
-The same shared methodology will power upcoming skills:
-- `/bd:jobs` — Research and post job listings
-- `/bd:blog` — Generate industry-relevant blog posts
-- `/bd:properties` — Research and post property listings
-- `/bd:seo` — Walk category × location combos and create SEO landing pages
 
 All built on the same foundation: shared research methodology, quality gates, dedup, anti-slop writing voice, whitehat sourcing.
 
