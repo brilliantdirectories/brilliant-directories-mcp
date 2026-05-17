@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.7] - 2026-05-17
+
+### Skill methodology — 3 subtle amendments based on real post-content inspection
+
+Inspection of 4 skill-generated event posts surfaced three universal patterns worth correcting at the methodology layer. Each post had high-quality voice and source-grounded specificity, but three structural habits showed across every post: a trailing HTML comment with skill metadata embedded in `post_content`, internal links concentrated in a dedicated trailing "More X in Y" section instead of woven inline, and uniform 1-2-sentence H2 sections producing a labeled-fact-grid feel instead of prose. All three changes are universal — they apply to events, jobs, properties, blog articles, coupons, every content type and vertical.
+
+**Amendment A: no machine-readable metadata in `post_content`, period.** The previous `### Embedded HTML-comment metadata` subsection in Stage 3 (METHODOLOGY.md) instructed the skill to embed a multi-line HTML comment at the end of every post body with `source_id`, `source_url`, `record_fingerprint`, and `skill_run_id`. Browsers strip the comment at render so visitors don't see it, but Googlebot indexes the strings, BD admin's rich-text editor shows them on edit (where humans accidentally delete them), and they're just noise in the source view. The whole subsection is removed. Dedup falls back to the layered semantic match (title + date + location) that Stage 3 already documents. The Froala-safety paragraph and events.md dedup section updated to match. New self-check bullet: "Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers."
+
+**Amendment B: H2 marks topic shifts, not fact transitions.** Inspection showed posts uniformly stacking 6-8 H2 headings each followed by 1-2 sentences — a labeled-fact grid, not prose. Added self-check bullet: "Are H2 headings marking topic shifts or just fact transitions? If sections are uniformly 1-2 sentences each, consolidate. Vary section length deliberately — some short, some longer — so the post reads as prose, not as a labeled-fact grid." Asymmetrical content under headings is explicitly the goal.
+
+**Amendment C: internal links inline, not in a trailing "More X in Y" section.** URL-PATTERNS.md already said links should be sprinkled inline, but METHODOLOGY.md Stage 5 listed example anchor texts ("More music events in Austin", "Other workshops this weekend", "Browse all open houses in 78704") that read as section headlines — implicitly training the skill toward closing-section placement. The examples are replaced with vertical-neutral inline guidance: "Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA." Plus an explicit "not in a dedicated trailing 'More X in Y' section" clarification.
+
+**No code changes.** Skill methodology + events.md only. Worker auto-refreshes the MCP corpus from GitHub raw on 5-min TTL (though the MCP corpus didn't change in this release). `SERVER_INFO` bumped 3.1.29 → 3.1.30 for HTTP-server traceability.
+
 ## [6.47.6] - 2026-05-17
 
 ### Wrapper auto-defaults `original_image_url` to `post_image`; mandatory orientation precondition added to skill methodology

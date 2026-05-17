@@ -130,20 +130,6 @@ Per METHODOLOGY Stage 3. Events-specific match criteria:
 - Date: `post_start_date` within ±24 hours.
 - Location: same `post_venue` if known, else same city.
 
-Embed dedup HTML comment at end of `post_content` per METHODOLOGY Stage 3:
-
-```html
-<!-- bd-events-skill-meta v1
-source_id=tm-evt-12345
-source_url=https://...
-source_name=Ticketmaster
-record_fingerprint=austin-tech-summit-2026:2026-06-15:austin
-skill_run_id=20260517143022-k3m9pw
--->
-```
-
-`record_fingerprint`'s date is `post_start_date` (the event date, not the post date).
-
 ---
 
 ## Category routing (Stage 9 of runbook)

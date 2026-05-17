@@ -49,27 +49,6 @@ Pull existing posts via `list*` filtered to relevant post type (include drafts).
 
 Title-similar AND date-close AND location-match → duplicate → skip.
 
-### Embedded HTML-comment metadata (every created post)
-
-```html
-<!-- bd-{skill-name}-skill-meta v1
-source_id={source's stable id or empty}
-source_url={scrape URL}
-source_name={human-readable name}
-record_fingerprint={<title-slug>:<YYYY-MM-DD>:<city-slug>}
-skill_run_id={<YYYYMMDDHHMMSS>-<6-char alphanumeric>}
--->
-```
-
-- `record_fingerprint`: deterministic plain-text concat (NOT a hash, LLM has no hash function). Lowercase title → hyphenate, plus ISO date, plus lowercase city. Example: `austin-tech-summit-2026:2026-06-15:austin`. Truncate to 120 chars.
-- `skill_run_id`: timestamp + 6 random alphanumeric chars. Example: `20260517143022-k3m9pw`. Generate once at skill start.
-
-Comment goes at END of `post_content`, AFTER attribution footer. Browsers strip HTML comments at render. Round-trip via `list*`/`get*`.
-
-**Why HTML comment, not `users_meta`:** wrapper hides `createUserMeta` from agents (spec marks `DELIBERATELY HIDDEN`). One write per post, no extra calls.
-
-Match priority on re-runs: `source_id` → `record_fingerprint` → semantic similarity.
-
 v0.1 always SKIPS existing records. v0.2 adds `--update-existing`.
 
 ## Stage 4: Category routing
@@ -87,12 +66,12 @@ Per-type SKILL.md may specify a fallback category.
 1. **Load-bearing facts up front.** A reader can answer "what is this, when/where, how do I attend or apply" within the first paragraph or first FAQ block. Per-type SKILL.md tells you which facts are load-bearing for THIS data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth: 400-1500 words based on what source data + confident AI knowledge support. Better shorter and honest than longer and padded.
 3. **Casual inline source reference.** At least one mention of the source(s) in flowing prose, linked with external link attributes. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational.
-4. **Internal links to relevant on-site content** — only if the target pages exist per URL-PATTERNS.md discovery. Use Pattern 1 (specific post URLs), Pattern 3 (filtered listing URLs by category/location/date), or Pattern 4 (category-landing WebPages). Examples: "More music events in Austin", "Other workshops this weekend", "Browse all open houses in 78704". Never fabricate URLs. If no target exists, omit the section.
+4. **Internal links to relevant on-site content** — only if the target pages exist per URL-PATTERNS.md discovery. Use Pattern 1 (specific post URLs), Pattern 3 (filtered listing URLs by category/location/date), or Pattern 4 (category-landing WebPages). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 
 ### Froala HTML safety
 
-Follow Froala safety rules from the MCP corpus (`mcp/openapi/mcp-instructions.md`, loaded with every MCP tool). Skip `<h1>` — reserved for the post title field. HTML comments `<!-- ... -->` ARE preserved by Froala (used for dedup metadata at end of `post_content`).
+Follow Froala safety rules from the MCP corpus (`mcp/openapi/mcp-instructions.md`, loaded with every MCP tool). Skip `<h1>` — reserved for the post title field. `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -135,6 +114,8 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
+- Are H2 headings marking topic shifts or just fact transitions? If sections are uniformly 1-2 sentences each, consolidate. Vary section length deliberately — some short, some longer — so the post reads as prose, not as a labeled-fact grid.
+- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 
 ## Stage 6: Post creation
 
