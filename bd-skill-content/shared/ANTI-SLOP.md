@@ -49,7 +49,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Rhythm | Varied sentence length, or metronomic? |
 | Trust | Respects reader intelligence, no over-explaining? |
 | Authenticity | Sounds human-typed? |
-| Density | Anything cuttable? |
+| Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
 
 ## Drift triggers (stop and rewrite)
 

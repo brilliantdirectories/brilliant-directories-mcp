@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.8] - 2026-05-17
+
+### Skill methodology — fix the source bias that produced shallow posts after v6.47.7
+
+After v6.47.7's 3 amendments, a follow-up real-run produced 4 events posts that were structurally cleaner (no embedded HTML comments, anchor text more in-prose) but had regressed in depth — uniform 1-2-short-paragraph sections, missing the substantive multi-angle context that v6.47.6's example post produced. Tracing back, the regression wasn't caused by v6.47.7's amendments alone — it was the cumulative effect of a methodology that has been monotonically pulling toward "less, tighter, shorter" across multiple versions. The smoking gun: the original "Better shorter and honest than longer and padded" line in Required outcome #2 set a one-direction safety bias toward brevity; v6.47.7's "consolidate" word in the H2 self-check amplified it; ANTI-SLOP's "Anything cuttable?" Density scoring reinforced it. All three lived in different files but pulled the same direction.
+
+v6.47.8 fixes the bias at its three sources, and adds a positive target so the AI has a reader-experience goal to optimize toward, not just a checklist of correctness constraints. All four changes are universal — they apply to events, jobs, properties, blog articles, coupons, every content type and vertical.
+
+**Edit 1 — METHODOLOGY.md Required outcome #2.** Replaces "Better shorter and honest than longer and padded" with: "Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not." Names the failure mode in both directions instead of one.
+
+**Edit 2 — METHODOLOGY.md Required outcomes opener.** New reader-experience target sentence inserted before the numbered list: "Good posts familiarize the reader with the topic in depth and leave them feeling educated and satisfied — covering the core facts, useful context, related comparisons, and deeper insights on the location, category, or focus where the source supports them. Position the reader to feel well-informed in an easy-to-scan way that flows naturally, not as forced mechanical patterns. Bulleted lists where scannability helps. Vary paragraph rhythm." Reframes the numbered outcomes as means to a reader-experience goal, not as a checklist to satisfy.
+
+**Edit 3 — METHODOLOGY.md self-check H2 bullet.** Strikes "consolidate" and the "If sections are uniformly 1-2 sentences each, consolidate" clause that v6.47.7 added. New wording: "Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact." The cadence-variety framing stays; the consolidation push is replaced with an explicit guardrail against trimming substance.
+
+**Edit 4 — ANTI-SLOP.md Density scoring dimension.** Replaces "Anything cuttable?" with: "Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding." The scoring rubric is the last guardrail the AI applies before posting; tightening it here means the AI can't pass scoring on a thin stub.
+
+**No code changes.** Skill content + ANTI-SLOP only. `SERVER_INFO` bumped 3.1.30 → 3.1.31 for HTTP-server traceability.
+
 ## [6.47.7] - 2026-05-17
 
 ### Skill methodology — 3 subtle amendments based on real post-content inspection

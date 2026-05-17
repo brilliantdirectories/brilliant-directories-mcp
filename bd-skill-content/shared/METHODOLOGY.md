@@ -63,8 +63,10 @@ Per-type SKILL.md may specify a fallback category.
 
 ### Required outcomes (any structure achieves these)
 
+Good posts familiarize the reader with the topic in depth and leave them feeling educated and satisfied — covering the core facts, useful context, related comparisons, and deeper insights on the location, category, or focus where the source supports them. Position the reader to feel well-informed in an easy-to-scan way that flows naturally, not as forced mechanical patterns. Bulleted lists where scannability helps. Vary paragraph rhythm.
+
 1. **Load-bearing facts up front.** A reader can answer "what is this, when/where, how do I attend or apply" within the first paragraph or first FAQ block. Per-type SKILL.md tells you which facts are load-bearing for THIS data type.
-2. **Every claim source-supported.** No fabrication. Adaptive depth: 400-1500 words based on what source data + confident AI knowledge support. Better shorter and honest than longer and padded.
+2. **Every claim source-supported.** No fabrication. Adaptive depth: 400-1500 words based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **Casual inline source reference.** At least one mention of the source(s) in flowing prose, linked with external link attributes. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational.
 4. **Internal links to relevant on-site content** — only if the target pages exist per URL-PATTERNS.md discovery. Use Pattern 1 (specific post URLs), Pattern 3 (filtered listing URLs by category/location/date), or Pattern 4 (category-landing WebPages). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
@@ -114,7 +116,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
-- Are H2 headings marking topic shifts or just fact transitions? If sections are uniformly 1-2 sentences each, consolidate. Vary section length deliberately — some short, some longer — so the post reads as prose, not as a labeled-fact grid.
+- Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 
 ## Stage 6: Post creation
