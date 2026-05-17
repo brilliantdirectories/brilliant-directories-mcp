@@ -254,3 +254,25 @@ npx brilliant-directories-mcp@latest --setup
 After either path, restart their AI client — tools become available.
 
 For non-MCP integrations (ChatGPT Actions, n8n, Make, Zapier, Postman, custom agents): import the OpenAPI spec URL directly and authenticate with the `X-Api-Key` header.
+
+## Bundled growth skills
+
+This plugin ships with growth-automation skills that turn the MCP tools into higher-level workflows. Each skill is invoked via the `/bd:` namespace.
+
+**`/bd:events`** — Researches local events from public web sources and creates SEO-rich event posts on the user's BD site. Walks through site context, hunts events matching the user's vertical and location, applies quality gates (date sanity, source credibility, confidence threshold), manufactures structured post bodies with FAQ + internal/external linking + source attribution, geocodes addresses via OpenStreetMap. Interactive or autonomous mode. Drafts by default in autonomous runs.
+
+More skills are in the backlog (`/bd:jobs`, `/bd:blog`, `/bd:properties`, `/bd:seo`, etc.) — each will follow the same shared methodology under `skills/_shared/`.
+
+### Skills architecture
+
+All BD growth skills share a common protocol layer in `skills/_shared/`:
+
+- `METHODOLOGY.md` — research methodology, quality gates, dedup, mode detection, audit
+- `URL-PATTERNS.md` — BD internal URL construction patterns
+- `SAFETY-RULES.md` — whitehat scraping, attribution, no-fabrication
+- `BD-PROTOCOLS.md` — MCP wrapper specifics (rate limits, force-injections)
+- `ANTI-SLOP.md` — writing voice and AI-pattern blacklist (mandatory for any content generation)
+
+Per-skill files in `skills/<name>/SKILL.md` layer on data-type-specific details: post type discovery, field reference, source candidates, EEAT template, dedup keys.
+
+Always read the relevant `_shared/*.md` files before running any `/bd:*` skill.

@@ -795,6 +795,46 @@ Comprehensive coverage across members, posts, leads, reviews, pages, forms, menu
 
 > ⚠️ **The AI can also DELETE and MODIFY live data.** Writes go directly to your live site — no undo. Before running bulk or destructive operations, test on ONE record first. Consider a backup. If unsure, ask the AI to *preview* (list/show) before it *acts*.
 
+## Growth-automation skills
+
+The plugin bundles "skills" — high-level workflows that orchestrate the underlying tools into a single invocation. Each skill is invoked via `/bd:<verb>` in Claude Code.
+
+### `/bd:events` — Research and post local events
+
+Researches local events from public web sources (chamber sites, tourism boards, civic calendars, public Eventbrite pages, etc.), then creates SEO-rich event posts on your BD site. Each post includes a structured FAQ, internal links to related events, external attribution to the source, geocoded coordinates (via OpenStreetMap), and quality-gated content (date sanity, source credibility, no fabrication).
+
+**Quick start (interactive):**
+```
+/bd:events
+```
+The skill asks you a few questions (which member should author the posts, which cities and categories to target, publish or save as drafts), then researches and creates.
+
+**Autonomous (cron-style, no human present):**
+```
+/bd:events --autonomous --author-id=12 --cities="Austin" --categories="music,fitness" --limit=10 --status=draft
+```
+Researches Austin music + fitness events, creates up to 10 draft posts authored by user 12. Drafts let you review before publishing.
+
+**Realistic expectations:**
+- Run time: 30-60 minutes for 10-20 events (web research + geocoding + content generation take time)
+- SEO payoff timeline: weeks to months (new BD subsite needs to age and gather indexing signals)
+- The skill competes for long-tail queries the source's thin listing doesn't target — not day-one domain authority
+
+**Defaults:**
+- Drafts in autonomous mode (you review before publishing)
+- Free to run (no API keys, no paid services required)
+- Whitehat scraping (facts only, attribution always, public pages only)
+
+### More skills coming
+
+The same shared methodology will power upcoming skills:
+- `/bd:jobs` — Research and post job listings
+- `/bd:blog` — Generate industry-relevant blog posts
+- `/bd:properties` — Research and post property listings
+- `/bd:seo` — Walk category × location combos and create SEO landing pages
+
+All built on the same foundation: shared research methodology, quality gates, dedup, anti-slop writing voice, whitehat sourcing.
+
 ## Updates are automatic
 
 Once set up, you get new MCP versions automatically the next time you fully quit and reopen your AI app.

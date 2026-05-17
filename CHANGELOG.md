@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.0] - 2026-05-17
+
+### Growth-automation skills layer — `/bd:events` shipped, plugin namespace renamed to `bd`
+
+This release introduces a skills layer on top of the MCP. Skills package high-leverage workflows (research, content manufacture, post creation) into a single invocation that orchestrates the existing MCP tools.
+
+**Plugin namespace renamed:** `brilliant-directories` → `bd`. All future skill invocations follow `/bd:<verb>`. The breaking change affects how users reference the plugin in Claude Code (`/bd:events` instead of `/brilliant-directories:events`). The npm package name (`brilliant-directories-mcp`) and the hosted MCP URL (`brilliantmcp.com`) are unchanged.
+
+**New `/bd:events` skill** — Researches local events from public web sources and creates SEO-rich event posts on the user's BD site:
+
+- AI-driven web research via `WebSearch` + `WebFetch` (zero setup; no API keys required)
+- 5 quality gates on every extracted event: date sanity, SPA detection, required fields, confidence threshold, source credibility
+- Dual operating modes: interactive (asks the user for decisions) and autonomous (makes safer-side judgments for cron/routine invocations)
+- Geocoding via Nominatim (OpenStreetMap) — free, no key, deterministic
+- Drafts by default in autonomous mode; explicit `--status=live` to publish
+- Per-post dedup metadata embedded as an HTML comment in `post_content` for stable cross-run dedup (no `users_meta` writes required)
+- Internal vs external link policy enforced on every link
+- Anti-slop writing standard (en/em-dash ban, throat-clearing ban, fabrication ban) applied to all generated content
+
+**Shared base for future skills** — `skills/_shared/` directory introduces the DRY foundation that every future BD growth skill (`/bd:jobs`, `/bd:blog`, `/bd:properties`, `/bd:seo`, etc.) will inherit:
+
+- `METHODOLOGY.md` — universal research/dedup/audit protocol with quality gates
+- `URL-PATTERNS.md` — BD internal URL construction reference
+- `SAFETY-RULES.md` — whitehat scraping, attribution, no-fabrication, legal posture
+- `BD-PROTOCOLS.md` — MCP wrapper specifics (rate limits, force-injections, lean responses)
+- `ANTI-SLOP.md` — writing voice and AI-pattern blacklist (mandatory for any content generation)
+
+**No code changes to the MCP server.** The skills layer sits alongside the MCP in the plugin and calls the MCP via existing `mcp__brilliant-directories__*` tools. The MCP wrapper (`mcp/index.js`), the hosted Worker (`brilliantmcp.com`), the OpenAPI spec (`bd-api.json`), and all 170 tool definitions are unchanged. The Worker is NOT redeployed for this release.
+
+**Deferred to v0.2** (explicitly cut from v0.1 to keep scope honest): `--dry-run` flag, `--rollback-run=<id>` mass-undo, token-cost preview, `--depth=fast|balanced|aggressive` modes, `--update-existing` for changed events, Ticketmaster API integration, user-supplied ICS/RSS feeds (`--feeds=`), performer biography sections, history-of-similar-events sections, non-English content support.
+
 ## [6.46.0] - 2026-05-13
 
 ### MCP ToolAnnotations — confirmation-gating hints for clients
