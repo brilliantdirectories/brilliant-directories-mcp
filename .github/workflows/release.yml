@@ -107,5 +107,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          gh release upload "v${VERSION}" dist/bd-skill-content.zip --clobber
+          gh release upload "v${VERSION}" bd-skill-content/bd-skill-content.zip --clobber
 

@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-// Builds dist/bd-skill-content.zip from bd-skill-content/ source.
+// Builds bd-skill-content/bd-skill-content.zip from bd-skill-content/ source.
 //
-// Output: dist/bd-skill-content.zip — uploadable to claude.ai →
-// Settings → Customize → Skills.
+// Output: bd-skill-content/bd-skill-content.zip - uploadable to claude.ai ->
+// Settings -> Customize -> Skills, and committed to the public repo so
+// customers can grab it directly without opening a Release page.
 //
 // Usage:
 //   node scripts/build-skill-zip.js
 //
-// Best-practice notes:
-// - dist/ holds build artifacts (this zip), not committed source.
+// Notes:
 // - The zip's root entry is the bd-skill-content/ folder (matches claude.ai's
 //   "SKILL.md must be at top-level folder" rule; the folder counts as
 //   the top level, not the zip itself).
-// - Pure Node, no shell-out, no external dependencies.
+// - The script SKIPS any .zip file when walking the source folder, so the
+//   zip never bundles itself recursively.
+// - Pure Node, no shell-out beyond `python` for the zipfile module.
 
 const fs = require('fs');
 const path = require('path');
@@ -20,20 +22,18 @@ const { execFileSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '..');
 const srcDir = path.join(repoRoot, 'bd-skill-content');
-const distDir = path.join(repoRoot, 'dist');
-const outFile = path.join(distDir, 'bd-skill-content.zip');
+const outFile = path.join(srcDir, 'bd-skill-content.zip');
 
 if (!fs.existsSync(srcDir)) {
   console.error(`ERROR: source folder not found: ${srcDir}`);
   process.exit(1);
 }
 
-fs.mkdirSync(distDir, { recursive: true });
 if (fs.existsSync(outFile)) fs.unlinkSync(outFile);
 
-// Use Python's zipfile via a tempfile script to avoid Windows shell
-// escaping issues with multi-line Python inline.
-const pyScript = path.join(distDir, '.build-zip.py');
+// Tempfile Python script lives next to the build script (not inside srcDir,
+// or os.walk would pick it up). repoRoot is fine - it's outside srcDir.
+const pyScript = path.join(repoRoot, '.build-zip.py');
 fs.writeFileSync(
   pyScript,
   `import zipfile, os, sys
@@ -43,6 +43,8 @@ src_parent = os.path.dirname(src)
 with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as zf:
     for root, dirs, files in os.walk(src):
         for f in files:
+            if f.lower().endswith('.zip'):
+                continue
             full = os.path.join(root, f)
             arc = os.path.relpath(full, src_parent)
             zf.write(full, arc)
@@ -66,4 +68,4 @@ if (!fs.existsSync(outFile)) {
 
 console.log(`\nNext steps:`);
 console.log(`  Upload  ->  ${outFile}`);
-console.log(`           ->  claude.ai → Settings → Customize → Skills → Upload Skill`);
+console.log(`           ->  claude.ai -> Settings -> Customize -> Skills -> Upload Skill`);

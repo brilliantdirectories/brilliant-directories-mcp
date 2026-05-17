@@ -40,8 +40,3 @@ SCRATCH-*.json
 # Delete after the rewrite ships clean. Pattern: <name>.bak-v<X.Y.Z>
 *.bak-v*
 
-# Build artifacts. dist/ holds zipped skill bundles built from bd-skill-content/.
-# Source lives in bd-skill-content/; the zip is regenerated via
-# `node scripts/build-skill-zip.js` and published as a GitHub Release asset.
-# Not committed — users download from the Release page.
-dist/
