@@ -22,7 +22,7 @@ Read before generating any internal link. Universal across post types.
 | `q` | `q=keyword` | Keyword search. Tags filter via `q=` (no dedicated tag param). |
 | `category[]` | `category[]=Category%20Name` | Repeat for multi-category. Skill defaults to single-category. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
-| `lat` / `lng` | `lat=34.05&lng=-118.25` | Together. Implicit default radius from site settings. |
+| `lat` / `lng` / `location_value` | `lat=34.05&lng=-118.25&location_value=Los+Angeles%2C+CA+90014` | Send all three together for location filtering. `lat`/`lng` drive the geo radius (implicit default from site settings); `location_value` is the human-readable label that populates the search-results address input. Use the post's `post_location` string for `location_value`. |
 
 ## Encoding rules
 
@@ -52,9 +52,9 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 /events
 /events?q=austin
 /events?category[]=Live%20Music
-/events?lat=30.2672&lng=-97.7431
+/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX
 /events?daterange=06%2F15%2F2026+-+06%2F15%2F2026
-/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431
+/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX
 ```
 
 ## Don't

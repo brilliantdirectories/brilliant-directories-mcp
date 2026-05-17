@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.1] - 2026-05-17
+
+### Skills layer pivots to claude.ai standalone format + MCP corpus adds list-first rule
+
+**Breaking change for v6.47.0 Claude Code plugin users:** the `skills/` folder (Claude Code plugin format) has been removed. The skill is now distributed exclusively as a downloadable zip (`bd-skill-content.zip`) for upload to claude.ai → Settings → Customize → Skills. Users who installed v6.47.0 via `/plugin install` lose `/bd:events` and should re-install via the standalone zip from this release's GitHub Release asset. The underlying MCP server is unchanged; only the skill distribution format pivoted.
+
+**Why:** real-world testing showed the claude.ai standalone format reaches more users (any claude.ai account, not just Claude Code) and supports the multi-content-type routing pattern (one skill, many content types) better than per-skill plugin folders.
+
+**New `bd-skill-content/` folder structure** (uploaded as zip):
+- `SKILL.md` — router (frontmatter + content-type dispatch)
+- `shared/METHODOLOGY.md` — 7-stage protocol with 5 quality gates, dedup, audit
+- `shared/ANTI-SLOP.md` — voice + pattern bans + scoring rubric
+- `shared/URL-PATTERNS.md` — internal URL construction (now includes `location_value` param for filtered listing URLs)
+- `content-types/events.md` — events-specific protocol (the only content type in v0.1)
+
+**Skill content improvements from real-world test runs:**
+- `listPostTypes` returns `type_of_feature` directly. Skill now explicitly says "call once and client-side filter; do NOT `getPostType` per-candidate."
+- Internal listing URLs with location filter now include `location_value={post_location}` alongside `lat`/`lng` so search-results pages render the address in their search input.
+- Image strategy: explicit ≥600px boundary (600 exactly = pass), signed-CDN-URL handling (don't try to escalate baked-in `w=` on signed Eventbrite/Cloudinary URLs), CDN-proxy decoders documented (Next.js `_next/image`, Cloudinary, Jetpack).
+- WebFetch caveat: WebFetch returns model-summarized markdown; if you need OG / JSON-LD specifically, name them in your prompt.
+
+**MCP corpus addition (affects every agent, not just our skill):**
+- New `### Rule: List-first` in `mcp-instructions.md`: "Prefer `list*` + client-side filter over per-record `get*` probing." Universal best practice — list responses include the same filterable fields as the per-record get, so per-record fishing burns rate limits and context window.
+
+**No code changes.** MCP wrapper unchanged. Worker unchanged (auto-refreshes spec on 5-min TTL — no redeploy needed for corpus updates).
+
 ## [6.47.0] - 2026-05-17
 
 ### Growth-automation skills layer — `/bd:events` shipped, plugin namespace renamed to `bd`

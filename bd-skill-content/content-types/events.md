@@ -1,17 +1,12 @@
----
-name: events
-description: Research local events from publicly-available sources and create SEO-rich event posts on a BD site. AI searches the web for upcoming events matching the site's industry and location, applies quality gates, generates EEAT-rich post content, geocodes via Nominatim, deduplicates via embedded HTML-comment metadata, and prints an audit summary. Designed so the user can invoke with zero arguments and get a complete, correct run.
-argument-hint: [--autonomous] [--author-id=N] [--post-type-id=N] [--cities=...] [--categories=...] [--window=30d] [--limit=N]
-allowed-tools: mcp__brilliant-directories__getSiteInfo, mcp__brilliant-directories__listUsers, mcp__brilliant-directories__searchUsers, mcp__brilliant-directories__listMenus, mcp__brilliant-directories__listMenuItems, mcp__brilliant-directories__listTopCategories, mcp__brilliant-directories__listSubCategories, mcp__brilliant-directories__listPostTypes, mcp__brilliant-directories__getPostType, mcp__brilliant-directories__getPostTypeCustomFields, mcp__brilliant-directories__listSingleImagePosts, mcp__brilliant-directories__getSingleImagePost, mcp__brilliant-directories__getWebPage, mcp__brilliant-directories__listWebPages, mcp__brilliant-directories__listTags, mcp__brilliant-directories__createSingleImagePost, mcp__brilliant-directories__createTag, WebSearch, WebFetch
----
+# Events content-type protocol
 
-# /bd:events: Local event post-creation skill
+The router (`SKILL.md`) routed you here because the user wants to create event posts. Follow this file plus the shared protocol files.
 
 ## Required reading first
 
-1. `../_shared/METHODOLOGY.md`: protocol, gates, dedup, audit, hard rules.
-2. `../_shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
-3. `../_shared/URL-PATTERNS.md`: internal URL construction.
+1. `../shared/METHODOLOGY.md`: universal protocol, 5 quality gates, dedup, audit, hard rules.
+2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
+3. `../shared/URL-PATTERNS.md`: internal URL construction.
 
 MCP wrapper specifics (rate limits, force-injections, lean responses, EAV routing, HTTP codes) come from the MCP's own corpus, loaded with every MCP tool. Don't re-document.
 
@@ -21,9 +16,9 @@ This file extends the shared protocol with events-specific details.
 
 ## End-to-end runbook
 
-Customer can invoke `/bd:events` with zero arguments and get a correct, complete run. The protocol below is what you execute, in order, every time:
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 12 steps in order:
 
-1. **Mode detection** (METHODOLOGY Stage 1). Check `--autonomous` flag.
+1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`.
 3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
 4. **Author resolution (this file).** See "Author resolution" below.
@@ -32,7 +27,7 @@ Customer can invoke `/bd:events` with zero arguments and get a correct, complete
 7. **Geocode (events-specific, this file).** Nominatim each event's address. Skip lat/lon on failure.
 8. **Duplicate detection** (METHODOLOGY Stage 3) against existing events on the site, including drafts. Skip duplicates.
 9. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-10. **Content manufacture (events-specific, this file).** Adaptive depth, Froala-safe HTML, link policy, voice via ANTI-SLOP.
+10. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
 11. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below. Embed dedup HTML comment at end of `post_content`.
 12. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
 
@@ -44,12 +39,12 @@ When running interactive, ask the user in this canonical order. One question at 
 
 1. **Post-type** (if Stage 3 found multiple `type_of_feature=1` candidates)
 2. **Author** ("Which member should author these event posts?")
-3. **Cities / region** (if not passed via `--cities=`)
-4. **Categories / vertical filter** (if not passed via `--categories=`)
+3. **Cities / region** (if the user didn't already specify)
+4. **Categories / vertical filter** (if not already specified)
 5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
 6. **Category-creation grant** (only ask if Stage 9 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
 
-If the user passed a `--flag` for any of these, skip that question.
+If the user already specified any of these in their request, skip that question.
 
 ---
 
@@ -57,7 +52,7 @@ If the user passed a `--flag` for any of these, skip that question.
 
 A BD site does NOT necessarily have a post type named "Events." Site owners rename, translate, or run multiple event-flavored post types ("Open Houses" + "Property Auctions" + "Community Events").
 
-**Primary marker:** event-flavored post types have `type_of_feature=1`. Read this from `listPostTypes`/`getPostType`. Filter to those candidates.
+**Primary marker:** event-flavored post types have `type_of_feature=1`. Call `listPostTypes` ONCE and client-side filter on this field — the response includes it. Do NOT `getPostType` per-candidate.
 
 **Fallback:** if zero `type_of_feature=1` matches, semantic-match `data_name`/`system_name` against event terms in any language (event, calendar, agenda, open-house, auction, show, schedule, happening, eventos, calendario, événements, veranstaltungen, etc.). Confirm `data_type=20` (single-image classification).
 
@@ -68,9 +63,9 @@ A BD site does NOT necessarily have a post type named "Events." Site owners rena
 | Zero | Skill cannot run. Surface clean message, exit. |
 | One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
 | Multiple, interactive | Ask the user. List by data_id + data_name. |
-| Multiple, autonomous | If `--post-type-id=N` passed, use it. Else exit with clear audit message. |
+| Multiple, autonomous | If the user pre-specified a post-type id in their request, use it. Else exit with clear audit message. |
 
-User-passed `--post-type-id=N` always wins.
+The user's explicit post-type pick always wins.
 
 ---
 
@@ -78,7 +73,7 @@ User-passed `--post-type-id=N` always wins.
 
 Interactive: ask "Which member should author these event posts? Give me a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email>`. Confirm back to user before proceeding.
 
-Autonomous: use `--author-id=N` if passed. Else `listUsers --limit=5 --order_column=admin_level --order_type=desc`, take highest-admin user_id. Fallback to `user_id=1` if no admin-level users. Log resolved author in audit.
+Autonomous: use a user-pre-specified author_id if given. Else `listUsers --limit=5 --order_column=admin_level --order_type=desc`, take highest-admin user_id. Fallback to `user_id=1` if no admin-level users. Log resolved author in audit.
 
 ---
 
@@ -150,14 +145,14 @@ Discovery: `getPostTypeCustomFields form_name=<events post-type's form_name>` �
 
 Authorization:
 - Interactive grant ("yes, create new event categories") → skill respects for the run.
-- Routine-pinned override `--category="Concerts"` → every event in the run goes to that category.
+- User-specified default category in their request → every event in the run goes to that category.
 - Default: best-existing match at ≥70% confidence, or SKIP.
 
 ---
 
 ## Content manufacture (Stage 10 of runbook)
 
-Follow METHODOLOGY.md Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist, link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
 
 **Events-specific load-bearing facts** (the reader needs these up front): event date + time, venue + address, ticket price or "free", how to attend or buy tickets. Surface these in the opening paragraph or first FAQ block.
 
@@ -165,7 +160,7 @@ Follow METHODOLOGY.md Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist
 
 **Events-specific internal-link opportunities** (only if URL-PATTERNS.md discovery confirms the target exists):
 - More events in same category: `?category[]={cat}`
-- More events in same city: `?lat={lat}&lng={lng}` (using THIS event's coords)
+- More events in same city: `?lat={lat}&lng={lng}&location_value={URL-encoded post_location}` (using THIS event's coords + address label so the search-results page shows the address in its input)
 - Other events on same date: `?daterange={d}+-+{d}`
 - Highest-value combo: same category + same city
 
@@ -200,7 +195,7 @@ What `createSingleImagePost` receives.
 | Field | Value |
 |---|---|
 | `post_content` | assembled HTML body per "Content manufacture" + dedup HTML comment at end |
-| `post_filename` | BD auto-generates. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
+| `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. BD auto-generates from post_title if omitted. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
@@ -243,8 +238,8 @@ Geocoding:
 ## v0.2 deferred
 
 Do NOT add in v0.1:
-- `--dry-run`, `--rollback-run=<id>`, token-cost preview, `--depth` modes
-- `--update-existing` for changed events
+- Dry-run flag, rollback-run mass-undo, token-cost preview, depth modes
+- Update-existing for changed events
 - Performer biographies, event-series history sections (LLM-knowledge fabrication risk)
 - Ticketmaster API integration, user-supplied ICS/RSS feeds
 - Non-English content generation

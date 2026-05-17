@@ -25,7 +25,7 @@ Autonomous: infer location from `primary_country`, vertical from homepage+menu, 
 
 **2b.** `WebSearch site:<domain> <keywords> <location>` per candidate. Drop dead/empty/archive pages.
 
-**2c.** `WebFetch` top 3-5 candidates. Every extracted record must pass all 5 gates:
+**2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:image, og:title, JSON-LD schema.org Event"). Every extracted record must pass all 5 gates:
 
 | Gate | Rule |
 |---|---|
@@ -105,10 +105,14 @@ Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Rela
 
 ### Image strategy
 
-1. Source image > 600px wide AND not paywalled → use it. Pass `auto_image_import=1` for BD to store locally.
-2. Else Pexels landscape (bare URL ending in `.jpg`/`.jpeg`/`.png`/`.webp`). Search by per-type keywords.
-3. Else site-config default for this post type, if defined.
-4. Else omit `post_image` entirely.
+Prefer the real source image when one is clearly usable. Fall through to Pexels otherwise. The fallback order:
+
+1. **Source image** — pull from OG meta, JSON-LD, or the page's hero `<img>` / `srcset`. If the URL is a known CDN proxy (Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`, etc.), decode the embedded real URL. Confirm it returns HTTP 200, looks like an image, and is **≥ 600px wide** (600 exactly counts as pass). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute, which is display size. **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate. Use with `auto_image_import=1`.
+2. **Pexels landscape** — bare URL ending in `.jpg`/`.jpeg`/`.png`/`.webp`. Search by per-type keywords.
+3. **Site-config default** for this post type, if defined.
+4. **Omit `post_image`** entirely.
+
+When in doubt about source-image validity, fall through to Pexels. A generic Pexels image is better than a broken one.
 
 ### Voice
 
