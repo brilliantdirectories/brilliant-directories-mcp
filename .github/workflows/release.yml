@@ -1,8 +1,9 @@
 name: Release — publish to npm + MCP Registry
 
 # Fires on git tags matching v1.2.3.
-# Chains two publishes so the Official MCP Registry stays in sync with npm forever.
-# Uses OIDC trusted publishing for BOTH npm and MCP Registry — no stored secrets.
+# Chains three publishes: npm package → MCP Registry → GitHub Release skill zip.
+# Uses OIDC trusted publishing for npm and MCP Registry — no stored secrets.
+# Skill zip upload uses the auto-provided GITHUB_TOKEN.
 #
 # To cut a release:
 #   1. Bump version in mcp/package.json
@@ -25,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write   # Required for OIDC (both npm trusted publishing AND MCP Registry auth)
-      contents: read    # Read repo contents
+      contents: write   # Read repo contents + upload skill zip as release asset
 
     steps:
       - name: Checkout code
@@ -90,3 +91,21 @@ jobs:
 
       - name: Publish to MCP Registry
         run: ./mcp-publisher publish
+
+      # ---------------------------------------------------------------------
+      # Step 3 — Build skill zip from bd-skill-content/ and attach to the
+      # GitHub Release. The zip mirrors the folder as of the tagged commit,
+      # so customers downloading from the Release page always get the skill
+      # content that shipped with this version.
+      # ---------------------------------------------------------------------
+
+      - name: Build skill zip
+        run: node scripts/build-skill-zip.js
+
+      - name: Upload skill zip to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          gh release upload "v${VERSION}" dist/bd-skill-content.zip --clobber
+
