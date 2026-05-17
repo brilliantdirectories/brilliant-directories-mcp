@@ -107,12 +107,19 @@ Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Rela
 
 Prefer the real source image when one is clearly usable. Fall through to Pexels otherwise. The fallback order:
 
-1. **Source image** — pull from OG meta, JSON-LD, or the page's hero `<img>` / `srcset`. If the URL is a known CDN proxy (Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`, etc.), decode the embedded real URL. Confirm it returns HTTP 200, looks like an image, and is **≥ 600px wide** (600 exactly counts as pass). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute, which is display size. **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate. Use with `auto_image_import=1`.
+1. **Source image** — check FOUR patterns, not just `<img>` tags:
+   - `<meta property="og:image" content="...">` (canonical; usually present)
+   - JSON-LD `"image": "..."` inside `<script type="application/ld+json">` (canonical; present on most events)
+   - `<img>` element src/srcset (traditional hero)
+   - **CSS `background-image: url(...)` on hero container divs** (common on modern event sites like Eventbrite, Squarespace, Webflow templates; if the AI scans only `<img>` tags it misses this)
+   **Check raw HTML, not WebFetch's model-summarized markdown** — name "og:image", "JSON-LD image", and "background-image" explicitly in your WebFetch prompt, or the summary may strip them. If the URL is a known CDN proxy (Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`, etc.), decode the embedded real URL. The presence of OG image / JSON-LD image / background-image-url all indicate the source IS an image, not a video, regardless of how the page renders it. Confirm the decoded URL returns HTTP 200, has `image/*` content-type, is one of **`png` / `jpg` / `jpeg` / `webp`** (other formats like `gif`/`svg`/`avif`/`heic`/`bmp` cause `auto_image_import` to silently fail — fall through to Pexels in that case), and is **≥ 600px wide** (600 exactly counts as pass). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute, which is display size. **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate. Use with `auto_image_import=1`.
 2. **Pexels landscape** — bare URL ending in `.jpg`/`.jpeg`/`.png`/`.webp`. Search by per-type keywords.
 3. **Site-config default** for this post type, if defined.
 4. **Omit `post_image`** entirely.
 
 When in doubt about source-image validity, fall through to Pexels. A generic Pexels image is better than a broken one.
+
+**Always populate `original_image_url`** on the post create with the FIRST source-image candidate you considered (before any fallback) — even if you ended up using Pexels or omitting. This is a forensic field: it lets the site owner audit what the skill TRIED to use and why it fell back. If the source page had no image candidate at all (no OG, no JSON-LD, no hero img), pass empty string. Per-type SKILL.md surfaces this in its field reference.
 
 ### Voice
 

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.2] - 2026-05-17
+
+### Skill image-strategy hardening
+
+Real-world test runs surfaced edge cases. v6.47.2 closes them:
+
+- **CSS `background-image:url(...)` added as a fourth source-image pattern.** Modern event sites (Eventbrite, Squarespace, Webflow templates) render the hero as a `<div style="background-image:url(...)">` instead of an `<img>`. Skill now checks all four patterns: OG meta, JSON-LD, `<img>`/`srcset`, and CSS background-image.
+- **Format whitelist enforced.** `auto_image_import` only handles `png`/`jpg`/`jpeg`/`webp`. Anything else (`gif`/`svg`/`avif`/`heic`/`bmp`) silently fails on import. Skill now falls through to Pexels for unsupported formats.
+- **`original_image_url` field added** to events `createSingleImagePost` payload. Forensic field populated with the FIRST source-image candidate the skill considered, even when fallback to Pexels happens. Lets site owners audit what the skill TRIED versus what it actually used.
+- **Signed-CDN-URL guidance.** Eventbrite `img.evbuc.com` and similar signed-delivery CDNs lock to their baked-in `w=` value. Don't try to escalate — the signature is bound to the width. Skill respects this.
+- **WebFetch summarization caveat.** WebFetch returns model-summarized markdown, not raw HTML. Skill now names "og:image", "JSON-LD image", and "background-image" explicitly when prompting WebFetch to avoid summarization stripping these.
+- **`≥600px wide` boundary explicit.** "600 exactly counts as pass." Real Eventbrite signed images often land exactly at 600.
+
+**No code changes.** All updates are inside `bd-skill-content/` skill files. MCP wrapper unchanged. Worker unchanged. Spec unchanged. The skill zip in this release is updated (`bd-skill-content.zip` attached to Release).
+
 ## [6.47.1] - 2026-05-17
 
 ### Skills layer pivots to claude.ai standalone format + MCP corpus adds list-first rule

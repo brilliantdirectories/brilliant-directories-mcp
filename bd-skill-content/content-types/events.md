@@ -197,6 +197,7 @@ What `createSingleImagePost` receives.
 | `post_content` | assembled HTML body per "Content manufacture" + dedup HTML comment at end |
 | `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. BD auto-generates from post_title if omitted. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
+| `original_image_url` | The original source image URL the skill ATTEMPTED to use (before any fallback). Forensic field. Always populate this with the FIRST image URL the skill considered (the source image candidate), even if the skill ended up falling through to Pexels or omitting. If the skill never considered any source image (page had no image candidate at all), pass empty string. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
 | `post_start_date` | event start date `YYYYMMDD` |
