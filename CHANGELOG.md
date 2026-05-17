@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.48.0] - 2026-05-17
+
+### Lean-by-default response shaping — keep-list architecture for posts, web pages, post types
+
+Real-run inspection on a customer site showed Stage 1 discovery calls returning 91KB / 84KB responses on basic list operations. `listSingleImagePosts` for dedup with 30 events on a site returned 91,322 chars across 2,634 lines — agent had to grep-extract field values from a saved file just to read titles. `listWebPages seo_type=profile_search_results` returned 84KB. `listPostTypes` returned ~60 fields per row when the skill needed ~10. The wrapper's "lean-by-default" was operating on a strip-list pattern (remove a handful of admin-residue fields, pass everything else through) instead of a keep-list pattern. Customer token bills inflated; agent context windows clogged with structured noise.
+
+v6.48.0 flips three resources from strip-list to keep-list lean shaping, aligned with the existing `applyPlanLean` pattern that already worked correctly. Posts, web pages, and post types now return ONLY their core identity + routing + load-bearing fields by default. Every stripped field is restorable via the existing per-bundle `include_*` flag OR the new universal `include_extras=1` opt-in.
+
+**Three resources, three keep-lists, one new universal flag.** All aligned with the matching `WRITE_KEEP_SETS` so create/update echoes and list/get reads return the same shape by default.
+
+**Posts** (`listSingleImagePosts`, `getSingleImagePost`, `listMultiImagePosts`, `getMultiImagePost`) — 17 default fields:
+- Always returned: `post_id`, `post_title`, `post_filename`, `post_status`, `post_start_date`, `post_expire_date`, `post_location`, `post_venue`, `post_category`, `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `user_id`, `post_image`, `revision_timestamp` (plus `author` summary, `total_clicks`, `total_photos`, cover URLs as wrapper-shaped fields)
+- Existing flags unchanged: `include_content`, `include_post_seo`, `include_author_full`, `include_clicks`, `include_photos`
+- New: `include_extras=1` restores `lat`, `lon`, `country_sn`, `state_sn`, `original_image_url`, `post_org_url`, `post_date`, `post_live_date`, `post_updated`, `post_token`, `post_clicks`, `recurring_type`, `sticky_post`, `post_featured`, `post_tags`, `post_job`, `post_video`, `post_price`, `image_imported`, etc.
+
+**Web pages** (`listWebPages`, `getWebPage`) — 11 default fields:
+- Always returned: `seo_id`, `seo_type`, `filename`, `title`, `h1`, `h2`, `nickname`, `linked_post_category`, `linked_post_type`, `date_updated`, `revision_timestamp`
+- Existing flags unchanged: `include_content`, `include_code`
+- New: `include_extras=1` restores all `hero_*` fields, `meta_desc`, `meta_keywords`, `seo_text`, `facebook_title`, `facebook_desc`, `facebook_image`, `content_layout`, `content_sidebar`, `menu_layout`, all `hide_*` toggles, `master_id`, `content_active`, `database`, `section`, `custom_html_placement`, etc.
+
+**Post types** (`listPostTypes`, `getPostType`) — 11 default fields:
+- Always returned: `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name`, `feature_categories`, `type_of_feature`, `is_event_feature`, `is_digital_product`, `revision_timestamp`
+- Existing flags unchanged: `include_code`, `include_post_comment_settings`, `include_review_notifications`
+- New: `include_extras=1` restores `h1`, `h2`, `icon`, `category_tab`, `profile_tab`, `per_page`, `profile_per_page`, sidebar configs, `always_on`, `distance_search`, `display_order`, `caption_length`, `data_active`, and all per-page/per-tab display toggles.
+
+**Implementation.** Three new keep-list constants (`POST_LEAN_ALWAYS_KEEP`, `WEB_PAGE_LEAN_ALWAYS_KEEP`, `POST_TYPE_LEAN_ALWAYS_KEEP`) added to `mcp/index.js` and byte-mirrored in Worker `src/index.ts`. Each shaper function now runs a final keep-list trim at the end of `shapeRow` that drops every top-level field not in the keep-list unless `include_extras=1` is set. Wrapper-shaped fields (`author`, `total_clicks`, `cover_photo_url`, etc.) added to the keep-list so they survive the trim. Existing per-bundle gates (`include_content`, `include_code`, etc.) still control their specific fields — `include_extras` is the catch-all.
+
+**bd-api.json updated.** New `include_extras` parameter defined once in `components.parameters` and `$ref`'d into all 8 affected tools. Tool descriptions for `listSingleImagePosts`, `listPostTypes`, and `listWebPages` rewritten to reflect the new keep-list shape — they previously listed stale or aspirational "always returned" field sets that no longer match runtime behavior.
+
+**This is a breaking change for downstream integrations** that consumed fields without opting in. The fields are restorable via the existing `include_*` flags or the new `include_extras=1`. Bumped to v6.48.0 (minor, not major) because the change is additive-by-flag — every stripped field has a documented restore path. Worker `SERVER_INFO` bumped 3.1.31 → 3.2.0 to signal the response-shape change on the HTTP transport.
+
+Drift check passes. npm + Worker byte-mirrored. Workflow auto-attaches the rebuilt skill zip to the GitHub Release.
+
 ## [6.47.8] - 2026-05-17
 
 ### Skill methodology — fix the source bias that produced shallow posts after v6.47.7

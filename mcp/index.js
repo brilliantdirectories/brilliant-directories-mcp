@@ -596,6 +596,30 @@ const POST_LEAN_INCLUDE_FLAGS = [
   "include_author_full",
   "include_clicks",
   "include_photos",
+  "include_extras",
+];
+
+// Lean-by-default keep-list — only these fields are returned without opt-in.
+// Aligned with `WRITE_KEEP_SETS.createSingleImagePost` / `updateSingleImagePost`
+// plus the 5 routing/identity fields the read flow needs that writes don't
+// echo (post_start_date, post_expire_date, post_location, post_venue,
+// post_category, data_filename). Everything else routes through include_*
+// flags. Identical keep-list serves single-image AND multi-image post tools;
+// fields absent on multi-image rows (e.g. post_start_date) simply don't
+// appear in the response. See WRITE_KEEP_SETS for the matching write echoes.
+const POST_LEAN_ALWAYS_KEEP = [
+  "post_id", "post_title", "post_filename", "post_status",
+  "post_start_date", "post_expire_date", "post_location", "post_venue", "post_category",
+  "data_id", "data_type", "system_name", "data_name", "data_filename",
+  "user_id", "post_image", "revision_timestamp",
+  // Multi-image post fields (keep when present)
+  "group_id", "group_name", "group_filename", "group_status",
+  // Wrapper-shaped fields (added by shaper itself, must survive)
+  "author", "total_clicks", "total_photos", "cover_photo_url", "cover_thumbnail_url",
+  "post_content", "group_desc",
+  "post_meta_title", "post_meta_description", "post_meta_keywords",
+  "user", "user_clicks_schema", "users_portfolio",
+  "tablesExists",
 ];
 
 // Promoted from nested data_category. data_id + data_type are already
@@ -656,6 +680,7 @@ function applyPostLean(body, includeFlags) {
     author_full: !!includeFlags.include_author_full,
     clicks: !!includeFlags.include_clicks,
     photos: !!includeFlags.include_photos,
+    extras: !!includeFlags.include_extras,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
@@ -738,6 +763,17 @@ function applyPostLean(body, includeFlags) {
       }
     }
 
+    // Keep-list trim — drop every top-level field NOT in POST_LEAN_ALWAYS_KEEP
+    // unless include_extras=1. Runs LAST so wrapper-shaped fields (author,
+    // total_clicks, cover_photo_url, etc.) survive. Per-bundle opt-ins
+    // (include_content, include_post_seo, include_author_full, include_clicks,
+    // include_photos) still gate their specific fields via the strip logic
+    // above; this is the catch-all extras gate.
+    if (!include.extras) {
+      const keep = new Set(POST_LEAN_ALWAYS_KEEP);
+      for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    }
+
     return row;
   };
   if (Array.isArray(body.message)) {
@@ -818,6 +854,30 @@ const POST_TYPE_LEAN_INCLUDE_FLAGS = [
   "include_code",
   "include_post_comment_settings",
   "include_review_notifications",
+  "include_extras",
+];
+
+// Lean-by-default keep-list — only these fields are returned without opt-in.
+// Aligned with `WRITE_KEEP_SETS.updatePostType` plus 4 fields the read flow
+// needs to route content-creation skills (feature_categories for category
+// validation, type_of_feature + is_event_feature for event-post discovery,
+// is_digital_product for product discovery). Everything else (h1, h2, icon,
+// sidebar configs, all per-page/per-tab settings, data_active, all flags
+// and toggles) routes through include_extras=1, or specific existing
+// include_code / include_post_comment_settings / include_review_notifications
+// flags for the heavy bundles.
+const POST_TYPE_LEAN_ALWAYS_KEEP = [
+  "data_id", "data_type", "system_name", "data_name", "data_filename", "form_name",
+  "feature_categories", "type_of_feature", "is_event_feature", "is_digital_product",
+  "revision_timestamp",
+  // Wrapper-controlled opt-in bundles (gated by their specific flags)
+  "search_results_div", "search_results_layout", "profile_results_layout",
+  "profile_header", "profile_footer", "category_header", "category_footer", "comments_code",
+  "post_comment_settings",
+  "review_admin_notification_email", "review_member_notification_email",
+  "review_submitter_notification_email", "review_approved_submitter_notification_email",
+  "review_member_pending_notification_email",
+  "tablesExists",
 ];
 
 const POST_TYPE_LEAN_ALWAYS_STRIP = [
@@ -851,6 +911,7 @@ function applyPostTypeLean(body, includeFlags) {
     code: !!includeFlags.include_code,
     post_comment_settings: !!includeFlags.include_post_comment_settings,
     review_notifications: !!includeFlags.include_review_notifications,
+    extras: !!includeFlags.include_extras,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
@@ -858,6 +919,19 @@ function applyPostTypeLean(body, includeFlags) {
     if (!include.code) stripKeys(row, POST_TYPE_CODE_BUNDLE);
     if (!include.post_comment_settings) delete row.post_comment_settings;
     if (!include.review_notifications) stripKeys(row, POST_TYPE_REVIEW_NOTIFICATIONS);
+
+    // Keep-list trim — drop every top-level field NOT in
+    // POST_TYPE_LEAN_ALWAYS_KEEP unless include_extras=1. Runs LAST so the
+    // include_code / include_post_comment_settings / include_review_notifications
+    // gates above still control their specific bundles; this is the
+    // catch-all extras gate for everything else (h1, h2, icon,
+    // category_tab, profile_tab, per_page, sidebar configs, always_on,
+    // distance_search, display flags, data_active, all toggles).
+    if (!include.extras) {
+      const keep = new Set(POST_TYPE_LEAN_ALWAYS_KEEP);
+      for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    }
+
     return row;
   };
   if (Array.isArray(body.message)) {
@@ -881,6 +955,7 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_LEAN_INCLUDE_FLAGS = [
   "include_content",
   "include_code",
+  "include_extras",
 ];
 
 const WEB_PAGE_CODE_BUNDLE = [
@@ -889,16 +964,46 @@ const WEB_PAGE_CODE_BUNDLE = [
   "content_footer_html",
 ];
 
+// Lean-by-default keep-list — only these fields are returned without opt-in.
+// Aligned with `WRITE_KEEP_SETS.createWebPage` / `updateWebPage` plus 2
+// linkage fields the read flow needs (linked_post_category, linked_post_type)
+// for Pattern 4 category-landing internal-link discovery. Everything else
+// routes through include_extras=1 (hero_*, meta_desc, meta_keywords,
+// facebook_*, layout/sidebar/menu config, hide_* toggles, master_id,
+// content_active, custom_html_placement, etc.) or the existing
+// include_content / include_code flags.
+const WEB_PAGE_LEAN_ALWAYS_KEEP = [
+  "seo_id", "seo_type", "filename", "title", "h1", "h2", "nickname",
+  "linked_post_category", "linked_post_type",
+  "date_updated", "revision_timestamp",
+  // Wrapper-controlled opt-in fields (gated by include_content / include_code)
+  "content", "content_css", "content_head", "content_footer_html",
+  "tablesExists",
+];
+
 function applyWebPageLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const include = {
     content: !!includeFlags.include_content,
     code: !!includeFlags.include_code,
+    extras: !!includeFlags.include_extras,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
     if (!include.content) delete row.content;
     if (!include.code) stripKeys(row, WEB_PAGE_CODE_BUNDLE);
+
+    // Keep-list trim — drop every top-level field NOT in
+    // WEB_PAGE_LEAN_ALWAYS_KEEP unless include_extras=1. Runs LAST so the
+    // include_content / include_code gates above still control their
+    // specific fields; this is the catch-all extras gate for everything
+    // else (hero_*, meta_desc/keywords, facebook_*, all layout/toggle
+    // fields, master_id, content_active, etc.).
+    if (!include.extras) {
+      const keep = new Set(WEB_PAGE_LEAN_ALWAYS_KEEP);
+      for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    }
+
     return row;
   };
   if (Array.isArray(body.message)) {
