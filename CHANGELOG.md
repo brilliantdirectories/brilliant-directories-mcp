@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.47.6] - 2026-05-17
+
+### Wrapper auto-defaults `original_image_url` to `post_image`; mandatory orientation precondition added to skill methodology
+
+Inspection of three skill-created event posts (post_id 91-93 on a customer fitness site) surfaced two recurring issues across the run: portrait images slipping through to feature image slots, and `original_image_url` arriving empty even when an external image was being imported. v6.47.6 closes both with surgical changes.
+
+**Wrapper change (npm + Worker, byte-mirrored).** New `defaultOriginalImageUrl(args)` helper in the dispatch chain. When a tool call passes `auto_image_import=1` AND `post_image=<non-empty URL>` AND `original_image_url` is empty/unset, the wrapper copies `post_image` into `original_image_url`. This guarantees the forensic field is preserved even when agents drift past it, without losing the rejected-source-fallback case (agent-passed `original_image_url` always wins, recording the rejected URL while `post_image` holds the Pexels URL actually used). Implementation matches the existing image-sanitization pipeline pattern (`sanitizeImageUrlsInArgs`, `applyImgRoundedToBodyFields`) — same dispatch slot, same naming convention, same mirror discipline between `mcp/index.js` and Worker `src/index.ts`.
+
+**Skill methodology change (`bd-skill-content/shared/METHODOLOGY.md`).** Promoted orientation verification from procedure to mandatory precondition for feature image slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos). The rule is now: before any `createSingleImagePost` with `post_image` on a feature slot, the image's orientation MUST be verified `w > h`. Body/email slots accept `w >= h` (square OK) per the existing slot-aware rule in `Rule: Image URLs`. If orientation cannot be verified for a feature slot, REJECT the candidate and try the next; if no candidate verifies, OMIT `post_image` — the post still creates without an image. Replaces the previous "when in doubt, fall through to Pexels" cope-out clause, which contradicted the orientation gate.
+
+**Skill methodology `original_image_url` paragraph rewritten** to reflect the new wrapper behavior: agents only pass `original_image_url` explicitly in the rejected-source-fallback case (different value from `post_image`); common case is wrapper-auto. Matching update to events.md field reference.
+
+Drift check passes. Worker `SERVER_INFO` bumped 3.1.28 → 3.1.29 — code change this time, requires `npx wrangler deploy` from `-hosted/`.
+
 ## [6.47.5] - 2026-05-17
 
 ### Events skill — three field-reference + URL-pattern bugs surfaced by real-run, all fixed

@@ -1697,6 +1697,24 @@ function applyImgRoundedToBodyFields(args) {
   }
 }
 
+// Auto-default `original_image_url` to `post_image` when an external image
+// is being imported. `original_image_url` is the forensic field that records
+// the source URL the agent considered — after `auto_image_import=1` fetches
+// and BD rewrites `post_image` to the local path, this field is the only
+// remaining record of where the image came from. Agents drift past this
+// field; the wrapper-side default guarantees it's never lost in the common
+// case (agent used the source URL as `post_image`). If the agent considered
+// a different source URL first and fell back (e.g. rejected portrait → used
+// Pexels), the agent can still pass `original_image_url` explicitly and it
+// wins. Mirrored byte-for-byte in Worker's `src/index.ts`. Keep in sync.
+function defaultOriginalImageUrl(args) {
+  if (!args || typeof args !== "object") return;
+  if (args.auto_image_import != 1 && args.auto_image_import !== "1") return;
+  if (typeof args.post_image !== "string" || !args.post_image.trim()) return;
+  if (args.original_image_url && String(args.original_image_url).trim()) return;
+  args.original_image_url = args.post_image;
+}
+
 function sanitizeSingleImageUrl(url) { return url.trim().split("?")[0]; }
 function sanitizeImageUrlsInArgs(toolName, args) {
   if (!args || typeof args !== "object") return;
@@ -4836,6 +4854,7 @@ async function main() {
       // etc. are covered.
       sanitizeScaffoldingInArgs(args);
       stripWidgetWrapperTagsInArgs(args);
+      defaultOriginalImageUrl(args);
       sanitizeImageUrlsInArgs(name, args);
       applyImgRoundedToBodyFields(args);
       const heroEnumErr = validateHeroEnumsInArgs(name, args);
