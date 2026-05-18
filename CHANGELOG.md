@@ -7,13 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.17] - 2026-05-17
+
+### Tag strategy: post_tags only, no Tags-resource calls
+
+events.md previously said "`listTags` first to reuse existing tags. Create new ones via `createTag` when SEO-relevant and missing." Both were unwanted — on real sites with hundreds of legacy/stress-test tags (real-world: 737 tags on one test site), `listTags` is wasted overhead, AND the skill should never touch the Tags-resource tables at all. Tags live ONLY in the post's `post_tags` field (free-form CSV; "not related to the Tags resource" per the spec). Rewrote to a fixed 6-tag formula: 3 broad/short-tail (e.g. `fitness`, `5k`, `outdoors`) + 3 long-tail specific to the post (e.g. `austin-tech-summit-2026`, `downtown-austin-events`, `enterprise-software-conference`). Lowercase, short, no special chars. No `listTags`, no `createTag`, no Tags-resource touching of any kind.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.16] - 2026-05-17
 
 ### 3 quick wins from real-run feedback
 
 - **events.md field reference: SEO meta fields added.** `post_meta_title` (~80-120 chars, expanded on `post_title` with extra keywords — venue, city, category modifiers — that didn't fit the title's tight cap) and `post_meta_description` (~150-160 chars, value-prop + date + city, not a duplicate of `post_title`) added to Recommended. `createSingleImagePost` accepts these but `getPostTypeCustomFields` doesn't surface them; wrapper passes them through. Closes a real-world skill gap where event posts shipped without explicit SEO meta.
 - **events.md field reference: `getPostTypeCustomFields` extra-field clarification.** One-line note added under "Do NOT pass": *"`getPostTypeCustomFields` may return additional fields (e.g. `auto_geocode`) — only pass what's in the Required and Recommended tables above. `createSingleImagePost` also accepts SEO meta fields that `getPostTypeCustomFields` doesn't surface (BD schema-introspection gap)."* Resolves agent confusion when the introspected schema includes fields the skill explicitly forbids.
-- **METHODOLOGY image strategy: Pexels topic-phrase variation rule.** When the first Pexels topic search returns sparse or irrelevant results, vary the phrasing — broader/simpler (`"5k race"` → `"group race outdoors"`), narrower (`"yoga class"` → `"vinyasa studio mat"`), synonyms, adjacent contexts — anything still contextually relevant. Real run: agent searched `"pride run runners rainbow"` and got generic rainbow stock; the right move was broadening to `"5K group race outdoors"`. Rule now teaches that explicitly.
+- **METHODOLOGY image strategy: Pexels topic-phrase variation rule.** When the first Pexels topic search returns sparse or irrelevant results, vary the phrasing — broader/simpler (`"5k race"` → `"group race outdoors"`), narrower (`"yoga class"` → `"vinyasa studio mat"`), synonyms, adjacent contexts — anything still contextually relevant. Real run surfaced cases where overly-specific niche queries returned generic stock; rule now teaches to broaden to the parent category rather than hold out for a perfect literal match.
 
 **No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
 

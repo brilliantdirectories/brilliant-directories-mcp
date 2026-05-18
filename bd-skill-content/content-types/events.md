@@ -186,7 +186,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 `post_tags` format: comma-only, no spaces (`tag1,tag2,tag3`).
 
-Strategy: `listTags` first to reuse existing tags. Create new ones via `createTag` when SEO-relevant and missing. 3-7 tags per post. Lowercase, short, no special chars.
+Strategy: 6 tags per post — 3 broad/short-tail (general focus like `fitness`, `5k`, `outdoors`) + 3 long-tail (specific to this post like `austin-tech-summit-2026`, `downtown-austin-events`, `enterprise-software-conference`). Lowercase, short, no special chars. Tags live ONLY in the post's `post_tags` field — do NOT call `listTags`, `createTag`, or any Tags-resource tool.
 
 ---
 
@@ -201,7 +201,7 @@ What `createSingleImagePost` receives.
 | `post_type` | `"Account"` (literal — legacy classification field, NOT the user-facing post-type concept) |
 | `data_type` | `20` (single-image classification, always for events) |
 | `data_id` | resolved events post-type id from Stage 3 |
-| `post_title` | **Hybrid format: short headline + colon + concise hook.** Cap at ~70 chars total. Headline = event name + year if relevant. Hook = venue or city + date in short form. Examples: `"Brooklyn Pride 5K: Prospect Park, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`, `"Maudie's Moonlight Margarita 5K: Lady Bird Lake, June 4"`. Plain text, no HTML. Avoid stuffing every keyword — date and venue carry to `post_h2`, full prose carries to `post_content`. |
+| `post_title` | **Hybrid format: short headline + colon + concise hook.** Cap at ~70 chars total. Headline = event name + year if relevant. Hook = venue or city + date in short form. Examples: `"Austin Tech Summit 2026: Downtown Austin, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`, `"Maudie's Moonlight Margarita 5K: Lady Bird Lake, June 4"`. Plain text, no HTML. Avoid stuffing every keyword — date and venue carry to `post_h2`, full prose carries to `post_content`. |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
@@ -223,7 +223,7 @@ What `createSingleImagePost` receives.
 | `lon` | longitude float (from Nominatim, skip if geocoding failed) |
 | `country_sn` | ISO country code from Nominatim |
 | `state_sn` | state code from Nominatim |
-| `post_meta_title` | SEO `<title>` tag (~80-120 chars). Expand on `post_title` with extra keywords — venue, city, date, category modifiers — that didn't fit the title's tight cap. Example: `"Brooklyn Pride 5K Run/Walk 2026 in Prospect Park — LGBTQIA+ Community Race, June 13"`. |
+| `post_meta_title` | SEO `<title>` tag (~80-120 chars). Expand on `post_title` with extra keywords — venue, city, date, category modifiers — that didn't fit the title's tight cap. Example: `"Austin Tech Summit 2026 in Downtown Austin — Enterprise Software & AI Conference, June 13"`. |
 | `post_meta_description` | SEO meta description (~150-160 chars). Distill the event's value proposition + date + city. Not a duplicate of `post_title`. |
 
 ### Do NOT pass
