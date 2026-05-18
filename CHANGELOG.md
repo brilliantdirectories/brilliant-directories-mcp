@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.40] - 2026-05-18
+
+### Better title-case example with lowercase middle words
+
+v6.49.39 example was `"What AirAsia Partnership Adds"` — all words capitalized, doesn't demonstrate the lowercase-middle-word piece of title case. Swapped to `"Where to Fly a Kite"` (vs sentence case `"Where to fly a kite"`) — visibly shows `to` and `a` correctly lowercase between capitalized words. Single visual reference teaches the convention in full.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.39] - 2026-05-18
 
 ### Title case for H2/H3 headings in `post_content`
