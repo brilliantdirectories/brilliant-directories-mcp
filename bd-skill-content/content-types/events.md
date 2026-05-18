@@ -223,11 +223,15 @@ What `createSingleImagePost` receives.
 | `lon` | longitude float (from Nominatim, skip if geocoding failed) |
 | `country_sn` | ISO country code from Nominatim |
 | `state_sn` | state code from Nominatim |
+| `post_meta_title` | SEO `<title>` tag (~80-120 chars). Expand on `post_title` with extra keywords — venue, city, date, category modifiers — that didn't fit the title's tight cap. Example: `"Brooklyn Pride 5K Run/Walk 2026 in Prospect Park — LGBTQIA+ Community Race, June 13"`. |
+| `post_meta_description` | SEO meta description (~150-160 chars). Distill the event's value proposition + date + city. Not a duplicate of `post_title`. |
 
 ### Do NOT pass
 
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
+
+`getPostTypeCustomFields` may return additional fields (e.g. `auto_geocode`) — only pass what's in the Required and Recommended tables above. `createSingleImagePost` also accepts SEO meta fields that `getPostTypeCustomFields` doesn't surface (BD schema-introspection gap); the wrapper passes them through.
 
 ### Date/time formats
 

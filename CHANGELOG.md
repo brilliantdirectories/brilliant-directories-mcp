@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.16] - 2026-05-17
+
+### 3 quick wins from real-run feedback
+
+- **events.md field reference: SEO meta fields added.** `post_meta_title` (~80-120 chars, expanded on `post_title` with extra keywords — venue, city, category modifiers — that didn't fit the title's tight cap) and `post_meta_description` (~150-160 chars, value-prop + date + city, not a duplicate of `post_title`) added to Recommended. `createSingleImagePost` accepts these but `getPostTypeCustomFields` doesn't surface them; wrapper passes them through. Closes a real-world skill gap where event posts shipped without explicit SEO meta.
+- **events.md field reference: `getPostTypeCustomFields` extra-field clarification.** One-line note added under "Do NOT pass": *"`getPostTypeCustomFields` may return additional fields (e.g. `auto_geocode`) — only pass what's in the Required and Recommended tables above. `createSingleImagePost` also accepts SEO meta fields that `getPostTypeCustomFields` doesn't surface (BD schema-introspection gap)."* Resolves agent confusion when the introspected schema includes fields the skill explicitly forbids.
+- **METHODOLOGY image strategy: Pexels topic-phrase variation rule.** When the first Pexels topic search returns sparse or irrelevant results, vary the phrasing — broader/simpler (`"5k race"` → `"group race outdoors"`), narrower (`"yoga class"` → `"vinyasa studio mat"`), synonyms, adjacent contexts — anything still contextually relevant. Real run: agent searched `"pride run runners rainbow"` and got generic rainbow stock; the right move was broadening to `"5K group race outdoors"`. Rule now teaches that explicitly.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.15] - 2026-05-17
 
 ### v6.49.14 cold-audit cleanup
