@@ -15,7 +15,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
 2. `listTopCategories` → top-level taxonomy.
 3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`.
-4. `listMenus` → pick the main-nav row (`menu_name`/`menu_title` containing `main`/`top`/`header`); then `listMenuItems` filtered to that `menu_id` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates.
+4. `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards) → if a row matches, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates. If no main-nav match, skip — site lacks a conventional main menu, fall back to URL-PATTERNS.md Patterns 1-5 for internal linking.
 
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
 Autonomous: infer location from `primary_country`, vertical from site info and categories, author from highest-admin via `listUsers --order_column=admin_level --order_type=desc --limit=5`. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.

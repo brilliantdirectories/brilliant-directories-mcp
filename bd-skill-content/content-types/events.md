@@ -52,7 +52,7 @@ If the user already specified any of these in their request, skip that question.
 
 A BD site does NOT necessarily have a post type named "Events." Site owners rename, translate, or run multiple event-flavored post types ("Open Houses" + "Property Auctions" + "Community Events").
 
-**Primary marker:** event-flavored post types have `type_of_feature=1`. Call `listPostTypes` ONCE and client-side filter on this field — the response includes it. Do NOT `getPostType` per-candidate.
+**Primary marker:** event-flavored post types have `type_of_feature=1`. Call `listPostTypes property=type_of_feature property_value=1 property_operator=eq` — server-side filter returns just the event post-type row(s). Do NOT `getPostType` per-candidate.
 
 **Fallback:** if zero `type_of_feature=1` matches, semantic-match `data_name`/`system_name` against event terms in any language (event, calendar, agenda, open-house, auction, show, schedule, happening, eventos, calendario, événements, veranstaltungen, etc.). Confirm `data_type=20` (single-image classification).
 
@@ -71,9 +71,19 @@ The user's explicit post-type pick always wins.
 
 ## Author resolution (Stage 4 of runbook)
 
-Interactive: ask "Which member should author these event posts? Give me a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email>`. Confirm back to user before proceeding.
+**Short-circuit: if the user already provided a `user_id` (or `author_id`) in the request/args, use it and SKIP every step below.** No discovery calls needed.
 
-Autonomous: use a user-pre-specified author_id if given. Else `listUsers --limit=5 --order_column=admin_level --order_type=desc`, take highest-admin user_id. Fallback to `user_id=1` if no admin-level users. Log resolved author in audit.
+**Interactive (user not pre-specified):** ask "Which member should author these event posts? Give me a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq`. Confirm back to user before proceeding.
+
+**Autonomous (user not pre-specified):** find a member whose subscription plan is authorized to publish this post type, then use that user_id.
+
+1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
+2. Client-side filter: keep plans where `data_settings.split(',').includes(<events_data_id>)` — these are the subscription_ids authorized to publish events.
+3. `listUsers property=subscription_id property_value=<comma_separated_matched_ids> property_operator=in limit=10` — returns eligible authors. Server-side filter; lean response.
+4. Pick one user_id at random from the result.
+5. **Fallback:** if step 2 returns zero matched plans OR step 3 returns zero eligible users → use `user_id=0`. BD stores this as "no author" — the post page renders publicly, but won't show in member search; site admin gets a queue alert to reassign.
+
+Log resolved author + the path taken (pre-specified, autonomous-matched, fallback-zero) in audit.
 
 ---
 

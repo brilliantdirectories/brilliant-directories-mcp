@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.0] - 2026-05-17
+
+### Lean-by-default keep-list shaping for users + plans; events skill author-resolution rewrite
+
+Real-run analysis of the v6.48.2 events skill surfaced 4 bloat / waste patterns. v6.49.0 closes them with surgical wrapper + skill-content changes following the same architecture v6.48.0 shipped for posts/webpages/posttypes.
+
+**Wrapper change 1 — `applyUserLean` flipped strip-list → keep-list architecture.** Previously the user shaper only stripped admin-form residue + heavy nested objects (subscription_schema, photos_schema, transactions, etc.) — top-level fields all passed through, leaving ~60 fields per user in every response. v6.49.0 introduces `USER_LEAN_ALWAYS_KEEP` (~30 fields covering identity + routing + location + wrapper-shaped rollups + per-bundle gated fields kept for their flags), with a final keep-list trim guarded by `include_extras=1`. Aligned with `WRITE_KEEP_SETS.createUser` plus the location/display/rollup fields the read-flow needs. Everything else (social URLs, awards, credentials, position, quote, work_experience, rep_matters, cv, ref_code, booking_link, listing_type, profession_name, verified, featured, parent_id, clientid, etc.) routes through `include_extras=1`. Real impact on a 100-user `listUsers` call: ~60 fields × 100 rows → ~30 fields × 100 rows, roughly 50% payload reduction. Bigger on sites with custom user fields.
+
+**Wrapper change 2 — `applyPlanLean` adds `data_settings` to keep-list + `include_extras`.** `data_settings` is the comma-separated post-type-ID list that determines what each membership plan can publish. Previously locked behind `include_plan_config=1` (which bloats every row with ~30 extra config fields). Promoted into the default 10-field keep-list so author-resolution flows can read it cheaply. `include_extras=1` added as the universal escape hatch matching the convention used by posts/webpages/posttypes/users.
+
+**bd-api.json** — `include_extras` parameter `$ref` added to `listUsers`, `getUser`, `searchUsers`, `listMembershipPlans`, `getMembershipPlan`. Tool descriptions for those 5 updated to reflect new lean shape + flag table.
+
+**Skill content change 1 — events.md Stage 3 post-type discovery now server-side filters.** Previously instructed the agent to call `listPostTypes` unfiltered and client-side filter on `type_of_feature=1`. Real-run pulled all 18 post types on this site (~12KB) when only 1 row was needed. New instruction: `listPostTypes property=type_of_feature property_value=1 property_operator=eq` — server-side filter, returns just the event row.
+
+**Skill content change 2 — METHODOLOGY Stage 1 menu walk now server-side filters for main-nav.** Previously instructed the agent to call `listMenus` unfiltered, then pick the main-nav row. New instruction: `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards). If no main-nav match, skip the menu walk entirely and fall back to URL-PATTERNS Patterns 1-5 for internal linking.
+
+**Skill content change 3 — events.md Stage 4 author resolution fully rewritten.** Previous methodology invented an `admin_level` column that doesn't exist in BD's OpenAPI spec. New algorithm: (1) if user_id is pre-specified in the request, use it and skip every discovery call. (2) Else autonomous: `listMembershipPlans limit=25` (lean now includes `data_settings`) → client-side filter for plans whose `data_settings.split(',').includes(events_data_id)` → `listUsers property=subscription_id property_value=<matched_csv> property_operator=in limit=10` → pick one randomly. (3) Else fallback: `user_id=0` (BD's no-author sentinel — post stays public, hidden from search, admin gets queue alert).
+
+**Real-world impact for a routine events run on a typical site:**
+- Pre-v6.49.0: ~170KB context for 2 event posts (per v6.48.2 measurement)
+- Post-v6.49.0 expected: significantly lower — depends on user count and customization, but Stage 1 discovery alone drops ~12-15KB from the `listPostTypes` + `listUsers` waste, plus the `listUsers` keep-list flip halves the per-user payload anywhere the skill needs to read members.
+
+**No breaking changes for existing callers** — all stripped fields are restorable via the matching `include_*` flag or `include_extras=1`. Minor version bump (6.49.0) because additive-by-flag.
+
+Drift check passes. npm + Worker byte-mirrored. `SERVER_INFO` bumped 3.2.0 → 3.3.0.
+
 ## [6.48.2] - 2026-05-17
 
 ### Skill content cleanup — Stage 1 purpose + drop broken homepage call + reconcile events.md with METHODOLOGY HTML-comment ban

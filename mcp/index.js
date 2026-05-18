@@ -513,9 +513,42 @@ const USER_LEAN_INCLUDE_FLAGS = [
   "include_seo_hidden",
   "include_about",
   "include_legacy_fields",
+  "include_extras",
 ];
 
 const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", "result"];
+
+// Lean-by-default keep-list — only these fields are returned without opt-in.
+// Aligned with `WRITE_KEEP_SETS.createUser` / `updateUser` plus the read-flow
+// fields agents typically need to display a member (location, contact, geo,
+// avatar, plan, revenue rollup). Everything else routes through include_extras=1
+// (social URLs, awards, credentials, position, quote, work_experience,
+// rep_matters, cv, gmap, no_geo, user_consent, sign_up_origin, parent_id,
+// clientid, profession_name, listing_type, nationwide, ref_code, booking_link,
+// bitly, cookie, token, userid, all_subcategories, filename_hidden, services,
+// auto_geocode, auto_image_import, free_stock_images, overwrite_stock_libraries,
+// verified, featured, is_subscription_active, images_action, facebook_id,
+// google_id, service, etc.) or specific include_* flags for nested heavy bundles.
+const USER_LEAN_ALWAYS_KEEP = [
+  // Identity + routing
+  "user_id", "first_name", "last_name", "company", "email", "phone_number",
+  "filename", "active", "status", "subscription_id", "profession_id",
+  "modtime", "signup_date",
+  // Location (load-bearing for member directories)
+  "city", "state_code", "state_ln", "country_code", "country_ln", "zip_code",
+  "lat", "lon",
+  // Wrapper-shaped + display rollups (must survive trim)
+  "full_name", "user_location", "image_main_file", "total_clicks", "total_photos",
+  "revenue", "card_info",
+  // Per-bundle gated fields (kept iff their flag is on — gates run before trim)
+  "subscription_schema", "photos_schema", "transactions", "profession_schema",
+  "tags", "services_schema", "user_clicks_schema", "password", "about_me",
+  // SEO bundle (gated by include_seo_hidden)
+  "seo_page_title_hidden", "seo_page_description_hidden", "seo_page_keywords_hidden",
+  "seo_social_page_title_hidden", "seo_social_page_description_hidden", "search_description",
+  // BD framework
+  "tablesExists",
+];
 
 const USER_PHOTO_LEAN_KEEP = ["photo_id", "user_id", "file", "type", "date_added", "compliant"];
 const USER_PHOTO_LEGACY_FIELDS = ["original", "resized", "error"];
@@ -543,6 +576,7 @@ function applyUserLean(body, includeFlags) {
     seo_hidden: !!includeFlags.include_seo_hidden,
     about: !!includeFlags.include_about,
     legacy_fields: !!includeFlags.include_legacy_fields,
+    extras: !!includeFlags.include_extras,
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
@@ -576,6 +610,19 @@ function applyUserLean(body, includeFlags) {
     if (!include.seo_hidden) stripKeys(row, USER_LEAN_SEO_BUNDLE);
     if (!include.about) delete row.about_me;
     if (!include.photos) row.total_photos = totalPhotos;
+
+    // Keep-list trim — drop every top-level field NOT in USER_LEAN_ALWAYS_KEEP
+    // unless include_extras=1. Runs LAST so wrapper-shaped fields (total_clicks,
+    // total_photos, full_name, user_location) and per-bundle-gated fields kept
+    // by their flags above survive. Per-bundle flags (include_password,
+    // include_subscription, etc.) still control THEIR specific fields via the
+    // strip logic above; this is the catch-all extras gate for everything else
+    // (social URLs, awards, credentials, quote, gmap, work_experience, etc.).
+    if (!include.extras) {
+      const keep = new Set(USER_LEAN_ALWAYS_KEEP);
+      for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    }
+
     return row;
   };
   if (Array.isArray(body.message)) {
@@ -1027,12 +1074,20 @@ const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_LEAN_INCLUDE_FLAGS = [
   "include_plan_config",
   "include_plan_display_flags",
+  "include_extras",
 ];
 
-// Always kept — the 9 core fields for picking a plan.
+// Always kept — the 10 core fields for picking a plan. `data_settings` is
+// the comma-separated list of post-type IDs this plan can publish; the
+// author-resolution flow (events skill Stage 4) reads it to find plans
+// whose members can publish a given post type, then `listUsers` filter
+// by matched subscription_ids. Promoted into the lean default so callers
+// don't have to opt into `include_plan_config` just to read this one
+// short string. The full plan config (~30 fields) remains opt-in.
 const PLAN_ALWAYS_KEEP = [
   "subscription_id", "subscription_name", "subscription_type", "profile_type",
   "monthly_amount", "yearly_amount", "initial_amount", "lead_price", "searchable",
+  "data_settings",
 ];
 
 // Restored with include_plan_config=1 — activation, limits, sidebars, forms,
@@ -1067,6 +1122,7 @@ function applyPlanLean(body, includeFlags) {
   const include = {
     config: !!includeFlags.include_plan_config,
     display: !!includeFlags.include_plan_display_flags,
+    extras: !!includeFlags.include_extras,
   };
   // Build the allowed-keys set per this request
   const allow = new Set(PLAN_ALWAYS_KEEP);
@@ -1075,6 +1131,11 @@ function applyPlanLean(body, includeFlags) {
 
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
+    // include_extras=1 — universal escape hatch matching the post / web page /
+    // post type lean shapers. Returns the full BD row untouched. Plan
+    // workflows that legitimately need every field (admin audit / migration)
+    // use this; routine reads stay lean.
+    if (include.extras) return row;
     const out = {};
     for (const k of Object.keys(row)) {
       if (allow.has(k)) out[k] = row[k];
