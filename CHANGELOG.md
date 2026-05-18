@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.45] - 2026-05-18
+
+### `post_title` colon rule: add concrete separator examples
+
+v6.49.44 said "use a different separator or no separator" — abstract. Added concrete options: `(e.g. comma, hyphen)`. ANTI-SLOP forbids en/em-dashes across body prose; hyphen (U+002D) is safe and is the standard title-separator alternative.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.44] - 2026-05-18
 
 ### Loosen `post_title` colon rule
