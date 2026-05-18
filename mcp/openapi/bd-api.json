@@ -3925,7 +3925,7 @@
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`. **Event post types: event-local wall-clock** (match `post_start_date` — see that field). **Coupons and other post types: site timezone.** BD silently truncates other formats, corrupting the value. The wrapper auto-derives `end_time` (`\"H:MM AM/PM\"`) from this value on `createSingleImagePost` / `updateSingleImagePost` — agent never passes `end_time` directly."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`. **Event post types: event-local wall-clock** (match `post_start_date`). **Coupons and other post types: site timezone.** BD silently truncates other formats, corrupting the value. The wrapper auto-derives `end_time` (`\"H:MM AM/PM\"`) from this value on `createSingleImagePost` / `updateSingleImagePost` — agent never passes `end_time` directly."
                   },
                   "post_video": {
                     "type": "string",
@@ -4093,7 +4093,7 @@
                   },
                   "post_expire_date": {
                     "type": "string",
-                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`. **Event post types: event-local wall-clock** (match `post_start_date` — see that field). **Coupons and other post types: site timezone.** BD silently truncates other formats, corrupting the value. The wrapper auto-derives `end_time` (`\"H:MM AM/PM\"`) from this value on `createSingleImagePost` / `updateSingleImagePost` — agent never passes `end_time` directly."
+                    "description": "End/expiration date. Coupon post types use this for expiration; Event post types use it for end time. Format: `YYYYMMDDHHmmss`. **Event post types: event-local wall-clock** (match `post_start_date`). **Coupons and other post types: site timezone.** BD silently truncates other formats, corrupting the value. The wrapper auto-derives `end_time` (`\"H:MM AM/PM\"`) from this value on `createSingleImagePost` / `updateSingleImagePost` — agent never passes `end_time` directly."
                   },
                   "post_video": {
                     "type": "string",

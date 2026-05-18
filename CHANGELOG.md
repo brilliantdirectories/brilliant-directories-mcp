@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.42] - 2026-05-18
+
+### Code hygiene: 2 cosmetic cleanups from v6.49.41 cold-review
+
+- **`bd-api.json` `post_expire_date` description**: stripped spatial cross-ref `— see that field` from `(match \`post_start_date\` — see that field)`. Backticked field name alone is the cross-ref per project convention. Applied to both `createSingleImagePost` and `updateSingleImagePost` request body descriptions (2 occurrences total).
+- **Worker comment label**: `// 3a-bis.` renamed to `// 3a2.` to align with surrounding `// 3a.` / `// 3b.` numbering convention.
+
+**No code-behavior changes.** No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.41] - 2026-05-18
 
 ### Wrapper auto-derives `start_time` / `end_time` from `post_start_date` / `post_expire_date`
