@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.10] - 2026-05-17
+
+### User lean trim + universal `listCities` rule
+
+Real-run agent ran `listUsers` (twice, once unfiltered) to enumerate cities for a "create event posts targeting cities where I have members" prompt. Two underlying problems: wrapper kept too much in the user lean default (billing/analytics rollups, duplicate location fields), and the skill had no rule routing member-coverage hints to the right tool.
+
+**Wrapper — `USER_LEAN_ALWAYS_KEEP` trimmed.** Always-keep now contains identity + routing + location core only: `user_id`, `first_name`, `last_name`, `email`, `company`, `phone_number`, `subscription_id`, `profession_id`, `active`, `status`, `city`, `state_code`, `country_code`, `filename`, `image_main_file`, `signup_date`, `last_login`, `modtime`. Per-bundle gated fields (subscription_schema, photos_schema, transactions, profession_schema, tags, services_schema, user_clicks_schema, password, about_me, SEO bundle) and their flags unchanged. Moved behind `include_extras=1`: billing rollups (`revenue`, `card_info`), analytics rollups (`total_clicks`, `total_photos`), duplicate-of-code location fields (`state_ln`, `country_ln`, `full_name`, `user_location`), rarely-needed (`zip_code`, `lat`, `lon`), BD framework noise (`tablesExists`). Roughly 40% payload reduction on user-row responses for the dominant content-creation use case; opt-in recoverable for billing/analytics workflows. New: `last_login` added to lean defaults (BD-managed activity timestamp). Byte-mirrored in Worker `src/index.ts` and npm `mcp/index.js`. Worker SERVER_INFO 3.3.2 -> 3.3.3.
+
+**Spec — `listUsers`/`getUser`/`searchUsers` descriptions updated.** Each tool's "Lean-by-default keep-list" enumeration rewritten to match the new core; `include_extras=1` description expanded to list what's now gated; `listUsers` description gains an explicit "Do NOT bulk-list users to enumerate cities — use `listCities`" line; the `card_info` payment-method paragraph collapsed and noted as gated under `include_extras`.
+
+**Skill — METHODOLOGY.md universal rule.** Stage 1 now has: "Location targeting hints — use `listCities`, NEVER bulk-list members. If the user's prompt references member-coverage targeting (cities-where-members-exist, areas-we-cover, etc.), use `listCities`. BD auto-seeds this table on every member signup, so it surfaces exactly the cities where members exist. Lean response. Bulk-listing `listUsers` to enumerate member cities is a token-bloat trap." Universal — generalizes to jobs/properties/blog/seo.
+
+Worker deploy via `npx wrangler deploy` from `bd-cursor-config/brilliant-directories-mcp-hosted/`. Drift check passes.
+
 ## [6.49.9] - 2026-05-17
 
 ### 2 cosmetic cleanups flagged by v6.49.8 cold review

@@ -530,24 +530,22 @@ const USER_LEAN_ALWAYS_STRIP = ["save", "form", "formname", "sized", "faction", 
 // verified, featured, is_subscription_active, images_action, facebook_id,
 // google_id, service, etc.) or specific include_* flags for nested heavy bundles.
 const USER_LEAN_ALWAYS_KEEP = [
-  // Identity + routing
-  "user_id", "first_name", "last_name", "company", "email", "phone_number",
-  "filename", "active", "status", "subscription_id", "profession_id",
-  "modtime", "signup_date",
-  // Location (load-bearing for member directories)
-  "city", "state_code", "state_ln", "country_code", "country_ln", "zip_code",
-  "lat", "lon",
-  // Wrapper-shaped + display rollups (must survive trim)
-  "full_name", "user_location", "image_main_file", "total_clicks", "total_photos",
-  "revenue", "card_info",
+  // Identity
+  "user_id", "first_name", "last_name", "email", "company", "phone_number",
+  // Routing + status
+  "subscription_id", "profession_id", "active", "status",
+  // Location (city + state/country codes; full names, zip, lat/lon under include_extras)
+  "city", "state_code", "country_code",
+  // URL + profile asset
+  "filename", "image_main_file",
+  // Activity timestamps
+  "signup_date", "last_login", "modtime",
   // Per-bundle gated fields (kept iff their flag is on — gates run before trim)
   "subscription_schema", "photos_schema", "transactions", "profession_schema",
   "tags", "services_schema", "user_clicks_schema", "password", "about_me",
   // SEO bundle (gated by include_seo_hidden)
   "seo_page_title_hidden", "seo_page_description_hidden", "seo_page_keywords_hidden",
   "seo_social_page_title_hidden", "seo_social_page_description_hidden", "search_description",
-  // BD framework
-  "tablesExists",
 ];
 
 const USER_PHOTO_LEAN_KEEP = ["photo_id", "user_id", "file", "type", "date_added", "compliant"];

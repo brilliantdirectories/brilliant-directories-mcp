@@ -24,6 +24,8 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 **Universal short-circuit for author:** if the user pre-specified a `user_id` (or `author_id`) in their request — interactive or autonomous, any content type — use it and skip per-type author resolution entirely. No discovery calls.
 
+**Location targeting hints — use `listCities`, NEVER bulk-list members.** If the user's prompt references targeting based on member coverage (e.g. "cities where I have members listed," "places members are based," "areas we cover"), use `listCities` — BD auto-seeds this table on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`). Bulk-listing `listUsers` to enumerate member cities is a token-bloat trap; do not do it.
+
 ## Stage 2: Source research
 
 **2a.** Brainstorm 5-10 candidate sources for vertical+location. Per-type SKILL.md provides candidate categories. Be specific (real domain names, not "some sites").
