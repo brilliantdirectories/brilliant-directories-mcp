@@ -144,14 +144,12 @@ After all tiers empty → skip `lat`/`lon` on that event. Post still creates.
 
 ### Normalize Nominatim output before passing to BD
 
-Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as a full name (`"New York"`, `"Ontario"`). BD's `country_sn` and `state_sn` expect ISO 2-letter codes (`"US"`, `"NY"`). Normalize before passing:
+Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as a full name (`"New York"`, `"Ontario"`). BD's `country_sn` and `state_sn` expect uppercase ISO codes. Normalize directly — no MCP lookup needed.
 
-1. **`country_sn`**: uppercase the Nominatim `country_code`. `"us"` → `"US"`. Done.
-2. **`state_sn`**: map the Nominatim state name to its 2-letter code via `listStates`. The BD `location_states` table fields are `state_sn` (2-letter code, e.g. `"NY"`), `state_ln` (full name, e.g. `"New York"`), `country_sn` (2-letter, e.g. `"US"`). Once per skill run per country, cache: `listStates property=country_sn property_value=<uppercased_country_code> property_operator=eq` (paginate if >25 rows; e.g. US has 50+). Build a `state_ln → state_sn` map. Look up the Nominatim state name in the map (case-insensitive); use the matched `state_sn`. If no match (some countries don't have first-admin subdivisions BD tracks, or Nominatim returned an unmappable region name), OMIT `state_sn`.
-3. Cache the per-country state map for the rest of the run.
-4. International addresses with no state/region equivalent → pass `country_sn` only, OMIT `state_sn`.
+1. **`country_sn`**: uppercase the Nominatim `country_code`. `"us"` → `"US"`, `"ca"` → `"CA"`, `"gb"` → `"GB"`.
+2. **`state_sn`**: map the Nominatim state name to its ISO-3166-2 2-letter code (US: `"New York"` → `"NY"`, `"California"` → `"CA"`; Canada: `"Ontario"` → `"ON"`, `"British Columbia"` → `"BC"`; Australia: `"New South Wales"` → `"NSW"`; etc.). Always uppercase. If the country has no state-equivalent (e.g. Malta, Luxembourg, Singapore) or Nominatim returned a sub-region that isn't a standard ISO-3166-2 subdivision, **OMIT `state_sn`** — pass `country_sn` alone.
 
-On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn` (if mapped). Do NOT pass `auto_geocode=1`.
+Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `auto_geocode=1`.
 
 ---
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.31] - 2026-05-18
+
+### Drop `listStates` lookup — agent maps state names directly to ISO-3166-2
+
+Real-run agent burned a `listStates` MCP call (and 4 retries when the BD site's `location_states` table was empty for Canada) just to translate Nominatim's `"Ontario"` → `"ON"`. Pointless overhead — ISO-3166-2 2-letter subdivision codes are universal public standards the LLM already knows perfectly (US `NY`/`CA`/`TX`, Canada `ON`/`BC`/`AB`, Australia `NSW`/`VIC`, India `MH`/`KA`, etc.). Worse: when the BD table was empty, the agent fell back to omitting `state_sn` entirely, silently losing state info LLM knowledge could have supplied.
+
+Rewrote METHODOLOGY's Normalize Nominatim output section: agent maps state name → uppercase ISO-3166-2 code directly from training-data knowledge. No MCP call. If the country has no state-equivalent (Malta, Luxembourg, Singapore) or Nominatim returned a non-standard sub-region, OMIT `state_sn` and pass `country_sn` alone. Cache step and pagination guidance both dropped (no MCP call to cache).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.30] - 2026-05-18
 
 ### Date-sanity gate default window: 30 → 60 days; honor user override at rule level
