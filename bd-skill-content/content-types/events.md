@@ -204,8 +204,8 @@ What `createSingleImagePost` receives.
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
-| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, site timezone). Date AND time both live here. BD silently truncates other formats. |
-| `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, site timezone). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
+| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see Date/time formats below). Date AND time both live here. BD silently truncates other formats. |
+| `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | venue name ("Stubb's BBQ", "Staples Center") |
 | `post_location` | full address text ("Stubb's BBQ, 801 Red River St, Austin, TX 78701") |
 | `lat` | latitude float (from Nominatim, skip if geocoding failed) |

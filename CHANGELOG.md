@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.4] - 2026-05-17
+
+### Cold-review patch: 3 v6.49.3 misses
+
+v6.49.3 shipped a timezone clarification + a Wh-starter FAQ exemption. Cold-review minion caught that both fixes only landed in one place each, leaving contradictory wording elsewhere. This patch closes those gaps.
+
+**Fix 1 — events.md table rows now agree with the prose below them.** v6.49.3 rewrote the "Date/time formats" prose section to say `post_start_date` / `post_expire_date` use event-local wall-clock, but the field-reference table 20 lines above still said "site timezone". Same file contradicted itself. Table rows now say event-local wall-clock, matching the prose.
+
+**Fix 2 — `bd-api.json` spec descriptions for `post_start_date` / `post_expire_date` now scoped by post type.** Agents that read only the OpenAPI spec (Cursor, n8n, Make, ChatGPT proxy) never saw the events.md clarification. Spec descriptions still said "in the site's timezone" for both fields on both `createSingleImagePost` and `updateSingleImagePost` (4 spots total). New wording: **Event post types → event-local wall-clock** (with the Brooklyn-on-LA-site example inline); **Scheduled-publish on blog/article/news → site timezone**; **Coupons and other end-dates → site timezone**. All 4 descriptions updated.
+
+**Fix 3 — `ANTI-SLOP.md` FAQ exemption now applies to ALL three places that ban Wh-starters.** v6.49.3 only patched the patterns table (line 17). The self-check item #13 ("Wh- sentence opener? Restructure.") and the drift triggers ("Wh- sentence-starter.") still banned them unconditionally — so an agent running the self-check would still flag a legitimate `When is the event?` FAQ label and rewrite it. Both spots now scope to prose-only with the FAQ exemption noted inline.
+
+**No code changes** (spec + skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.3] - 2026-05-17
 
 ### 4 surgical doc fixes from real-run agent feedback

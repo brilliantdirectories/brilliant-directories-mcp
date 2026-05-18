@@ -39,7 +39,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 10. Three same-length sentences in a row? Vary one.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
-13. Wh- sentence opener? Restructure.
+13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
@@ -53,7 +53,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 
 ## Drift triggers (stop and rewrite)
 
-Wh- sentence-starter. Hedging every claim. Explaining what you're about to say. Padding when data doesn't support length. Three "and"s in one sentence.
+Wh- sentence-starter in prose (FAQ labels exempt). Hedging every claim. Explaining what you're about to say. Padding when data doesn't support length. Three "and"s in one sentence.
 
 ## Wrong-example reference
 
