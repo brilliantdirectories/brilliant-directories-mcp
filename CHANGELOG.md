@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.38] - 2026-05-18
+
+### Strip negation list from `Rule: Post admin URLs`
+
+v6.49.37 added a list of wrong URL shapes ("/admin/post/edit/, /admin/posts/edit/, /admin/post/<id>/edit, REST-style routes, plural/singular variations: none of those exist") to close a loophole. Wrong approach — listing wrong patterns plants them in the agent's head as plausible shapes to phish around. Rule now states ONLY the truth: the exact pattern, the param sources, and "all four params required." No negation list, no phishing attractors.
+
+**No code changes** (corpus prose only). Drift check passes.
+
 ## [6.49.37] - 2026-05-18
 
 ### Harden corpus `Rule: Post admin URLs` against word-smithing
