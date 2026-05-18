@@ -151,7 +151,7 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ## Stage 7: Audit summary (always printed)
 
-Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results.
+Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results. Build `<admin_edit_url>` per the MCP corpus `Rule: Post admin URLs` — never invent the URL shape.
 
 ```
 Created N posts:

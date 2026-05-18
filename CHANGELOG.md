@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.35] - 2026-05-18
+
+### New corpus `Rule: Post admin URLs` + post_title cap 60→54
+
+**Admin URL invention bug.** Real-run agent fabricated `https://ww2.managemydirectory.com/admin/post/edit/186?newsite=60029` for the audit summary — that route does not exist. Root cause: audit template referenced `<admin_edit_url>` but corpus had no rule defining the post-admin URL pattern (only email templates had one at line 501). Agent guessed and got it wrong.
+
+Added corpus `Rule: Post admin URLs` mirroring the email-template pattern: `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Applies to all single-image AND multi-image post create/update operations. `data_type` and `data_id` come from the post type's `listPostTypes` row (per-site values; do NOT hardcode). `website_id` from `getSiteInfo`. Explicit "do NOT invent simpler patterns like `/admin/post/edit/<id>`" callout.
+
+METHODOLOGY audit-summary section now points at the corpus rule explicitly: "Build `<admin_edit_url>` per the MCP corpus `Rule: Post admin URLs` — never invent the URL shape."
+
+**post_title cap tightened: 60 → 54 chars** per user preference.
+
+**No code changes** (corpus + skill content only). Drift check passes.
+
 ## [6.49.34] - 2026-05-18
 
 ### Strip "site CSS handles it" justification from image rules

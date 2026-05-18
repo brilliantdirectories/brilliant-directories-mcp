@@ -500,6 +500,10 @@ The wrapper refuses (throws on the call) 5 silent-failure paths on `createForm` 
 
 **After every successful `createEmailTemplate` or `updateEmailTemplate`, surface the BD admin edit URL to the user.** Pattern: `https://ww2.managemydirectory.com/admin/emailTemplates.php?faction=edit&email=<email_id>&newsite=<website_id>`. The host is fixed — every BD customer admin lives on `ww2.managemydirectory.com`; do NOT substitute `BD_API_URL` (the customer-facing site root). `email_id` comes from the create/update response. `website_id` comes from `getSiteInfo` (`message.website_id`) — call once per session and cache it; both params are required to scope the admin link to the correct tenant. Takes the user straight to the email in their admin to visually review/tweak, send a test, or open the Froala editor for fine-tuning.
 
+### Rule: Post admin URLs
+
+**After every successful `createSingleImagePost` / `updateSingleImagePost` / `createMultiImagePost` / `updateMultiImagePost`, surface the BD admin edit URL to the user.** Pattern: `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Host is fixed (every BD admin lives on `ww2.managemydirectory.com`); do NOT substitute `BD_API_URL`. `post_id` comes from the create/update response. `data_type` and `data_id` come from the post type's row (`listPostTypes` — `data_type` is the classification code like `20` for single-image, `data_id` is the per-site post-type primary key). `website_id` from `getSiteInfo.message.website_id`. All four params required; do NOT hardcode `data_type`/`data_id` (they vary per site). Do NOT invent simpler patterns like `/admin/post/edit/<id>` — that route does not exist.
+
 ### Rule: Widget code fields
 
 **Field truth:**
