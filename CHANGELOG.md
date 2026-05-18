@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.2] - 2026-05-17
+
+### Remove `defaultOriginalImageUrl` wrapper helper — BD silently drops the field on single-image post writes
+
+Live test confirmed: `original_image_url` on the `data_posts` table is a **read-only column** as far as BD's API is concerned. The column exists, reads back as `""` (empty), but BD's `/data_posts/create` and `/data_posts/update` controllers silently drop the field on writes. Not stored in the column. Not routed through `users_meta`. Just discarded.
+
+The `defaultOriginalImageUrl` helper introduced in v6.47.6 has been firing correctly on every single-image post create — setting `args.original_image_url = args.post_image` when `auto_image_import=1` and the agent didn't pass it explicitly. The helper produced zero database writes the entire time. Dead code.
+
+**Removed in v6.49.2:**
+- `defaultOriginalImageUrl` helper function in `mcp/index.js` and `src/index.ts` (byte-mirrored)
+- The `defaultOriginalImageUrl(args)` call in the dispatch chain (both files)
+- `original_image_url` from the `include_extras=1` field lists in `listSingleImagePosts` and `getSingleImagePost` tool descriptions
+
+**Already stripped earlier in this v6.49.x cycle:**
+- `original_image_url` field-reference row in `bd-skill-content/content-types/events.md`
+- `original_image_url is auto-defaulted by the wrapper` paragraph in `bd-skill-content/shared/METHODOLOGY.md`
+
+**Kept:**
+- `original_image_url` in `IMAGE_SINGLE_URL_FIELDS` (the URL-sanitizer's field list) — `original_image_url` IS a real writable field on `createMultiImagePost` / `createMultiImagePostPhoto`, so the sanitizer still strips query strings if an agent passes it on multi-image writes.
+- All multi-image tool spec entries for `original_image_url` (createMultiImagePost line 781, createMultiImagePostPhoto line 4631+ description) — those are factually correct, the field works on multi-image writes.
+
+SERVER_INFO bumped 3.3.1 → 3.3.2. Drift check passes. npm + Worker byte-mirrored.
+
 ## [6.49.1] - 2026-05-17
 
 ### v6.49.0 cold-review patch — 3 surgical fixes

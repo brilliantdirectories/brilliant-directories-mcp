@@ -101,8 +101,6 @@ Prefer the real source image when one is clearly usable. Fall through to Pexels 
 
 **Mandatory orientation precondition for feature image slots.** Before `createSingleImagePost` (or any post-create call) with `post_image` set on a feature image slot (`post_image`, `hero_image`, `cover_photo`, multi-image album photos), the image's orientation MUST be verified `w > h`. Inline body slots (`post_content`/`group_desc`) and email-template body accept `w >= h` (square OK). Per **Rule: Image URLs** in the MCP corpus, verification for Pexels candidates is via the photo page's body `images.pexels.com/photos/<id>/...` URL with `w=`/`h=` query params; for source images, via the OG image width/height tags or `srcset` 2x descriptors. If orientation cannot be verified `w > h` for a feature slot, REJECT that candidate and try the next. If no candidate verifies, OMIT `post_image` entirely — the post still creates without an image. Do NOT pass an unverified image to a feature slot.
 
-**`original_image_url` is auto-defaulted by the wrapper.** When you pass `auto_image_import=1` and `post_image=<url>`, the wrapper copies `post_image` into `original_image_url` if you didn't pass it explicitly. You only need to pass `original_image_url` yourself when it differs from `post_image` — i.e. you considered a source image, REJECTED it (portrait, wrong format, too small), and used Pexels instead. In that fallback case, `original_image_url` = the rejected source URL (forensic record of what you tried first), `post_image` = the Pexels URL you used. Common case: pass nothing, wrapper handles it.
-
 ### Voice
 
 Every word goes through `ANTI-SLOP.md`. Mandatory before posting.

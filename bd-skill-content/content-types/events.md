@@ -202,7 +202,6 @@ What `createSingleImagePost` receives.
 | `post_content` | assembled HTML body per "Content manufacture" |
 | `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. BD auto-generates from post_title if omitted. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
-| `original_image_url` | Forensic field — the source URL the skill considered. **Wrapper auto-defaults** this to `post_image` when `auto_image_import=1` and you didn't pass it. Pass explicitly ONLY when it differs from `post_image` — i.e. you rejected a source candidate (portrait, wrong format, too small) and fell back to Pexels: then `original_image_url` = the rejected source URL, `post_image` = the Pexels URL used. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
 | `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, site timezone). Date AND time both live here. BD silently truncates other formats. |
