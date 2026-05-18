@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.41] - 2026-05-18
+
+### Wrapper auto-derives `start_time` / `end_time` from `post_start_date` / `post_expire_date`
+
+Event-flavored single-image posts store the human-readable time-of-day alongside the 14-digit date as separate `users_meta` rows (`database=data_posts`, `key=start_time`/`end_time`, value like `"7:30 AM"`). The BD admin form's time-of-day dropdown reads from those rows — if they're missing or wrong, the dropdown resets to default on every edit. Without wrapper help, the agent would have to know about the dual-storage and pass `start_time`/`end_time` separately (with format conversion + on-update upsert routing).
+
+New behavior: wrapper auto-derives both values from `post_start_date` and `post_expire_date`, agent never touches them.
+
+- **`createSingleImagePost`**: if `post_start_date` / `post_expire_date` is passed (and `start_time` / `end_time` not already supplied), the wrapper synthesizes `"H:MM AM/PM"` (no leading zero on hour) and includes both as plain body params. BD's `/data_posts/create` controller writes them to `users_meta` natively on create.
+- **`updateSingleImagePost`**: same synthesis, then peeled into `EAV_ROUTES` and upserted to `users_meta` after the parent update (`/data_posts/update` silently drops them otherwise — same dual-storage pattern as `updateWebPage`'s hero fields).
+- **Format**: `"7:00 AM"`, `"5:30 PM"`, `"12:00 AM"` (midnight), `"12:00 PM"` (noon) — derived from the last 6 chars of the 14-digit string.
+- **Skip**: if the agent already supplied an explicit `start_time` or `end_time` value, that wins (escape hatch for unusual cases).
+- **Non-event post types**: harmless. Wrapper derives on any `*SingleImagePost` call where the date fields are present. The `users_meta` row will simply not be referenced by non-event admin UIs.
+
+Bumped Worker `SERVER_INFO` 3.3.4 → 3.4.0 (real wrapper feature). Byte-mirrored npm `mcp/index.js` and Worker `src/index.ts`. Spec field descriptions for `post_start_date` and `post_expire_date` updated with a one-line note about the auto-derivation so agents reading the spec directly (not just via skill) understand. No agent-facing breaking change.
+
+Wrangler deploy required from `bd-cursor-config/brilliant-directories-mcp-hosted/`.
+
 ## [6.49.40] - 2026-05-18
 
 ### Better title-case example with lowercase middle words

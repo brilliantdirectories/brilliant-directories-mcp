@@ -1557,7 +1557,33 @@ const EAV_ROUTES = {
       "disable_css_stylesheets",
     ]),
   },
+  // Event-flavored single-image posts store the human-readable time-of-day
+  // alongside post_start_date/post_expire_date as separate users_meta rows
+  // (database=data_posts, key=start_time/end_time, value like "7:30 AM").
+  // BD's data_posts/create controller writes these natively when we pass them
+  // as body params; data_posts/update silently drops them so we EAV-upsert
+  // after the parent update. Values are wrapper-derived from the 14-digit
+  // date fields — agent never passes start_time/end_time directly.
+  updateSingleImagePost: {
+    eavDatabase: "data_posts",
+    parentPK: "post_id",
+    eavFields: new Set(["start_time", "end_time"]),
+  },
 };
+
+// Derive "H:MM AM/PM" (no leading zero on hour, 2-digit minutes) from a
+// 14-digit YYYYMMDDHHmmss string. Used to auto-synthesize start_time and
+// end_time on event-post create/update so the agent never has to think
+// about the dual-storage of date+time. Returns null on malformed input.
+function derivePostEventTime(date14) {
+  if (typeof date14 !== "string" || !/^\d{14}$/.test(date14)) return null;
+  const hh = parseInt(date14.substring(8, 10), 10);
+  const mm = date14.substring(10, 12);
+  if (isNaN(hh) || hh < 0 || hh > 23) return null;
+  const period = hh >= 12 ? "PM" : "AM";
+  const h12 = hh === 0 ? 12 : hh > 12 ? hh - 12 : hh;
+  return `${h12}:${mm} ${period}`;
+}
 
 // Fields refused on `_clear_fields`. Three categories:
 //   1. Wrapper-managed (auto-injected timestamps + unconditional overwrites) —
@@ -5407,6 +5433,25 @@ async function main() {
         const body = typeof args.content === "string" ? args.content : "";
         if (heroOn && /<h1\b/i.test(body)) {
           _heroH1Warning = `Hero section is enabled AND content body contains <h1>. The hero already renders an H1 from the page's h1 field — your body H1 paints a second H1 on the same page (accessibility fail, SEO dilution). Either remove the body H1 or disable the hero.`;
+        }
+      }
+
+      // Event-post time-of-day derivation: when post_start_date /
+      // post_expire_date is on the args for createSingleImagePost or
+      // updateSingleImagePost, synthesize the matching start_time / end_time
+      // (e.g. "7:30 AM") into args. BD stores those alongside the 14-digit
+      // date as separate users_meta rows (database=data_posts) — without this
+      // wrapper step the form's time-of-day dropdown would reset to default
+      // on every edit. Agent never has to think about it. Skip if the agent
+      // already supplied an explicit time value.
+      if ((name === "createSingleImagePost" || name === "updateSingleImagePost") && args) {
+        if (args.post_start_date && !args.start_time) {
+          const derived = derivePostEventTime(String(args.post_start_date));
+          if (derived) args.start_time = derived;
+        }
+        if (args.post_expire_date && !args.end_time) {
+          const derived = derivePostEventTime(String(args.post_expire_date));
+          if (derived) args.end_time = derived;
         }
       }
 
