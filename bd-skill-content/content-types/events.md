@@ -200,7 +200,7 @@ What `createSingleImagePost` receives.
 | Field | Value |
 |---|---|
 | `post_content` | assembled HTML body per "Content manufacture" |
-| `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. BD auto-generates from post_title if omitted. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
+| `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. **BD ignores this field on `createSingleImagePost` — always auto-generates from `post_title`.** To control slug, either keep `post_title` short, or follow up with `updateSingleImagePost post_filename=<data_filename>/<lowercase-hyphenated-slug>` (update accepts the override). |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
@@ -220,11 +220,11 @@ What `createSingleImagePost` receives.
 
 ### Date/time formats
 
-All three fields use `YYYYMMDDHHmmss` (14 digits, site timezone). BD silently truncates other formats, corrupting the value.
+All three fields use `YYYYMMDDHHmmss` (14 digits). BD silently truncates other formats, corrupting the value.
 
-- `post_live_date`: when the post becomes visible (now, or future for scheduled publish)
-- `post_start_date`: event start (date AND time)
-- `post_expire_date`: event end (date AND time)
+- `post_live_date`: when the post becomes visible (now, or future for scheduled publish). **Site timezone.**
+- `post_start_date`: event start (date AND time). **Event-local wall-clock — the time as a visitor in the event's city would read it. Do NOT convert to the site's own timezone.** A 7 PM Brooklyn event on a Los Angeles-timezoned site stores as `20260616190000`, not `20260616160000`.
+- `post_expire_date`: event end (date AND time). Same event-local wall-clock as `post_start_date`.
 
 ---
 

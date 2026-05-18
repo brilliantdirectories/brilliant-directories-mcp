@@ -14,7 +14,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Throat-clearing openers | "Here's the thing/what/why", "It turns out", "The truth is", "Let me be clear", "What you need to know" → cut, state the point |
 | Binary contrasts / negative listing | "Not X. Y." / "isn't X, it's Y" / "Not a concert. Not a conference. It's Z." → just say Y |
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
-| Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters → restructure |
+| Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
 | Inanimate as actor | "decisions emerge", "data tells us", "markets reward", "culture shifts" → name the human |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.3] - 2026-05-17
+
+### 4 surgical doc fixes from real-run agent feedback
+
+Real-run agent surfaced 4 friction points. All confirmed via live test or grep before fixing.
+
+**Fix 1 — `post_start_date` / `post_expire_date` timezone clarified to event-local wall-clock.** Previous wording said "site timezone" — wrong for cross-timezone events (Brooklyn event on LA-timezoned site would store as PT-shifted wall-clock, render wrong next to the Brooklyn address). New events.md wording: event-local wall-clock — the time as a visitor in the event's city would read it. `post_live_date` stays site-timezone (it's the post-creation timestamp, not an event time).
+
+**Fix 2 — `post_filename` slug-control wording corrected.** Live test confirmed: BD ignores `post_filename` on `createSingleImagePost` (always auto-generates from `post_title`), but `updateSingleImagePost` accepts the override. Old wording promised slug control via create; new wording: keep `post_title` short, OR follow up with `updateSingleImagePost post_filename=...` after the create.
+
+**Fix 3 — Pre-check guidance handles comma/colon titles.** The `property_operator==` validator trips on values containing commas (interprets them as CSV). Real-run agent's pre-check failed on titles like "10K, 5K and Kids K at...". MCP corpus rule now says: if title has commas/colons/special chars, switch to `property_operator=like property_value=<distinctive-prefix>%`.
+
+**Fix 4 — ANTI-SLOP Wh-starter rule scoped to prose.** Banned in body prose; exempted for FAQ question labels ("When is...?", "Where does...?", "How much...?") since those are structural Q&A not openers. One phrase added to the patterns-table entry.
+
+**No code changes** (spec + skill content only). No SERVER_INFO bump. Drift check passes.
+
+**Tests run and decisions not shipped:**
+- Verified harness does NOT inject `<scheduled-task>` tag (grep returned nothing). The agent's suggestion to detect autonomous mode via that tag was based on an assumption; no fix.
+- Member-city enumeration in Stage 1 (agent suggested it) — declined; user-task-driven not skill-universal, bloat for routines that don't need it.
+- Image-verification dance (agent suggested using thumbnail `w=`/`h=` instead of per-photo WebFetch) — declined; thumbnail dimensions don't reflect original orientation.
+- Confidence-gate numeric rubric — declined; pretends precision the wording can't deliver.
+- Dedup payload `post_start_date >= today` filter — watch; only fix if next real-run shows large dedup payloads.
+
 ## [6.49.2] - 2026-05-17
 
 ### Remove `defaultOriginalImageUrl` wrapper helper — BD silently drops the field on single-image post writes
