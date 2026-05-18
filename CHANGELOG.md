@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.7] - 2026-05-17
+
+### Dedup wording: back to agent-judged distinctive prefix, with tighter guidance
+
+v6.49.6 went strict-first-3-words to remove agent judgment. On reflection, real-world title prefixes (`"The 5th Annual ..."`, `"2026 Inaugural ..."`) burn the 3-word slot on throwaway leaders that don't fingerprint the event — strict-literal returns junk on dupe matching. The agent is already doing semantic title-similarity 2 lines later in the same stage, so trusting it to pick 3 distinctive words is no new stretch.
+
+Reverted to `<first-3-distinctive-words>` in both skill spots (METHODOLOGY.md Stage 3, events.md runbook step 7). Added inline guidance to METHODOLOGY: *"Distinctive means the first 3 words that meaningfully fingerprint THIS event. If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do."* events.md cross-refs METHODOLOGY for the definition.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.6] - 2026-05-17
 
 ### Dedup wording: strict first-3-words (no agent judgment)
