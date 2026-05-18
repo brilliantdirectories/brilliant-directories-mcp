@@ -57,7 +57,7 @@ Wh- sentence-starter in prose (FAQ labels exempt). Hedging every claim. Explaini
 
 ## Wrong-example reference
 
-The line below contains the banned U+2014 character — included so you can recognize the pattern. Do NOT write text like this:
+The code block in this section contains the banned U+2014 character — included so you can recognize the pattern. Do NOT write text like this:
 
 ```
 Tickets cost $20—$45 for the Saturday show — bring sunscreen.

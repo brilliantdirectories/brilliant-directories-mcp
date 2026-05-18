@@ -15,7 +15,7 @@ Create content posts on a Brilliant Directories (BD) site. Research publicly-ava
 2. `shared/ANTI-SLOP.md` — writing voice and pattern bans. Mandatory before generating any prose.
 3. `shared/URL-PATTERNS.md` — internal URL construction for the user's site.
 
-Then read the content-type-specific file from `content-types/` based on what the user wants (see routing below).
+Then read the content-type-specific file from `content-types/` based on what the user wants (see the `Content-type routing` section).
 
 ## Content-type routing
 
@@ -27,7 +27,7 @@ Read the user's request and route to the correct content-type protocol:
 | Job listings | NOT AVAILABLE in v0.1. Tell user this content type is coming in a future release. |
 | Property listings (real estate) | NOT AVAILABLE in v0.1. Tell user this content type is coming in a future release. |
 | Blog articles | NOT AVAILABLE in v0.1. Tell user this content type is coming in a future release. |
-| Something else | Ask the user to clarify which of the above their request maps to. |
+| Something else | Ask the user to clarify which content type from this table their request maps to. |
 
 If the user's intent is ambiguous, ask. If they say "create some posts" with no content type, ask which type.
 

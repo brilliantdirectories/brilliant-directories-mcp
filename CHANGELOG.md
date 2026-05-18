@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.20] - 2026-05-17
+
+### Kill all spatial cross-refs in skill bundle (`above` / `below` / `elsewhere`)
+
+Per "no spatial cross-refs" rule — AI has no spatial awareness across a markdown doc; "see X below" is meaningless. 10 hits across 4 files, all rewritten to explicit section names or backticked identifiers:
+
+- `SKILL.md`: "see routing below" → "see the `Content-type routing` section"; "which of the above" → "which content type from this table"
+- `content-types/events.md` (7 hits): runbook step 3/4/5/10 "below" pointers → explicit section names (`Post-type discovery`, `Author resolution`, `Source candidates`, `BD Events field reference`); Author short-circuit "every step below" → "this entire section"; transliteration rule "any tier below" → "running the retry ladder"; tier ladder "extraction prompt below" → "extraction prompt defined at the end of this section"; `post_start_date` field row "see Date/time formats below" → "see the `Date/time formats` section"; SEO meta note "the SEO meta fields above" → explicit field names (`post_meta_title` and `post_meta_description`)
+- `shared/URL-PATTERNS.md` (2 hits): Pattern 3 row "See filter params below" → "See the `Pattern 3 filter params` section"; Internal-link variety "supported params above" → "params from the `Pattern 3 filter params` section"
+- `shared/ANTI-SLOP.md`: "The line below" → "The code block in this section"
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.19] - 2026-05-17
 
 ### Kill the `getPostTypeCustomFields` bloat call — use cached `feature_categories`

@@ -10,7 +10,7 @@ Read before generating any internal link. Universal across post types.
 |---|---|---|---|
 | 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
-| 3 | Filtered listing | `/<data_filename>?<filters>` | See filter params below. |
+| 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
 
 WebPage-backed link patterns (data_category landings, profile_search_results pages, custom WebPages) are OUT OF SCOPE for content-creation skills. Those belong to the future `/bd:seo` skill.
 
@@ -63,4 +63,4 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety (SEO)
 
-When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 links per post, woven inline where they read naturally — not always concentrated at the end. LLM-judged per post; no fixed rotation. Each link must be a Pattern 3 URL with only the supported params above.
+When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 links per post, woven inline where they read naturally — not always concentrated at the end. LLM-judged per post; no fixed rotation. Each link must be a Pattern 3 URL with only params from the `Pattern 3 filter params` section.

@@ -16,14 +16,14 @@ The user invoked the skill with a request like "create event posts on my site" o
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
-3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
-4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see "Author resolution" below.
-5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
+3. **Post-type discovery (events-specific, this file).** See the `Post-type discovery` section.
+4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see the `Author resolution` section.
+5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
 6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Highest-value internal-link filters for events: category, location (lat+lng+location_value), date (daterange). See URL-PATTERNS.md for param syntax.
-10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
+10. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 11. **Audit summary** (METHODOLOGY Stage 7).
 
 ### Interactive-mode question order
@@ -64,7 +64,7 @@ The user's explicit post-type pick always wins.
 
 ## Author resolution (Stage 4 of runbook)
 
-**Short-circuit: if the user already provided a `user_id` (or `author_id`) in the request/args, use it and SKIP every step below.** No discovery calls needed.
+**Short-circuit: if the user already provided a `user_id` (or `author_id`) in the request/args, use it and SKIP this entire section.** No discovery calls needed.
 
 **Interactive (user not pre-specified):** ask "Which member should author these event posts? Give me a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq`. Confirm back to user before proceeding.
 
@@ -114,11 +114,11 @@ BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack
 
 Nominatim returns **wrong-country ghost matches** on native non-Latin scripts — confirmed live: `"Ακρόπολη, Αθήνα"` (Acropolis in Greek) returns Helsinki, Finland coords; `"台北101, 台北"` (Taipei 101) returns Iceland; `"故宫, 北京"` returns empty. The English transliteration of the same address resolves correctly every time.
 
-Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before any tier below.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this event entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
+Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before running the retry ladder.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this event entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
 
 ### 3-tier retry ladder (run sequentially on the transliterated address, accept first hit)
 
-Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` with the extraction prompt below.
+Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` using the extraction prompt defined at the end of this section.
 
 **Tier 1 — full address as given.** `q="<street>, <city>, <state>, <country>"`. Works for indexed street addresses. Validated US + Luxembourg + Malta + Thailand + Costa Rica.
 
@@ -213,7 +213,7 @@ What `createSingleImagePost` receives.
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | comma-only, no spaces |
-| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see Date/time formats below). Date AND time both live here. BD silently truncates other formats. |
+| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
 | `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | venue name ("Stubb's BBQ", "Staples Center") |
 | `post_location` | full address text ("Stubb's BBQ, 801 Red River St, Austin, TX 78701") |
@@ -229,7 +229,7 @@ What `createSingleImagePost` receives.
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
 
-`createSingleImagePost` accepts the SEO meta fields above; the wrapper passes them through.
+`createSingleImagePost` accepts the `post_meta_title` and `post_meta_description` fields; the wrapper passes them through.
 
 ### Date/time formats
 
