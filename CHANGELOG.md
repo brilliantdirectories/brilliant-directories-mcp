@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.47] - 2026-05-18
+
+### Harden `Rule: Image dedup` — mandatory tone + intra-batch dedup + drop anecdotes
+
+v6.49.46 audit surfaced three drift risks. Tightened:
+
+- **Mandatory tone.** Lead now reads `**Required pre-write check. Never skip.**` (was: rationale-soft `"check it's not already used elsewhere"` + "looks like an obvious copy-paste; uniqueness per site is the goal"). No room for the agent to treat dedup as a best-practice suggestion.
+- **Intra-batch dedup.** Multi-image CSV batch case now explicitly requires (a) per-URL `list*` check AND (b) dedup of candidates against each other in the same call. Closes the gap where `createMultiImagePost post_image="urlA,urlB,urlA"` would pass server checks but ship two identical URLs in one gallery.
+- **Anecdotes dropped.** Removed `(rare but possible on small sites with many existing posts)` and trailing `Rare on real sites.` — agent doesn't act on rarity claims.
+
+Single-image and multi-image post-type coverage, URL canonicalization, fallback order, and user-supplied-URL escape unchanged.
+
+**No code changes** (corpus only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.46] - 2026-05-18
 
 ### Image dedup against existing site content

@@ -958,15 +958,15 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dedup
 
-**Before writing a Pexels (or any stock) image URL to `post_image`, `hero_image`, or `original_image_url` on a CSV/photo write, check it's not already used elsewhere on this site.** Two posts on the same site sharing the same stock photo looks like an obvious copy-paste; uniqueness per site is the goal.
+**Required pre-write check. Never skip.** Before writing any stock image URL to `post_image`, `hero_image`, or `original_image_url` (single-image post, multi-image post CSV, or `createMultiImagePostPhoto`), dedup it against existing site content AND against the other URLs in the same batch.
 
 - **Single-image post types** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==` — 0 rows = unused, use it; ≥1 row = already used, pick another.
 - **Multi-image post types** (users_portfolio gallery photos): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==` — same logic.
-- **For a batch** (multi-image CSV or a multi-post run), check each candidate URL individually before committing.
+- **Batches** (`createMultiImagePost` CSV, or a multi-post skill run): (a) run the matching `list*` check above for EACH candidate URL, AND (b) dedup the candidates against EACH OTHER — two identical URLs in the same CSV is also a dupe. Reject and replace any URL that fails either check before committing the call.
 - **URL form to check.** Use the bare canonical Pexels URL exactly as it gets stored: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` (or `.png`/`.webp`). Exact match — no query string, no `?w=` suffix.
 - **Selection from the Pexels WebSearch pool.** Each `WebSearch site:pexels.com/photo <topic>` returns ~10 candidates. Pick a random index from the first ~10 rather than defaulting to result #1 — random selection over the pool reduces the odds that two runs on the same site converge on the same photo.
-- **If the chosen candidate is a dupe.** Try the next random candidate from the same pool. If the entire pool is dupes (rare but possible on small sites with many existing posts), run a new `WebSearch` with a varied topic phrase (`pilates class` → `pilates reformer` → `pilates studio mat`) and pick from that pool. One more variation if the second pool is also exhausted.
-- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name it in the audit ("reused stock photo X — exhausted varied searches"). Rare on real sites.
+- **If the chosen candidate is a dupe.** Try the next random candidate from the same pool. If the entire pool is dupes, run a new `WebSearch` with a varied topic phrase (`pilates class` → `pilates reformer` → `pilates studio mat`) and pick from that pool. One more variation if the second pool is also exhausted.
+- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name it in the audit ("reused stock photo X — exhausted varied searches").
 - **User-supplied URLs skip dedup.** If the user named a specific image, write it even if it's already used elsewhere — user choice is the authority.
 
 ### Rule: Banned image sources
