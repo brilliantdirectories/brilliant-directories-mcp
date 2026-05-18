@@ -68,7 +68,7 @@ Match each returned row against the candidate:
 
 Title-similar AND date-close AND location-match → duplicate → skip the candidate.
 
-v0.1 always SKIPS existing records. v0.2 adds `--update-existing`.
+Always SKIP existing records — no auto-edit of live posts.
 
 ## Stage 4: Category routing
 
@@ -170,5 +170,5 @@ That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If 
 - **Source references are optional + casual, not forced attribution.** When natural, reference the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
 - **Publication default is draft unless user explicitly asked to publish live.** In autonomous mode the user usually pre-specified this in the routine prompt; if not, default to draft.
 - **Never auto-create BD categories in autonomous mode.** User's taxonomy is curated; grow it deliberately.
-- **Never auto-edit existing live posts** (v0.1).
+- **Never auto-edit existing live posts.**
 - **Never write content failing the anti-slop self-check.**

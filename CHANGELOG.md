@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.23] - 2026-05-18
+
+### SKILL.md universalized + v0.1/v0.2 version labels stripped
+
+SKILL.md was the universal router but had 4 event-specific leakage spots polluting it:
+
+- **Frontmatter description** had an event-specific invocation example ("create event posts for upcoming local fitness events") — generalized.
+- **Top-to-bottom run protocol** example was "create event posts on my site" — generalized to "create posts on my site".
+- **Required preconditions** had an event-flavored post-type check bullet — generalized; per-type discovery owns post-type verification.
+- **Output guarantees** referenced `deleteSingleImagePost` specifically — generalized to "the relevant `delete*` tool for the post type."
+
+Also stripped internal `v0.1` / `v0.2` version labels across SKILL.md + METHODOLOGY.md (e.g. "NOT AVAILABLE in v0.1" → "Not yet available"; "v0.1 always SKIPS existing records. v0.2 adds `--update-existing`." → "Always SKIP existing records — no auto-edit of live posts"). Rules are stated as current behavior, not version-spec history.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.22] - 2026-05-18
 
 ### Remove "v0.2 deferred" section from events.md (internal-only)
