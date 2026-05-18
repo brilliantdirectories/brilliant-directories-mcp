@@ -101,7 +101,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 ### Froala HTML safety
 
-Follow Froala safety rules from the MCP corpus (`mcp/openapi/mcp-instructions.md`, loaded with every MCP tool). Skip `<h1>` — reserved for the post title field. `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
+Follow Froala safety rules from the MCP corpus (`mcp/openapi/mcp-instructions.md`, loaded with every MCP tool). Skip `<h1>` — reserved for the post title field. **Always open `post_content` with `<p>` intro paragraph(s); never start with `<h2>` or any heading.** `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -142,6 +142,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
+- Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 

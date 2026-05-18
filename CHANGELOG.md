@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.36] - 2026-05-18
+
+### `post_content` must open with `<p>`, never `<h2>`
+
+Real-run agent started post bodies with `<h2>The fifth edition...</h2>` / `<h2>The Swansea course in numbers</h2>` / `<h2>The event in 60 seconds</h2>`. Wrong shape — body should open with intro paragraph(s), then H2 section breaks. Added rule in two spots: Froala safety section (positive instruction) and self-check before posting (pre-flight verification).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.35] - 2026-05-18
 
 ### New corpus `Rule: Post admin URLs` + post_title cap 60→54
