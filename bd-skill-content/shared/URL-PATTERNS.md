@@ -39,10 +39,6 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | Internal | `<a href="/...">text</a>` (no rel, no target) |
 | External | `<a href="https://..." rel="nofollow" target="_blank">text</a>` |
 
-## Runtime discovery
-
-`data_filename` is already cached from site context (METHODOLOGY Stage 1, `listPostTypes`). No additional discovery needed for content-creation skills.
-
 ## Composition examples (substitute `data_filename` for prefix)
 
 ```

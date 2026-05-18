@@ -23,8 +23,8 @@ The user invoked the skill with a request like "create event posts on my site" o
 3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see "Author resolution" below.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
-6. **Geocode (events-specific, this file).** Nominatim each candidate's address. Skip lat/lon on failure.
-7. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` (see METHODOLOGY Stage 3 for what "distinctive" means — skip throwaway leaders like `The`/`2026`/`Annual`) scoped to the events post type. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
+6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
+7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Internal links use URL-PATTERNS Pattern 1 (specific posts), 2 (post-type main page `/<data_filename>`), and 3 (filtered listings with `q=`/`category[]=`/`daterange=`/`lat`+`lng`+`location_value`).
 10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
@@ -102,7 +102,7 @@ Be specific. Brainstorm real domain names, not "some sites."
 
 ---
 
-## Geocoding (Stage 6 of runbook)
+## Geocoding (Stage 7 of runbook)
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -132,7 +132,7 @@ On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn
 
 ---
 
-## Dedup (Stage 7 of runbook)
+## Dedup (Stage 6 of runbook)
 
 Per METHODOLOGY Stage 3. Events-specific match criteria:
 - Title: semantic match.

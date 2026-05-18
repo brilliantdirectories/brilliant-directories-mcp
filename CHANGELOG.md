@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.8] - 2026-05-17
+
+### Cold-review patch: 6 drift/efficiency fixes after v6.49.7 deep audit
+
+Cold-review minion swept the whole skill bundle and found drift left over from the v6.49.5/6/7 ship cadence plus one efficiency win.
+
+**Fix 1 — `SKILL.md` "12 steps / 12 stages" drift.** Lines 40 and 46 still said the run protocol was "12 steps documented in `shared/METHODOLOGY.md`" and "Run all 12 stages of METHODOLOGY." Reality: METHODOLOGY has 7 stages; the 11-step runbook lives in the per-type file (events.md). Rewritten to: framework lives in METHODOLOGY (7 stages), end-to-end runbook lives in the content-type file, point agent at content-type runbook end-to-end.
+
+**Fix 2 — `URL-PATTERNS.md` "Runtime discovery" section deleted.** v6.49.5 trimmed it to a single redundant sentence ("data_filename is already cached from site context"). Cold review correctly flagged: the whole section is redundant with METHODOLOGY Stage 1. Deleted entirely.
+
+**Fix 3 — `events.md` dedup skip-list DRY'd.** Step 6 (formerly 7) restated a partial skip-list (`The/2026/Annual`) while METHODOLOGY's canonical list is `The/2026/5th/Annual/Inaugural`. Trimmed events.md to cross-ref METHODOLOGY Stage 3 for the definition — single source of truth.
+
+**Fix 4 — `METHODOLOGY.md` shared-protocol-level author short-circuit.** Stage 1 said "Author resolution is per-type — see events.md Stage 4 for the algorithm," which didn't tell the agent reading METHODOLOGY first that a pre-specified `user_id` short-circuits everything. Added one sentence: "Universal short-circuit for author: if the user pre-specified a `user_id` (or `author_id`) — interactive or autonomous, any content type — use it and skip per-type author resolution entirely. No discovery calls."
+
+**Fix 5 — Runbook order: dedup BEFORE geocode.** Old order ran Geocode (step 6) → Dedup (step 7), wasting Nominatim calls on candidates that would be deduped away. Swapped: Dedup (step 6) → Geocode survivors (step 7). Section headers renumbered accordingly. Generalizes to jobs/properties — never geocode/process candidates that won't be created.
+
+**Fix 6 — events.md step 7 wording: "Geocode survivors only".** Reinforces the new order — agent only geocodes candidates that survived dedup.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.7] - 2026-05-17
 
 ### Dedup wording: back to agent-judged distinctive prefix, with tighter guidance

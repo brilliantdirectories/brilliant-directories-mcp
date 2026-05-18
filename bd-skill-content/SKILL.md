@@ -37,13 +37,13 @@ If the user's intent is ambiguous, ask. If they say "create some posts" with no 
 
 ## Top-to-bottom run protocol
 
-Whichever content type the user picks, the run protocol is the same 12 steps documented in `shared/METHODOLOGY.md`. The content-type file in `content-types/` provides the type-specific details (post-type marker, source candidates, load-bearing facts, dedup tolerance, field reference).
+Whichever content type the user picks, the universal protocol in `shared/METHODOLOGY.md` (7 stages) sets the framework; the content-type file in `content-types/` lays out the end-to-end runbook for that type (post-type marker, source candidates, load-bearing facts, dedup tolerance, field reference). For events, that's the 11-step runbook in `content-types/events.md`.
 
 The user can invoke this skill with as little as "create event posts on my site." The skill should:
 
 1. Confirm the content type if not clear.
 2. Detect mode (interactive vs autonomous — interactive if the user is in this chat).
-3. Run all 12 stages of METHODOLOGY without prompting unless genuinely ambiguous.
+3. Run the content-type runbook end-to-end without prompting unless genuinely ambiguous.
 4. Print a complete audit summary at the end.
 
 ## Required preconditions

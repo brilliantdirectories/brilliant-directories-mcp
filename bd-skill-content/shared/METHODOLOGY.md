@@ -22,6 +22,8 @@ Do NOT call `listWebPages` during site context. Content-creation skills don't bu
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
 Autonomous: infer location from `primary_country`, vertical from site info and categories. Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
 
+**Universal short-circuit for author:** if the user pre-specified a `user_id` (or `author_id`) in their request — interactive or autonomous, any content type — use it and skip per-type author resolution entirely. No discovery calls.
+
 ## Stage 2: Source research
 
 **2a.** Brainstorm 5-10 candidate sources for vertical+location. Per-type SKILL.md provides candidate categories. Be specific (real domain names, not "some sites").
