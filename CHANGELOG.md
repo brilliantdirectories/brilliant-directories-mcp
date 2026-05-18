@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.11] - 2026-05-17
+
+### Hotfix: remove dead `total_clicks`/`total_photos` synthesis writes in `applyUserLean`
+
+v6.49.10 moved `total_clicks` and `total_photos` behind `include_extras=1` in `USER_LEAN_ALWAYS_KEEP` — but left in place the synthesis writes from the old keep-list world that were SETTING those fields immediately before the keep-list trim deleted them. Dead writes; CPU waste; and `include_extras=1` itself didn't restore the rollup synthesis, so users couldn't get the count back either.
+
+Cleanest fix: drop the synthesis writes entirely. Agents wanting click/photo counts now pass `include_clicks=1` (full click array) or `include_photos=1` (full `photos_schema` array) — no bare-rollup-count UX guarantee. Same byte-removal applied to npm `mcp/index.js` and Worker `src/index.ts`. Worker SERVER_INFO 3.3.3 -> 3.3.4. Drift clean.
+
 ## [6.49.10] - 2026-05-17
 
 ### User lean trim + universal `listCities` rule

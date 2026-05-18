@@ -578,7 +578,6 @@ function applyUserLean(body, includeFlags) {
   };
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
-    const totalPhotos = Array.isArray(row.photos_schema) ? row.photos_schema.length : 0;
     stripKeys(row, USER_LEAN_ALWAYS_STRIP);
     if (!include.password) delete row.password;
     if (!include.subscription) delete row.subscription_schema;
@@ -597,17 +596,9 @@ function applyUserLean(body, includeFlags) {
     if (!include.profession) delete row.profession_schema;
     if (!include.tags) delete row.tags;
     if (!include.services) delete row.services_schema;
-    if (!include.clicks) {
-      const total =
-        row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
-          ? row.user_clicks_schema.total_clicks
-          : 0;
-      row.total_clicks = total;
-      delete row.user_clicks_schema;
-    }
+    if (!include.clicks) delete row.user_clicks_schema;
     if (!include.seo_hidden) stripKeys(row, USER_LEAN_SEO_BUNDLE);
     if (!include.about) delete row.about_me;
-    if (!include.photos) row.total_photos = totalPhotos;
 
     // Keep-list trim — drop every top-level field NOT in USER_LEAN_ALWAYS_KEEP
     // unless include_extras=1. Runs LAST so wrapper-shaped fields (total_clicks,
