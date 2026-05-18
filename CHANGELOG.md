@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.48] - 2026-05-18
+
+### `Rule: Image dedup` — close cross-table + `hero_image` + update + false-positive gaps
+
+Six accuracy/coverage gaps surfaced reviewing v6.49.47:
+
+- **Cross-table dedup.** v6.49.47 queried `listSingleImagePosts` for single-image writes and `listMultiImagePostPhotos` for gallery writes — but never both. An event post could reuse a stock photo already in a gallery on the same site (or vice versa) and pass dedup. New shape: EVERY write runs ALL THREE checks regardless of which post type is being written.
+- **`hero_image` actually queryable.** v6.49.47 named `hero_image` in the trigger list but neither list query reached it — `hero_image` lives on WebPages as a users_meta EAV row (`database=web_pages`, `key=hero_image`), not in `data_posts` or `users_portfolio`. New third check uses `listUserMeta database=web_pages key=hero_image` + client-side value filter, with the explicit note that `listUserMeta` does NOT support a value-side property filter.
+- **`update*` calls explicit.** Trigger now reads "`create*` always triggers; `update*` triggers on every call that writes the image field — no self-attested no-op skip." Removes the loophole where an agent could claim "this is a no-op, skip dedup" without proof.
+- **`update*` self-exclusion + ID-to-query mapping.** When updating an existing record, exclude that record's own row from the dedup result set. New bullet binds each ID to its list query so the agent doesn't mis-pair: `listSingleImagePosts` hits match by `post_id`, `listMultiImagePostPhotos` hits match by `photo_id`, `listUserMeta` hero hits match by `database_id == seo_id`. Prevents false-positive "already used" loops where the post finds its own image.
+- **STOCK-only trigger scope with heuristic.** Now explicit: stock = generic licensable photo libraries (Pexels, Unsplash, Pixabay). Everything else — user-supplied URLs, subject-domain URLs (brand assets, the event/listing source's own image), CDN-hosted source-site images (Eventbrite/news/social CDNs) — is non-stock and skips dedup entirely. Prevents false-flagging deliberate brand reuse and ambiguity on borderline CDN cases.
+
+Audit-name fallback updated to name the table where the dupe was found (`data_posts` / `users_portfolio` / `web_pages.hero_image`).
+
+Three-query-per-candidate cost is accepted — safety guarantee beats query budget. Single image-write call: 3 list queries before commit. 5-URL CSV batch: 15 list queries plus intra-batch dedup. Real but bounded.
+
+**No code changes** (corpus only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.47] - 2026-05-18
 
 ### Harden `Rule: Image dedup` — mandatory tone + intra-batch dedup + drop anecdotes

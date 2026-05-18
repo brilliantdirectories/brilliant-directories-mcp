@@ -958,16 +958,20 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dedup
 
-**Required pre-write check. Never skip.** Before writing any stock image URL to `post_image`, `hero_image`, or `original_image_url` (single-image post, multi-image post CSV, or `createMultiImagePostPhoto`), dedup it against existing site content AND against the other URLs in the same batch.
+**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to `post_image`, `original_image_url`, or `hero_image`, dedup the URL against ALL three storage locations on the site AND against the other URLs in the same batch.
 
-- **Single-image post types** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==` — 0 rows = unused, use it; ≥1 row = already used, pick another.
-- **Multi-image post types** (users_portfolio gallery photos): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==` — same logic.
-- **Batches** (`createMultiImagePost` CSV, or a multi-post skill run): (a) run the matching `list*` check above for EACH candidate URL, AND (b) dedup the candidates against EACH OTHER — two identical URLs in the same CSV is also a dupe. Reject and replace any URL that fails either check before committing the call.
+- **Three storage locations to check on every write.** Any hit in any of the three = already used on this site, pick another.
+  1. **Single-image posts** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`.
+  2. **Multi-image gallery photos** (users_portfolio): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`.
+  3. **WebPage hero images** (users_meta EAV): `listUserMeta database=web_pages key=hero_image` then client-filter rows for `value` equal to your exact URL. `listUserMeta` does NOT support a `value`-side property filter — list by (database, key) and filter client-side.
+- **Trigger.** `create*` always triggers; `update*` triggers on every call that writes the image field — no self-attested no-op skip.
+- **Trigger scope.** STOCK URLs only. Stock = generic licensable photo libraries (Pexels, Unsplash, Pixabay). Everything else (user-supplied URLs, subject-domain URLs / brand assets / the event or listing source's own image, CDN-hosted source-site images like Eventbrite/news/social CDNs) is non-stock and skips dedup entirely — legitimate reuse.
+- **`update*` self-exclusion.** When updating an existing record, exclude that record's own row from the dedup result set: for `listSingleImagePosts` hits, match by `post_id`; for `listMultiImagePostPhotos` hits, match by `photo_id`; for `listUserMeta` hero hits, match by `database_id == seo_id` (the page being updated). Hits on OTHER records still count as dupes.
+- **Batches** (`createMultiImagePost` CSV, or a multi-post skill run): (a) run all three `list*` checks above for EACH candidate URL, AND (b) dedup the candidates against EACH OTHER — two identical URLs in the same CSV is also a dupe. Reject and replace any URL that fails either check before committing the call.
 - **URL form to check.** Use the bare canonical Pexels URL exactly as it gets stored: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` (or `.png`/`.webp`). Exact match — no query string, no `?w=` suffix.
 - **Selection from the Pexels WebSearch pool.** Each `WebSearch site:pexels.com/photo <topic>` returns ~10 candidates. Pick a random index from the first ~10 rather than defaulting to result #1 — random selection over the pool reduces the odds that two runs on the same site converge on the same photo.
 - **If the chosen candidate is a dupe.** Try the next random candidate from the same pool. If the entire pool is dupes, run a new `WebSearch` with a varied topic phrase (`pilates class` → `pilates reformer` → `pilates studio mat`) and pick from that pool. One more variation if the second pool is also exhausted.
-- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name it in the audit ("reused stock photo X — exhausted varied searches").
-- **User-supplied URLs skip dedup.** If the user named a specific image, write it even if it's already used elsewhere — user choice is the authority.
+- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the table in the audit ("reused stock photo X already in data_posts" / "users_portfolio" / "web_pages.hero_image").
 
 ### Rule: Banned image sources
 
