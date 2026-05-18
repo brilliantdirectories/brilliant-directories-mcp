@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.28] - 2026-05-18
+
+### Nominatim retry ladder: adaptive 4-tier (venue+city+region first when venue known)
+
+Live-tested 8 query patterns including the Delta Hotels Toronto over-scoped failure case. Confirmed: `venue + city + state/region` is BOTH highest-specificity AND highest-hit-rate when a venue name is known — Stubb's BBQ and Delta Hotels Toronto both resolved cleanly under this pattern, both failed under the older Tier 1 of `street + city + region + zip + country` over-scoping.
+
+Rewrote Stage 7 ladder as adaptive:
+
+**When `post_venue` is known — 4 tiers:**
+1. `<venue>, <city>, <state-name>` (US/CA) OR `<venue>, <city>, <country>` (intl) — venue coords, highest hit rate.
+2. `<street>, <city>, <state-name>` OR `<street>, <city>, <country>` — catches venues not in Nominatim but with indexed addresses.
+3. `<venue>, <state-name>` OR `<venue>, <country>` — looser landmark match.
+4. `<city>, <state-name>` OR `<city>, <country>` — city-center fallback.
+
+**When `post_venue` is empty — 2 tiers:** street+city+region → city+region.
+
+All earlier validated rules preserved: MANDATORY transliteration before any query, escape hatch if no English form, spelled-out state names beat 2-letter codes, country fallback for international without states, ≥1 sec pacing, cache within run, never fabricate, WebFetch extraction prompt, output normalization via `listStates`.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.27] - 2026-05-18
 
 ### `post_location` no longer duplicates venue prefix

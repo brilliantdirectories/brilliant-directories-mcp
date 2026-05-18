@@ -116,21 +116,23 @@ Nominatim returns **wrong-country ghost matches** on native non-Latin scripts �
 
 Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before running the retry ladder.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this event entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
 
-### 3-tier retry ladder (run sequentially on the transliterated address, accept first hit)
+### Adaptive retry ladder (run sequentially on the transliterated address, accept first hit)
 
-Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` using the extraction prompt defined at the end of this section.
+Nominatim is uneven — over-scoped queries (venue + street + city + region + zip + country) miss; medium-scoped queries (venue + city + region OR street + city + region) hit. Spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). For international without state-equivalents, use country in place of state. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` using the extraction prompt defined at the end of this section.
 
-**Tier 1 — full address as given.** `q="<street>, <city>, <state>, <country>"`. Works for indexed street addresses. Validated US + Luxembourg + Malta + Thailand + Costa Rica.
+**When `post_venue` is known (most events) — 4 tiers:**
 
-**Tier 2 — drop street, keep venue + biggest scope.** Strip the numeric street address; keep the venue/landmark name.
-- US/Canada/AU/etc (countries WITH states/provinces): `q="<venue>, <state-name-spelled-out>"` — spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). `"Jay Blanchard Park, Florida"` resolves; `"Jay Blanchard Park, Orlando, FL"` does NOT.
-- International (countries WITHOUT subregions, or where city scoping hurts): `q="<venue>, <country>"`. `"St John's Co-Cathedral, Malta"`.
+1. `q="<venue>, <city>, <state-name>"` (US/CA) OR `q="<venue>, <city>, <country>"` (intl). Highest specificity AND highest hit rate — Nominatim has named venues indexed.
+2. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`. Catches venues that aren't named in Nominatim but have indexed street addresses.
+3. `q="<venue>, <state-name>"` (US/CA) OR `q="<venue>, <country>"` (intl). Looser — landmark-level match.
+4. `q="<city>, <state-name>"` OR `q="<city>, <country>"`. City-center fallback. Always resolves for any recognized city (venue-level accuracy lost).
 
-**Tier 3 — city + biggest scope as last resort.** Returns city-center coords (venue-level accuracy lost).
-- US/Canada: `q="<city>, <state-name>"`.
-- International: `q="<city>, <country>"`. Always resolves for any recognized city.
+**When `post_venue` is empty (source page only gave a street address) — 2 tiers:**
 
-After all 3 empty → skip `lat`/`lon` on that event. Post still creates.
+1. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`.
+2. `q="<city>, <state-name>"` OR `q="<city>, <country>"`.
+
+After all tiers empty → skip `lat`/`lon` on that event. Post still creates.
 
 **Extraction prompt for each `WebFetch`:** `"Extract from this Nominatim JSON response: (1) lat as a decimal, (2) lon as a decimal, (3) country_code (ISO 2-letter), (4) state name from the address breakdown (full name as returned, e.g. 'New York', 'California', 'Ontario'). Return as a flat object with keys: lat, lon, country_code, state_name. Omit keys whose values are not present in the response."`
 
