@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.12] - 2026-05-17
+
+### Skill reliability: 4 fixes from real-run audit + live Nominatim/Pexels probing
+
+**Fix 1 — Nominatim 3-tier retry ladder in `events.md` Stage 7.** Real run on a fitness directory hit Nominatim empty-result failures on full street addresses ("2451 N Dean Road, Orlando, FL 32817" → empty). Live-tested across US + Luxembourg + Malta + Thailand + Costa Rica to validate a reliable ladder: Tier 1 full address as given; Tier 2 strip street, keep venue + state-name-spelled-out (US/CA) OR venue + country (international); Tier 3 city + state-name (US/CA) OR city + country (international). Spelled-out state names beat 2-letter codes — `"Jay Blanchard Park, Florida"` resolves, `"Jay Blanchard Park, Orlando, FL"` does NOT. Every tier resolved a real case the prior tier missed; skip lat/lon only after all 3 empty.
+
+**Fix 2 — Non-Latin script transliteration rule (MANDATORY) in `events.md` Stage 7.** Critical safety fix surfaced by live testing Greek + Chinese inputs. `"Ακρόπολη, Αθήνα"` (Acropolis, Athens in Greek) returns Helsinki, Finland coords. `"台北101, 台北"` returns Iceland. `"故宫, 北京"` returns empty. The English transliteration of the same address resolves correctly every time. Without this rule, an event in Athens stores Helsinki coords and shows up wrong on every map widget — silent corruption with valid-looking floats. New rule: scan address for non-Latin characters (Greek, Cyrillic, CJK, Arabic, Hebrew, Devanagari, Thai, etc.); if found, convert to English/transliterated form via source page or LLM judgment BEFORE querying Nominatim. Never pass native script directly.
+
+**Fix 3 — `METHODOLOGY.md` image strategy defers to MCP corpus `Rule: Image URLs`.** Old wording said "Pexels landscape — bare URL ending in .jpg... Search by per-type keywords." Loose. Agent improvised by hitting `pexels.com/search/...` pages (return HTTP 403, agent had to retry-drill to individual photo pages anyway). The MCP corpus has the canonical workflow (`site:pexels.com/photo`, NOT `/search`, with the exact orientation-verification prompt pattern) loaded with every MCP tool. Replaced the loose paragraph with a pointer to the corpus rule. Single source of truth, no drift.
+
+**Fix 4 — `URL-PATTERNS.md` HTML-attribute `&amp;` escape note.** When URLs are wrapped in `<a href="...">` inside `post_content` HTML, raw `&` breaks on rare entity-name collisions (`?ref=foo&copy=yes` becomes `?ref=foo©=yes` because the parser interprets `&copy` as the copyright entity). One-line bullet added to Encoding rules: write `&amp;` in href attributes, not raw `&`. URL examples in this file remain in URL syntax (raw `&`) since they show URLs not HTML.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.11] - 2026-05-17
 
 ### Hotfix: remove dead `total_clicks`/`total_photos` synthesis writes in `applyUserLean`

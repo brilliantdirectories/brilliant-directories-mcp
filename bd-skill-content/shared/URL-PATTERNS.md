@@ -29,6 +29,7 @@ WebPage-backed link patterns (data_category landings, profile_search_results pag
 2. Slashes in `daterange`: `%2F`. `+` inside `daterange` IS the space-around-hyphen separator.
 3. Ampersands in category names: URL-encode (`Food%20%26%20Beverage`).
 4. Multi-category: repeat `category[]=A&category[]=B`. Default single.
+5. **`&` in `href` attributes of HTML-embedded URLs (e.g. inside `post_content`): escape as `&amp;`** per HTML5 spec. Browsers + Froala both accept raw `&` for non-entity sequences, but `?ref=foo&copy=yes` becomes `?ref=foo©=yes` because the parser interprets `&copy` as the copyright entity. The URL examples in this file show URL syntax (raw `&`); when wrapping any URL in `<a href="...">` for `post_content`, output `&amp;` instead.
 
 ## Internal vs external link attributes
 

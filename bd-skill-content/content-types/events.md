@@ -127,8 +127,29 @@ WebFetch(
 Rules:
 - ≥1 second between geocode calls (Nominatim ToS).
 - Cache within run: two events at same venue → geocode once.
-- No-result → skip `lat`/`lon` on that event. Post still creates. Note in audit.
 - Never fabricate coords. Never use LLM-knowledge coordinates.
+
+### MANDATORY: transliterate non-Latin scripts before querying
+
+Nominatim returns **wrong-country ghost matches** on native non-Latin scripts — confirmed live: `"Ακρόπολη, Αθήνα"` (Acropolis in Greek) returns Helsinki, Finland coords; `"台北101, 台北"` (Taipei 101) returns Iceland; `"故宫, 北京"` returns empty. The English transliteration of the same address resolves correctly every time.
+
+Before any Nominatim query, scan the address string. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form first.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). Never pass native script directly to Nominatim — silent wrong-country failures corrupt the post's map pin.
+
+### 3-tier retry ladder (run sequentially, accept first hit)
+
+Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up:
+
+**Tier 1 — full address as given.** `"<street>, <city>, <state>, <country>"`. Works for indexed street addresses. Validated US + Luxembourg + Malta + Thailand + Costa Rica.
+
+**Tier 2 — drop street, keep venue + biggest scope.** Strip the numeric street address; keep the venue/landmark name.
+- US/Canada/AU/etc (countries WITH states/provinces): `"<venue>, <state-name-spelled-out>"` — spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). Example: `"Jay Blanchard Park, Florida"` resolves; `"Jay Blanchard Park, Orlando, FL"` does NOT.
+- International (countries WITHOUT subregions, or where city scoping hurts): `"<venue>, <country>"`. Example: `"St John's Co-Cathedral, Malta"`.
+
+**Tier 3 — city + biggest scope as last resort.** Returns city-center coords (venue-level accuracy lost).
+- US/Canada: `"<city>, <state-name>"`.
+- International: `"<city>, <country>"`. Always resolves for any recognized city.
+
+**After all 3 empty** — skip `lat`/`lon` on that event. Post still creates. Note in audit which tier landed (or "all 3 empty"). Never fabricate. Pace ≥1 second between retry tiers per Nominatim ToS.
 
 ### Normalize Nominatim output before passing to BD
 
