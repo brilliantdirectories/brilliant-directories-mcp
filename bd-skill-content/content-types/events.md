@@ -19,7 +19,7 @@ This file extends the shared protocol with events-specific details.
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 11 steps in order:
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 10). Do NOT pre-fetch WebPages — content-creation skills don't build links to data_category / profile_search_results pages.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9). Do NOT pre-fetch WebPages — content-creation skills don't build links to data_category / profile_search_results pages.
 3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see "Author resolution" below.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
@@ -102,7 +102,18 @@ Be specific. Brainstorm real domain names, not "some sites."
 
 ---
 
+## Dedup (Stage 6 of runbook)
+
+Per METHODOLOGY Stage 3. Events-specific match criteria:
+- Title: semantic match.
+- Date: `post_start_date` within ±24 hours.
+- Location: same `post_venue` if known, else same city.
+
+---
+
 ## Geocoding (Stage 7 of runbook)
+
+Run on survivors only (candidates that passed Stage 6 dedup) — don't waste Nominatim calls on dupes.
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -129,15 +140,6 @@ Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as
 4. International addresses with no state/region equivalent → pass `country_sn` only, OMIT `state_sn`.
 
 On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn` (if mapped). Do NOT pass `auto_geocode=1`.
-
----
-
-## Dedup (Stage 6 of runbook)
-
-Per METHODOLOGY Stage 3. Events-specific match criteria:
-- Title: semantic match.
-- Date: `post_start_date` within ±24 hours.
-- Location: same `post_venue` if known, else same city.
 
 ---
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.9] - 2026-05-17
+
+### 2 cosmetic cleanups flagged by v6.49.8 cold review
+
+**Fix 1 — events.md:22 "Stage 10" typo → "Stage 9".** Runbook step 2 said "cache `data_filename` for Pattern 1/2/3 URL construction in Stage 10," but Pattern URL construction happens during Stage 9 (Content manufacture) — Stage 10 is the `createSingleImagePost` call where `post_content` is already-assembled HTML.
+
+**Fix 2 — events.md section physical order matches runbook execution order.** Geocoding and Dedup section headers were correctly numbered (Stage 7 / Stage 6) but the Geocoding section was physically positioned BEFORE the Dedup section in the file. Agents reading the runbook top-down were fine; agents skimming sections sequentially hit them in inverse runbook order. Swapped: file now reads Source candidates (5) → Dedup (6) → Geocoding (7) → Category routing (8) top-to-bottom. Also added one-line reinforcement at top of Geocoding section: "Run on survivors only (candidates that passed Stage 6 dedup) — don't waste Nominatim calls on dupes."
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.8] - 2026-05-17
 
 ### Cold-review patch: 6 drift/efficiency fixes after v6.49.7 deep audit
