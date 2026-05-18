@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.1] - 2026-05-17
+
+### v6.49.0 cold-review patch — 3 surgical fixes
+
+Cold-review audit of v6.49.0 surfaced 3 gaps. All fixed here.
+
+**Fix 1 — `getMembershipPlan` missing `include_extras` parameter.** Same bug class as v6.48.0 → v6.48.1's `getWebPage` fix. Description advertised the flag, runtime accepted it, spec didn't list it as a documented parameter. Added the `$ref`.
+
+**Fix 2 — METHODOLOGY.md line 21 still referenced the invented `admin_level` column.** v6.49.0's CHANGELOG claimed this was removed, but only the events.md Stage 4 rewrite removed it — the parallel Stage 1 instruction in shared/METHODOLOGY.md was missed. The line is now: "Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm." This defers author resolution to per-type SKILL.md where it belongs (different content types need different author-resolution shapes — events needs publishing-permission filter, blog might need editorial-team filter, etc.).
+
+**Fix 3 — `data_settings` removed from `PLAN_CONFIG_FIELDS` array (both npm and Worker, byte-mirrored) + from the `include_plan_config` description.** v6.49.0 promoted `data_settings` into the lean-by-default `PLAN_ALWAYS_KEEP` keep-list, but left it duplicated in `PLAN_CONFIG_FIELDS` (the `include_plan_config=1` bundle). Harmless (duplicate `Set.add()`) but stale. The `include_plan_config` description in bd-api.json was also still listing `data_settings` as a restorable field, which would have misled agents into thinking they needed to opt in for it. Cleaned both up; added a clarifying note in the description that `data_settings` is now lean-default.
+
+**Wrapper code touched** (Fix 3 removes `data_settings` from `PLAN_CONFIG_FIELDS` in npm + Worker). SERVER_INFO bumped 3.3.0 → 3.3.1. Behavior change: `include_plan_config=1` no longer re-adds `data_settings` to the keep-list (which it didn't need to — `data_settings` is already kept by default). No functional difference for callers; cleanup only.
+
 ## [6.49.0] - 2026-05-17
 
 ### Lean-by-default keep-list shaping for users + plans; events skill author-resolution rewrite

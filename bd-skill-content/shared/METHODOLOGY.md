@@ -18,7 +18,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 4. `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards) → if a row matches, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates. If no main-nav match, skip — site lacks a conventional main menu, fall back to URL-PATTERNS.md Patterns 1-5 for internal linking.
 
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
-Autonomous: infer location from `primary_country`, vertical from site info and categories, author from highest-admin via `listUsers --order_column=admin_level --order_type=desc --limit=5`. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
+Autonomous: infer location from `primary_country`, vertical from site info and categories. Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
 
 ## Stage 2: Source research
 

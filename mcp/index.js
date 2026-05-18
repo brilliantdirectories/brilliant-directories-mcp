@@ -1099,7 +1099,7 @@ const PLAN_CONFIG_FIELDS = [
   "about_form", "listing_details_form", "contact_details_form",
   "signup_sidebar", "profile_sidebar", "signup_email_template",
   "upgrade_email_template", "signup_promotion_widget", "profile_layout",
-  "menu_name", "data_settings", "data_settings_read", "location_settings",
+  "menu_name", "data_settings_read", "location_settings",
   "category_badge", "profile_badge", "subscription_filename",
   "payment_default", "hide_specialties", "email_member", "login_redirect",
   "page_header", "page_footer", "display_ads", "receive_messages",
