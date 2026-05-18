@@ -963,7 +963,7 @@ Applies to all image fields, all contexts.
 - **Three storage locations to check on every write.** Any hit in any of the three = already used on this site, pick another.
   1. **Single-image posts** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`.
   2. **Multi-image gallery photos** (users_portfolio): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`.
-  3. **WebPage hero images** (users_meta EAV): `listUserMeta database=web_pages key=hero_image` then client-filter rows for `value` equal to your exact URL. `listUserMeta` does NOT support a `value`-side property filter — list by (database, key) and filter client-side.
+  3. **WebPage hero images** (users_meta EAV — WebPage parent table is `list_seo`, NOT `web_pages`): `listUserMeta database=list_seo key=hero_image` then client-filter rows for `value` equal to your exact URL. `listUserMeta` does NOT support a `value`-side property filter — list by (database, key) and filter client-side.
 - **Trigger.** `create*` always triggers; `update*` triggers on every call that writes the image field — no self-attested no-op skip.
 - **Trigger scope.** STOCK URLs only. Stock = generic licensable photo libraries (Pexels, Unsplash, Pixabay). Everything else (user-supplied URLs, subject-domain URLs / brand assets / the event or listing source's own image, CDN-hosted source-site images like Eventbrite/news/social CDNs) is non-stock and skips dedup entirely — legitimate reuse.
 - **`update*` self-exclusion.** When updating an existing record, exclude that record's own row from the dedup result set: for `listSingleImagePosts` hits, match by `post_id`; for `listMultiImagePostPhotos` hits, match by `photo_id`; for `listUserMeta` hero hits, match by `database_id == seo_id` (the page being updated). Hits on OTHER records still count as dupes.
@@ -971,7 +971,7 @@ Applies to all image fields, all contexts.
 - **URL form to check.** Use the bare canonical Pexels URL exactly as it gets stored: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` (or `.png`/`.webp`). Exact match — no query string, no `?w=` suffix.
 - **Selection from the Pexels WebSearch pool.** Each `WebSearch site:pexels.com/photo <topic>` returns ~10 candidates. Pick a random index from the first ~10 rather than defaulting to result #1 — random selection over the pool reduces the odds that two runs on the same site converge on the same photo.
 - **If the chosen candidate is a dupe.** Try the next random candidate from the same pool. If the entire pool is dupes, run a new `WebSearch` with a varied topic phrase (`pilates class` → `pilates reformer` → `pilates studio mat`) and pick from that pool. One more variation if the second pool is also exhausted.
-- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the table in the audit ("reused stock photo X already in data_posts" / "users_portfolio" / "web_pages.hero_image").
+- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the table in the audit ("reused stock photo X already in data_posts" / "users_portfolio" / "list_seo.hero_image").
 
 ### Rule: Banned image sources
 

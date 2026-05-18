@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.49] - 2026-05-18
+
+### `Rule: Image dedup` — fix wrong `database` value for hero_image lookup (`web_pages` → `list_seo`)
+
+Live MCP stress test against `find-fitness-pros.directoryup.com` exposed a critical bug in v6.49.48: the WebPage hero_image dedup query used `listUserMeta database=web_pages key=hero_image`, which returns 0 rows on every site — BD's actual parent table for WebPage hero EAV rows is `list_seo`, not `web_pages`. v6.49.48 would have silently bypassed all hero_image dedup checks across all customers.
+
+Stress test also confirmed cross-table dedup is load-bearing in practice: URL `https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg` returned 0 rows from `listSingleImagePosts` (clean in data_posts) but 5 hits in `list_seo` hero rows. Without cross-table check, agent would have shipped a duplicate.
+
+Fixes in this release:
+- `listUserMeta database=web_pages` → `listUserMeta database=list_seo` (the actual parent table).
+- Inline note added: "WebPage parent table is `list_seo`, NOT `web_pages`" — prevents agents reasoning from the public-facing "web pages" admin label.
+- Audit-last-resort table name `web_pages.hero_image` → `list_seo.hero_image` for accuracy.
+
+`database_id == seo_id` self-exclusion mapping remains correct (BD's `list_seo.seo_id` is the PK).
+
+**No code changes** (corpus only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.48] - 2026-05-18
 
 ### `Rule: Image dedup` — close cross-table + `hero_image` + update + false-positive gaps
