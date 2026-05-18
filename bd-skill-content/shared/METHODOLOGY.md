@@ -49,7 +49,7 @@ Run AFTER research lands viable candidates, not before. Per-candidate scoped que
 For each candidate, query the relevant `list*` tool filtered by the candidate's distinctive title prefix:
 
 ```
-listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10
+listSingleImagePosts property=post_title property_operator=like property_value=<first-3-words>% limit=10
 ```
 
 (Substitute `listSingleImagePosts` for the post-type the skill targets — events use single-image, jobs/properties/blog may use other tools per their SKILL.md.) BD's WAF strips one `%` from bidirectional `%foo%`, so use single-anchor prefix `foo%` only. Returns 0-1 matching rows in normal use.

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.6] - 2026-05-17
+
+### Dedup wording: strict first-3-words (no agent judgment)
+
+v6.49.5 wrote `<first-3-distinctive-words>` to hint that the agent could skip throwaway leading words ("The 2026 ..."). Live behavior preference: strict first-3-words verbatim, no judgment call. Two skill spots updated (`METHODOLOGY.md` Stage 3, `events.md` runbook step 7).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.5] - 2026-05-17
 
 ### Real-run patch: 3 friction points caught running live event posts
