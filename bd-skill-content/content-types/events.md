@@ -4,13 +4,9 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 ## Required reading first
 
-1. `../shared/METHODOLOGY.md`: universal protocol, 5 quality gates, dedup, audit, hard rules.
+1. `../shared/METHODOLOGY.md`: universal protocol.
 2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
 3. `../shared/URL-PATTERNS.md`: internal URL construction.
-
-MCP wrapper specifics (rate limits, force-injections, lean responses, EAV routing, HTTP codes) come from the MCP's own corpus, loaded with every MCP tool. Don't re-document.
-
-This file extends the shared protocol with events-specific details.
 
 ---
 
@@ -19,18 +15,16 @@ This file extends the shared protocol with events-specific details.
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 11 steps in order:
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9). Do NOT pre-fetch WebPages — content-creation skills don't build links to data_category / profile_search_results pages.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
 3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see "Author resolution" below.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
 6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Internal links use URL-PATTERNS Pattern 1 (specific posts), 2 (post-type main page `/<data_filename>`), and 3 (filtered listings with `q=`/`category[]=`/`daterange=`/`lat`+`lng`+`location_value`).
+9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Highest-value internal-link filters for events: category, location (lat+lng+location_value), date (daterange). See URL-PATTERNS.md for param syntax.
 10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
 11. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
-
-Run all 11 steps. Skip none. If any step fails for a given event, continue to next event.
 
 ### Interactive-mode question order
 

@@ -7,19 +7,15 @@ description: Create SEO-rich content posts on a Brilliant Directories (BD) websi
 
 ## What this skill does
 
-You are running on behalf of a BD site owner. Their site is a Brilliant Directories website (a 50,000+-website SaaS platform for directories and membership sites). The user wants to create content posts on their site without writing them manually.
-
-The skill researches publicly-available web sources for real-world data, runs that data through quality gates, manufactures EEAT-rich SEO content, and creates the posts via the BD MCP. Works for multiple content types: events, jobs, property listings, blog articles.
+Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, properties, blog articles.
 
 ## Required reading (in this order)
 
-1. `shared/METHODOLOGY.md` — universal protocol: mode detection, site context discovery, 7-stage research-and-publish pipeline, quality gates, deduplication, audit summary, hard rules.
+1. `shared/METHODOLOGY.md` — universal protocol.
 2. `shared/ANTI-SLOP.md` — writing voice and pattern bans. Mandatory before generating any prose.
 3. `shared/URL-PATTERNS.md` — internal URL construction for the user's site.
 
 Then read the content-type-specific file from `content-types/` based on what the user wants (see routing below).
-
-The MCP wrapper's own corpus (loaded automatically with every MCP tool) documents rate limits, force-injected fields, lean response shapes, EAV routing, `_clear_fields`, PATCH semantics, HTTP codes. Don't re-document those.
 
 ## Content-type routing
 
@@ -37,14 +33,13 @@ If the user's intent is ambiguous, ask. If they say "create some posts" with no 
 
 ## Top-to-bottom run protocol
 
-Whichever content type the user picks, the universal protocol in `shared/METHODOLOGY.md` (7 stages) sets the framework; the content-type file in `content-types/` lays out the end-to-end runbook for that type (post-type marker, source candidates, load-bearing facts, dedup tolerance, field reference). For events, that's the 11-step runbook in `content-types/events.md`.
+The universal protocol in `shared/METHODOLOGY.md` sets the framework; the content-type file in `content-types/` lays out the end-to-end runbook for that type.
 
 The user can invoke this skill with as little as "create event posts on my site." The skill should:
 
 1. Confirm the content type if not clear.
 2. Detect mode (interactive vs autonomous — interactive if the user is in this chat).
 3. Run the content-type runbook end-to-end without prompting unless genuinely ambiguous.
-4. Print a complete audit summary at the end.
 
 ## Required preconditions
 
@@ -68,8 +63,3 @@ If `getSiteInfo` returns no site or errors out, tell the user the MCP isn't conn
 
 Every run ends with a brief summary listing what was created — title, `post_id`, admin edit URL per post. Customers can review and `deleteSingleImagePost <post_id>` (or the equivalent for other post types) anything they don't want. Internal process details (candidates probed, gates failed, retries) stay out of the user-facing summary.
 
-## Distribution
-
-This skill is distributed as a zip file uploaded to claude.ai/settings/customize. Source files live in the BD MCP repo at https://github.com/brilliantdirectories/brilliant-directories-mcp under `bd-skill-content/`.
-
-The underlying MCP server is required (https://brilliantmcp.com for hosted, or `npm install brilliant-directories-mcp` for local). The skill assumes the MCP is connected before invocation.

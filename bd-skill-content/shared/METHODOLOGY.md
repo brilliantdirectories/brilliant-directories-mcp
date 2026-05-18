@@ -17,7 +17,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`.
 4. `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards) → if a row matches, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates. If no main-nav match, skip — site lacks a conventional main menu, fall back to URL-PATTERNS.md Patterns 1-3 for internal linking.
 
-Do NOT call `listWebPages` during site context. Content-creation skills don't build internal links to `data_category` / `profile_search_results` WebPages; the future `/bd:seo` skill is what owns those.
+Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
 Autonomous: infer location from `primary_country`, vertical from site info and categories. Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
@@ -44,7 +44,7 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
-**2e.** Stop at ~10-20 verified records or no new candidates. **Realistic run time: 30-60 min for 10-20 records.**
+**2e.** Stop at ~10-20 verified records or no new candidates.
 
 ## Stage 3: Duplicate detection
 
@@ -78,17 +78,26 @@ Per-type SKILL.md may specify a fallback category.
 
 ## Stage 5: Content manufacture (universal)
 
-**Goal:** an EEAT-rich landing page that competes for long-tail queries the source's thin listing doesn't target. Better depth, real internal-linking, structured info, honest source-grounded content. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different. Trust your judgment.
+**Goal:** an EEAT-rich landing page that competes for long-tail queries the source's thin listing doesn't target. Better depth, real internal-linking, structured info, honest source-grounded content. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different.
 
 ### Required outcomes (any structure achieves these)
 
-Good posts familiarize the reader with the topic in depth and leave them feeling educated and satisfied — covering the core facts, useful context, related comparisons, and deeper insights on the location, category, or focus where the source supports them. Position the reader to feel well-informed in an easy-to-scan way that flows naturally, not as forced mechanical patterns. Bulleted lists where scannability helps. Vary paragraph rhythm.
+Good posts leave the reader genuinely informed: core facts, practical considerations, useful context, honest comparisons, deeper insights on the location/category/focus where the source supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (tighter when the source is thin, expanded when source data + confident knowledge support more).
 
-1. **Load-bearing facts up front.** A reader can answer "what is this, when/where, how do I attend or apply" within the first paragraph or first FAQ block. Per-type SKILL.md tells you which facts are load-bearing for THIS data type.
-2. **Every claim source-supported.** No fabrication. Adaptive depth: 400-1500 words based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
+1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first paragraph or first FAQ block. Per-type SKILL.md specifies which facts are load-bearing for the data type.
+2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **Casual inline source reference.** At least one mention of the source(s) in flowing prose, linked with external link attributes. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational.
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
+6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
+   - **What to expect** — sensory + situational detail before the reader decides to engage.
+   - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
+   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
+   - **Comparable anchors** — neutral orientation against something familiar ("similar to X but Y").
+   - **Historical / community context** — provenance, longevity, lineage, reputation.
+   - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
+   - **Industry insight / players** — peers, alternatives, category leaders, where this one sits in the landscape.
+   - **Positive comparison** — favorable positioning with a specific honest reason ("best choice for someone who wants Z"). Never puffery.
 
 ### Froala HTML safety
 
@@ -154,17 +163,6 @@ Skipped M (already existed or no usable source data).
 
 That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the customer asks "why did you skip event X," answer then.
 
-## Failure modes
-
-| Failure | Action |
-|---|---|
-| WebSearch empty | Next candidate |
-| WebFetch timeout/5xx | Next candidate; max 1 retry |
-| MCP 429 | Wait 60s, retry once, move on |
-| MCP other error | Log, continue |
-| Context limit nearing | Stop research, generate for what you have, print audit |
-| Mid-run mistake | Finish, print audit clearly, user rolls back |
-
 ## Hard rules (every BD growth skill, forever)
 
 - **Scrape facts, not content.** Extract facts from publicly-available avenues. Reword everything in BD-site voice. Never paste source paragraphs verbatim.
@@ -173,5 +171,4 @@ That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If 
 - **Publication default is draft unless user explicitly asked to publish live.** In autonomous mode the user usually pre-specified this in the routine prompt; if not, default to draft.
 - **Never auto-create BD categories in autonomous mode.** User's taxonomy is curated; grow it deliberately.
 - **Never auto-edit existing live posts** (v0.1).
-- **Never silently swallow errors.** Audit shows everything.
 - **Never write content failing the anti-slop self-check.**

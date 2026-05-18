@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.14] - 2026-05-17
+
+### Skill content slim-down + depth enhancement (Outcome 6)
+
+Bloat purge continued from v6.49.13 + content-depth instruction added.
+
+**Bloat cuts across SKILL.md, METHODOLOGY.md, events.md:**
+- SKILL.md: BD promotional chatter ("50,000+ websites SaaS platform...") deleted; Distribution section (developer-facing, not agent-facing) deleted; redundant audit-summary mentions trimmed; "MCP wrapper corpus documents..." paragraph deleted (agent-irrelevant boilerplate).
+- METHODOLOGY: deleted Failure modes table entirely (13 lines — 4 of 6 rows were tautologies, the "Context limit nearing → bail early" rule was actively wrong since token-throttle pauses are short and recover). Deleted "Never silently swallow errors / Audit shows everything" hard rule (audit purge made it factually wrong; agents surface errors by default). Cut "Trust your judgment" pep-talk. Cut "Realistic run time: 30-60 min" bloat (real runs finish in <5 min). Removed the `listWebPages` prohibition (out of sight, out of mind — agent won't reach for a tool we never told it about).
+- events.md: trimmed "Required reading first" stale METHODOLOGY descriptors ("5 quality gates, dedup, audit, hard rules" → "universal protocol"). Removed "MCP wrapper specifics" paragraph (agent-irrelevant). Removed "This file extends the shared protocol" restatement. Removed `listWebPages` prohibition (same OOSOOM logic). Removed "Run all 11 steps. Skip none. If any step fails, continue" (implicit). Runbook step 9 content-manufacture line trimmed of URL-PATTERNS restatement; replaced with events-specific filter priority (category + location + date) and cross-ref to URL-PATTERNS for syntax.
+
+**Outcome 6 — new universal depth dimensions for content manufacture.** METHODOLOGY Stage 5 had 5 numbered structural outcomes (load-bearing facts, source-supported, source ref, internal links, external links). Added Outcome 6: 8 universal depth dimensions the agent reaches for where source data and confident knowledge support them honestly. Universal across all post types (events, jobs, properties, recipes, coupons, video, blog, car listings, etc.):
+
+  - **What to expect** — sensory + situational detail before the reader decides to engage.
+  - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
+  - **Practical considerations** — first-time/day-of detail rarely on the source page.
+  - **Comparable anchors** — neutral orientation against something familiar.
+  - **Historical / community context** — provenance, longevity, lineage, reputation.
+  - **Local context** — neighborhood character, nearby amenities, transit/access (skip when post type has no place anchor).
+  - **Industry insight / players** — peers, alternatives, category leaders.
+  - **Positive comparison** — favorable positioning with a specific honest reason.
+
+Rule wording: "Include each dimension where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching." No "pick 2-3" quota (creates bias); source data decides depth.
+
+Also: preamble tightened to "Read like a knowledgeable friend, not a press release" + "section length scales to source depth." Loaf-bearing-facts outcome generalized from event-only example to per-type ("Per-type SKILL.md specifies which facts are load-bearing for the data type").
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.13] - 2026-05-17
 
 ### Cold-review patch + bloat purge + event title format
