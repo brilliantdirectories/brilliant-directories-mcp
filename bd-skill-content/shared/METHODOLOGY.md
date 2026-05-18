@@ -144,6 +144,7 @@ Scan the assembled body. Fix anything that fires:
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
+- Are all headings (H2 and H3) in **title case**, not sentence case? `"What AirAsia Partnership Adds"`, not `"What AirAsia partnership adds"`.
 - Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 
 ## Stage 6: Post creation

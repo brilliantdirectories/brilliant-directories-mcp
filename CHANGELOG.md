@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.39] - 2026-05-18
+
+### Title case for H2/H3 headings in `post_content`
+
+Real-run cards showed headings in sentence case (`"What AirAsia partnership adds"`, `"Divisions and entry"`, `"Practical notes"`). User-preferred convention: title case (`"What AirAsia Partnership Adds"`, `"Divisions and Entry"`, `"Practical Notes"`). New self-check line in METHODOLOGY: capitalize first/last + major words; lowercase articles/short conjunctions/short prepositions under 4 letters; preserve brand/proper-noun capitalization verbatim. Covers both H2 and H3.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.38] - 2026-05-18
 
 ### Strip negation list from `Rule: Post admin URLs`
