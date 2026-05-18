@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.48.1] - 2026-05-17
+
+### Spec cleanup — fix gaps surfaced by v6.48.0 cold review
+
+A cold-review minion audit of v6.48.0 (lean-by-default keep-list shaping) surfaced 4 spec-side gaps. The wrapper code-side of v6.48.0 was verified clean; only the OpenAPI spec was half-finished.
+
+**Fix 1 — `getWebPage` missing `include_extras` parameter.** The 8 affected tools were supposed to get `$ref` to the new `include_extras` parameter; 7 did, `getWebPage` did not. Without the spec entry, npm-package agents wouldn't see the flag as a valid argument on single-page reads even though the runtime accepts it. Fixed: added `{"$ref": "#/components/parameters/include_extras"}` to the `getWebPage` parameters array.
+
+**Fix 2 — 5 stale tool descriptions rewritten.** v6.48.0 rewrote 3 tool descriptions (`listSingleImagePosts`, `listPostTypes`, `listWebPages`) to reflect the new lean-keep-list shape. The 5 sibling tools (`getSingleImagePost`, `getMultiImagePost`, `listMultiImagePosts`, `getPostType`, `getWebPage`) still described the old strip-list architecture and didn't mention `include_extras`. Several closed with `"Each record is the full resource object"` — flatly wrong now. All 5 rewritten with the same lean-keep-list framing, explicit flag tables, and `include_extras=1` documentation.
+
+**Fix 3 — `listPostTypes` half-update cleaned.** v6.48.0 added the new lean-keep-list block at the top of the description but left a stale "Payload size — filter, don't enumerate blindly / responses have been seen at 80k+ chars" warning further down (no longer true with the new keep-list) and a closing `"Each record is the full resource object"` line (no longer true). Both removed.
+
+**No wrapper or worker code changes.** No SERVER_INFO bump. Spec changes propagate to Worker automatically on the 5-min GitHub-raw TTL refresh. Drift check passes.
+
 ## [6.48.0] - 2026-05-17
 
 ### Lean-by-default response shaping — keep-list architecture for posts, web pages, post types
