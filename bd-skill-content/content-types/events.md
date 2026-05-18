@@ -12,7 +12,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 11 steps in order:
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run the runbook in order; on per-step failure for a given event, continue to the next event.
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
@@ -24,7 +24,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Highest-value internal-link filters for events: category, location (lat+lng+location_value), date (daterange). See URL-PATTERNS.md for param syntax.
 10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
-11. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
+11. **Audit summary** (METHODOLOGY Stage 7).
 
 ### Interactive-mode question order
 

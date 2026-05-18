@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.15] - 2026-05-17
+
+### v6.49.14 cold-audit cleanup
+
+- **events.md runbook step 11**: removed stale "Print everything that happened" line that directly contradicted METHODOLOGY Stage 7's "Brief. Customer-facing receipt of deliverables. Do NOT narrate the process." Audit-narration purge from v6.49.13 missed this one trailing sentence.
+- **events.md runbook intro**: replaced "Run all 11 steps in order:" + missing failure-handling rule with "Run the runbook in order; on per-step failure for a given event, continue to the next event." Drops the count restatement, restores the continue-on-failure rule v6.49.14 accidentally cut.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.14] - 2026-05-17
 
 ### Skill content slim-down + depth enhancement (Outcome 6)
