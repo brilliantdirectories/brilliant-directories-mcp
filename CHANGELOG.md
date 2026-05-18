@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.25] - 2026-05-18
+
+### post_title hook: date neutrality fix
+
+v6.49.24 hook description said "the date when it's a one-day-only marker" — too restrictive. A multi-day range like `"June 4-5"` is fine in the hook too if it adds context and fits the cap. Rewrote to date-neutral: "Date is optional — include when it adds context and fits within the cap (single day or range, e.g. `June 4-5`)."
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.24] - 2026-05-18
 
 ### `post_title` rule: hybrid clarity-first, headline-IS-the-event, date optional
