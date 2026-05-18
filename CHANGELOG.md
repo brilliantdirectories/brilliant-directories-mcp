@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.30] - 2026-05-18
+
+### Date-sanity gate default window: 30 → 60 days; honor user override at rule level
+
+METHODOLOGY Stage 2 Date-sanity gate's default window bumped from 30 to 60 days. Two months of upcoming events gives the agent more candidates and lets events one month out still pass the gate. Rule also now explicitly says "unless the user specifies otherwise (via `--window=<N>` or in their request)" — makes the override discoverable at the rule level, not buried as a CLI flag.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.29] - 2026-05-18
 
 ### `post_title` cap tightened from ~70 to ~60 chars
