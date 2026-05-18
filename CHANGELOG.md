@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.18] - 2026-05-17
+
+### Pexels orientation reality check — drop the keyword-filter myth + verification-from-runtime myth
+
+Real run produced 3 portrait images on a feature slot. Investigation surfaced two layered corpus/skill bugs:
+
+**Bug 1 — `wide landscape` keywords in the Google query do nothing.** Both the MCP corpus `Rule: Image URLs` and METHODOLOGY image strategy taught the agent to search `site:pexels.com/photo <topic> wide landscape`. Pexels indexes those terms as photo title/tag keywords, not orientation filters. The query surfaces photos that happen to have "wide" or "landscape" in their captions — portraits included. Rewrote both spots: WebSearch is `site:pexels.com/photo <topic>` with no orientation keywords; corpus explicitly states keyword-based orientation filtering does NOT work.
+
+**Bug 2 — page-level `?w=NNNN&h=NNNN` URL params are hero-crop hints, NOT source dimensions.** The corpus told the agent to verify orientation by reading `w=`/`h=` from `images.pexels.com` URLs in the page body. Live-tested: those query params describe how the page CROPS the photo into its hero (e.g. `1260×750` for every photo regardless of source). A portrait selfie and a landscape race photo both display in the same 1260×750 hero crop on Pexels' photo page. The verification step was a false positive. Tested all four candidate verification sources from the agent runtime: `<head>` meta (stripped by WebFetch), JSON-LD `<script>` (stripped by WebFetch), Free Download size dropdown (client-side JS, not in static HTML), body srcset URL params (hero-crop hints). All dead.
+
+**Conclusion: Pexels orientation cannot be reliably verified from the agent runtime.** Corpus + METHODOLOGY now state this explicitly. If a true landscape is critical for a feature slot (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) and the agent has no confident orientation signal, OMIT `post_image` entirely. Better to ship without an image than land a portrait that breaks the card/hero layout. Source images (the original event/article/listing page) still verify via OG `og:image:width`/`og:image:height` meta tags or `srcset` 2x descriptors — those are typically reachable because source pages aren't behind the same WebFetch summarization quirks as Pexels.
+
+**No code changes** (corpus + skill content only). Worker fetches corpus live from GitHub `main` on cache refresh, so no Worker redeploy needed. npm-package users get the new corpus on next install. Drift check passes.
+
 ## [6.49.17] - 2026-05-17
 
 ### Tag strategy: post_tags only, no Tags-resource calls
