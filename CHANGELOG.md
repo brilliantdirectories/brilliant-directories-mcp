@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.27] - 2026-05-18
+
+### `post_location` no longer duplicates venue prefix
+
+Real run produced `post_venue: "Delta Hotels Toronto"` + `post_location: "Delta Hotels Toronto, 75 Lower Simcoe Street, Toronto, ON M5J 3A6, Canada"` — venue name repeated in both fields. Root cause: the events.md example for `post_location` literally showed `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"` (venue prepended to address). Agent followed the example faithfully.
+
+Fixed: `post_location` is now strictly street address only. Example updated to `"801 Red River St, Austin, TX 78701"` (no venue prefix) with an explicit `NOT "Stubb's BBQ, 801 Red River St..."` callout. Venue lives on `post_venue` separately.
+
+Side benefit: Nominatim geocoding's Tier 1 query has a higher hit rate on a clean street address than on `venue+address+city+region+postal+country`. Over-scoped queries return empty matches in Nominatim (validated in earlier ladder testing).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.26] - 2026-05-18
 
 ### post_title rule: two bloat trims

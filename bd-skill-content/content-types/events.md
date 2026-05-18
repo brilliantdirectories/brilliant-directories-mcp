@@ -217,8 +217,8 @@ What `createSingleImagePost` receives.
 | `post_tags` | comma-only, no spaces |
 | `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
 | `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
-| `post_venue` | venue name ("Stubb's BBQ", "Staples Center") |
-| `post_location` | full address text ("Stubb's BBQ, 801 Red River St, Austin, TX 78701") |
+| `post_venue` | venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
+| `post_location` | full street address only — do NOT prepend the venue name (already in `post_venue`). Example: `"801 Red River St, Austin, TX 78701"`, NOT `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"`. |
 | `lat` | latitude float (from Nominatim, skip if geocoding failed) |
 | `lon` | longitude float (from Nominatim, skip if geocoding failed) |
 | `country_sn` | ISO country code from Nominatim |
