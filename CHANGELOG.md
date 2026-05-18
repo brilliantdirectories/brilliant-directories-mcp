@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.34] - 2026-05-18
+
+### Strip "site CSS handles it" justification from image rules
+
+v6.49.33 mentioned the site-side CSS-handles-portrait pattern in 4 spots across corpus + METHODOLOGY to justify the policy flip. Agent doesn't need the WHY — telling it "take the candidate" is enough. The CSS context is internal product knowledge, not actionable agent guidance. All 4 mentions stripped; rules now state the action without the rationale.
+
+**No code changes** (skill content + corpus prose only). Drift check passes.
+
 ## [6.49.33] - 2026-05-18
 
 ### Image policy flip: landscape preferred, but never bail on `post_image`
