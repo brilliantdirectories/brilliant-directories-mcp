@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.43] - 2026-05-18
+
+### `post_title` colon-in-headline fix
+
+Real run produced `"Aspen Ideas: Health 2026: Colorado, June 22-25"` — two colons because the brand name itself contains one. New surgical clause on the post_title rule: if the headline contains a colon, drop the hook and use the headline alone. Never two colons in a title.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.42] - 2026-05-18
 
 ### Code hygiene: 2 cosmetic cleanups from v6.49.41 cold-review
