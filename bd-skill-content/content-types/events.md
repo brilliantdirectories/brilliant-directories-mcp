@@ -155,9 +155,7 @@ On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn
 
 ## Category routing (Stage 8 of runbook)
 
-Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` for routing.
-
-Discovery: `getPostTypeCustomFields form_name=<events post-type's form_name>` → find the `post_category` field's `choices[].key`.
+Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` for routing — already cached from Stage 1's `listPostTypes` call (comma-separated string on the post-type row). No additional discovery needed.
 
 Authorization:
 - Interactive grant ("yes, create new event categories") → skill respects for the run.
@@ -231,7 +229,7 @@ What `createSingleImagePost` receives.
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
 
-`getPostTypeCustomFields` may return additional fields (e.g. `auto_geocode`) — only pass what's in the Required and Recommended tables above. `createSingleImagePost` also accepts SEO meta fields that `getPostTypeCustomFields` doesn't surface (BD schema-introspection gap); the wrapper passes them through.
+`createSingleImagePost` accepts the SEO meta fields above; the wrapper passes them through.
 
 ### Date/time formats
 

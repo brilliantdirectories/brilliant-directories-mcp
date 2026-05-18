@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.19] - 2026-05-17
+
+### Kill the `getPostTypeCustomFields` bloat call — use cached `feature_categories`
+
+events.md Stage 8 (Category routing) was telling the agent to call `getPostTypeCustomFields form_name=<...>` to discover the `post_category` field's `choices[].key` — a 250-line field-metadata dump just to read a category list. But `feature_categories` is already on the `listPostTypes` row from Stage 1 site context (e.g. `"feature_categories": "Fitness Classes & Workshops,Races & Competitions,..."` — comma-separated string). METHODOLOGY Stage 1 already instructs the agent to cache it. Pure redundant call. Rewrote the Stage 8 Discovery line to: "Events use the post type's `feature_categories` for routing — already cached from Stage 1's `listPostTypes` call. No additional discovery needed."
+
+Also removed the now-obsolete "`getPostTypeCustomFields` may return additional fields..." note from the field reference (was warning about extras from a call the skill no longer makes).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.18] - 2026-05-17
 
 ### Pexels orientation reality check — drop the keyword-filter myth + verification-from-runtime myth
