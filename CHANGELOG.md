@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.22] - 2026-05-18
+
+### Remove "v0.2 deferred" section from events.md (internal-only)
+
+events.md tail had a public "v0.2 deferred" section listing roadmap items (dry-run flag, performer bios, Ticketmaster API, ICS/RSS feeds, non-English content, etc.) — internal product roadmap noise the agent doesn't need and customers shouldn't see in the public skill bundle. Section removed.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.21] - 2026-05-17
 
 ### `post_tags` 100-char cap + drop hyphens
