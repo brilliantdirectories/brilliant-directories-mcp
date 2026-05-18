@@ -28,7 +28,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 8. **Duplicate detection** (METHODOLOGY Stage 3) against existing events on the site, including drafts. Skip duplicates.
 9. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 10. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
-11. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below. Embed dedup HTML comment at end of `post_content`.
+11. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
 12. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
 
 Run all 12 steps. Skip none. If any step fails for a given event, log in audit and continue to next event.
@@ -189,7 +189,7 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_content` | assembled HTML body per "Content manufacture" + dedup HTML comment at end |
+| `post_content` | assembled HTML body per "Content manufacture" |
 | `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. BD auto-generates from post_title if omitted. For slug control, pass `<data_filename>/<lowercase-hyphenated-slug>` |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `original_image_url` | Forensic field — the source URL the skill considered. **Wrapper auto-defaults** this to `post_image` when `auto_image_import=1` and you didn't pass it. Pass explicitly ONLY when it differs from `post_image` — i.e. you rejected a source candidate (portrait, wrong format, too small) and fell back to Pexels: then `original_image_url` = the rejected source URL, `post_image` = the Pexels URL used. |

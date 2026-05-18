@@ -10,14 +10,15 @@ Read first. Every `/bd:*` skill follows this. Per-type SKILL.md layers in type-s
 
 ## Stage 1: Site context
 
-1. `getSiteInfo` → industry, language, timezone, country.
-2. `getWebPage seo_id=1` → homepage voice.
-3. `listMenus` + `listMenuItems` → vertical focus.
-4. `listTopCategories` → taxonomy.
-5. `listPostTypes` → cache; per-type SKILL.md provides its post-type marker.
+Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation. Informs vertical alignment, category routing, anchor-text choices, and internal-link inventory.
+
+1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
+2. `listTopCategories` → top-level taxonomy.
+3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`.
+4. `listMenus` → pick the main-nav row (`menu_name`/`menu_title` containing `main`/`top`/`header`); then `listMenuItems` filtered to that `menu_id` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates.
 
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
-Autonomous: infer location from `primary_country`, vertical from homepage+menu, author from highest-admin via `listUsers --order_column=admin_level --order_type=desc --limit=5`. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
+Autonomous: infer location from `primary_country`, vertical from site info and categories, author from highest-admin via `listUsers --order_column=admin_level --order_type=desc --limit=5`. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
 
 ## Stage 2: Source research
 

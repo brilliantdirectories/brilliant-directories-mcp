@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.48.2] - 2026-05-17
+
+### Skill content cleanup — Stage 1 purpose + drop broken homepage call + reconcile events.md with METHODOLOGY HTML-comment ban
+
+Post-v6.48.1 cold review surfaced two pre-existing skill-content issues unrelated to v6.48.0's wrapper changes but worth fixing in the same release cycle.
+
+**METHODOLOGY.md Stage 1 — purpose paragraph added, broken homepage call removed, menu walk repurposed.** The old Stage 1 listed 5 numbered calls without saying WHY the agent is doing them ("`getSiteInfo` → industry, language, timezone, country.", etc.). One of the 5 — `getWebPage seo_id=1 → homepage voice.` — was architecturally broken on BD: homepage prose lives in design-settings / widgets / hero sections, not in `list_seo.content`. The call returned title + headers and nothing usable for voice signal. Removed entirely. The `listMenus`/`listMenuItems` step previously claimed "vertical focus" — redundant with `getSiteInfo.industry` + `listTopCategories`. Repurposed to its actually-useful function: walking the main-nav menu (filtered by `menu_name`/`menu_title` containing `main`/`top`/`header`), capturing the `{menu_name → menu_link}` map as a supplementary internal-link inventory (high-confidence destinations the site owner has elevated to the main nav). One purpose-sentence opener added so future agents understand WHY Stage 1 exists, not just WHAT it returns.
+
+**events.md HTML-comment leftovers stripped.** v6.47.7 removed the "embed dedup HTML comment at end of `post_content`" instruction from METHODOLOGY.md and the events.md dedup section, but two leftovers remained: the runbook step 11 mention and the field-reference table entry for `post_content`. Both directly contradicted METHODOLOGY.md's "`post_content` is reader-facing only — never include HTML comments". Both stripped.
+
+**Net effect: net-neutral line count in METHODOLOGY.md, net-negative in events.md.** No bloat. No new sections. No wrapper code change. No bd-api.json change. No SERVER_INFO bump. Skill source only.
+
 ## [6.48.1] - 2026-05-17
 
 ### Spec cleanup — fix gaps surfaced by v6.48.0 cold review
