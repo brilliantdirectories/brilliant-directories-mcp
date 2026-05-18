@@ -138,23 +138,21 @@ Scan the assembled body. Fix anything that fires:
 
 ## Stage 6: Post creation
 
-Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart. On failure: log in audit, continue to next record. Do not retry blindly.
+Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart. On failure: continue to next record. Do not retry blindly.
 
 ## Stage 7: Audit summary (always printed)
 
-```
-=== /bd:<skill> run summary ===
-Mode | Site | Post type | Author | Skill run ID
+Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results.
 
-Research: N candidates probed, N blocked, N extracted
-Gates: per-gate skip counts (date, SPA, required, confidence, credibility)
-Dedup: N already posted
-Category: N skipped (no ≥70% match)
-Created: N posts with post_id + title + admin_edit_url per line
-Time: <wall-clock>
+```
+Created N posts:
+- <title> · <post_id> · <admin_edit_url>
+- <title> · <post_id> · <admin_edit_url>
+
+Skipped M (already existed or no usable source data).
 ```
 
-Per-type SKILL.md may add type-specific lines (geocoding for events, salary parsing for jobs, etc.).
+That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the customer asks "why did you skip event X," answer then.
 
 ## Failure modes
 

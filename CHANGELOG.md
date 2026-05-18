@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.13] - 2026-05-17
+
+### Cold-review patch + bloat purge + event title format
+
+Audit caught 5 issues in v6.49.12 (2 critical, 3 major) plus user surfaced two new issues: per-rule audit narration bloat and event titles generating in the wrong shape. All fixed.
+
+**events.md Stage 7 reordered + tightened.**
+- MANDATORY transliteration rule HOISTED to top of Stage 7 (safety-critical, was buried mid-section). Includes escape hatch: if neither source nor confident LLM judgment yields an English form, skip lat/lon entirely — never pass native script, never fabricate.
+- Single-query WebFetch example block DELETED. The 3-tier ladder now describes the WebFetch shape inline (per tier) and the extraction prompt appears once at the end. No competing example for the agent to anchor on.
+- Pacing rules folded: single "≥1 second between every Nominatim call (tier retries count as calls)" — was duplicated.
+
+**events.md content manufacture: stale Pexels keywords line rewritten.** Was restating "Bare landscape URL only" (corpus owns that). Now: events-specific Pexels search topics (`"5k race runners"`, `"music festival crowd outdoor"`, etc.) passed as the `<topic>` slot into the corpus `Rule: Image URLs` workflow. Topic guidance only, format/workflow owned by corpus.
+
+**events.md `post_title` field reference: hybrid format rule added.** Real-run agent was generating SEO-stuffed long titles ("Brooklyn Pride LGBTQIA+ 5K Run/Walk in Prospect Park, June 13, 2026"). New rule: short headline + colon + concise hook, cap ~70 chars. Examples: `"Brooklyn Pride 5K: Prospect Park, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`. Date/venue/keywords push to `post_h2`/`meta_desc`/`post_content`; title reads naturally in browser tabs, shares, link previews.
+
+**Bloat purge — audit-narration removed across skill bundle.**
+- METHODOLOGY Stage 7 audit summary template rewritten. Was: research counts + per-gate skip counts + dedup counts + category-skip counts + skill-run ID + wall-clock. Now: brief receipt of deliverables only — what got created, where to edit it. Customer doesn't care that 7 candidates were probed and 4 failed the SPA gate; they care what posts exist.
+- Removed 3 "log in audit" / "note in audit" / "log resolved author in audit" lines from per-rule wording (METHODOLOGY Stage 6, events.md runbook step intro, events.md Author resolution).
+- Removed events.md per-type "Audit summary (events-specific lines)" section entirely (added geocoding skip counts to the audit — same narration bloat).
+- SKILL.md "Output guarantees" section trimmed from 7-line bullet list to 1-sentence statement.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.12] - 2026-05-17
 
 ### Skill reliability: 4 fixes from real-run audit + live Nominatim/Pexels probing

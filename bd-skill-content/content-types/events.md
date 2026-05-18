@@ -30,7 +30,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
 11. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
 
-Run all 11 steps. Skip none. If any step fails for a given event, log in audit and continue to next event.
+Run all 11 steps. Skip none. If any step fails for a given event, continue to next event.
 
 ### Interactive-mode question order
 
@@ -82,7 +82,6 @@ The user's explicit post-type pick always wins.
 4. Pick one user_id at random from the result.
 5. **Fallback:** if step 2 returns zero matched plans OR step 3 returns zero eligible users → use `user_id=0`. BD stores this as "no author" — the post page renders publicly, but won't show in member search; site admin gets a queue alert to reassign.
 
-Log resolved author + the path taken (pre-specified, autonomous-matched, fallback-zero) in audit.
 
 ---
 
@@ -117,39 +116,35 @@ Run on survivors only (candidates that passed Stage 6 dedup) — don't waste Nom
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
-```
-WebFetch(
-  url="https://nominatim.openstreetmap.org/search?q=<URL-encoded-address>&format=json&limit=1&addressdetails=1",
-  prompt="Extract from this Nominatim JSON response: (1) lat as a decimal, (2) lon as a decimal, (3) country_code (ISO 2-letter), (4) state name from the address breakdown (full name as returned, e.g. 'New York', 'California', 'Ontario'). Return as a flat object with keys: lat, lon, country_code, state_name. Omit keys whose values are not present in the response."
-)
-```
-
-Rules:
-- ≥1 second between geocode calls (Nominatim ToS).
-- Cache within run: two events at same venue → geocode once.
-- Never fabricate coords. Never use LLM-knowledge coordinates.
-
-### MANDATORY: transliterate non-Latin scripts before querying
+### MANDATORY: transliterate non-Latin scripts BEFORE any Nominatim query
 
 Nominatim returns **wrong-country ghost matches** on native non-Latin scripts — confirmed live: `"Ακρόπολη, Αθήνα"` (Acropolis in Greek) returns Helsinki, Finland coords; `"台北101, 台北"` (Taipei 101) returns Iceland; `"故宫, 北京"` returns empty. The English transliteration of the same address resolves correctly every time.
 
-Before any Nominatim query, scan the address string. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form first.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). Never pass native script directly to Nominatim — silent wrong-country failures corrupt the post's map pin.
+Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before any tier below.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this event entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
 
-### 3-tier retry ladder (run sequentially, accept first hit)
+### 3-tier retry ladder (run sequentially on the transliterated address, accept first hit)
 
-Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up:
+Nominatim has uneven coverage — full addresses often miss while landmark+region succeeds. Walk three tiers before giving up. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` with the extraction prompt below.
 
-**Tier 1 — full address as given.** `"<street>, <city>, <state>, <country>"`. Works for indexed street addresses. Validated US + Luxembourg + Malta + Thailand + Costa Rica.
+**Tier 1 — full address as given.** `q="<street>, <city>, <state>, <country>"`. Works for indexed street addresses. Validated US + Luxembourg + Malta + Thailand + Costa Rica.
 
 **Tier 2 — drop street, keep venue + biggest scope.** Strip the numeric street address; keep the venue/landmark name.
-- US/Canada/AU/etc (countries WITH states/provinces): `"<venue>, <state-name-spelled-out>"` — spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). Example: `"Jay Blanchard Park, Florida"` resolves; `"Jay Blanchard Park, Orlando, FL"` does NOT.
-- International (countries WITHOUT subregions, or where city scoping hurts): `"<venue>, <country>"`. Example: `"St John's Co-Cathedral, Malta"`.
+- US/Canada/AU/etc (countries WITH states/provinces): `q="<venue>, <state-name-spelled-out>"` — spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). `"Jay Blanchard Park, Florida"` resolves; `"Jay Blanchard Park, Orlando, FL"` does NOT.
+- International (countries WITHOUT subregions, or where city scoping hurts): `q="<venue>, <country>"`. `"St John's Co-Cathedral, Malta"`.
 
 **Tier 3 — city + biggest scope as last resort.** Returns city-center coords (venue-level accuracy lost).
-- US/Canada: `"<city>, <state-name>"`.
-- International: `"<city>, <country>"`. Always resolves for any recognized city.
+- US/Canada: `q="<city>, <state-name>"`.
+- International: `q="<city>, <country>"`. Always resolves for any recognized city.
 
-**After all 3 empty** — skip `lat`/`lon` on that event. Post still creates. Note in audit which tier landed (or "all 3 empty"). Never fabricate. Pace ≥1 second between retry tiers per Nominatim ToS.
+After all 3 empty → skip `lat`/`lon` on that event. Post still creates.
+
+**Extraction prompt for each `WebFetch`:** `"Extract from this Nominatim JSON response: (1) lat as a decimal, (2) lon as a decimal, (3) country_code (ISO 2-letter), (4) state name from the address breakdown (full name as returned, e.g. 'New York', 'California', 'Ontario'). Return as a flat object with keys: lat, lon, country_code, state_name. Omit keys whose values are not present in the response."`
+
+### Rules
+
+- ≥1 second between every Nominatim call (Nominatim ToS — tier retries count as calls).
+- Cache within run: two events at same venue → geocode once.
+- Never fabricate coords. Never use LLM-knowledge coordinates.
 
 ### Normalize Nominatim output before passing to BD
 
@@ -183,7 +178,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 **Events-specific load-bearing facts** (the reader needs these up front): event date + time, venue + address, ticket price or "free", how to attend or buy tickets. Surface these in the opening paragraph or first FAQ block.
 
-**Events-specific image keywords for Pexels fallback:** category + venue type ("austin music festival outdoor", "tech conference auditorium", "wine tasting hall"). Bare landscape URL only.
+**Events-specific Pexels search topics:** category + venue type (`"music festival crowd outdoor"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
 
 **Events-specific internal-link opportunities** (only if URL-PATTERNS.md discovery confirms the target exists):
 - More events in same category: `?category[]={cat}`
@@ -212,7 +207,7 @@ What `createSingleImagePost` receives.
 | `post_type` | `"Account"` (literal — legacy classification field, NOT the user-facing post-type concept) |
 | `data_type` | `20` (single-image classification, always for events) |
 | `data_id` | resolved events post-type id from Stage 3 |
-| `post_title` | event title (plain text, no HTML) |
+| `post_title` | **Hybrid format: short headline + colon + concise hook.** Cap at ~70 chars total. Headline = event name + year if relevant. Hook = venue or city + date in short form. Examples: `"Brooklyn Pride 5K: Prospect Park, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`, `"Maudie's Moonlight Margarita 5K: Lady Bird Lake, June 4"`. Plain text, no HTML. Avoid stuffing every keyword — date and venue carry to `post_h2`, full prose carries to `post_content`. |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
@@ -247,18 +242,6 @@ All three fields use `YYYYMMDDHHmmss` (14 digits). BD silently truncates other f
 - `post_live_date`: when the post becomes visible (now, or future for scheduled publish). **Site timezone.**
 - `post_start_date`: event start (date AND time). **Event-local wall-clock — the time as a visitor in the event's city would read it. Do NOT convert to the site's own timezone.** A 7 PM Brooklyn event on a Los Angeles-timezoned site stores as `20260616190000`, not `20260616160000`.
 - `post_expire_date`: event end (date AND time). Same event-local wall-clock as `post_start_date`.
-
----
-
-## Audit summary (events-specific lines)
-
-Adds to METHODOLOGY Stage 7 base format:
-
-```
-Geocoding:
-  - N events geocoded via Nominatim
-  - N events posted without lat/lon (geocode failed)
-```
 
 ---
 

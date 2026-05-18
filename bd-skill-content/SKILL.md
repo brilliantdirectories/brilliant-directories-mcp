@@ -66,16 +66,7 @@ If `getSiteInfo` returns no site or errors out, tell the user the MCP isn't conn
 
 ## Output guarantees
 
-Every run prints an audit summary listing:
-- What content type was created
-- Which sources were probed and which were blocked
-- Per-gate skip counts
-- Dedup results
-- Category routing decisions
-- Geocoding outcomes (for location-bound types)
-- Every created post with `post_id`, title, and admin edit URL
-
-The user can review and `deleteSingleImagePost <post_id>` (or the equivalent for other post types) anything they don't want.
+Every run ends with a brief summary listing what was created — title, `post_id`, admin edit URL per post. Customers can review and `deleteSingleImagePost <post_id>` (or the equivalent for other post types) anything they don't want. Internal process details (candidates probed, gates failed, retries) stay out of the user-facing summary.
 
 ## Distribution
 
