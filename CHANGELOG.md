@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.46] - 2026-05-18
+
+### Image dedup against existing site content
+
+Same Pexels stock photo on two posts on the same site is the failure mode this prevents. Now that BD persists `original_image_url` server-side (set silently when `auto_image_import=1`), agents can query it. New corpus rule `Rule: Image dedup` codifies:
+
+- **Single-image post types**: `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==` — 0 rows = use, ≥1 row = pick another.
+- **Multi-image post types** (gallery photos in `users_portfolio`): `listMultiImagePostPhotos property=original_image_url property_value=<URL> property_operator==` — same logic.
+- **Exact match** on the bare canonical Pexels URL: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` (or `.png`/`.webp`). No query string.
+- **Selection from the WebSearch pool**: pick randomly from the first ~10 candidates rather than always result #1, reducing dupe-convergence on the first try.
+- **If the chosen candidate is a dupe**: try the next from the pool. If the whole pool is dupes, re-WebSearch with a varied keyword phrase (`pilates class` → `pilates reformer` → `pilates studio mat`). One more variation if the second is also exhausted.
+- **Last resort**: accept the dupe rather than ship without an image, name it in the audit. Rare on real sites.
+- **User-supplied URLs skip dedup** — user choice is the authority.
+
+METHODOLOGY.md image strategy gained a one-line pointer to the new corpus rule on the Pexels bullet.
+
+**No code changes** (corpus + skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.45] - 2026-05-18
 
 ### `post_title` colon rule: add concrete separator examples
