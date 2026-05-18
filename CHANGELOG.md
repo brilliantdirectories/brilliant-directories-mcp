@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.44] - 2026-05-18
+
+### Loosen `post_title` colon rule
+
+v6.49.43 said "drop the hook and use the headline alone" — over-prescriptive. Reworded to name only the failure pattern: "Never two colons in a single title — if the headline itself contains a colon, use a different separator or no separator for the hook." Agent picks how to handle, doesn't lose useful hook context.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.43] - 2026-05-18
 
 ### `post_title` colon-in-headline fix
