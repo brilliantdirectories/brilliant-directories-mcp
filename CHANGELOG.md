@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.24] - 2026-05-18
+
+### `post_title` rule: hybrid clarity-first, headline-IS-the-event, date optional
+
+Real run surfaced that the v6.49.13 rigid format (`name + year : venue + date`) was producing titles you had to read the description to understand. Brand or series names ("NEWLIFE Expo", "Cool Sommer Mornings") landed in the headline slot but didn't tell a card-scanner what the event actually IS. Date was forced into every hook, duplicating the date the card UI already displays underneath.
+
+Rewrote to less-prescriptive, more-guiding rule:
+
+- **Headline conveys what the event IS, not just what it's called.** Names that already describe the event (`"Austin Tech Summit"`, `"Community Yoga"`, `"IRONMAN 70.3 Boulder"`) stand on their own. Brand/series names that don't self-explain benefit from a category appended (`"NEWLIFE Expo Wellness Retreat"`, `"Cool Sommer Mornings Triathlon"`).
+- **Hook is whatever's most clarifying for THIS event**, not a forced template — venue when location is the draw, format/distance for races, special angle (`"Free Class"`, `"Sunset Edition"`), date when it's a one-day-only marker, or a combination if space allows.
+- **Date is optional**, include if it adds context and fits within the ~70-char cap.
+
+Examples in the rule: `"Austin Tech Summit 2026: Downtown Austin, June 13"`, `"IRONMAN 70.3 Boulder: 1.2-mi swim, 56-mi bike"`, `"Community Yoga at Lake Eola: Free Sunday Class, Orlando"`.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.23] - 2026-05-18
 
 ### SKILL.md universalized + v0.1/v0.2 version labels stripped
@@ -34,7 +50,7 @@ events.md tail had a public "v0.2 deferred" section listing roadmap items (dry-r
 
 ### `post_tags` 100-char cap + drop hyphens
 
-Real run hit BD's 100-char limit on `post_tags` CSV (`Please enter between 0 and 100 characters`). Also surfaced the hyphenated long-tail style (`brooklyn-pride-5k`, `austin-tech-summit-2026`) wasn't what BD actually wants — real long-tails are short multi-word phrases (`reformer class`, `boston studios`), not slug-style joined words.
+Real run hit BD's 100-char limit on `post_tags` CSV (`Please enter between 0 and 100 characters`). Also surfaced the hyphenated long-tail style (`austin-tech-summit-2026`, `downtown-austin-events`) wasn't what BD actually wants — real long-tails are short multi-word phrases (`reformer class`, `boston studios`), not slug-style joined words.
 
 Rewrote the tag rule:
 
@@ -151,7 +167,7 @@ Audit caught 5 issues in v6.49.12 (2 critical, 3 major) plus user surfaced two n
 
 **events.md content manufacture: stale Pexels keywords line rewritten.** Was restating "Bare landscape URL only" (corpus owns that). Now: events-specific Pexels search topics (`"5k race runners"`, `"music festival crowd outdoor"`, etc.) passed as the `<topic>` slot into the corpus `Rule: Image URLs` workflow. Topic guidance only, format/workflow owned by corpus.
 
-**events.md `post_title` field reference: hybrid format rule added.** Real-run agent was generating SEO-stuffed long titles ("Brooklyn Pride LGBTQIA+ 5K Run/Walk in Prospect Park, June 13, 2026"). New rule: short headline + colon + concise hook, cap ~70 chars. Examples: `"Brooklyn Pride 5K: Prospect Park, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`. Date/venue/keywords push to `post_h2`/`meta_desc`/`post_content`; title reads naturally in browser tabs, shares, link previews.
+**events.md `post_title` field reference: hybrid format rule added.** Real-run agent was generating SEO-stuffed long titles. New rule: short headline + colon + concise hook, cap ~70 chars. Examples: `"Austin Tech Summit 2026: Downtown Austin, June 13"`, `"IRONMAN 70.3 Boulder 2026: 1.2-mi swim, 56-mi bike"`. Date/venue/keywords push to `post_h2`/`meta_desc`/`post_content`; title reads naturally in browser tabs, shares, link previews.
 
 **Bloat purge — audit-narration removed across skill bundle.**
 - METHODOLOGY Stage 7 audit summary template rewritten. Was: research counts + per-gate skip counts + dedup counts + category-skip counts + skill-run ID + wall-clock. Now: brief receipt of deliverables only — what got created, where to edit it. Customer doesn't care that 7 candidates were probed and 4 failed the SPA gate; they care what posts exist.
