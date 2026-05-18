@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.32] - 2026-05-18
+
+### Strip out-of-sight reference in normalize step
+
+v6.49.31 left "Normalize directly — no MCP lookup needed" — references the listStates call just removed. Out of sight, out of mind. Trailing clause dropped.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.31] - 2026-05-18
 
 ### Drop `listStates` lookup — agent maps state names directly to ISO-3166-2
