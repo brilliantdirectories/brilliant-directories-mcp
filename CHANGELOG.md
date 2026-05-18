@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.26] - 2026-05-18
+
+### post_title rule: two bloat trims
+
+- Trailing `Examples:` list removed. Rule had examples inline in the prose (`"Austin Tech Summit"`, `"NEWLIFE Expo Wellness Retreat"`, `"5K"`, `"Free Class"`, etc.) AND then a trailing `Examples:` list at the end with overlapping ones. Inline examples carry the load.
+- Over-guiding parenthetical removed from date clause. Was: "Date is optional — include when it adds context and fits within the cap (single day or range, e.g. `June 4-5`)." Now: "Date is optional — include when it adds context and fits within the cap." Stop telling the agent how to format the date; just say it's optional.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.25] - 2026-05-18
 
 ### post_title hook: date neutrality fix
