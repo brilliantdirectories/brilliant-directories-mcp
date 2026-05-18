@@ -15,7 +15,9 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
 2. `listTopCategories` → top-level taxonomy.
 3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`.
-4. `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards) → if a row matches, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates. If no main-nav match, skip — site lacks a conventional main menu, fall back to URL-PATTERNS.md Patterns 1-5 for internal linking.
+4. `listMenus property=menu_name property_value=main% property_operator=like` (try `top%`/`header%`/`primary%` next if no match — BD's `like` only supports single-anchor wildcards) → if a row matches, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates. If no main-nav match, skip — site lacks a conventional main menu, fall back to URL-PATTERNS.md Patterns 1-3 for internal linking.
+
+Do NOT call `listWebPages` during site context. Content-creation skills don't build internal links to `data_category` / `profile_search_results` WebPages; the future `/bd:seo` skill is what owns those.
 
 Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
 Autonomous: infer location from `primary_country`, vertical from site info and categories. Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
@@ -42,13 +44,23 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 ## Stage 3: Duplicate detection
 
-Pull existing posts via `list*` filtered to relevant post type (include drafts). For each candidate, match against existing:
+Run AFTER research lands viable candidates, not before. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
+
+For each candidate, query the relevant `list*` tool filtered by the candidate's distinctive title prefix:
+
+```
+listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10
+```
+
+(Substitute `listSingleImagePosts` for the post-type the skill targets — events use single-image, jobs/properties/blog may use other tools per their SKILL.md.) BD's WAF strips one `%` from bidirectional `%foo%`, so use single-anchor prefix `foo%` only. Returns 0-1 matching rows in normal use.
+
+Match each returned row against the candidate:
 
 - Title: semantic, not string-exact
 - Date: per-type tolerance from SKILL.md (events ±24h, jobs ±7d, properties ±14d)
 - Location: same city OR same venue/employer/address
 
-Title-similar AND date-close AND location-match → duplicate → skip.
+Title-similar AND date-close AND location-match → duplicate → skip the candidate.
 
 v0.1 always SKIPS existing records. v0.2 adds `--update-existing`.
 
@@ -69,7 +81,7 @@ Good posts familiarize the reader with the topic in depth and leave them feeling
 1. **Load-bearing facts up front.** A reader can answer "what is this, when/where, how do I attend or apply" within the first paragraph or first FAQ block. Per-type SKILL.md tells you which facts are load-bearing for THIS data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth: 400-1500 words based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **Casual inline source reference.** At least one mention of the source(s) in flowing prose, linked with external link attributes. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational.
-4. **Internal links to relevant on-site content** — only if the target pages exist per URL-PATTERNS.md discovery. Use Pattern 1 (specific post URLs), Pattern 3 (filtered listing URLs by category/location/date), or Pattern 4 (category-landing WebPages). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
+4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 
 ### Froala HTML safety

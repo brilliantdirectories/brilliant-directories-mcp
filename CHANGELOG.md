@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.5] - 2026-05-17
+
+### Real-run patch: 3 friction points caught running live event posts
+
+Live run on a fitness directory surfaced three skill-flow problems. All fixes generalize to future `/bd:jobs`, `/bd:properties`, `/bd:blog` skills — same DRY pattern, never duplicated per type.
+
+**Fix 1 — Drop `listWebPages` from content-creation skills entirely.** Old runbook step 5 ("URL pattern discovery") pre-fetched `data_category` and `profile_search_results` WebPages for internal-link construction. Content-creation skills don't actually build links to those pages — they belong to the future `/bd:seo` skill that owns WebPage construction. Result: every event-post run was burning 2 wasted MCP calls + context bloat with site-wide WebPage rows irrelevant to the task. Patches: `events.md` runbook drops from 12 steps to 11; `URL-PATTERNS.md` removes Patterns 4 and 5 from the table, drops the "Runtime discovery" 3-step pre-fetch; `METHODOLOGY.md` Stage 1 notes "Do NOT call listWebPages during site context."
+
+**Fix 2 — Author short-circuit promoted to runbook step level.** events.md already had "if user_id provided, skip author resolution" — but the line was buried inside the Author resolution sub-section. Agent saw the step ("Author resolution"), ran the algorithm, never got to the short-circuit. Now the short-circuit lives at the step description itself: *"If the user pre-specified a user_id (or author_id) in the request, use it and SKIP this step entirely — no discovery calls."* The sub-section retains the long-form algorithm for runs where no user_id was specified.
+
+**Fix 3 — Dedup is now per-candidate scoped, not bulk.** Old runbook step 8 said "Pull existing posts via list* filtered to relevant post type" without scope guidance. On real sites with hundreds of upcoming events that exploded the token budget (60KB+ list responses, even with lean keep-lists). Real fix: web research lands N viable candidates FIRST, then for each candidate run a scoped filtered query — `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10`. Returns 0-1 rows per candidate. Never bulk-pull the events feed. Single-anchor prefix `foo%` because BD's WAF strips one `%` from bidirectional `%foo%` (BD-infra-side fix is on BD's roadmap, not the wrapper's). Pattern documented in METHODOLOGY Stage 3 so jobs/properties/blog inherit the same scoped-per-candidate approach.
+
+**No code changes** (spec + skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.4] - 2026-05-17
 
 ### Cold-review patch: 3 v6.49.3 misses

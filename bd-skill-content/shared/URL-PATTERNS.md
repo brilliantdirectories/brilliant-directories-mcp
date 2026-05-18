@@ -9,11 +9,10 @@ Read before generating any internal link. Universal across post types.
 | # | Pattern | Format | Notes |
 |---|---|---|---|
 | 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
-| 2 | Post type main listing | `/<data_filename>` | From `getPostType data_id=N`. Varies per site (`/events`, `/calendar`, etc.). |
+| 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See filter params below. |
-| 4 | Category landing (data_category WebPage) | `/<webpage.filename>` | From `listWebPages property=seo_type property_value=data_category` map. Fallback to Pattern 3 or omit. |
-| 5 | Member search results (profile_search_results WebPage) | `/<webpage.filename>` | From `listWebPages property=seo_type property_value=profile_search_results`. **Site-customized: every site uses a different filename. Never hardcode (`/listing`, `/find`, `/members`, etc.). If no `profile_search_results` WebPage exists for the slug you want, OMIT the link — do not substitute another URL.** |
-| 6 | Custom WebPage | `/<filename>` | Rarely needed by content skills. |
+
+WebPage-backed link patterns (data_category landings, profile_search_results pages, custom WebPages) are OUT OF SCOPE for content-creation skills. Those belong to the future `/bd:seo` skill.
 
 ## Pattern 3 filter params (universal, every post type)
 
@@ -40,11 +39,9 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | Internal | `<a href="/...">text</a>` (no rel, no target) |
 | External | `<a href="https://..." rel="nofollow" target="_blank">text</a>` |
 
-## Runtime discovery (once per skill run, cache for the run)
+## Runtime discovery
 
-1. `getPostType data_id=<target post-type>` → cache `data_filename`.
-2. `listWebPages property=seo_type property_value=data_category` → cache `linked_post_category → filename` map.
-3. `listWebPages property=seo_type property_value=profile_search_results` → cache filename list.
+`data_filename` is already cached from site context (METHODOLOGY Stage 1, `listPostTypes`). No additional discovery needed for content-creation skills.
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -65,7 +62,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Double-encode `post_filename` (already URL-safe).
 - Mix protocols (use `getSiteInfo.full_url` protocol).
 - Invent geo params. Only `lat`+`lng`+`location_value` (sent together) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip`, `postal_code` are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL: if the URL filters by city (the only location granularity available), say the city in the link text. Do not say "in [State]" or "in [Country]" when the URL geocode is city-level.
-- Guess member-search URLs. The Pattern 5 filename is site-customized (`/listing`, `/find`, `/members`, `/directory`, `/professionals`, etc. — different on every site). Only use what `listWebPages property=seo_type property_value=profile_search_results` returns. If nothing returns, OMIT the link; do NOT pick a plausible-sounding default.
+- Build links to member-search pages, category-landing pages, or other WebPage-backed URLs from content-creation skills — that's `/bd:seo` territory.
 
 ## Internal-link variety (SEO)
 

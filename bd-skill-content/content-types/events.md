@@ -16,22 +16,21 @@ This file extends the shared protocol with events-specific details.
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 12 steps in order:
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run all 11 steps in order:
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 10). Do NOT pre-fetch WebPages — content-creation skills don't build links to data_category / profile_search_results pages.
 3. **Post-type discovery (events-specific, this file).** See "Post-type discovery" below.
-4. **Author resolution (this file).** See "Author resolution" below.
-5. **URL pattern discovery (URL-PATTERNS).** Cache `data_filename`, category-landing map, profile_search_results filenames.
-6. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates.
-7. **Geocode (events-specific, this file).** Nominatim each event's address. Skip lat/lon on failure.
-8. **Duplicate detection** (METHODOLOGY Stage 3) against existing events on the site, including drafts. Skip duplicates.
-9. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-10. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
-11. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
-12. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
+4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see "Author resolution" below.
+5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from "Source candidates" below, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
+6. **Geocode (events-specific, this file).** Nominatim each candidate's address. Skip lat/lon on failure.
+7. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
+8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
+9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Internal links use URL-PATTERNS Pattern 1 (specific posts), 2 (post-type main page `/<data_filename>`), and 3 (filtered listings with `q=`/`category[]=`/`daterange=`/`lat`+`lng`+`location_value`).
+10. **Create the post** via `createSingleImagePost` with the field set in "BD Events field reference" below.
+11. **Audit summary** (METHODOLOGY Stage 7). Print everything that happened.
 
-Run all 12 steps. Skip none. If any step fails for a given event, log in audit and continue to next event.
+Run all 11 steps. Skip none. If any step fails for a given event, log in audit and continue to next event.
 
 ### Interactive-mode question order
 
@@ -42,7 +41,7 @@ When running interactive, ask the user in this canonical order. One question at 
 3. **Cities / region** (if the user didn't already specify)
 4. **Categories / vertical filter** (if not already specified)
 5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
-6. **Category-creation grant** (only ask if Stage 9 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
+6. **Category-creation grant** (only ask if Stage 8 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
 
 If the user already specified any of these in their request, skip that question.
 
@@ -87,7 +86,7 @@ Log resolved author + the path taken (pre-specified, autonomous-matched, fallbac
 
 ---
 
-## Source candidates (Stage 6 of runbook)
+## Source candidates (Stage 5 of runbook)
 
 For METHODOLOGY Stage 2a, brainstorm 5-10 candidates from these categories, tailored to the user's vertical + location:
 
@@ -103,7 +102,7 @@ Be specific. Brainstorm real domain names, not "some sites."
 
 ---
 
-## Geocoding (Stage 7 of runbook)
+## Geocoding (Stage 6 of runbook)
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -133,7 +132,7 @@ On success, pass `lat`, `lon`, normalized `country_sn`, and normalized `state_sn
 
 ---
 
-## Dedup (Stage 8 of runbook)
+## Dedup (Stage 7 of runbook)
 
 Per METHODOLOGY Stage 3. Events-specific match criteria:
 - Title: semantic match.
@@ -142,7 +141,7 @@ Per METHODOLOGY Stage 3. Events-specific match criteria:
 
 ---
 
-## Category routing (Stage 9 of runbook)
+## Category routing (Stage 8 of runbook)
 
 Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` for routing.
 
@@ -155,7 +154,7 @@ Authorization:
 
 ---
 
-## Content manufacture (Stage 10 of runbook)
+## Content manufacture (Stage 9 of runbook)
 
 Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
 
@@ -179,7 +178,7 @@ Strategy: `listTags` first to reuse existing tags. Create new ones via `createTa
 
 ---
 
-## BD Events field reference (Stage 11 of runbook)
+## BD Events field reference (Stage 10 of runbook)
 
 What `createSingleImagePost` receives.
 
