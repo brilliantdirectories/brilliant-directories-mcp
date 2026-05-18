@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.29] - 2026-05-18
+
+### `post_title` cap tightened from ~70 to ~60 chars
+
+User preference — shorter titles read better in card layouts and tab/share previews.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.28] - 2026-05-18
 
 ### Nominatim retry ladder: adaptive 4-tier (venue+city+region first when venue known)
