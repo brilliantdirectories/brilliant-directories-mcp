@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.33] - 2026-05-18
+
+### Image policy flip: landscape preferred, but never bail on `post_image`
+
+Real-run agent was correctly following the old "OMIT post_image if landscape can't be verified" rule — and shipping cards WITHOUT images. Wrong tradeoff. The site-side image-display CSS handles portrait and non-ideal aspect ratios gracefully (object-fit + blurred-fill background pattern). Image-on-post is the magic that makes the cards visually carry; perfect orientation is the nice-to-have. A portrait image is far better than no image.
+
+Flipped the policy across MCP corpus `Rule: Image URLs` and METHODOLOGY image strategy:
+
+- Feature slots (`post_image`/`hero_image`/`cover_photo`/multi-image album) **PREFER** landscape (not "require"). When orientation can be verified (OG meta tags / srcset descriptors on source pages), prefer landscape candidates. When it can't (Pexels candidates), TAKE the candidate.
+- Body slots (`post_content`/`group_desc`/`email_body`) prefer landscape or square; portrait still works.
+- Pexels workflow step 7 rewrote: "Take the candidate even if orientation can't be verified" instead of "OMIT if landscape critical."
+- Pexels workflow step 8: only skip when WebSearch returns nothing — not when orientation is uncertain.
+
+**No code changes** (skill content + corpus prose only). Worker fetches corpus live from GitHub `main` on cache refresh, so no Worker redeploy needed. Drift check passes.
+
 ## [6.49.32] - 2026-05-18
 
 ### Strip out-of-sight reference in normalize step
