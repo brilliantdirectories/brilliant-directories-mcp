@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.37] - 2026-05-18
+
+### Harden corpus `Rule: Post admin URLs` against word-smithing
+
+v6.49.35 added the corpus rule with explicit "Do NOT invent simpler patterns like `/admin/post/edit/<id>`". Real run produced `/admin/posts/edit/198?newsite=60029` — the agent invented the PLURAL form (`posts/edit` instead of `post/edit`) and slipped through the wording loophole. Reworded as an absolute: "ONLY correct pattern... do NOT invent any other URL shape — `/admin/post/edit/<id>`, `/admin/posts/edit/<id>`, `/admin/post/<id>/edit`, REST-style routes, plural/singular variations: none of those exist."
+
+Note: customers on the hosted Worker may see lag on this fix until the Worker's GitHub corpus cache refreshes (a few minutes). New connections after refresh pick up the hardened rule automatically; no Worker redeploy needed.
+
+**No code changes** (corpus prose only). Drift check passes.
+
 ## [6.49.36] - 2026-05-18
 
 ### `post_content` must open with `<p>`, never `<h2>`
