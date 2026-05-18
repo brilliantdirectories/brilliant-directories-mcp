@@ -182,9 +182,11 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 ## Tags
 
-`post_tags` format: comma-only, no spaces (`tag1,tag2,tag3`).
+`post_tags` format: comma-separated, lowercase, no hyphens, no special chars. Spaces inside a tag are fine (`pilates,reformer class,boston studios`). **Hard 100-char total cap on the CSV** — BD rejects anything longer. If the assembled CSV exceeds 100 chars, drop the last tag and re-check; repeat until ≤100.
 
-Strategy: 6 tags per post — 3 broad/short-tail (general focus like `fitness`, `5k`, `outdoors`) + 3 long-tail (specific to this post like `austin-tech-summit-2026`, `downtown-austin-events`, `enterprise-software-conference`). Lowercase, short, no special chars. Tags live ONLY in the post's `post_tags` field — do NOT call `listTags`, `createTag`, or any Tags-resource tool.
+Strategy: aim for 6 tags per post — 3 broad/short-tail (general focus like `pilates`, `fitness`, `5k`) + 3 long-tail (specific phrases like `reformer class`, `boston studios`, `classical pilates`). Real long-tails ARE multi-word phrases — keep them short and don't join words with hyphens. Tags live ONLY in the post's `post_tags` field — do NOT call `listTags`, `createTag`, or any Tags-resource tool.
+
+Same field, same rules, same 100-char cap apply to multi-image post types when their per-type SKILL.md adopts the post_tags field.
 
 ---
 

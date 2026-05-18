@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.21] - 2026-05-17
+
+### `post_tags` 100-char cap + drop hyphens
+
+Real run hit BD's 100-char limit on `post_tags` CSV (`Please enter between 0 and 100 characters`). Also surfaced the hyphenated long-tail style (`brooklyn-pride-5k`, `austin-tech-summit-2026`) wasn't what BD actually wants — real long-tails are short multi-word phrases (`reformer class`, `boston studios`), not slug-style joined words.
+
+Rewrote the tag rule:
+
+- **Hard 100-char total cap** on the CSV. Mechanical fallback: if assembled CSV >100, drop the last tag and re-check, repeat until ≤100.
+- **No hyphens.** Was teaching slug-style long-tails. Real tags are clean keywords/phrases.
+- **Spaces inside tags allowed** (commas separate tags; spaces inside a tag are fine — `pilates,reformer class,boston studios`). Earlier rule said "no spaces" which forced the bad hyphenated style.
+- Examples updated to neutral business/fitness vocabulary.
+- One-line note that the same rules apply to multi-image post types when their per-type SKILL.md adopts the `post_tags` field.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.20] - 2026-05-17
 
 ### Kill all spatial cross-refs in skill bundle (`above` / `below` / `elsewhere`)
