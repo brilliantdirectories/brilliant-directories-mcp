@@ -601,12 +601,12 @@ function applyUserLean(body, includeFlags) {
     if (!include.about) delete row.about_me;
 
     // Keep-list trim — drop every top-level field NOT in USER_LEAN_ALWAYS_KEEP
-    // unless include_extras=1. Runs LAST so wrapper-shaped fields (total_clicks,
-    // total_photos, full_name, user_location) and per-bundle-gated fields kept
-    // by their flags above survive. Per-bundle flags (include_password,
+    // unless include_extras=1. Runs LAST so per-bundle-gated fields kept by
+    // their flags above survive. Per-bundle flags (include_password,
     // include_subscription, etc.) still control THEIR specific fields via the
     // strip logic above; this is the catch-all extras gate for everything else
-    // (social URLs, awards, credentials, quote, gmap, work_experience, etc.).
+    // (billing rollups, social URLs, awards, credentials, quote, gmap,
+    // work_experience, duplicate location fields, etc.).
     if (!include.extras) {
       const keep = new Set(USER_LEAN_ALWAYS_KEEP);
       for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
