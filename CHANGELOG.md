@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.5] - 2026-05-19
+
+### Skill content: Pexels-only image strategy
+
+Removed the source-image tier from METHODOLOGY Stage 5. Live data: 0/100 successful source-image extractions across event and blog runs — the agent could verify image URLs but never landed a usable feature image from a source page. The branch added complexity (4 image-source patterns, CDN proxy decode, signed-URL handling, format/width verification, extra WebFetch calls per run) for zero observed lift.
+
+**New fallback ladder:** Pexels → omit `post_image`. The full Pexels protocol stays intact (search construction, 3-word rule, topic-fit gate, rejection logging, phrasing variation, URL liveness probe, dedup). `auto_image_import=1` still passed on every external image.
+
+**Files changed (skill content only):**
+
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 5 source-image tier deleted; Pexels promoted to Tier 1; site-config default removed (no such mechanism exists); orientation paragraph trimmed of source-image branch; Stage 2c WebFetch example no longer mentions `og:image`; universal post fields table aligned with the new strategy.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.4] - 2026-05-19
 
 ### Skill content: add `header%` to menu discovery sequence

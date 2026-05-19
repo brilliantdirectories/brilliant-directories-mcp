@@ -32,7 +32,7 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 **2b.** `WebSearch site:<domain> <keywords> <location>` per candidate. Drop dead/empty/archive pages.
 
-**2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:image, og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
+**2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
 
 | Gate | Rule |
 |---|---|
@@ -127,32 +127,9 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Image strategy
 
-Prefer the real source image when one is clearly usable. Fall through to Pexels otherwise. The fallback order:
+Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post_image`.
 
-1. **Source image** — prefer the real image from the source page. Check four patterns, in this order:
-
-   **Image-source patterns:**
-   - `<meta property="og:image" content="...">` (canonical; usually present)
-   - JSON-LD `"image": "..."` inside `<script type="application/ld+json">` (canonical; present on most events)
-   - `<img>` element `src`/`srcset` (traditional hero)
-   - CSS `background-image: url(...)` on hero container divs (common on modern event sites — Eventbrite, Squarespace, Webflow templates; if the AI scans only `<img>` tags it misses this)
-
-   **Extraction discipline:**
-   - Check raw HTML, NOT WebFetch's model-summarized markdown. Name `og:image`, `JSON-LD image`, and `background-image` explicitly in your WebFetch prompt, or the summary may strip them.
-   - The presence of any of the four patterns above indicates the source IS an image, not a video, regardless of how the page renders it.
-
-   **CDN proxy decode:** if the URL is a known proxy wrapper, decode the embedded real URL before downstream checks. Common proxies: Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`.
-
-   **Verification before commit:**
-   - HTTP 200 on the decoded URL.
-   - `Content-Type: image/*`.
-   - Format is one of `png` / `jpg` / `jpeg` / `webp`. Other formats (`gif`/`svg`/`avif`/`heic`/`bmp`) cause `auto_image_import` to silently fail — fall through to Pexels.
-   - Width ≥ 600px (600 exactly passes). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute (display size, not asset size).
-
-   **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate.
-
-   Pass the decoded URL to BD with `auto_image_import=1`.
-2. **Pexels** — follow corpus `Rule: Image URLs` exactly.
+1. **Pexels** — follow corpus `Rule: Image URLs` exactly. Always send to BD with `auto_image_import=1`.
 
    **Search construction:**
    - Query shape: `WebSearch query="site:pexels.com/photo <topic>"`. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation).
@@ -173,15 +150,14 @@ Prefer the real source image when one is clearly usable. Fall through to Pexels 
 
    **Vary phrasing if results are sparse or irrelevant:** broader/simpler ("5k race" → "group race outdoors"), narrower ("yoga class" → "vinyasa studio mat"), synonyms, adjacent contexts — all still 3 words.
 
-   **Fallback exhaustion:** after gate rejects every candidate, re-search with broadened phrasing once more — then if still nothing fits, fall through to site default, then omit. Don't loop on perfect.
+   **Fallback exhaustion:** after gate rejects every candidate, re-search with broadened phrasing once more — then if still nothing fits, omit. Don't loop on perfect.
 
    **URL output + liveness probe (mandatory before BD):** drill to individual `/photo/<slug>-<id>/` URLs, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then `WebFetch` that exact URL. `"HTTP 404 Not Found"` response → drop and re-pick from the search results. Image-analysis response (JPEG/PNG/WebP content) → send to BD.
 
    **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
-3. **Site-config default** for this post type, if defined.
-4. **Omit `post_image`** entirely.
+2. **Omit `post_image`** entirely.
 
-**Orientation preference for feature image slots.** Feature slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) prefer landscape (`w > h`). For **source images** (the original event/article/listing page), use the page's OG `og:image:width`/`og:image:height` meta tags or `srcset` 2x descriptors when available; prefer landscape but accept any orientation. For **Pexels candidates**, orientation cannot be reliably verified from the agent runtime — accept whatever orientation the candidate has. The topic-fit gate above applies first; image-on-post is the goal only after a candidate passes topic fit.
+**Orientation preference for feature image slots.** Feature slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) prefer landscape (`w > h`). Orientation cannot be reliably verified from the agent runtime — accept whatever orientation the candidate has. The topic-fit gate above applies first; image-on-post is the goal only after a candidate passes topic fit.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through the Pexels workflow above. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
 
@@ -211,7 +187,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 
 | Field | Rule |
 |---|---|
-| `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Source > Pexels > site default > omit. |
+| `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit. |
 | `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match (autonomous mode). |
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. Per-type SKILL.md gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. Per-type SKILL.md adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
