@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.15] - 2026-05-18
+
+### `prompts/` folder + universal paragraph-rhythm + link-distribution rules
+
+Per-content-type routine prompts now have a home at `bd-skill-content/prompts/`. First entry: `events.md` for scheduled-routine cron invocations. ~25 lines, every word earns its place: invocation + user-intent framing + customizable CTA button suggestion + autonomous-mode directive + final-output format. Skill content (rules, voice, dedup, runbook) lives where it always did; the prompt only carries what's routine-specific.
+
+Two universal rules folded out of the prompt into shared/ so all post types inherit:
+
+- **ANTI-SLOP self-check item 14:** "Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic."
+- **URL-PATTERNS Internal-link variety:** strengthened "1-3 links per post, distributed across intro, middle, and later sections — never clustered at the end" (was looser "woven inline where they read naturally").
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.14] - 2026-05-18
 
 ### `title` attribute required on every `<a>` in post body content

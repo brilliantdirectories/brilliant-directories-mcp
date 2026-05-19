@@ -40,6 +40,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
+14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
