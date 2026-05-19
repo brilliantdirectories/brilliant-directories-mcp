@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.4] - 2026-05-18
+
+### Close bulk-fetch detour between dedup and content manufacture
+
+Live trace: after image dedup passed (3/3 clean), agent ran `listSingleImagePosts property=post_category property_value=Races & Competitions property_operator==` to "potentially deep-link" — pulled 109 rows across 10 pages. Wasted research. Pattern 3 internal-link URLs are constructed from the new event's OWN category + location values, not looked up from existing posts.
+
+Two surgical guardrails added:
+
+- **events.md Step 11:** "Proceed straight from Step 10 — no extra lookups." Universal phrasing — transfers verbatim to future jobs.md / properties.md / blog.md.
+- **URL-PATTERNS.md Don't list:** "Bulk-list existing posts to 'see what's available' for internal linking. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed." Universal across all content-creating skills.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.3] - 2026-05-18
 
 ### Default research window bumped 60 → 90 days
