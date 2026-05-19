@@ -4900,6 +4900,10 @@
                     "type": "string",
                     "description": "Admin-UI label for the post-type tab."
                   },
+                  "feature_categories": {
+                    "type": "string",
+                    "description": "Comma-separated category list for this post type's `post_category` dropdown. Sending REPLACES the entire CSV (no per-item PATCH). Existing posts using categories not in the new CSV become orphans — pre-audit via `listSingleImagePosts property=post_category` before pruning."
+                  },
                   "per_page": {
                     "type": "integer",
                     "description": "Number of results per search results page. Default 9 (Member Listings). Recommended max 500 for site-speed reasons."

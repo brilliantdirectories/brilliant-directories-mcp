@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.8] - 2026-05-18
+
+### `Rule: Table to endpoint` adds `data_categories` + `users_portfolio` + `feature_categories` writable
+
+Live debugging session burned an hour bouncing between wrong endpoints (`/posttype/update`, `updateDataType`, `createSubCategory`) before landing on the actual write path `PUT /api/v2/data_categories/update`. Root cause: corpus `Rule: Table to endpoint` lookup table was missing `data_categories` and `users_portfolio` rows — agents had no grep target connecting "I want to update a post type's categories" to the canonical endpoint.
+
+Two corpus fixes + one spec fix:
+
+- **`Rule: Table to endpoint` (mcp-instructions.md):** added `data_categories` row (covers `PostType` AND `DataType` tools, both wire to `/api/v2/data_categories/*`) + `users_portfolio` row (multi-image gallery photo records, separate from `users_portfolio_groups`). Wire endpoint named explicitly on the data_categories row so any future agent grepping for `data_categories/update` finds the canonical mapping.
+- **`updatePostType` request schema (bd-api.json):** added `feature_categories` as a writable param. Previously the Zod schema dropped it before the request hit BD, even though BD's `/data_categories/update` endpoint accepts and writes it.
+
+**No code changes** (corpus + spec only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.7] - 2026-05-18
 
 ### blog.md post-type discovery rewrite + `type_of_feature` enum documented in spec

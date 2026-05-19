@@ -39,6 +39,8 @@ Tool names are NOT derived from table names — there is no `createUsersData`. W
 | `rel_services` | `listMemberSubCategoryLinks`, `getMemberSubCategoryLink` | `createMemberSubCategoryLink`, `updateMemberSubCategoryLink`, `deleteMemberSubCategoryLink` |
 | `data_posts` | `listSingleImagePosts`, `getSingleImagePost` | `createSingleImagePost`, `updateSingleImagePost`, `deleteSingleImagePost` |
 | `users_portfolio_groups` | `listMultiImagePosts`, `getMultiImagePost` | `createMultiImagePost`, `updateMultiImagePost`, `deleteMultiImagePost` |
+| `users_portfolio` (multi-image gallery photos) | `listMultiImagePostPhotos`, `getMultiImagePostPhoto` | `createMultiImagePostPhoto`, `updateMultiImagePostPhoto`, `deleteMultiImagePostPhoto` |
+| `data_categories` (post-type definitions — Events, Blogs, Jobs, Properties, Member Listings, etc.) | `listPostTypes`, `getPostType`, `listDataTypes`, `getDataType` | `createPostType`, `updatePostType`, `deletePostType`, `updateDataType`, `deleteDataType` (all wire to `/api/v2/data_categories/*`) |
 | `subscription_types` | `listMembershipPlans`, `getMembershipPlan` | `createMembershipPlan`, `updateMembershipPlan`, `deleteMembershipPlan` |
 | `location_cities` | `listCities`, `getCity` | `updateCity` only (no create/delete by design) |
 | `location_states` | `listStates`, `getState` | `updateState` only |
