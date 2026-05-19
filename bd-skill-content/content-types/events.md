@@ -175,6 +175,8 @@ Authorization:
 
 Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
 
+**Voice:** reads like a naturally-written editorial event page, not an SEO link container. Local context, scene details, what to expect — the reader is deciding whether to go, not parsing a directory listing.
+
 **Events-specific load-bearing facts** (the reader needs these up front): event date + time, venue + address, ticket price or "free", how to attend or buy tickets. Surface these in the opening paragraph or first FAQ block.
 
 **Events-specific Pexels search topics:** category + venue type (`"music festival crowd outdoor"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.17] - 2026-05-18
+
+### Recover the 3 dropped clauses from the original events routine prompt
+
+Audit caught three clauses from the user's original routine prompt that didn't make it into either the slim prompt OR any shared rule. Folded each into its right home:
+
+- **URL liveness quality gate** added to METHODOLOGY Stage 2c (6th gate). Any URL the post will link to — registration page, apply page, listing page, cited source — must return HTTP 200 with non-404 content. Dead/expired pages: drop the link OR skip the record if it's the primary action URL. Universal across post types (events have reg pages, jobs have apply pages, etc.).
+- **"Editorial event page, not SEO link container" voice cue** added to `events.md` content manufacture. Names the reader frame (someone deciding whether to attend), not directory-listing parse.
+- **"Back-to-back larger paragraphs encouraged when content supports it"** restored to ANTI-SLOP item 14. Strengthened from "varied — not metronomic" to explicitly permit asymmetric paragraph sizing.
+
+Also tightened `prompts/events.md`: bulleted the create-args block, dropped "annual" from "recurring annual" (covers monthly/seasonal too), dropped "already on the site" qualifier from the geo-relevant content prefer clause (don't restrict to on-site supporting content).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.16] - 2026-05-18
 
 ### prompts/events.md — strip meta-explainer header

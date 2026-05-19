@@ -41,6 +41,7 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Auto: <8 skip. Interactive: 6-7 flag for user, <6 always skip. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
+| URL liveness | Any URL the post will link to (registration page, apply page, listing page, cited source) must return HTTP 200 with non-404 content. Dead/expired pages = drop the link OR skip the record if it's the primary action URL. Never publish links the agent can't verify. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
