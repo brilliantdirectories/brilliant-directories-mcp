@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.1] - 2026-05-18
+
+### METHODOLOGY Stage 7: inline verbatim admin URL shape (belt-and-suspenders for `Rule: Post admin URLs`)
+
+Live run: agent generated audit summary with `https://ww2.managemydirectory.com/admin/posts/edit/297&newsite=60029` — wrong path. Corpus `Rule: Post admin URLs` (mcp-instructions.md line 503) carries the canonical `admin/viewPosts.php?search[value]=<post_id>&data_type=<dt>&data_id=<di>&newsite=<wid>` shape, but METHODOLOGY Stage 7 just cross-referenced it without inlining. Same paraphrase trap as image dedup before v6.49.54.
+
+Fix: METHODOLOGY.md Stage 7 now carries the verbatim URL shape inline with "DO NOT paraphrase" directive. Same belt-and-suspenders pattern proven on image dedup — verbatim string in front of the agent at the point of use.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.0] - 2026-05-18
 
 ### `listUserMeta` gains `value` first-class param — one-shot multi-condition lookup (no pagination, no client-filter)

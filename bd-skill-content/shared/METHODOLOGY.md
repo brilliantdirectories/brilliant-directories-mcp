@@ -162,7 +162,9 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ## Stage 7: Audit summary (always printed)
 
-Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results. Build `<admin_edit_url>` per the MCP corpus `Rule: Post admin URLs` — never invent the URL shape.
+Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results.
+
+**`<admin_edit_url>` verbatim shape — DO NOT paraphrase:** `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Host fixed. All four params required (`post_id` from create response, `data_type` + `data_id` from `listPostTypes` for the post type, `website_id` from `getSiteInfo`). Full rule in corpus `Rule: Post admin URLs`.
 
 ```
 Created N posts:
