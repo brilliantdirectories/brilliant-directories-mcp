@@ -41,6 +41,8 @@ The user can invoke this skill with as little as a one-sentence goal ("create po
 2. Detect mode (interactive vs autonomous — interactive if the user is in this chat).
 3. Run the content-type runbook end-to-end without prompting unless genuinely ambiguous.
 
+**Hard gate, every post type:** image dedup per corpus `Rule: Image dedup` MUST execute its three list-tool calls before any `create*Post` write. Never claim-without-executing.
+
 ## Required preconditions
 
 Before running, confirm the user has a BD site URL connected to their MCP (check by calling `mcp__brilliant-directories__getSiteInfo` — if it returns a site, the connection works). The content-type file then verifies any per-type post-type requirements during its discovery step.

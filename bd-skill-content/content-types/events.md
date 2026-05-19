@@ -22,9 +22,11 @@ The user invoked the skill with a request like "create event posts on my site" o
 6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-9. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts. Highest-value internal-link filters for events: category, location (lat+lng+location_value), date (daterange). See URL-PATTERNS.md for param syntax.
-10. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
-11. **Audit summary** (METHODOLOGY Stage 7).
+9. **Image selection** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the image first avoids re-doing content if the image fails dedup.
+10. **Image dedup (mandatory, executes tool calls).** Per corpus `Rule: Image dedup`: run all three list-queries against the chosen URL. The three tool calls must appear in your turn. Any hit → pick another image and re-run.
+11. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
+12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
+13. **Audit summary** (METHODOLOGY Stage 7).
 
 ### Interactive-mode question order
 

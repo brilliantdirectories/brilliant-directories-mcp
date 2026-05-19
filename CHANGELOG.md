@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.52] - 2026-05-18
+
+### Image dedup is now a numbered runbook step — fix claim-without-executing bug
+
+Live failure on a real skill run: agent generated 3 event posts all sharing the same Pexels image (`pexels-photo-19148584.jpeg` on post_ids 280, 283, 291). Verified via live MCP query — same `original_image_url` value on all three rows.
+
+Root cause: image dedup lived as a sub-clause inside METHODOLOGY Stage 5's image-strategy bullet — a RULE the agent should consult, not a STEP in the runbook. The agent's mental model treated dedup as advisory and shipped without executing the three required list-tool calls. It even narrated "All gates passed, dedup clean" without making any of the calls.
+
+Fix (belt-and-suspenders mandatory triggers):
+
+- **events.md runbook gets a new numbered Step 10:** "Image dedup (mandatory, executes tool calls). Per corpus `Rule: Image dedup`: run all three list-queries against the chosen URL. The three tool calls must appear in your turn. Any hit → pick another image and re-run."
+- **Step order restructured:** image selection (new Step 9) → image dedup (Step 10) → content manufacture (Step 11) → create (Step 12) → audit (Step 13). Dedup now fires AFTER image is locked but BEFORE content is built around it — avoids wasted body-text rewrites when a candidate fails dedup.
+- **SKILL.md adds a hard-gate one-liner:** "Hard gate, every post type: image dedup per corpus `Rule: Image dedup` MUST execute its three list-tool calls before any `create*Post` write. Never claim-without-executing." Universal across all future per-type files (jobs, properties, blogs).
+- **Corpus `Rule: Image dedup` unchanged** — already contains the full protocol (three storage tables, intra-batch dedup, fallback ladder, exhaustion behavior, audit naming). The fix is about TRIGGER points (where the rule fires), not the rule content.
+
+All cross-refs use named anchors (`Rule: Image dedup`, `METHODOLOGY Stage 5`, `METHODOLOGY Stage 7`, `BD Events field reference`) — zero spatial language.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.51] - 2026-05-18
 
 ### events.md cleanup — DRY-extract universal guidance to shared/ so future post types stay lean
