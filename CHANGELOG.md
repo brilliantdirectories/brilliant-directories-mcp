@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.6] - 2026-05-19
+
+### Pexels image liveness probe before BD commit
+
+Live failure on `find-fitness-pros.directoryup.com`: agent picked Pexels photo 34514 (a pre-2015 ID with non-standard CDN filename), constructed the canonical URL per `Rule: Image URLs`, passed to BD with `auto_image_import=1`. BD accepted the URL, queued the background fetch, the fetcher 404'd on the CDN, and the post shipped with `post_image=""` and `image_imported=0`. Silent failure — the create succeeded, the create response looked normal, the image just never appeared on the published post.
+
+Root cause: the bare canonical Pexels URL pattern (`pexels-photo-<id>.jpeg`) doesn't resolve for all photo IDs. The skill trusted the canonical construction without verifying. The detail page being live (`/photo/<slug>-<id>/`) does not prove the canonical asset URL is live.
+
+Fix: mandatory `WebFetch` liveness probe on the constructed canonical URL before passing to BD. Tested live — WebFetch returns a clean `"The server returned HTTP 404 Not Found"` for the broken URL and an image-content-analysis response (with JPEG header detection, content-type, file size) for live URLs. The two responses are unambiguously distinguishable, so the agent has a reliable signal.
+
+Added to METHODOLOGY Stage 5 Pexels sub-section, `URL output + liveness probe` step. ~50 words, pure operational instruction (trigger, action, decision tree). No bloat — incident-explanation prose deliberately omitted; the rule states what to do, not why.
+
+**Universal across all post types** (events, blog, future jobs/properties). Every Pexels image now goes through the probe before BD sees it.
+
+**No code changes** (skill content only). No `SERVER_INFO.version` bump. No Worker deploy required. Drift check passes.
+
 ## [6.52.5] - 2026-05-19
 
 ### Blog dedup hardening, universal post-fields DRY refactor, better title examples, longer blog meta titles, post_type clarified

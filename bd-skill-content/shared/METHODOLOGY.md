@@ -175,7 +175,7 @@ Prefer the real source image when one is clearly usable. Fall through to Pexels 
 
    **Fallback exhaustion:** after gate rejects every candidate, re-search with broadened phrasing once more — then if still nothing fits, fall through to site default, then omit. Don't loop on perfect.
 
-   **URL output:** drill to individual `/photo/<slug>-<id>/` URLs, send the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` to BD.
+   **URL output + liveness probe (mandatory before BD):** drill to individual `/photo/<slug>-<id>/` URLs, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then `WebFetch` that exact URL. `"HTTP 404 Not Found"` response → drop and re-pick from the search results. Image-analysis response (JPEG/PNG/WebP content) → send to BD.
 
    **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
 3. **Site-config default** for this post type, if defined.
