@@ -172,21 +172,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 **Events-specific Pexels search topics:** category + venue type (`"music festival crowd outdoor"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
 
-**Events-specific internal-link opportunities** (only if URL-PATTERNS.md discovery confirms the target exists):
-- More events in same category: `?category[]={cat}`
-- More events in same city: `?lat={lat}&lng={lng}&location_value={URL-encoded post_location}&location_type=locality` (all four params required; `location_type=locality` is what BD's sidebar form needs to render — omit it and the URL returns zero results)
-- Other events on same date: `?daterange={d}+-+{d}`
-- Highest-value combo: same category + same city
-
----
-
-## Tags
-
-`post_tags` format: comma-separated, lowercase, no hyphens, no special chars. Spaces inside a tag are fine (`pilates,reformer class,boston studios`). **Hard 100-char total cap on the CSV** — BD rejects anything longer. If the assembled CSV exceeds 100 chars, drop the last tag and re-check; repeat until ≤100.
-
-Strategy: aim for 6 tags per post — 3 broad/short-tail (general focus like `pilates`, `fitness`, `5k`) + 3 long-tail (specific phrases like `reformer class`, `boston studios`, `classical pilates`). Real long-tails ARE multi-word phrases — keep them short and don't join words with hyphens. Tags live ONLY in the post's `post_tags` field — do NOT call `listTags`, `createTag`, or any Tags-resource tool.
-
-Same field, same rules, same 100-char cap apply to multi-image post types when their per-type SKILL.md adopts the post_tags field.
+**Internal links:** weave into body prose per **URL-PATTERNS Link shape priority**. Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
 
 ---
 
@@ -211,10 +197,9 @@ What `createSingleImagePost` receives.
 | Field | Value |
 |---|---|
 | `post_content` | assembled HTML body per "Content manufacture" |
-| `post_filename` | BD stores the data_filename prefix AS PART OF post_filename. **BD ignores this field on `createSingleImagePost` — always auto-generates from `post_title`.** To control slug, either keep `post_title` short, or follow up with `updateSingleImagePost post_filename=<data_filename>/<lowercase-hyphenated-slug>` (update accepts the override). |
 | `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
-| `post_tags` | comma-only, no spaces |
+| `post_tags` | per **METHODOLOGY Tags** (universal rules — comma-separated CSV, 100-char cap, no Tags-resource tools) |
 | `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
 | `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |

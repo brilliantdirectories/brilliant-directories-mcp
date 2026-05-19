@@ -64,3 +64,13 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 ## Internal-link variety (SEO)
 
 When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 links per post, woven inline where they read naturally — not always concentrated at the end. LLM-judged per post; no fixed rotation. Each link must be a Pattern 3 URL with only params from the `Pattern 3 filter params` section.
+
+## Link shape priority (SEO ranking, universal)
+
+When picking which filter combination to link, prefer in this order:
+
+1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for properties: same neighborhood + same property type.
+2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence.
+3. **Date-range filters** (events only) — lowest. Useful only on events for "other events on this date." Skip for non-time-bound post types.
+
+Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run to spread internal-link equity.

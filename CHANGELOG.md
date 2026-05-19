@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.51] - 2026-05-18
+
+### events.md cleanup — DRY-extract universal guidance to shared/ so future post types stay lean
+
+Events is the template post type. Bloat in events.md cascades to jobs/properties/blogs when those skills get authored. Three surgical moves to shared/ so per-type files stay focused on per-type specifics:
+
+1. **Tag rules → `METHODOLOGY.md` new `## Tags` section.** `post_tags` constraints (CSV format, lowercase, 100-char cap, ~6-tag 3-broad+3-long-tail strategy, no `listTags`-resource calls) are identical across single-image AND multi-image post types. Now one canonical place. events.md `Tags` section gone; the events field-table `post_tags` row now reads `per METHODOLOGY Tags (universal rules — comma-separated CSV, 100-char cap, no Tags-resource tools)`.
+
+2. **`post_filename` row CUT from events.md.** Live-verified twice on the BD MCP: `createSingleImagePost` auto-generates `post_filename` from `post_title` (no agent action needed); `updateSingleImagePost` with new `post_title` does NOT regen filename (corpus `Rule: URL slug rename` already handles the title-update-but-slug-stale case when relevant). The row was teaching the agent something it never needed to act on. Cut.
+
+3. **Internal-link priority → `URL-PATTERNS.md` new `## Link shape priority` subsection.** "Highest-value combo = category + location" SEO ranking is universal — same pattern fires across events (category+city), jobs (role+city), properties (neighborhood+type). events.md's 5-bullet `Events-specific internal-link opportunities` block collapsed to one line: `Internal links: weave into body prose per **URL-PATTERNS Link shape priority**. Events get the full set of filter dimensions available — category, location, and date. Date filters are events-only.`
+
+events.md: -27 lines. METHODOLOGY.md: +9 lines. URL-PATTERNS.md: +12 lines. Net corpus: -6 lines, plus ~25 lines × 3 future post types of duplicate-prose avoided when jobs.md / properties.md / blogs.md get authored.
+
+What's NOT changed: `post_title` shape rules KEPT in events.md (title format genuinely varies per post type — DRY would actively hurt: events want hybrid "what+when+hook," blogs want clickbait headlines, jobs want "role at company, city"). `post_venue` / `post_location` separation rules KEPT (real bug class). Date/time wall-clock guidance KEPT.
+
+Cross-refs use the project's existing `**Section Name**` anchor convention — same as the existing `METHODOLOGY Stage N` references already in events.md (e.g. line 100 `Per METHODOLOGY Stage 3`).
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.50] - 2026-05-18
 
 ### Skill URL patterns — `location_type` param is mandatory on location-filtered internal links
