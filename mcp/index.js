@@ -5473,6 +5473,49 @@ async function main() {
         }
       }
 
+      // Feature-image swap auto-reset.
+      // BD's `image_imported=2` marker is sticky — once set, subsequent
+      // `post_image=<new URL>` writes with `auto_image_import=1` are silently
+      // skipped by BD's import job (file stays the same). The agent has no
+      // way to detect this from the response. Server-side fix path verified:
+      // send `image_imported=0` first, then the new URL on a second call.
+      //
+      // Wrapper does the two-round-trip transparently when an UPDATE looks
+      // like an image swap: post_image set, auto_image_import=1, and the
+      // existing record already has image_imported=2 with a different URL.
+      // No-op on creates (post doesn't exist yet) and on updates where the
+      // post hasn't been imported yet OR the URL hasn't changed.
+      if (
+        name === "updateSingleImagePost" &&
+        args && args.post_id !== undefined &&
+        typeof args.post_image === "string" && args.post_image !== "" &&
+        (args.auto_image_import === 1 || args.auto_image_import === "1")
+      ) {
+        try {
+          const cur = await makeRequest(
+            config, "GET",
+            `/api/v2/data_posts/get/${encodeURIComponent(String(args.post_id))}`,
+            null, null,
+          );
+          const row = (cur && cur.body && cur.body.message)
+            ? (Array.isArray(cur.body.message) ? cur.body.message[0] : cur.body.message)
+            : null;
+          const wasImported = row && String(row.image_imported || "") === "2";
+          const existingUrl = row && row.original_image_url ? String(row.original_image_url) : "";
+          if (wasImported && existingUrl !== args.post_image) {
+            await makeRequest(
+              config, "PUT",
+              "/api/v2/data_posts/update",
+              null,
+              { post_id: args.post_id, image_imported: 0 },
+            );
+          }
+        } catch {
+          // Fall-open: if the reset probe/call fails, proceed with the normal
+          // update. Worst case mirrors prior behavior (BD silent-skips re-import).
+        }
+      }
+
       // EAV split: peel hero/EAV fields off updateWebPage args before the
       // parent update. Flushed via users_meta after the parent succeeds.
       const { direct: eavDirect, eav: eavQueued, route: eavRoute } = splitEavParams(name, args || {});

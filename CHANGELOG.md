@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.9] - 2026-05-18
+
+### Auto-reset BD's sticky `image_imported=2` marker on feature-image swaps
+
+Live debug: agent tried twice to swap a post's feature image. Both `updateSingleImagePost post_id=N post_image=<NEW URL> auto_image_import=1` calls returned HTTP 200 and updated `revision_timestamp`, but the local file `pphoto-<post_id>.webp` never changed and `original_image_url` kept the old URL. Root cause: BD's import job checks `image_imported` first. When it sees `=2` ("already imported"), it skips re-fetching even when `post_image` is set to a brand-new URL. Curl test confirmed BD requires TWO sequential PUTs (first `image_imported=0`, then the new URL with `auto_image_import=1`) — a single combined call doesn't work; BD reads the marker before the new URL gets persisted.
+
+Wrapper now handles this transparently for the agent. When `updateSingleImagePost` detects:
+- `post_image` is set to a non-empty URL
+- `auto_image_import=1` is set
+- the existing record has `image_imported=2` AND `original_image_url` differs from the new URL
+
+…the wrapper makes a pre-call to BD to set `image_imported=0`, then proceeds with the normal update. Agent sends one tool call, wrapper does two BD round-trips, feature-image swap Just Works.
+
+No-op cases (single round-trip preserved): create (no existing post), update without `post_image`, update where the post hasn't been imported yet (`image_imported != "2"`), update where the new URL matches the existing `original_image_url`. Fall-open on probe failure (proceed with original behavior — worst case mirrors prior behavior).
+
+**Files changed:**
+- `mcp/index.js` (~50 lines): pre-dispatch hook in `updateSingleImagePost` path uses existing `makeRequest` helper for the probe + reset call. Hooks into the same zone as the `start_time`/`end_time` derivation block — consistent placement for transparent wrapper rewrites.
+- `brilliant-directories-mcp-hosted/src/index.ts` (~50 lines): byte-mirror using the Worker's native `fetch` instead of `makeRequest`. Same logic, same conditions, same fall-open.
+- Worker `SERVER_INFO` bumped 3.5.0 → 3.6.0.
+
+Wrangler deploy required from `bd-cursor-config/brilliant-directories-mcp-hosted/`.
+
+**No spec changes.** No new agent-facing fields. No corpus rule additions. Drift check passes.
+
 ## [6.50.8] - 2026-05-18
 
 ### `Rule: Table to endpoint` adds `data_categories` + `users_portfolio` + `feature_categories` writable
