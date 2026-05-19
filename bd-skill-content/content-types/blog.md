@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Run in order; on per-post failure continue to the next post.
 
 1. **Mode detection** (METHODOLOGY Stage 1). User in chat → interactive. Cron/programmatic → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`footer%` fallback chain). Cache `data_filename` for the resolved blog post type.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Cache `data_filename` for the resolved blog post type.
 3. **Post-type discovery (blogs-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.

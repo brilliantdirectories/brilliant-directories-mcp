@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.4] - 2026-05-19
+
+### Skill content: add `header%` to menu discovery sequence
+
+Live observation on `find-fitness-pros.directoryup.com`: site uses a menu named "Top Header Menu" — matched by `top%` but missed sites whose main nav is named `Header Menu` / `Header Links` / similar. Expanded the METHODOLOGY Stage 1 menu sequence from three queries to four.
+
+**New sequence:** `main%` → `top%` → `header%` → `footer%`. All four run in order; each match contributes its `{menu_name → menu_link}` entries to the cached internal-link inventory.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 1 step 4 sequence updated.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — step 2 one-liner aligned.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — step 2 one-liner aligned.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.3] - 2026-05-19
 
 ### Skill content: menu fallback chain + LIKE wildcard discipline in dedup queries

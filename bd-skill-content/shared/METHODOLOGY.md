@@ -15,7 +15,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
 3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. The cached `feature_categories` is the authoritative list for post-category routing.
-4. `listMenus` — run all three in sequence: `property=menu_name property_value=main% property_operator=like`, then `top%`, then `footer%`. For each match, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates.
+4. `listMenus` — run all four in sequence: `property=menu_name property_value=main% property_operator=like`, then `top%`, then `header%`, then `footer%`. For each match, `listMenuItems property=menu_id property_value=<id> property_operator=eq` → cache `{menu_name → menu_link}` map of internal nav links as supplementary internal-link candidates.
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 

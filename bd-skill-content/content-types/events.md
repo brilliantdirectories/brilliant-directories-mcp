@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run the runbook in order; on per-step failure for a given event, continue to the next event.
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`footer%` fallback chain). Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
 3. **Post-type discovery (events-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see the `Author resolution` section.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 6 quality gates. Land N viable candidates BEFORE any dedup check.
