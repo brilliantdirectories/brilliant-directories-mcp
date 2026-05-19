@@ -28,7 +28,7 @@ The user invoked the skill with a request like "create event posts on my site" o
     - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
     - `listUserMeta database=list_seo key=hero_image` (then client-filter the returned rows where `value == <exact URL>`)
 
-    All three must appear in your turn before step 12. Any hit on any of the three = pick a different image and re-run all three. Full protocol (intra-batch dedup, fallback ladder, audit naming) in corpus `Rule: Image dedup`.
+    Exactly these three calls must appear in your turn before step 12 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different image and re-run all three. Full protocol (intra-batch dedup, fallback ladder, audit naming) in corpus `Rule: Image dedup`.
 11. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).

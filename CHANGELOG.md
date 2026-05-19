@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.55] - 2026-05-18
+
+### events.md Step 10: "All three must appear" → "Exactly these three calls must appear — no more, no fewer, no substitutes"
+
+v6.49.54 minion stress-test scenario G surfaced a soft-pass: "all three must appear" locks the lower bound but doesn't explicitly forbid a fourth invented call. Cheap one-line tightening to close the gap. Agent now reads the closed enumeration directive matching the rest of the rule's mandatory-execution tone.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.54] - 2026-05-18
 
 ### events.md Step 10 carries verbatim query shapes — fixes agent paraphrasing dedup queries wrong
