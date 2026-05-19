@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.53] - 2026-05-18
+
+### METHODOLOGY image-dedup sub-clause upgraded to mandatory-execution tone (third belt-and-suspenders location)
+
+v6.49.52 minion stress-test caught a residual gap: METHODOLOGY.md image strategy still contained the OLD soft-tone sub-clause that the agent had already ignored once before the bug shipped — same wording the agent saw and treated as advisory. Upgrading to match events.md Step 10 and SKILL.md hard-gate language so the same mandatory-execution voice appears in ALL THREE load-bearing locations.
+
+Old: `"Before committing the chosen URL, dedup-check it against existing site content per Rule: Image dedup — same stock photo on two posts on the same site is the failure mode this prevents."`
+
+New: `"Before committing the chosen URL, run corpus Rule: Image dedup — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run."`
+
+Belt-and-suspenders state after this ship:
+- **SKILL.md** router-level hard gate (fires before per-type runbook is read)
+- **events.md Step 10** runbook-level numbered step (fires when agent steps through the runbook)
+- **METHODOLOGY.md image strategy bullet** universal-content-stage reminder (fires when agent reads the image-source ladder)
+
+All three now carry matching mandatory-execution tone: "must appear in your turn," "any hit, pick another and re-run," explicit `Rule: Image dedup` cross-ref. No spatial language.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.52] - 2026-05-18
 
 ### Image dedup is now a numbered runbook step — fix claim-without-executing bug
