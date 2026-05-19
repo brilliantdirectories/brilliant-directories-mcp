@@ -19,7 +19,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 3. **Post-type discovery (blogs-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
-6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 5 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
+6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 6 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
 7. **Duplicate detection** (METHODOLOGY Stage 3). For each topic angle, scope-query the blog post type: `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10`. Match: title-similar AND topic-angle-overlap. Date does not factor (blogs are evergreen). Skip duplicates.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are selected during content manufacture (Step 11), not here.
@@ -170,9 +170,9 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to its implicit question. Then expand with detail, examples, lists.
 4. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
-6. **Bulleted lists where scannability helps.** Numbered for sequence, bulleted for parallel items. Don't bullet everything.
+6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Recap the load-bearing answer, then close with ONE internal link (CTA shape — "Browse {Category} listings on {site}" or "See more {topic} resources" — anchor text reads as part of a sentence).
+8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link (CTA shape — "Browse {Category} listings on {site}" or "See more {topic} resources" — anchor text reads as part of a sentence).
 
 ### Internal-link strategy
 
@@ -255,7 +255,7 @@ What `createSingleImagePost` receives.
 
 ### Do NOT pass
 
-- `post_start_date`, `post_expire_date` — events-only; blogs do not have a scheduled date semantic. (BD will silently store but BD's blog templates ignore.)
+- `post_start_date`, `post_expire_date` — events-only; blogs do not have a scheduled date semantic.
 - `post_venue`, `post_location`, `lat`, `lon`, `country_sn`, `state_sn` — geo fields; blogs do not have a place anchor.
 - `auto_geocode` — geo-only; not applicable to blogs.
 - `revision_timestamp` — BD-managed.

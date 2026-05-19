@@ -24,7 +24,7 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 **Universal short-circuit for author:** if the user pre-specified a `user_id` (or `author_id`) in their request — interactive or autonomous, any content type — use it and skip per-type author resolution entirely. No discovery calls.
 
-**Location targeting hints — use `listCities`, NEVER bulk-list members.** If the user's prompt references targeting based on member coverage (e.g. "cities where I have members listed," "places members are based," "areas we cover"), use `listCities` — BD auto-seeds this table on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
+**Member-city targeting — NEVER bulk-list members to discover their cities.** Only fires when the user's prompt explicitly targets by member coverage ("cities where I have members," "places members are based," "areas we cover"). Use `listCities` — BD auto-seeds it on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
 
 ## Stage 2: Source research
 
@@ -32,16 +32,16 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 **2b.** `WebSearch site:<domain> <keywords> <location>` per candidate. Drop dead/empty/archive pages.
 
-**2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:image, og:title, JSON-LD schema.org Event"). Every extracted record must pass all 5 gates:
+**2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:image, og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
 
 | Gate | Rule |
 |---|---|
 | Date sanity | Primary date > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
-| Confidence | Self-rate 1-10. Auto: <8 skip. Interactive: 6-7 flag for user, <6 always skip. |
+| Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
-| URL liveness | Any URL the post will link to (registration page, apply page, listing page, cited source) must return HTTP 200 with non-404 content. Dead/expired pages = drop the link OR skip the record if it's the primary action URL. Never publish links the agent can't verify. |
+| URL liveness | Every URL the post links to must be verified before publish. `WebFetch` 200 with real body content = use (200 with "page not found"/"error" body text is a soft-404 — treat as dead). 404 / DNS fail = drop, or skip the record if it's the primary action URL. 403 / 401 / 429 / timeout / WAF block = **UNKNOWN, not verified** — a CDN is blocking the bot UA, not proof the page is dead; never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop. URLs sourced from a third party (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
@@ -110,8 +110,10 @@ Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Rela
 
 | Type | Format |
 |---|---|
-| Internal | `<a href="/...">text</a>` (no rel, no target) |
-| External | `<a href="https://..." rel="nofollow" target="_blank">text</a>` |
+| Internal | `<a href="/..." title="<descriptive>">text</a>` (no rel, no target) |
+| External | `<a href="https://..." title="<descriptive>" rel="nofollow" target="_blank">text</a>` |
+
+Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Image strategy
 

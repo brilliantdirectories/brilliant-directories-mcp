@@ -4,9 +4,9 @@ Connect to my Brilliant Directories site MCP and run the `bd-skill-content` skil
 
 Create exactly:
 
-- `1` event post
-- `post_status=1`
-- `user_id=1`
+- COUNT: `1` event post
+- PUBLISH STATUS: `post_status=1`
+- AUTHOR: `user_id=1`
 
 Pick events that match my site's focus and niche, strengthen local-SEO and topical authority, and create internal-linking opportunities to related events, locations, and members already on the site.
 

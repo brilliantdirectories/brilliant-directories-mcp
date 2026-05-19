@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.0] - 2026-05-19
+
+### Skill hardening pass: AI-detection bans, URL-liveness gate, blog routine prompt, surgical cleanup
+
+Two-pass editorial review of `bd-skill-content` against current 2026 AI-output tells, plus a clean-room consistency sweep. Net result: stronger anti-slop firewall, hardened URL-liveness gate (closed the 403-rationalization loophole that shipped one bad link), new blog routine prompt matching events shape, multiple cross-file consistency fixes.
+
+**ANTI-SLOP — 7 new universal banned patterns** (all real 2026 frontier-model tells, all non-overlapping with existing rules):
+
+- Smart-punctuation drift (curly quotes U+2018/2019/201C/201D, ellipsis U+2026, NBSP U+00A0) — matched pair with the existing em/en-dash ban
+- Tricolon / forced triples — "X, Y, and Z" parallel stacks invented for rhythm
+- "Not just X, it's Y" amplifier — positive-framed escalator that slipped past the existing negative-listing ban
+- Participial/gerund openers — "Standing in...", "Looking ahead...", "Bringing together...", "Drawing on..."
+- Conclusion-recap reflex — "In short", "Ultimately", "The takeaway" as section/post closers
+- Vocabulary fingerprints — delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, nestled, rich tapestry, treasure trove
+- Scene-setting openers — "Picture this", "Imagine", cinematic-prompt visualizations before stating the subject
+
+Each ban mirrored in the self-check list. ANTI-SLOP now ships 18 self-checks total.
+
+**Bullets rule** (universal across content types) — new ANTI-SLOP `Bullets rule` defining bullet usage: only when content is genuinely parallel/scannable, one or two lists per post max, prose stays primary. Both `events.md` and `blog.md` reference by named anchor (renumbering-safe). Per-type files keep their per-type examples (events: parking, price tiers, schedule; blogs: numbered for sequence, bulleted for parallel).
+
+**URL liveness gate hardened (METHODOLOGY Stage 2c)** — closed the 403-rationalization loophole. Previous version said "must return HTTP 200" but didn't handle CDN bot-blocks. Now explicit three-state decision tree:
+
+- 200 with real body content = use (200 with "page not found" body text is a soft-404, treat as dead)
+- 404 / DNS fail = drop, or skip the record if it's the primary action URL
+- 403 / 401 / 429 / timeout / WAF block = UNKNOWN, not verified. CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop.
+- Third-party-sourced URLs (aggregator, secondary listing) always require independent verification. Never trust the third party's link as-is.
+
+Reason for the tightening: a live event publish on `find-fitness-pros.directoryup.com` shipped a 404 URL (`runrocknroll.com/chicago/` from an aggregator; real URL was `/events/chicago`) because a 403 from agent runtime was rationalized as "blocked but probably live."
+
+**Confidence gate scale defined (METHODOLOGY Stage 2c)** — the 1-10 self-rate scale now has a defined meaning: "degree to which required fields are unambiguous and source-grounded." Auto >=8 use, interactive >=8 use without flagging.
+
+**Gate count fixed** — adding the URL-liveness gate made the count 6, not 5. Updated METHODOLOGY:35, events.md:21, blog.md:22 from "all 5 gates" to "all 6 gates."
+
+**New `prompts/blog.md` routine** — matches the `prompts/events.md` shape: COUNT/PUBLISH STATUS/AUTHOR bullets + topic preference signals + autonomous-mode directive + final-output format. Universal directives stripped to where they belong (ANTI-SLOP, METHODOLOGY, URL-PATTERNS, content-types/blog.md). Routine-specific override preserved: minimum 4 sentences per paragraph (stricter than ANTI-SLOP's 3-6 range, a site-owner preference).
+
+**Blog conclusion instruction rewritten** — `content-types/blog.md` step 8 used to say "Recap the load-bearing answer," which actively invited the new conclusion-recap reflex ban. Now reads: "Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer."
+
+**Member-city targeting rule clarified** — METHODOLOGY conditional defense reordered so the brake leads: "Member-city targeting — NEVER bulk-list members to discover their cities. Only fires when the user's prompt explicitly targets by member coverage..." Same gating, clearer signal.
+
+**Cross-reference convention** — numbered list-item references (which break silently when the list renumbers) replaced with backtick-named anchors (`Bullets rule`) matching the existing BD corpus `Rule: <Name>` convention.
+
+**Minor cleanups** — `content-types/blog.md` `Do NOT pass` parenthetical removed ("BD will silently store but BD's blog templates ignore" gave the agent rationalization permission to pass forbidden fields). `events.md` step 4, Author resolution section, image-dedup verbatim block, `post_title` cell, and `FEATURE image only at this step` bold qualifier all preserved as deliberate belt-and-suspenders redundancy at execution time.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes throughout.
+
 ## [6.50.17] - 2026-05-18
 
 ### Recover the 3 dropped clauses from the original events routine prompt
