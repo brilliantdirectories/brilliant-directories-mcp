@@ -16,7 +16,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 
 1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, homepage, menus, top categories, `listPostTypes`. Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
-3. **Post-type discovery (events-specific, this file).** See the `Post-type discovery` section.
+3. **Post-type discovery (events-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see the `Author resolution` section.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 5 quality gates. Land N viable candidates BEFORE any dedup check.
 6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.

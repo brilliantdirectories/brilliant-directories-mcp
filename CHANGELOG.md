@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.6] - 2026-05-18
+
+### Blog content type shipped — `/bd:content blog` now usable
+
+Second per-type runbook (after events). 245 lines in `bd-skill-content/content-types/blog.md`, plus router update in `SKILL.md` to point at it. Deltas vs events.md:
+
+- **No geocoding stage** (blogs aren't geo-bound). 13-step runbook keeps the same shape as events; Stage 7 (geocoding) replaced with adjusted dedup criteria.
+- **No author plan-permission filter.** Blogs default to highest-`admin_level` user when not pre-specified.
+- **Topic resolution stage** replaces events' source-candidate brainstorm. Three input shapes: (A) user-specified topic → use verbatim; (B) vertical SEO seed → derive from `getSiteInfo.industry` + `profession` + `listTopCategories` + LLM judgment for long-tail evergreen opportunities; (C) viral-content brainstorm → `WebSearch` for trending discussions in vertical (last 30-60 days).
+- **Date sanity gate does NOT apply** to blog source research (blogs are evergreen).
+- **Image dedup** uses v6.50.5's FEATURE-only scope. Inline body images use intra-post uniqueness only (no cross-table check).
+- **Inline body images**: 1 per 300-500 words, `fr-dib fr-fil/fr-fir img-rounded` float + `style="width: 350px;"` + retina `?w=700` source variant per corpus `Rule: Post-body formatting`. Each sourced via Pexels workflow with intra-post dedup against the feature URL + other body URLs.
+- **Body structure rules**: direct-answer 40-100 word opening; ~60% question-shaped H2s; each H2 opens with 40-60 word answer-first paragraph; paragraph cap 40-80 words / 150 hard max; sentence cap ~15-20 words; FAQ block before conclusion (3-5 Q&A, 40-60 word answers); conclusion 100-150 words ending in 1 internal-link CTA.
+- **Post format → length table**: how-to 1500-2500; listicle 1200-2000; pillar 2500-4000; news 600-1200; comparison 1500-2500.
+- **Internal-link strategy table**: 5-10 links per 2000 words distributed across opening / body H2s / FAQ / conclusion. Targets include specific member profiles (Pattern 1: `/<user.filename>`), member search results (Pattern 3 on Members post type `data_filename`), specific posts of any type (Pattern 1), and post search results of any type (Pattern 3).
+- **Title shape**: clickbait-flavored but anti-slop-disciplined. 5 example patterns (how-to / listicle / question / comparison / news), ~60-65 char SEO target.
+- **Field reference**: required + recommended + Do-NOT-pass tables. Explicitly excludes event-only geo + date fields (`post_start_date`, `post_expire_date`, `post_venue`, `post_location`, `lat`, `lon`, `country_sn`, `state_sn`, `auto_geocode`).
+
+Minion stress-tested cold against 10 audit + 7 scenario quiz. Caught 5 spatial-cross-ref violations (4 in blog.md, 1 in events.md); all fixed before commit (`See the X section` / `below` / `above` → named-anchor only).
+
+Pattern proven: events.md template + shared/ scaffolding makes per-type files cheap to author. blog.md was ~3 hours research + ~1 hour writing + 1 minion round.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.5] - 2026-05-18
 
 ### Pre-blog ground-prep: dedup scope shrink + cross-resource URL clarity

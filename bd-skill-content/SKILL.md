@@ -24,9 +24,9 @@ Read the user's request and route to the correct content-type protocol:
 | User wants to create | Route to |
 |---|---|
 | Event posts (concerts, conferences, workshops, fairs, open houses, meetups, auctions, any time-bound happening) | `content-types/events.md` |
+| Blog articles (how-to, listicle, pillar guide, news, comparison — any evergreen long-form article) | `content-types/blog.md` |
 | Job listings | Not yet available. Tell the user this content type is coming in a future release. |
 | Property listings (real estate) | Not yet available. Tell the user this content type is coming in a future release. |
-| Blog articles | Not yet available. Tell the user this content type is coming in a future release. |
 | Something else | Ask the user to clarify which content type from this table their request maps to. |
 
 If the user's intent is ambiguous, ask. If they say "create some posts" with no content type, ask which type.
@@ -51,7 +51,7 @@ If `getSiteInfo` returns no site or errors out, tell the user the MCP isn't conn
 
 ## What this skill does NOT do
 
-- Job, property, blog content types (coming in future releases)
+- Job and property content types (coming in future releases)
 - Editing existing posts (only creates new ones)
 - Auto-creating BD categories in autonomous mode
 - Auto-publishing in autonomous mode (drafts only unless the user explicitly authorizes live publishing)
