@@ -54,7 +54,7 @@ Resolve by user intent first, then canonical markers, then semantic match.
 
 1. **User named a post type explicitly** (e.g., "post to my 'Tips for Homeowners' section"). Match the user's phrase against `data_name`, `system_name`, `form_name` on `listPostTypes`. Single confident match wins — skip steps 2-3.
 
-2. **User didn't specify** — look for the site-owner blog in this order:
+2. **User didn't specify** — look for the site-owner blog in this order. Server-side filter via `listPostTypes` — do NOT `getPostType` per-candidate:
    - `system_name=website_blog_article` (BD canonical)
    - `form_name=blog_article_fields` (canonical blog form)
    - `data_type=20` + semantic match on `data_name`/`system_name` (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel)
@@ -133,6 +133,17 @@ Per METHODOLOGY Stage 3. Blog-specific match criteria:
 - Date: NOT a dedup factor (blogs are evergreen).
 
 If a published blog post on the site already covers the same angle, SKIP. Never auto-edit existing posts.
+
+---
+
+## Category routing (Stage 8 of runbook)
+
+Per METHODOLOGY Stage 4. Blogs use the post type's `feature_categories` (cached from Stage 1).
+
+Authorization:
+- Interactive grant ("yes, create new blog categories") → skill respects for the run.
+- User-specified default category in their request → every post in the run goes to that category.
+- Default: best-existing match at ≥70% confidence, or SKIP.
 
 ---
 
@@ -215,12 +226,6 @@ Caps: ~60-65 chars where SEO matters (Google truncates title tags around there).
 
 ---
 
-## Tags
-
-Per **METHODOLOGY Tags** (universal rules — comma-separated CSV, 100-char cap, no Tags-resource tools).
-
----
-
 ## BD Blog field reference (Stage 12 of runbook)
 
 What `createSingleImagePost` receives.
@@ -237,7 +242,7 @@ What `createSingleImagePost` receives.
 | `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
 
-### Recommended (include when supported)
+### Recommended (include when source data supports)
 
 | Field | Value |
 |---|---|

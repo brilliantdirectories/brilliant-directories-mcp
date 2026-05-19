@@ -162,7 +162,7 @@ Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `
 
 ## Category routing (Stage 8 of runbook)
 
-Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` for routing — already cached from Stage 1's `listPostTypes` call (comma-separated string on the post-type row). No additional discovery needed.
+Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` (cached from Stage 1).
 
 Authorization:
 - Interactive grant ("yes, create new event categories") → skill respects for the run.

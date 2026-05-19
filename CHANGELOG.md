@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.12] - 2026-05-18
+
+### Align events.md and blog.md before authoring jobs.md
+
+Cold-comparison surfaced four real gaps in blog.md vs events.md (asymmetries that were structural rather than content-type-justified):
+
+- **Category routing section missing from blog.md.** Runbook Step 8 named it but no detail followed. Added matching section: cached `feature_categories` from Stage 1, same authorization (interactive grant / user default / ≥70% match or skip).
+- **`do NOT getPostType per-candidate` optimization missing from blog.md** Post-type discovery section (events had it). Added.
+- **Standalone `## Tags` one-line section removed from blog.md.** Events points at METHODOLOGY Tags from the field-row only. DRY.
+- **Field-table `Recommended` header text differed.** Aligned blog.md to events.md wording (`include when source data supports`).
+
+Also trimmed both files' Category routing first sentence to drop restated parenthetical and "no additional discovery needed" tail.
+
+Justified content-type asymmetries kept: events has Author resolution + Geocoding + Date/time formats; blog has Topic resolution (Shapes A/B/C) + body-structure / internal-link / inline-images / title-shape subsections. Both files now identical where they should match, differ only where the content type genuinely demands it.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.11] - 2026-05-18
 
 ### `Rule: Multi-image albums` — swap-at-specific-slot pattern
