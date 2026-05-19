@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.5] - 2026-05-19
+
+### Image rules: keyword-salad title gate + dedup-rejection retry discipline
+
+Final-pass review of the Pexels image rules across diverse customer markets surfaced two remaining gaps the prior patches didn't cover. Verified by quizzing the rules against 10 wildly different verticals (tax, wedding, estate planning, bonsai, roofing, comic con, real estate, vet, houseplants, plus fitness) — rules produced sensible picks across all markets, confirming the contextual-fit clause carries weight universally, not just for events/fitness. Both fixes close real silent-failure modes without bias toward any vertical.
+
+**Keyword-salad title gate.** The topic-fit gate already catches generic titles and wrong-context matches, but didn't catch confident-sounding-but-misleading titles. A Pexels photo titled `"People Rope Sport Rustic"` with no people and no rope passes the existing gate (title names "people" and "rope" as keywords) — silent fail. The WebFetch escape valve only triggered on perceived ambiguity, and a keyword-salad title doesn't perceive as ambiguous. Fix: explicit clause that 4+-unrelated-nouns-concatenated titles ARE inherently ambiguous and must be WebFetch-verified or skipped. Catches the exact pattern from the Hyrox-verification incident without forcing WebFetch on every candidate.
+
+**Dedup-rejection retry discipline.** The previous text said "before committing, run dedup — any hit, pick another candidate and re-run" but didn't specify whether the replacement candidate has to re-pass the topic-fit gate. Reading literally, an agent could shortcut the gate on second/third picks ("the first one passed it, I'm just swapping for dedup"). Fix: explicit statement that every replacement candidate must pass the topic-fit gate before its own dedup run — gate is not skippable on retries.
+
+Net add: ~50 words. Both edits inline in the existing Pexels paragraph, no new structure.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.51.4] - 2026-05-19
 
 ### Pexels search-breadth directive — broad-category terms before equipment-specific
