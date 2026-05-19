@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.5] - 2026-05-19
+
+### Blog dedup hardening, universal post-fields DRY refactor, better title examples, longer blog meta titles, post_type clarified
+
+**1. Blog dedup query broadened + block-Stage-8 enforcement (`content-types/blog.md`).** Old Stage 7 ran a single title-prefix LIKE query; missed synonym-disguised duplicates (e.g. "How to Pick a Personal Trainer" and "How to Choose a Personal Trainer in 2026" share zero first-3-words but cover the same angle). Live observation drove the fix: agent committed to a topic, ran image selection, then caught the angle-overlap with an existing post and pivoted — wasting ~30 seconds of Pexels search + dedup cycles on work that got discarded. New Stage 7 runs TWO queries: title-prefix LIKE + topic-keyword substring LIKE (e.g. `%personal trainer%`). Merges results, applies semantic match. If ANY match found, pivot BEFORE proceeding to Stage 8 — don't waste downstream work on a topic that overlaps.
+
+**2. Events dedup: block-Stage-7 enforcement (`content-types/events.md`).** Same shape for events — added "If a match is found, drop this candidate BEFORE proceeding to Stage 7" to step 6. Events keep the single title-prefix query (events less prone to synonym-near-duplicates because event titles anchor to date+venue), but gain the same block-downstream-stages discipline. No more wasted geocoding + image selection on duplicate event candidates.
+
+**3. Universal post fields DRY'd into METHODOLOGY (`shared/METHODOLOGY.md` + both content-types).** Previously, `post_image`, `post_category`, `post_meta_title`, `post_meta_description` rules were restated in both blog.md and events.md Recommended-fields tables — same rules, slightly different wording, drift risk. Pulled into a new `## Universal post fields` section in METHODOLOGY. Per-type files now point at it and add only type-specific examples / additions (events' geo fields + date fields preserved per-type; blog's post_content body template preserved per-type; type-specific meta_title/meta_description examples preserved per-type).
+
+**4. Blog `post_meta_title` length: 50-60 → 80-120 chars (BEHAVIORAL CHANGE).** Previous blog rule capped at SERP-display sweet spot (~50-60 chars). New rule matches events: 80-120 chars, using the extra characters for keyword modifiers Google still indexes even when SERP truncates. Per-type example in blog.md shows expansion pattern (`"Reformer vs Mat Pilates: Which Gets You Toned Faster? A Beginner-Friendly Comparison for Home Workouts"` — audience qualifier + use case expanded from the shorter `post_title`). Customers running blog skill will see longer meta-titles than previous versions produced.
+
+**5. Better title-table examples in blog.md.** Old examples skewed all-fitness ("7 Pilates Studios in Austin That Match Real Athletes," "When Do You Actually Need a Personal Trainer?", "Texas Marathon Series..."). Updated to cross-vertical (fitness + legal/business + real estate / tax) and rewrote awkward phrasings ("That Match Real Athletes" → "Catering to Real Athletes"). Replaced the awkward "Reformer vs Mat Pilates: Which Fits Your Goals?" comparison example with "Reformer vs Mat Pilates: Which Gets You Toned Faster" (declarative implied-question, no forced punctuation). News-pattern example pivoted from fitness ("Texas Marathon Series") to non-fitness ("Major Property Tax Reform Takes Effect Across Texas in 2026") to signal cross-vertical generalization.
+
+**6. `post_type="Account"` clarified (both content-types).** Live test against `find-fitness-pros.directoryup.com` confirmed BD's `createSingleImagePost` does NOT require `post_type` — creates succeed with the field omitted, BD stores empty string, read-back works, all routing intact. The field is legacy classification, not load-bearing. Updated both content-types' parenthetical to reflect: "(literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass)". Belt-and-suspenders for the rare case BD might silently rely on it; agents know they don't NEED to think about it.
+
+**No code changes** (skill content only). No `SERVER_INFO.version` bump. No Worker deploy required. Drift check passes.
+
 ## [6.52.4] - 2026-05-19
 
 ### Skill content polish: opt-in inline images, topic bar, 3-word Pexels, link sequencing, restructured dense paragraphs

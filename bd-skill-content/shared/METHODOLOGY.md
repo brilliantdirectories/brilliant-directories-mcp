@@ -205,6 +205,17 @@ Scan the assembled body. Fix anything that fires:
 - Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 - Pexels image picked: does the search-result title name the post's primary subject AND match its defining context (activity vs generic scene, urban vs trail, indoor vs outdoor, season, beginner vs elite, etc.)? Generic title or wrong-context match = re-pick or WebFetch verify.
 
+## Universal post fields
+
+Field rules that apply across ALL post types via `createSingleImagePost` (and `createMultiImagePost`). Per-type SKILL.md files reference these universally and add only type-specific examples or additions.
+
+| Field | Rule |
+|---|---|
+| `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Source > Pexels > site default > omit. |
+| `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match (autonomous mode). |
+| `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. Per-type SKILL.md gives type-specific examples. |
+| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. Per-type SKILL.md adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
+
 ## Tags
 
 Universal `post_tags` field constraints — applies to ALL post types (single-image and multi-image alike):

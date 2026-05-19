@@ -20,7 +20,13 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
 6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 6 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
-7. **Duplicate detection** (METHODOLOGY Stage 3). For each topic angle (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10` scoped to the blog post type. Returns 0-10 matching rows. Match: title-similar AND topic-angle-overlap. Date does not factor (blogs are evergreen). Skip duplicates. **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
+7. **Duplicate detection** (METHODOLOGY Stage 3). Run TWO scoped queries to surface both title-prefix overlaps AND topic-keyword overlaps:
+    - **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10` (catches articles with the same opening phrase)
+    - **Topic keyword:** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun>% limit=10` (catches synonym-disguised duplicates — e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but cover the same angle; the core noun `personal trainer` catches both)
+
+    Merge results. Apply title-similarity AND topic-angle-overlap (semantic match, not string-exact). Date does not factor (blogs are evergreen). **If ANY match is found, pivot to a different topic angle BEFORE proceeding to Stage 8.** Don't run Stage 8+ on a topic that overlaps an existing post — wastes Pexels search + image dedup cycles on work that will be discarded.
+
+    **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are opt-in only — see the `Inline body images` section.
 10. **Image dedup (FEATURE, mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
@@ -221,13 +227,13 @@ Blog titles run different from event titles. Clickbait-flavored but anti-slop-di
 
 | Pattern | Example |
 |---|---|
-| How-to | "How to Pick a CPA for Your Small Business" |
-| Listicle | "7 Pilates Studios in Austin That Match Real Athletes" |
-| Question | "When Do You Actually Need a Personal Trainer?" |
-| Comparison | "Reformer vs Mat Pilates: Which Fits Your Goals?" |
-| News | "Texas Marathon Series Adds Half-Marathon Distance for 2026" |
+| How-to | "How Spin Training Keeps You Feeling Younger" |
+| Listicle | "7 Pilates Studios in Austin Catering to Real Athletes" |
+| Question | "Do You Really Need a Lawyer to Form an LLC?" |
+| Comparison | "Reformer vs Mat Pilates: Which Gets You Toned Faster" |
+| News | "Major Property Tax Reform Takes Effect Across Texas in 2026" |
 
-Caps: ~60-65 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
+Caps: ~90 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
 
 ---
 
@@ -239,24 +245,23 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, not user-facing) |
+| `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
 | `data_type` | `20` (single-image classification, always for blogs) |
 | `data_id` | resolved blog post-type id from Stage 3 |
-| `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~60-65 char target |
+| `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~90 char target |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
 
 ### Recommended (include when source data supports)
 
-| Field | Value |
+Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `## Tags`**. Blog-specific additions and examples below:
+
+| Field | Blog-specific note |
 |---|---|
-| `post_content` | assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
-| `post_image` | feature image URL per image strategy. Pass `auto_image_import=1` for external images. |
-| `post_category` | best-matched category name (verbatim from `feature_categories`) |
-| `post_tags` | per **METHODOLOGY Tags** |
-| `post_meta_title` | SEO `<title>` tag (~50-60 chars). May be near-identical to `post_title` for blogs, or expanded with one or two long-tail keyword modifiers. |
-| `post_meta_description` | SEO meta description (~150-160 chars). One-sentence value proposition of the article. Not a verbatim repeat of `post_title`. |
+| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
+| `post_meta_title` | Type-specific example: `"Reformer vs Mat Pilates: Which Gets You Toned Faster? A Beginner-Friendly Comparison for Home Workouts"` — audience qualifier (beginner) + use case (home workouts) expanded from the shorter `post_title`. |
+| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the reader's decision-stage situation (e.g. "Which Pilates style burns more calories for beginners working out at home? Here's the honest answer with real numbers."). |
 
 ### Do NOT pass
 

@@ -19,7 +19,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 3. **Post-type discovery (events-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see the `Author resolution` section.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 6 quality gates. Land N viable candidates BEFORE any dedup check.
-6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. Never bulk-pull the events feed.
+6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. **If a match is found, drop this candidate BEFORE proceeding to Stage 7.** Don't run Stage 7+ on a duplicate — wastes geocoding + image selection cycles on work that will be discarded. Never bulk-pull the events feed.
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the image first avoids re-doing content if the image fails dedup.
@@ -195,7 +195,7 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, NOT the user-facing post-type concept) |
+| `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
 | `data_type` | `20` (single-image classification, always for events) |
 | `data_id` | resolved events post-type id from Stage 3 |
 | `post_title` | **Hybrid format: short headline + colon + concise hook.** Never two colons in a single title — if the headline itself contains a colon (e.g. `"Aspen Ideas: Health"`), use a different separator (e.g. comma, hyphen) or no separator for the hook. Cap at ~54 chars total. Plain text, no HTML. Aim for clarity over completeness — a reader scanning the card should immediately know what the event IS and why they'd care. **Headline conveys what the event IS, not just what it's called.** Names that already describe the event (`"Austin Tech Summit"`, `"Community Yoga"`, `"IRONMAN 70.3 Boulder"`) stand on their own. Brand or series names that don't self-explain (`"NEWLIFE Expo"`, `"Cool Sommer Mornings"`) benefit from a category appended (`"NEWLIFE Expo Wellness Retreat"`, `"Cool Sommer Mornings Triathlon"`). **Hook is whatever's most clarifying for THIS event:** venue or city when location is the draw, format/distance for races (`"5K"`, `"1.2-mi swim"`), a special angle (`"Free Class"`, `"Sunset Edition"`), or a combination if space allows. Date is optional — include when it adds context and fits within the cap. |
@@ -205,22 +205,21 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-| Field | Value |
+Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `## Tags`**. Events-specific fields and examples below:
+
+| Field | Events-specific note |
 |---|---|
-| `post_content` | assembled HTML body per "Content manufacture" |
-| `post_image` | image URL per image strategy. Pass `auto_image_import=1` for external images. |
-| `post_category` | best-matched category name (verbatim from `feature_categories`) |
-| `post_tags` | per **METHODOLOGY Tags** (universal rules — comma-separated CSV, 100-char cap, no Tags-resource tools) |
-| `post_start_date` | event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
-| `post_expire_date` | event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
-| `post_venue` | venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
-| `post_location` | full street address only — do NOT prepend the venue name (already in `post_venue`). Example: `"801 Red River St, Austin, TX 78701"`, NOT `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"`. |
-| `lat` | latitude float (from Nominatim, skip if geocoding failed) |
-| `lon` | longitude float (from Nominatim, skip if geocoding failed) |
-| `country_sn` | ISO country code from Nominatim |
-| `state_sn` | state code from Nominatim |
-| `post_meta_title` | SEO `<title>` tag (~80-120 chars). Expand on `post_title` with extra keywords — venue, city, date, category modifiers — that didn't fit the title's tight cap. Example: `"Austin Tech Summit 2026 in Downtown Austin — Enterprise Software & AI Conference, June 13"`. |
-| `post_meta_description` | SEO meta description (~150-160 chars). Distill the event's value proposition + date + city. Not a duplicate of `post_title`. |
+| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability + source attribution close. |
+| `post_start_date` | Event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
+| `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
+| `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
+| `post_location` | Full street address only — do NOT prepend the venue name (already in `post_venue`). Example: `"801 Red River St, Austin, TX 78701"`, NOT `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"`. |
+| `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
+| `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
+| `country_sn` | ISO country code from Nominatim. |
+| `state_sn` | State code from Nominatim. |
+| `post_meta_title` | Type-specific example: `"Austin Tech Summit 2026 in Downtown Austin — Enterprise Software & AI Conference, June 13"` — venue + city + date + category modifiers expanded from the shorter `post_title`. |
+| `post_meta_description` | Events-specific flavor: distill the event's value proposition + date + city (e.g. "Three-day enterprise software conference in downtown Austin, June 13-15, 2026. Speakers from Microsoft, AWS, and Salesforce."). |
 
 ### Do NOT pass
 
