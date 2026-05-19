@@ -112,7 +112,20 @@ User said "write articles that will go viral for my industry," "trending content
 
 Same surfacing logic as Shape B.
 
-**Topic bar (Shapes B and C):** topic can be specific or industry-insider; angle must be broad-appeal AND carry specific qualifiers (audience segment, geographic context, use case, life stage) — both layers together. Pivot examples: "NASM vs ACE Certification Comparison" → "5 Personal Trainer Certifications Seniors Should Actually Care About"; "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates"; "IRC §179 vs §168(k) Deductions" → "Which Vehicle Tax Deduction Saves Sole Proprietors the Most?". Broad reader frame, specific qualifiers — both. A non-expert from outside the niche should want to click. Broad ≠ beginner.
+**Topic bar (Shapes B and C).** Frame the topic for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
+
+**Topic depth (Shapes B and C) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
+
+| Too broad (LLM default) | Right depth |
+|---|---|
+| How Much Protein to Build Muscle | How Much Protein a 160lb Lifter Needs on Cut vs Bulk Days |
+| Best Stretches for Runners | 6 Calf Stretches That Actually Work After a Marathon |
+| Bench Press Tips for Lifters | Why Most Lifters Stall at 225lb Bench Press and How to Push Past It |
+| Beginner Strength Training | First-Week Strength Routine when Coming Back After ACL Surgery |
+
+Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
+
+**Pick qualifiers from where real readers are stuck or searching** — the question they already type into Google ("why am I stuck at 225 bench press," "calves sore after marathon"). Not a narrowing that sounds clever to a strategist ("for tall lifters," "for career switchers").
 
 **Skill always runs one shape per invocation.** Do not mix. If the user request crosses shapes ("specific article AND viral"), ask which one to prioritize.
 

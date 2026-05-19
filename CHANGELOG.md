@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.7] - 2026-05-19
+
+### Blog topic-resolution tuning + 2-statement title smoking-gun kill
+
+Live observation: agent producing 3/3 blog titles with the `<Hook>: <Subtitle>` / `<Hook>? <Subtitle>` / `<Hook> (And Subtitle)` two-statement pattern — the AI default. Root cause: our own Topic depth table had a row `Why Most Lifters Stall at 225lb Bench (And the Programming Fix)` teaching that exact parenthetical-subtitle pattern as the "right depth" answer. Agent was reading our example as permission.
+
+**Skill-content changes (blog.md):**
+
+- **Topic bar tightened.** Replaced wishy-washy "topic can be specific or industry-insider" lead with active-voice instruction. Cut the duplicate "Broad reader frame, specific qualifiers — both" sentence. Trimmed the bad NASM/ACE pivot example (Seniors-as-audience didn't match the topic). Added `**Specific ≠ jargon**` rule with named bad qualifiers (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA) — the same kind of insider-acronym stacks agents drift into when told to "go specific." 114 words → 80 words, no information lost.
+- **Topic depth table moved.** Cut from inside Shape B (where it only applied to one of the two shapes that needed it) and moved into the shared block at the bottom alongside Topic bar. Both rules now scoped explicitly to Shapes B and C, side by side. Resolves the apparent contradiction between "be broad-appeal" and "be specific" with the bridging clause `the qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites`.
+- **Row 3 fixed (smoking gun):** `Why Most Lifters Stall at 225lb Bench (And the Programming Fix)` → `Why Most Lifters Stall at 225lb Bench Press and How to Push Past It`. Same teaching content, single-statement shape, "bench press" spelled out (no gym-bro shorthand). Eliminates the parenthetical-subtitle example the agent was pattern-matching against.
+- **"Pick qualifiers from where real readers are stuck" principle added.** Names the unstated rule behind the four right-depth examples: narrow toward queries real readers type into Google ("why am I stuck at 225 bench press"), not clever-sounding narrowings that nobody searches for ("for tall lifters," "for career switchers"). Catches the forced-specificity failure mode.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.6] - 2026-05-19
 
 ### Menu discovery — two phases, both mandatory
