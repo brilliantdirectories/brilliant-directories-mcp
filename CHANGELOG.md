@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.10] - 2026-05-19
+
+### Explicit ban on 2-statement title structures
+
+Live observation on v6.53.9: clean examples alone weren't enough to override the agent's training-data default for SEO titles. Agent produced `How to Find a Running Coach for Your First Marathon (Without Wasting Money)` and `Pilates Reformer vs Mat: Which Burns More Calories (and Builds Strength Faster)?` on a fresh v6.53.9 zip — both shapes our examples now avoid, but neither was explicitly banned. The agent fell back to training-data priors.
+
+Fix: append explicit hard ban to blog.md Title shape caps line: `Single statement only — no X: Y, no X (Y), no X? Y.`
+
+Pure skill-content tuning. No Worker/npm/spec changes. Drift check passes.
+
 ## [6.53.9] - 2026-05-19
 
 ### Kill the "low-competition keyword" SEO myth in Shape B

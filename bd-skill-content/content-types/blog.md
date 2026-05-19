@@ -250,7 +250,7 @@ Blog titles run different from event titles. Clickbait-flavored but anti-slop-di
 | Comparison | "Reformer Pilates vs Mat Pilates for Faster Toning" |
 | News | "Major Property Tax Reform Takes Effect Across Texas in 2026" |
 
-Caps: ~70 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
+Caps: ~70 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity. **Single statement only — no `X: Y`, no `X (Y)`, no `X? Y`.**
 
 ---
 
