@@ -116,12 +116,13 @@ Same surfacing logic as Shape B.
 
 **Topic depth (Shapes B and C) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
 
-| Too broad (LLM default) | Right depth |
+**Bad Broad Topic EXAMPLES versus Good More Specific Topic EXAMPLES**
+| Too broad (Bad LLM default) | Good with depth |
 |---|---|
-| How Much Protein to Build Muscle | How Much Protein a 160lb Lifter Needs on Cut vs Bulk Days |
-| Best Stretches for Runners | 6 Calf Stretches That Actually Work After a Marathon |
+| How Much Protein to Build Muscle | How Much Protein a 160lb Lifter Needs When Losing Fat vs Gaining Muscle |
+| Best Stretches for Runners | 6 Calf Stretches That Work After a Marathon |
 | Bench Press Tips for Lifters | Why Most Lifters Stall at 225lb Bench Press and How to Push Past It |
-| Beginner Strength Training | First-Week Strength Routine when Coming Back After ACL Surgery |
+| Beginner Strength Training | First-Week Strength Routine When Coming Back After ACL Surgery |
 
 Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
@@ -244,9 +245,9 @@ Blog titles run different from event titles. Clickbait-flavored but anti-slop-di
 | Pattern | Example |
 |---|---|
 | How-to | "How Spin Training Keeps You Feeling Younger" |
-| Listicle | "7 Pilates Studios in Austin Catering to Real Athletes" |
-| Question | "Do You Really Need a Lawyer to Form an LLC?" |
-| Comparison | "Reformer vs Mat Pilates: Which Gets You Toned Faster" |
+| Listicle | "7 Pilates Studios in Austin With Reformer Classes" |
+| Question | "Do You Need a Lawyer to Form an LLC?" |
+| Comparison | "Reformer Pilates vs Mat Pilates for Faster Toning" |
 | News | "Major Property Tax Reform Takes Effect Across Texas in 2026" |
 
 Caps: ~70 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
@@ -276,8 +277,8 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 | Field | Blog-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
-| `post_meta_title` | Type-specific example: `"Reformer vs Mat Pilates: Which Gets You Toned Faster? A Beginner-Friendly Comparison for Home Workouts"` — audience qualifier (beginner) + use case (home workouts) expanded from the shorter `post_title`. |
-| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the reader's decision-stage situation (e.g. "Which Pilates style burns more calories for beginners working out at home? Here's the honest answer with real numbers."). |
+| `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
+| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the reader's decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and which style fits a small apartment."). |
 
 ### Do NOT pass
 

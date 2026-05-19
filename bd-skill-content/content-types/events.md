@@ -181,7 +181,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 **Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for events: parking, price tiers, what to bring, schedule blocks, ticket types.
 
-**Events-specific Pexels search topics:** category + venue type (`"music festival crowd outdoor"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
+**Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
 
 **Internal links:** weave into body prose per **URL-PATTERNS Link shape priority** — distributed, NOT clustered at the end. Budget **3-6 internal links per event post**, distributed:
 
@@ -227,7 +227,7 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |
 | `state_sn` | State code from Nominatim. |
-| `post_meta_title` | Type-specific example: `"Austin Tech Summit 2026 in Downtown Austin — Enterprise Software & AI Conference, June 13"` — venue + city + date + category modifiers expanded from the shorter `post_title`. |
+| `post_meta_title` | Type-specific example: `"Austin Tech Summit 2026 in Downtown Austin, Enterprise Software and AI Conference June 13"` — venue + city + date + category modifiers expanded from the shorter `post_title`. |
 | `post_meta_description` | Events-specific flavor: distill the event's value proposition + date + city (e.g. "Three-day enterprise software conference in downtown Austin, June 13-15, 2026. Speakers from Microsoft, AWS, and Salesforce."). |
 
 ### Do NOT pass

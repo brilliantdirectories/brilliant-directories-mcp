@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.8] - 2026-05-19
+
+### Smoking-gun audit — example-bias cleanup across blog.md and events.md
+
+Full audit of every example title / anchor / meta-title / sample-copy in the skill content for cases where our own demonstrations were teaching the agent the wrong pattern. The v6.53.7 fix killed one parenthetical-subtitle example; this release kills the remaining nine smoking guns the audit surfaced.
+
+**Fixed (skill content only):**
+
+- `events.md` — em-dash inside `post_meta_title` example replaced with comma. Was the most direct ANTI-SLOP violation found (literal banned character inside a quoted example agents copy).
+- `events.md` — Pexels search example `"music festival crowd outdoor"` (4 words) trimmed to `"outdoor music festival"` (3 words). Was violating the section's own "exactly 3 words" rule.
+- `blog.md` depth table — `Cut vs Bulk Days` insider-jargon replaced with `When Losing Fat vs Gaining Muscle`. Same audience-segment teaching, plain English.
+- `blog.md` depth table — `That Actually Work` adverb crutch (ANTI-SLOP-banned) dropped. Title now `6 Calf Stretches That Work After a Marathon`.
+- `blog.md` depth table — `when` → `When` title-case fix on ACL Surgery row.
+- `blog.md` Title shape table — `7 Pilates Studios in Austin Catering to Real Athletes` (fabricated authority qualifier) → `7 Pilates Studios in Austin With Reformer Classes` (concrete distinguishing trait).
+- `blog.md` Title shape table — `Do You Really Need a Lawyer to Form an LLC?` (banned adverb `really`) → `Do You Need a Lawyer to Form an LLC?`.
+- `blog.md` Title shape table — `Reformer vs Mat Pilates: Which Gets You Toned Faster` (colon-subtitle 2-statement, same smoking-gun pattern as v6.53.7) → `Reformer Pilates vs Mat Pilates for Faster Toning`. Single statement.
+- `blog.md` field reference cascade — `post_meta_title` and `post_meta_description` examples regenerated to match the corrected `post_title` (no colon-subtitle, no throat-clearing "Here's the honest answer", no vague "with real numbers" tail).
+- `blog.md` depth-table header — clearer label: `**Bad Broad Topic EXAMPLES versus Good More Specific Topic EXAMPLES**` with `(Bad LLM default) | Good with depth` column row. Doubled-up labeling prevents the agent from copying example values as topic candidates.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.7] - 2026-05-19
 
 ### Blog topic-resolution tuning + 2-statement title smoking-gun kill
