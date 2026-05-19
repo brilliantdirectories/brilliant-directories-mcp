@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.1] - 2026-05-19
+
+### Fix v6.52.0 opt-in detection + total count + add data_type=29 to reserved
+
+Live verification against `find-fitness-pros.directoryup.com` surfaced three real bugs in v6.52.0's reserved-data_type filter. All three fixed at the Worker + npm layer (byte-mirrored, drift-check clean).
+
+**Bug 1 — opt-in mechanism didn't match how the tool is actually called.** v6.52.0's `applyReservedDataTypeFilter` looked for `args.data_type` as a top-level argument, but the `listPostTypes` schema doesn't expose `data_type` as a top-level parameter. Callers opt in to reserved records via the existing `property` / `property_value` filter mechanism (`property=data_type, property_value=10`). Result: `listPostTypes property=data_type property_value=10` was returning empty array instead of the Member Listings row, because BD returned the row and v6.52.0's helper then stripped it.
+
+Fix: new `extractReservedOptIn` helper accepts both opt-in shapes — direct top-level `data_type=<value>` arg (for forward-compatibility if exposed) AND the `property=data_type, property_value=<value>` filter pattern (the actual current call shape). Either signals explicit opt-in.
+
+**Bug 2 — `total` count not updated after filtering.** v6.52.0 stripped reserved rows from `body.message` but left `body.total` at BD's pre-filter count. Pagination math broke (e.g., total said 18, message had 15 rows). Now decrements `body.total` by the number of rows removed so caller-side pagination matches the actual rows returned.
+
+**Bug 3 — `data_type=29` missing from reserved list.** Verification revealed a BD-internal row with `data_type=29` ("My Favorites") that should have been hidden. Added to `RESERVED_DATA_TYPES` + `RESERVED_DATA_TYPE_IDS` with label "Reserved". Filtered at the Worker level only — NOT documented in tool descriptions (same treatment as `data_type=27` Admin: enforced server-side, invisible in surface-level docs).
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — added `extractReservedOptIn`, updated `applyReservedDataTypeFilter` to use it + decrement `body.total`, added 29 to reserved set. Worker `SERVER_INFO.version` bumped 3.7.0 → 3.7.1.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored same logic.
+
+**No spec/skill changes.** Reserved-list constants are mirrored across Worker + npm; drift-check enforces parity (CHECK 10). Tool descriptions in `bd-api.json` still document 10/13/21 only — 27 and 29 stay invisible at the docs layer, enforced at the Worker layer.
+
+**Worker deploy required** (`wrangler deploy` from `-hosted/`). Behavioral change to the live `brilliantmcp.com` endpoint.
+
 ## [6.52.0] - 2026-05-19
 
 ### Reserved data_types default-excluded from listPostTypes / getPostType

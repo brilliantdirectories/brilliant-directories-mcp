@@ -1000,8 +1000,9 @@ const RESERVED_DATA_TYPES = {
   13: "Member Ratings — member metadata, accessed via the member API surface",
   21: "Member Categories — use listTopCategories and listSubCategories",
   27: "Admin",
+  29: "Reserved",
 };
-const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27]);
+const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27, 29]);
 
 function parseDataTypeFilter(raw) {
   if (raw == null || raw === "") return [];
@@ -1011,19 +1012,43 @@ function parseDataTypeFilter(raw) {
     .filter((n) => Number.isFinite(n));
 }
 
+// Detect caller's explicit opt-in to reserved data_types.
+// Two opt-in shapes supported, matching how this tool is actually invoked:
+//  A. Top-level `data_type=<value>` arg (documented opt-in).
+//  B. BD-style filter: `property=data_type` + `property_value=<value>` (the
+//     actual mechanism agents use via the existing property/property_value
+//     filter params, since the tool schema doesn't expose data_type directly).
+function extractReservedOptIn(args) {
+  const allowed = new Set();
+  if (!args) return allowed;
+  for (const n of parseDataTypeFilter(args.data_type)) {
+    if (RESERVED_DATA_TYPE_IDS.has(n)) allowed.add(n);
+  }
+  if (String((args.property != null ? args.property : "")).trim() === "data_type") {
+    for (const n of parseDataTypeFilter(args.property_value)) {
+      if (RESERVED_DATA_TYPE_IDS.has(n)) allowed.add(n);
+    }
+  }
+  return allowed;
+}
+
 function applyReservedDataTypeFilter(body, args, toolName) {
   if (!POST_TYPE_READ_TOOLS.has(toolName)) return body;
   if (!body || body.status !== "success") return body;
-  const reservedAllowed = new Set(
-    parseDataTypeFilter(args && args.data_type).filter((d) => RESERVED_DATA_TYPE_IDS.has(d))
-  );
+  const reservedAllowed = extractReservedOptIn(args);
   const shouldKeep = (row) => {
     const dt = Number(row && row.data_type);
     if (!RESERVED_DATA_TYPE_IDS.has(dt)) return true;
     return reservedAllowed.has(dt);
   };
   if (Array.isArray(body.message)) {
+    const before = body.message.length;
     body.message = body.message.filter(shouldKeep);
+    const removed = before - body.message.length;
+    if (removed > 0 && body.total != null) {
+      const t = Number(body.total);
+      if (Number.isFinite(t)) body.total = String(Math.max(0, t - removed));
+    }
   } else if (body.message && typeof body.message === "object") {
     if (!shouldKeep(body.message)) {
       const dt = Number(body.message.data_type);
