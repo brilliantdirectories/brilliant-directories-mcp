@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.2] - 2026-05-18
+
+### METHODOLOGY Stage 7: missing-variable fallback for admin URL
+
+v6.50.1 minion stress-test Scenario B caught a soft gap: METHODOLOGY Stage 7 said "all four params required" but didn't prescribe recovery when a param is uncached. A careful agent backfills via source tools; a careless one outputs `<website_id>` placeholders, guesses, or skips the URL. Closing with one sentence inline.
+
+Added clause: "If any param is uncached at audit time, re-call its source tool — never placeholders, never guess, never skip." Source tools are named in the existing parenthetical right above (`post_id` from create response, `data_type` + `data_id` from `listPostTypes`, `website_id` from `getSiteInfo`) — no separate enumeration needed.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.1] - 2026-05-18
 
 ### METHODOLOGY Stage 7: inline verbatim admin URL shape (belt-and-suspenders for `Rule: Post admin URLs`)
