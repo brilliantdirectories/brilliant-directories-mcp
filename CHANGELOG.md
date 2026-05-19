@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.2] - 2026-05-19
+
+### Tool descriptions: align with actual opt-in mechanism (verified live)
+
+v6.52.0 documented the opt-in for reserved data_types as `data_type=<value>` — a top-level argument that doesn't exist on the `listPostTypes` schema. v6.52.1 fixed the Worker code to accept BOTH `data_type=...` AND `property=data_type, property_value=...` as opt-in signals, but the tool descriptions still showed only the non-existent top-level form. Live verification against `find-fitness-pros.directoryup.com` proved the `property` / `property_value` path works; this release aligns the docs with that reality.
+
+**`listPostTypes` description updated** — opt-in syntax now shown as `property=data_type, property_value=10, property_operator==` (single) and `property=data_type, property_value=10,4,9, property_operator=in` (comma-list). Both forms verified live against the production MCP at brilliantmcp.com.
+
+**`getPostType` description updated** — v6.52.0's description promised "returns error unless `data_type=<that-value>` is passed explicitly," but `getPostType` schema accepts only `data_id` + include flags, no `data_type` parameter and no property filter. The endpoint cannot reach reserved records by data_id. Live verification: `getPostType data_id=1` (Member Listings) returns `message: []` (empty success), not an error. Description now states this honestly: reserved records are not reachable via `getPostType`; use `listPostTypes property=data_type property_value=<value>` instead.
+
+**No code changes.** Spec-only release. Worker filter logic unchanged from v6.52.1. No `SERVER_INFO.version` bump. No Worker deploy required.
+
+**Verified live (v6.52.1 + this spec):**
+
+| Test | Result |
+|---|---|
+| `listPostTypes` (no filter) | Returns 14 rows. Reserved data_types 10/13/21/27/29 excluded. `total: "14"` matches `message.length`. ✓ |
+| `listPostTypes property=data_type property_value=10 property_operator==` | Returns 1 row (Member Listings). Reserved opt-in works. ✓ |
+| `listPostTypes property=data_type property_value=10,4,9 property_operator=in` | Returns 7 rows: 1 reserved (10) + 6 standard (4 + 9). Comma-list mix works. ✓ |
+| `getPostType data_id=1` (Member Listings) | Returns `message: []` (empty). Reserved record unreachable via this endpoint by design. ✓ |
+
 ## [6.52.1] - 2026-05-19
 
 ### Fix v6.52.0 opt-in detection + total count + add data_type=29 to reserved
