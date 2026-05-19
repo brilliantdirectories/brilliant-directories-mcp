@@ -1,9 +1,5 @@
 # Event Publishing Routine
 
-Paste this prompt into a Claude Code scheduled routine. The `bd-skill-content` skill carries all runbook logic (METHODOLOGY, ANTI-SLOP, URL-PATTERNS, content-types/events.md). This file is invocation + user-intent framing only.
-
----
-
 Connect to my Brilliant Directories site MCP and run the `bd-skill-content` skill to autonomously create event posts.
 
 Create exactly `1` fully published event post (`post_status=1`, `user_id=1`).

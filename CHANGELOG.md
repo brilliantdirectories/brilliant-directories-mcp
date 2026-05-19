@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.16] - 2026-05-18
+
+### prompts/events.md — strip meta-explainer header
+
+File is the literal paste-into-Claude prompt, no meta-instructions. Dropped the dev-facing "Paste this prompt into a Claude Code scheduled routine. The skill carries..." preamble.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.15] - 2026-05-18
 
 ### `prompts/` folder + universal paragraph-rhythm + link-distribution rules
