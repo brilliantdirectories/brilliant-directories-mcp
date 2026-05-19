@@ -567,7 +567,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 ### Rule: Lean read responses
 
-**Row weight - lean-by-default with opt-in `include_*` flags** across 9 resource families. Only opt in when the task actually needs that nested data.
+**Row weight - lean-by-default with opt-in `include_*` flags** across 11 resource families. Only opt in when the task actually needs that nested data.
 
 **Users** (`listUsers` / `getUser` / `searchUsers`, ~2KB lean row): core columns + `revenue` + `image_main_file` + `filename_hidden` + `total_clicks` + `total_photos` always returned. Flags:
 
@@ -617,6 +617,13 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_view_flags=1` - restores the 5 view-flag toggles (`field_input_view`, `field_display_view`, `field_search_view`, `field_email_view`, `field_grid_view`) + admin-only flag (`field_input_view_admin_only`) + 5 alt-label override columns. Use when editing field visibility.
 - `include_meta=1` - restores `json_meta` longtext blob (UI rendering metadata + per-field validator config). Use when adding/editing per-field validators. See **Rule: Forms** § Field anatomy → `json_meta`.
+
+**Menus** (`listMenus` / `getMenu`): 4 essential fields always returned (`menu_id`, `menu_name`, `menu_title`, `revision_timestamp`). Styling / target / rel / json_meta fields stripped — restore via `include_extras=1` when editing menu appearance.
+
+**Menu Items** (`listMenuItems` / `getMenuItem`): 9 essential fields always returned (`menu_item_id`, `menu_name`, `menu_link`, `menu_order`, `menu_id`, `master_id`, `menu_title`, `menu_display`, `revision_timestamp`). Styling / target / rel / json_meta fields stripped. Flags:
+
+- `include_extras=1` - restores styling/target/rel/json_meta fields.
+- `include_empty_links=1` - includes rows where `menu_link` is empty/null (infrastructure nodes — section headers, placeholders). Default excludes them since they can't be link targets. Single-record `getMenuItem` calls don't apply this filter (caller asked for this specific ID).
 
 ### Rule: users_meta writes
 

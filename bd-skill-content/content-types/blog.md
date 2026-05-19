@@ -233,7 +233,7 @@ Blog titles run different from event titles. Clickbait-flavored but anti-slop-di
 | Comparison | "Reformer vs Mat Pilates: Which Gets You Toned Faster" |
 | News | "Major Property Tax Reform Takes Effect Across Texas in 2026" |
 
-Caps: ~90 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
+Caps: ~70 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity.
 
 ---
 
@@ -248,7 +248,7 @@ What `createSingleImagePost` receives.
 | `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
 | `data_type` | `20` (single-image classification, always for blogs) |
 | `data_id` | resolved blog post-type id from Stage 3 |
-| `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~90 char target |
+| `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~70 char target |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |

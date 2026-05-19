@@ -118,6 +118,8 @@ const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
 const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview"]);
+const MENU_READ_TOOLS = new Set(["listMenus", "getMenu"]);
+const MENU_ITEM_READ_TOOLS = new Set(["listMenuItems", "getMenuItem"]);
 
 // BD column-name note — if any future CHECK validates PLAN membership
 // display flags, be aware `show_sofware` (missing "t") is spelled that way
@@ -251,6 +253,8 @@ checkFamily("WEB_PAGE_READ_TOOLS", WEB_PAGE_READ_TOOLS);
 checkFamily("PLAN_READ_TOOLS", PLAN_READ_TOOLS);
 checkFamily("EMAIL_TEMPLATE_READ_TOOLS", EMAIL_TEMPLATE_READ_TOOLS);
 checkFamily("REVIEW_READ_TOOLS", REVIEW_READ_TOOLS);
+checkFamily("MENU_READ_TOOLS", MENU_READ_TOOLS);
+checkFamily("MENU_ITEM_READ_TOOLS", MENU_ITEM_READ_TOOLS);
 checkFamily("USERS_META_WRITES", USERS_META_WRITES);
 checkFamily("USERS_META_FILTER_READS", USERS_META_FILTER_READS);
 
@@ -678,6 +682,10 @@ const MIRROR_CONSTANTS = [
   "FORM_FIELD_ALWAYS_KEEP",
   "FORM_FIELD_VIEW_FLAGS_FIELDS",
   "FORM_FIELD_META_FIELDS",
+  "MENU_LEAN_INCLUDE_FLAGS",
+  "MENU_ALWAYS_KEEP",
+  "MENU_ITEM_LEAN_INCLUDE_FLAGS",
+  "MENU_ITEM_ALWAYS_KEEP",
 ];
 // Constants that exist top-level in one file and function-local (or differently
 // scoped) in the other. The check skips these; verify by hand if you change

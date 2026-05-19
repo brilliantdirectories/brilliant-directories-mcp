@@ -1364,6 +1364,81 @@ function applyFormFieldLean(body, includeFlags) {
   return body;
 }
 
+// --- Menu lean shaper ------------------------------------------------------
+// Mirrored byte-for-byte from Worker src/index.ts. Applies to listMenus /
+// getMenu. Default keep-set covers identity + revision tracking; include_extras=1
+// restores styling/target/rel/json_meta for admins editing menu appearance.
+
+const MENU_LEAN_INCLUDE_FLAGS = ["include_extras"];
+const MENU_ALWAYS_KEEP = [
+  "menu_id", "menu_name", "menu_title", "revision_timestamp", "tablesExists",
+];
+const MENU_READ_TOOLS = new Set(["listMenus", "getMenu"]);
+
+function applyMenuLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = { extras: !!includeFlags.include_extras };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (include.extras) return row;
+    const out = {};
+    const allow = new Set(MENU_ALWAYS_KEEP);
+    for (const k of Object.keys(row)) if (allow.has(k)) out[k] = row[k];
+    return out;
+  };
+  if (Array.isArray(body.message)) body.message = body.message.map(shapeRow);
+  else if (body.message && typeof body.message === "object") body.message = shapeRow(body.message);
+  return body;
+}
+
+// --- MenuItem lean shaper + empty-link filter -----------------------------
+// Mirrored byte-for-byte from Worker src/index.ts. Default lean keep-set
+// covers identity + link + ordering + nesting + visibility. Default filter
+// drops rows with empty `menu_link` (infrastructure nodes — section headers,
+// placeholders that can't be link targets). include_empty_links=1 restores
+// them. include_extras=1 restores styling/target/rel/json_meta.
+
+const MENU_ITEM_LEAN_INCLUDE_FLAGS = ["include_extras", "include_empty_links"];
+const MENU_ITEM_ALWAYS_KEEP = [
+  "menu_item_id", "menu_name", "menu_link", "menu_order", "menu_id",
+  "master_id", "menu_title", "menu_display", "revision_timestamp", "tablesExists",
+];
+const MENU_ITEM_READ_TOOLS = new Set(["listMenuItems", "getMenuItem"]);
+
+function applyMenuItemLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const include = {
+    extras: !!includeFlags.include_extras,
+    emptyLinks: !!includeFlags.include_empty_links,
+  };
+  const allow = new Set(MENU_ITEM_ALWAYS_KEEP);
+  const hasLink = (row) => {
+    const link = row && row.menu_link;
+    return typeof link === "string" && link.trim() !== "";
+  };
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (include.extras) return row;
+    const out = {};
+    for (const k of Object.keys(row)) if (allow.has(k)) out[k] = row[k];
+    return out;
+  };
+  if (Array.isArray(body.message)) {
+    const before = body.message.length;
+    let filtered = body.message;
+    if (!include.emptyLinks) filtered = filtered.filter(hasLink);
+    body.message = filtered.map(shapeRow);
+    const removed = before - body.message.length;
+    if (removed > 0 && body.total != null) {
+      const t = Number(body.total);
+      if (Number.isFinite(t)) body.total = String(Math.max(0, t - removed));
+    }
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
 // --- Multi-image post photos read lean -------------------------------------
 // listMultiImagePostPhotos + getMultiImagePostPhoto return ~39 fields per
 // row; default-strip the marketplace/product columns + admin plumbing.
@@ -1461,10 +1536,10 @@ const WRITE_KEEP_SETS = {
   updateFormField: ["field_id","form_name","field_name","field_text","field_type","field_order","field_required","revision_timestamp"],
 
   // Menus + menu items
-  createMenu: ["menu_id","menu_name","menu_title","menu_active","revision_timestamp"],
-  updateMenu: ["menu_id","menu_name","menu_title","menu_active","revision_timestamp"],
-  createMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","menu_display","revision_timestamp"],
-  updateMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","menu_display","revision_timestamp"],
+  createMenu: ["menu_id","menu_name","menu_title","revision_timestamp"],
+  updateMenu: ["menu_id","menu_name","menu_title","revision_timestamp"],
+  createMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","master_id","menu_title","menu_display","revision_timestamp"],
+  updateMenuItem: ["menu_item_id","menu_id","menu_name","menu_link","menu_order","master_id","menu_title","menu_display","revision_timestamp"],
 
   // Redirects (BD does not return a timestamp on this resource)
   createRedirect: ["redirect_id","type","old_filename","new_filename"],
@@ -4680,6 +4755,8 @@ async function main() {
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
       const isFormReadTool = FORM_READ_TOOLS.has(name);
       const isFormFieldReadTool = FORM_FIELD_READ_TOOLS.has(name);
+      const isMenuReadTool = MENU_READ_TOOLS.has(name);
+      const isMenuItemReadTool = MENU_ITEM_READ_TOOLS.has(name);
       const isPhotoReadTool = PHOTO_READ_TOOLS.has(name);
       const leanFlagList = isUserReadTool
         ? USER_LEAN_INCLUDE_FLAGS
@@ -4701,9 +4778,13 @@ async function main() {
                         ? FORM_LEAN_INCLUDE_FLAGS
                         : isFormFieldReadTool
                           ? FORM_FIELD_LEAN_INCLUDE_FLAGS
-                          : isPhotoReadTool
-                            ? PHOTO_LEAN_INCLUDE_FLAGS
-                            : null;
+                          : isMenuReadTool
+                            ? MENU_LEAN_INCLUDE_FLAGS
+                            : isMenuItemReadTool
+                              ? MENU_ITEM_LEAN_INCLUDE_FLAGS
+                              : isPhotoReadTool
+                                ? PHOTO_LEAN_INCLUDE_FLAGS
+                                : null;
       if (leanFlagList) {
         for (const flag of leanFlagList) {
           if (args && flag in args) {
@@ -5709,6 +5790,8 @@ async function main() {
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);
         else if (isFormReadTool) result.body = applyFormLean(result.body, includeFlags);
         else if (isFormFieldReadTool) result.body = applyFormFieldLean(result.body, includeFlags);
+        else if (isMenuReadTool) result.body = applyMenuLean(result.body, includeFlags);
+        else if (isMenuItemReadTool) result.body = applyMenuItemLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
 

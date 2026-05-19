@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.0] - 2026-05-19
+
+### Menus + MenuItems lean families + MenuItem empty-link default filter
+
+11th and 12th lean families ship — `Menus` (listMenus/getMenu) and `MenuItems` (listMenuItems/getMenuItem). Same lean-by-default pattern as the existing 10 families (Users, Posts, Categories, PostTypes, WebPages, Plans, EmailTemplates, Reviews, Forms, FormFields). Behavioral change: any MCP consumer hitting these 4 read tools gets significantly smaller responses by default.
+
+**Menu lean keep-set (4 fields):** `menu_id`, `menu_name`, `menu_title`, `revision_timestamp`. Styling/target/rel/json_meta stripped — restore via `include_extras=1` when editing menu appearance.
+
+**MenuItem lean keep-set (9 fields):** `menu_item_id`, `menu_name`, `menu_link`, `menu_order`, `menu_id`, `master_id`, `menu_title`, `menu_display`, `revision_timestamp`. Styling/target/rel/json_meta stripped — restore via `include_extras=1`.
+
+**MenuItem default empty-link filter (new behavior):** `listMenuItems` now excludes rows where `menu_link` is empty/null by default. These are infrastructure nodes — section headers and placeholders — that can't be link targets. Agents constructing internal-link candidates from menu nav get a clean response with no infrastructure noise. Opt in to see them via `include_empty_links=1` (useful for menu-structure auditing). `getMenuItem` does NOT apply this filter — caller asked for a specific ID and gets the row back regardless of link state.
+
+**WRITE_KEEP_SETS updated** for the 4 menu write tools to match the new read keep-sets:
+- `createMenu` / `updateMenu` echo: menu_id, menu_name, menu_title, revision_timestamp
+- `createMenuItem` / `updateMenuItem` echo: menu_item_id, menu_id, menu_name, menu_link, menu_order, master_id, menu_title, menu_display, revision_timestamp
+
+`master_id` added to MenuItem write echo (was missing in prior keep-set) — preserves parent/child relationships on create/update responses.
+
+**Why the empty-link filter at the Worker layer, not skill content:** the failure mode (agents constructing link candidates from menu items that point at nothing) is universal to every MCP consumer, not skill-specific. Same architectural choice as the v6.52.0 reserved-data_type filter on listPostTypes — fix at the data-exposure layer so every consumer benefits, not just the skill.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — `MENU_*` and `MENU_ITEM_*` lean shapers + filter logic. Wired into `getLeanSpec`. Updated WRITE_KEEP_SETS for createMenu/updateMenu/createMenuItem/updateMenuItem. `SERVER_INFO.version` bumped 3.7.2 → 3.8.0.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored same lean shapers + filter logic. Wired into `is*ReadTool` declarations, `leanFlagList` chain, lean-apply dispatch chain. WRITE_KEEP_SETS aligned.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — new `include_empty_links` parameter component (`#/components/parameters/include_empty_links`). Updated `listMenus`, `getMenu`, `listMenuItems`, `getMenuItem` parameters and descriptions to expose `include_extras` (and `include_empty_links` for listMenuItems).
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Lean read responses` updated from "9 resource families" to "11", added Menus + MenuItems blocks with keep-sets and flags. `Rule: Lean write responses` already mentioned menus + menu items (no change needed).
+- `bd-cursor-config/brilliant-directories-mcp/scripts/schema-drift-check.js` — added `MENU_READ_TOOLS` + `MENU_ITEM_READ_TOOLS` constants and matching `checkFamily` calls. Added `MENU_LEAN_INCLUDE_FLAGS`, `MENU_ALWAYS_KEEP`, `MENU_ITEM_LEAN_INCLUDE_FLAGS`, `MENU_ITEM_ALWAYS_KEEP` to `MIRROR_CONSTANTS` for byte-mirror parity enforcement.
+
+**Worker deploy required** (`wrangler deploy` from `-hosted/`). Real Worker behavior change.
+
+**Drift check passes** across Worker + npm + spec. Typecheck clean.
+
 ## [6.52.6] - 2026-05-19
 
 ### Pexels image liveness probe before BD commit
