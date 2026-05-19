@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.11] - 2026-05-18
+
+### `Rule: Multi-image albums` — swap-at-specific-slot pattern
+
+Live-tested album swap: delete photo from slot N, append replacement via `updateMultiImagePost`. BD does NOT reliably reuse the vacated `order` value — new photos can collide on `order=0` and shuffle the visible sequence. Added one-paragraph 5-step pattern (read order → delete → append → re-list → set new order) so the agent preserves slot position on photo swaps.
+
+**No code changes** (corpus only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.10] - 2026-05-18
 
 ### Feature-image swap unlock — v6.50.9 was incomplete; now sends the full unlock payload
