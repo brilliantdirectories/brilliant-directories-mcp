@@ -20,7 +20,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
 6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 6 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
-7. **Duplicate detection** (METHODOLOGY Stage 3). For each topic angle, scope-query the blog post type: `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10`. Match: title-similar AND topic-angle-overlap. Date does not factor (blogs are evergreen). Skip duplicates.
+7. **Duplicate detection** (METHODOLOGY Stage 3). For each topic angle (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10` scoped to the blog post type. Returns 0-10 matching rows. Match: title-similar AND topic-angle-overlap. Date does not factor (blogs are evergreen). Skip duplicates. **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are selected during content manufacture (Step 11), not here.
 10. **Image dedup (FEATURE, mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
@@ -105,6 +105,8 @@ User said "write articles that will go viral for my industry," "trending content
 Same surfacing logic as Shape B.
 
 **Skill always runs one shape per invocation.** Do not mix. If the user request crosses shapes ("specific article AND viral"), ask which one to prioritize.
+
+**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shapes B and C above), then let dedup do its job at the per-candidate stage.
 
 ---
 

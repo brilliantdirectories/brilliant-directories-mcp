@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.2] - 2026-05-19
+
+### Pexels image topic-fit gate + blog dedup hardening
+
+Two failure modes from live runs surfaced corresponding directive gaps. Both fixed surgically; no spillover.
+
+**Pexels image topic-fit gate (METHODOLOGY Stage 5).** A live event-publish picked a Hong Kong protest crowd photo as the hero image for an Atlanta road race because the Pexels candidate title ("A Crowd of People on the Road") was ambiguous and the agent treated the existing "take the candidate" rule as a license to commit on title alone. Root cause: the previous rule conflated two things — orientation (can't be verified from agent runtime, accept what you get) and topic (IS verifiable from title, should be gated before commit).
+
+The fix scopes "accept the candidate" to orientation only, and adds a single AND-gate before commit: the candidate title must name the post's primary subject AND match its defining context (urban vs trail, indoor vs outdoor, season, etc.). Generic titles or wrong-context matches fail the gate — re-pick from the search results, WebFetch the `/photo/<slug>-<id>/` detail page to verify ambiguous titles, or skip the candidate. Type-agnostic (works for events, blogs, future jobs/properties).
+
+Fallback exhaustion path explicit: if the gate rejects every candidate, re-search with broadened phrasing once more, then fall through to site default, then omit `post_image`. Don't loop on perfect.
+
+Observability sentence added: when rejecting a candidate under this gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in the chat response. One short line per rejection, max. First observability rule in the skill — makes the gate auditable on every run, not just in verification tests.
+
+Matched self-check bullet added covering activity-vs-generic-scene plus context-attribute cues.
+
+The whole landscape-orientation work from prior versions is preserved unchanged: agents still cannot reliably verify orientation from the agent runtime; the rule still says accept whatever orientation the candidate has.
+
+**Blog dedup tightened (`content-types/blog.md`).** A live blog-publish ran `listSingleImagePosts data_id=<blog_id> limit=50` with no title filter — bulk-pulling 28 rows of existing blog content as a "let me understand existing coverage" rationalization before topic selection. That pattern is wasteful on sites with hundreds of blog posts and isn't what the per-candidate dedup query is for.
+
+Two fixes to close the rationalization path:
+
+- Step 7 (Duplicate detection) now matches events.md tone with explicit "**Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no 'let me see what exists' scans. Sites with hundreds of blogs make that pattern wasteful and slow."
+- Topic resolution section gains a new rule: "Never bulk-list existing posts to 'understand coverage' before picking a topic. The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts."
+
+The per-candidate scope-query (`property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10`) was already in the rule and is correct; the addition only closes the rationalization that bypassed it.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.51.1] - 2026-05-19
 
 ### Drop "recurring relevance" from events routine prompt
