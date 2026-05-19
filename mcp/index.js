@@ -5473,18 +5473,14 @@ async function main() {
         }
       }
 
-      // Feature-image swap auto-reset.
-      // BD's `image_imported=2` marker is sticky — once set, subsequent
-      // `post_image=<new URL>` writes with `auto_image_import=1` are silently
-      // skipped by BD's import job (file stays the same). The agent has no
-      // way to detect this from the response. Server-side fix path verified:
-      // send `image_imported=0` first, then the new URL on a second call.
-      //
-      // Wrapper does the two-round-trip transparently when an UPDATE looks
-      // like an image swap: post_image set, auto_image_import=1, and the
-      // existing record already has image_imported=2 with a different URL.
-      // No-op on creates (post doesn't exist yet) and on updates where the
-      // post hasn't been imported yet OR the URL hasn't changed.
+      // Feature-image swap unlock. BD's `/data_posts/update` silently drops
+      // `post_image` changes when `original_image_url` is already populated —
+      // the new URL is accepted on the wire but the import job re-imports
+      // the existing URL. Unlock recipe (verified live): one PUT clearing
+      // post_image + original_image_url + setting image_imported=0, then
+      // the agent's normal update runs and BD imports the new URL.
+      // Fires only when the agent is sending a different URL on an already-
+      // imported post; no-op on creates, same-URL re-saves, never-imported.
       if (
         name === "updateSingleImagePost" &&
         args && args.post_id !== undefined &&
@@ -5500,19 +5496,18 @@ async function main() {
           const row = (cur && cur.body && cur.body.message)
             ? (Array.isArray(cur.body.message) ? cur.body.message[0] : cur.body.message)
             : null;
-          const wasImported = row && String(row.image_imported || "") === "2";
           const existingUrl = row && row.original_image_url ? String(row.original_image_url) : "";
-          if (wasImported && existingUrl !== args.post_image) {
+          if (existingUrl && existingUrl !== args.post_image) {
             await makeRequest(
               config, "PUT",
               "/api/v2/data_posts/update",
               null,
               { post_id: args.post_id, image_imported: 0 },
+              ["post_image", "original_image_url"],
             );
           }
         } catch {
-          // Fall-open: if the reset probe/call fails, proceed with the normal
-          // update. Worst case mirrors prior behavior (BD silent-skips re-import).
+          // Fall-open: proceed with the normal update on probe/unlock failure.
         }
       }
 

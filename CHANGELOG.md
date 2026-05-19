@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.10] - 2026-05-18
+
+### Feature-image swap unlock — v6.50.9 was incomplete; now sends the full unlock payload
+
+v6.50.9 added a pre-call that set `image_imported=0`. Live-tested under load: BD still silently rejected the new `post_image` URL on the followup write because `original_image_url` was still populated. Image swap stayed broken.
+
+Verified unlock recipe via live curl: BD's `/data_posts/update` accepts `post_image` swaps only when `original_image_url` is ALSO cleared in the same PUT as `image_imported=0`. Updating the wrapper's pre-call body accordingly:
+
+```
+post_id=<N>
+image_imported=0
+post_image=
+original_image_url=
+__clear_fields=post_image,original_image_url
+```
+
+Trigger condition simplified: `image_imported=="2"` check dropped (BD initializes the field to `2` on every post, so it carried no signal). Now fires whenever the agent sends a NEW `post_image` URL different from the existing `original_image_url`.
+
+The `auto_image_import` users_meta EAV row (legacy from earlier wrapper builds that EAV-routed the boolean) is NOT involved in the lock — swaps succeed whether or not the row exists. Wrapper does not touch it.
+
+Worker `SERVER_INFO` 3.6.0 → 3.6.1. Wrangler deploy required from `bd-cursor-config/brilliant-directories-mcp-hosted/`.
+
+**No spec changes.** No corpus changes. Drift check passes.
+
 ## [6.50.9] - 2026-05-18
 
 ### Auto-reset BD's sticky `image_imported=2` marker on feature-image swaps
