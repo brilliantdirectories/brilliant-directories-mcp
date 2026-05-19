@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.49.54] - 2026-05-18
+
+### events.md Step 10 carries verbatim query shapes — fixes agent paraphrasing dedup queries wrong
+
+Second live run after v6.49.53 still failed dedup, BUT for a different reason: agent ran three list-tool calls (the v6.49.52-53 mandatory-execution gates worked), but it paraphrased the queries WRONG. Used `property=post_image` instead of `original_image_url`, used `LIKE` with numeric ID prefix (`4543646%`) instead of exact `=` match. Both queries returned 0 rows on URLs that ARE duplicates — confirmed via in-session reproduction (`listSingleImagePosts property=original_image_url property_value=https://images.pexels.com/photos/19148584%25 property_operator=LIKE` returns 3 dupe rows; agent's `property=post_image property_value=4543646% property_operator=LIKE` returns 0 because BD's local imported path stores in `post_image` not the canonical Pexels URL).
+
+Root cause: events.md Step 10 cross-referenced the corpus `Rule: Image dedup` for query syntax but didn't carry the syntax verbatim. Agent paraphrased, reasoned its way into "I'll use LIKE with the numeric ID prefix because that feels safer than exact match," shipped 3 more dupes.
+
+Fix: events.md Step 10 now carries the THREE verbatim query shapes inline so the agent has no room to invent alternatives:
+
+```
+listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==
+listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==
+listUserMeta database=list_seo key=hero_image (client-filter where value == <exact URL>)
+```
+
+Plus an explicit "DO NOT paraphrase the field name or operator" directive. Cross-ref to `Rule: Image dedup` retained for the full protocol (intra-batch dedup, fallback ladder, audit naming) — that material stays in one place and isn't duplicated.
+
+Bonus reality-check finding: BD's WAF strips the leading `%` from bidirectional `%foo%` LIKE patterns (errors with "Operator like requires a SQL wildcard"). Only single-anchor `foo%` is accepted — and even that's unnecessary for image dedup because exact `=` with the full canonical URL works deterministically.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.49.53] - 2026-05-18
 
 ### METHODOLOGY image-dedup sub-clause upgraded to mandatory-execution tone (third belt-and-suspenders location)
