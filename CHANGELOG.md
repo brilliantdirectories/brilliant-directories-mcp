@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.3] - 2026-05-19
+
+### Pexels rejection logs get a labeled block, audit summary stays clean
+
+Verification run of v6.51.2's topic-fit gate surfaced a real conflict between two directives. METHODOLOGY Stage 7 says the audit summary stays brief and customer-facing: *"Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results."* The new observability rule in Stage 5 says to log Pexels rejections in the chat response. Both are correct in intent but they pull in opposite directions when output lands in the same chat turn — eight rejection lines mixed into a customer-facing audit becomes the narration Stage 7 explicitly bans.
+
+Fix: rejection logs now sit under a labeled `**Image selection notes:**` block during the selection step, before the Stage 7 audit summary. The audit summary stays clean. Customer sees a clearly-labeled debug block they can skim past, then the actual deliverable receipt. Skill author retains full observability of which candidates the gate rejected and why.
+
+The labeling matters more than the positioning. Just moving rejection logs earlier in the chat output is relocated pollution, not removed pollution — the customer still scrolls past eight lines to find what they care about. The label gives them a visual anchor: "this block is for audit, that block is for you."
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.51.2] - 2026-05-19
 
 ### Pexels image topic-fit gate + blog dedup hardening
