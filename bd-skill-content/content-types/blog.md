@@ -50,11 +50,22 @@ Skip any question the user already answered in the original request.
 
 ## Post-type discovery (Stage 3 of runbook)
 
-A BD site does not necessarily have a post type literally named "Blog." Owners rename, translate, or run multiple article-flavored post types ("News," "Resources," "Articles," "Insights").
+Resolve by user intent first, then canonical markers, then semantic match.
 
-**Primary marker:** blog-flavored post types have `data_type=20` (single-image classification) AND are NOT event-flavored (`type_of_feature != 1`). Call `listPostTypes property=type_of_feature property_value=2 property_operator=eq` for the formal blog marker. If no `type_of_feature=2` rows exist, fall back to: filter `data_type=20`, then semantic-match `data_name`/`system_name` against blog terms (`blog`, `article`, `news`, `journal`, `post`, `insights`, `resources`, `articulo`, `artículo`, `noticia`, `nachrichten`, `artikel`, etc.).
+1. **User named a post type explicitly** (e.g., "post to my 'Tips for Homeowners' section"). Match the user's phrase against `data_name`, `system_name`, `form_name` on `listPostTypes`. Single confident match wins — skip steps 2-3.
 
-**Decision:**
+2. **User didn't specify** — look for the site-owner blog in this order:
+   - `system_name=website_blog_article` (BD canonical)
+   - `form_name=blog_article_fields` (canonical blog form)
+   - `data_type=20` + semantic match on `data_name`/`system_name` (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel)
+
+3. **EXCLUDE from any blog resolution:**
+   - `community_article` / `form_name=member_article_fields` — member-written, NOT site-owner blog
+   - `coupon`, `soundcloud_post`, `discussion`, `event`, `job_listing` — different content types
+
+**`type_of_feature` is NOT a blog marker.** Reserved for events (`1`), properties (`2`), digital products (`0`). Blogs are `type_of_feature=null`.
+
+**Decision after resolution:**
 
 | Match count | Action |
 |---|---|

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.7] - 2026-05-18
+
+### blog.md post-type discovery rewrite + `type_of_feature` enum documented in spec
+
+Live blog skill stress-test surfaced two issues in v6.50.6's discovery section:
+
+1. **`type_of_feature=2` is properties (not blogs).** v6.50.6 said blogs used `type_of_feature=2` — wrong. The field has only three enum values: `1`=events, `2`=real-estate properties, `0`=digital products. Blogs and all other content types have `type_of_feature=null`. Spec didn't document the enum; rediscovered live. Now documented in `listPostTypes` description.
+
+2. **Discovery was too prescriptive.** Old wording assumed `system_name=website_blog_article` was the target. Site owners commonly rename, clone, or run alternate blog-flavored post types ("Tips for Homeowners," "Insights," etc.). New decision tree honors user intent first:
+   1. User named a post type explicitly → match user phrase against `data_name`/`system_name`/`form_name`
+   2. User didn't specify → look for canonical blog: `system_name=website_blog_article`, then `form_name=blog_article_fields`, then semantic match on blog terms
+   3. Always exclude `community_article` (member-written), `coupon`, `soundcloud_post`, `discussion`, `event`, `job_listing`
+
+Memory entry added: `reference_type_of_feature_enum.md` so future skill authoring doesn't re-discover the enum.
+
+**No code changes** (skill content + spec description only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.6] - 2026-05-18
 
 ### Blog content type shipped — `/bd:content blog` now usable
