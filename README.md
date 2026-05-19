@@ -829,7 +829,7 @@ The skill source lives in [`bd-skill-content/`](./bd-skill-content/). Rebuild th
 
 ```bash
 node scripts/build-skill-zip.js
-# Output: dist/bd-skill-content.zip
+# Output: bd-skill-content/bd-skill-content.zip
 ```
 
 All built on the same foundation: shared research methodology, quality gates, dedup, anti-slop writing voice, whitehat sourcing.

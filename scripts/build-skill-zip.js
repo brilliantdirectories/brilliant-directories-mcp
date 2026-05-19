@@ -15,6 +15,13 @@
 // - The script SKIPS any .zip file when walking the source folder, so the
 //   zip never bundles itself recursively.
 // - Pure Node, no shell-out beyond `python` for the zipfile module.
+// - CRITICAL: arc-name separators are forced to forward slashes. On Windows,
+//   os.path.relpath / os.path.join emit backslashes, and PowerShell's
+//   Compress-Archive does the same. Claude Code's skill loader rejects any
+//   zip whose entries contain backslashes with "Zip file contains path with
+//   invalid characters." NEVER build the zip with Compress-Archive; always
+//   use this script (or the [System.IO.Compression.ZipFile] API with an
+//   explicit .Replace('\\','/') on each entry name).
 
 const fs = require('fs');
 const path = require('path');
@@ -46,7 +53,10 @@ with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as zf:
             if f.lower().endswith('.zip'):
                 continue
             full = os.path.join(root, f)
-            arc = os.path.relpath(full, src_parent)
+            # Force forward slashes — Windows os.path.relpath returns
+            # backslashes, which Claude Code's skill loader rejects with
+            # "Zip file contains path with invalid characters."
+            arc = os.path.relpath(full, src_parent).replace(os.sep, '/')
             zf.write(full, arc)
 print(f'Wrote {dst} ({os.path.getsize(dst)} bytes)')
 `,
