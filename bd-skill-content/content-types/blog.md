@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Run in order; on per-post failure continue to the next post.
 
 1. **Mode detection** (METHODOLOGY Stage 1). User in chat → interactive. Cron/programmatic → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listPostTypes`. Cache `data_filename` for the resolved blog post type. Do NOT look up Member Listings via `listPostTypes` — it's a reserved data_type, excluded by default. For internal links to member search, use Pattern 3 on the Members `data_filename` only if the site exposes it via a different surface; otherwise omit member-search links.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`footer%` fallback chain). Cache `data_filename` for the resolved blog post type.
 3. **Post-type discovery (blogs-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
@@ -96,7 +96,8 @@ User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim
 
 User said "write articles for SEO traffic," "boost organic search," or similar. Derive 3-5 topic candidates from:
 - `getSiteInfo.industry` + `getSiteInfo.profession` (site identity)
-- `listTopCategories` lean (top-level taxonomy hints)
+- `listTopCategories limit=25` sample from Stage 1 — reveals what the site's members serve (the consumer audience the directory exists to help). Topic ideas should resonate with that audience.
+- The resolved blog post type's `feature_categories` (cached from Stage 1 `listPostTypes`) — these ARE the post categories the blog will route to. Use as taxonomy hints for topic shape.
 - LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and not heavily covered by big competitors
 
 Surface the 3-5 candidates to the user in interactive mode; pick top 1-2 in autonomous mode.

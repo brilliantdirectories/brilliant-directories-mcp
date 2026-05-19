@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.1] - 2026-05-19
+
+### Stage 1 site-context: cleanup, alignment, and listTopCategories properly scoped
+
+Five surgical fixes to METHODOLOGY Stage 1 (Site context discovery) and the two per-type runbook step 2 enumerations. Real cleanup — net words DOWN, not up. Closes failure modes observed on live runs.
+
+**1. `listTopCategories` properly scoped to "site-flavor sample only" (METHODOLOGY Stage 1).** Previously the directive said simply "`listTopCategories` → top-level taxonomy" with no scope or limit. On real customer sites with 100s of member categories, the agent dumped the full list into working memory and worse, sometimes used it for post category routing (wrong taxonomy — these are categories actual site members are assigned to, e.g. "Personal Training", NOT post-type categories). Fixed by adding `limit=25` and explicit framing: "sample only, for site-flavor signal," with explicit warning that post category routing uses the resolved post type's `feature_categories` field (step 3), not these.
+
+**2. Menu fallback chain trimmed (METHODOLOGY Stage 1).** Previous chain was `main%` → `top%` → `header%` → `primary%`. Trimmed to `main%` → `top%` → `footer%` — matches BD-canonical menu naming, removed `header%` (rarely a main-nav menu name on BD sites) and `primary%` (not a BD convention).
+
+**3. Per-type Stage 1 enumeration aligned (events.md + blog.md step 2).** Previously events.md enumerated 5 Stage 1 calls; blog.md enumerated only 2. The explicit enumeration acted as a stronger signal than the parenthetical METHODOLOGY pointer, causing blog runs to skip menu discovery and category sampling. Both files now have identical Stage 1 enumeration: `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`footer%` fallback chain). Type-specific cache instructions preserved at the end of each step.
+
+**4. `homepage` removed from per-type enumeration (events.md).** Orphaned reference — METHODOLOGY Stage 1 has no "fetch homepage" call. The word told the agent to do something the shared protocol didn't define. Removed from events.md; never appeared in blog.md.
+
+**5. Dead Member Listings negation removed (blog.md).** Previous blog.md step 2 said "Do NOT look up Member Listings via `listPostTypes` — it's a reserved data_type, excluded by default." Architecturally enforced at the Worker layer since v6.52.0 — the agent literally cannot accidentally see Member Listings in a default `listPostTypes` response. Telling the agent not to do something the MCP filter already prevents is dead instruction. Removed.
+
+**6. blog.md Topic resolution Shape B updated.** Replaced `listTopCategories lean (top-level taxonomy hints)` with two distinct signals: (a) the resolved blog post type's `feature_categories` field — the actual authoritative post categories the blog will route to; and (b) the Stage 1 `listTopCategories limit=25` sample — for understanding what the site's MEMBERS serve (the consumer audience the directory exists to help, useful for topic resonance).
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 1 rewritten: 4 steps, sequential, `listTopCategories limit=25` scoped to site-flavor with explicit anti-routing guardrail, `listPostTypes` becomes the authoritative source for post category routing, menu fallback chain trimmed.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — step 2 aligned to events.md shape, Member Listings negation removed, Topic resolution Shape B updated with correct taxonomy distinction.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — step 2 aligned to blog.md shape, `homepage` orphan removed.
+
+**No code changes** (skill content only). No `SERVER_INFO.version` bump. No Worker deploy required. Drift check passes.
+
 ## [6.53.0] - 2026-05-19
 
 ### Menus + MenuItems lean families + MenuItem empty-link default filter
