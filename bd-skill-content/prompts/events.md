@@ -10,7 +10,7 @@ Create exactly:
 
 Pick events that match my site's focus and niche, strengthen local-SEO and topical authority, and create internal-linking opportunities to related events, locations, and members already on the site.
 
-Prefer events with strong local search intent, recurring relevance, official source information available, and geographically relevant supporting content.
+Prefer events with strong local search intent, official source information available, and geographically relevant supporting content.
 
 If a registration or official information URL is known, include this CTA immediately after the intro paragraphs:
 

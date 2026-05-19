@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.1] - 2026-05-19
+
+### Drop "recurring relevance" from events routine prompt
+
+Removed "recurring relevance" from the `prompts/events.md` preference signals line. The phrase was biasing the agent toward annual events specifically (the most prestigious example of "recurring"), which in turn biased away from one-time-but-high-SEO-value events (a city's first marathon, a unique conference launch, a milestone festival). Confirmed live: a recent run picked "NSCA National Conference 2026" and rationalized it partly as "recurring annually," which is exactly the bias the word created.
+
+New preference line: "Prefer events with strong local search intent, official source information available, and geographically relevant supporting content." The remaining signals capture what actually matters; "recurring" was vague pre-bias dressed up as a quality criterion.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.51.0] - 2026-05-19
 
 ### Skill hardening pass: AI-detection bans, URL-liveness gate, blog routine prompt, surgical cleanup
