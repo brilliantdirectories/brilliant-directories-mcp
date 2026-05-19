@@ -66,7 +66,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety (SEO)
 
-When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 links per post, distributed across intro, middle, and later sections — never clustered at the end. LLM-judged per post; no fixed rotation. Each link must be a Pattern 3 URL with only params from the `Pattern 3 filter params` section.
+When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 links per post, distributed across intro, middle, and later sections — never clustered at the end. **Internal links lead, external links mix in later** — the first 2-3 links the reader hits are internal (on-site pages, member search, related posts). External citations mix in after that, sprinkled through later sections — not clustered. Keeps SEO juice on-site, warms the reader before any outbound link. LLM-judged per post; no fixed rotation. Each link must be a Pattern 3 URL with only params from the `Pattern 3 filter params` section.
 
 ## Link shape priority (SEO ranking, universal)
 

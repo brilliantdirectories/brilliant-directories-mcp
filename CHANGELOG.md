@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.4] - 2026-05-19
+
+### Skill content polish: opt-in inline images, topic bar, 3-word Pexels, link sequencing, restructured dense paragraphs
+
+Eight surgical skill-content changes across `bd-skill-content/`. All content-only; no code, spec, or schema changes. Universal across all post types unless scoped otherwise.
+
+**1. Inline body images for blog: opt-in only (`content-types/blog.md`).** Default blog runs no longer include inline body images — only the feature image. Inline images apply when the user explicitly requests them in their prompt ("with inline images", "include body images", "add photos throughout"). Cuts ~5-7 Pexels searches per default run (each inline image was running the topic-fit gate + dedup three-call block). Faster default runs, cleaner default posts. Technical rules (float classes, retina variant, intra-post dedup) preserved for when user opts in.
+
+**2. Topic bar (Shapes B and C) — broad-appeal angle with specific qualifiers (`content-types/blog.md`).** Agent-generated blog topics must clear a two-layer filter: the topic can be specific or industry-insider, but the angle must be broad-appeal (a non-expert from outside the niche should want to click) AND carry specific qualifiers (audience segment, geographic context, use case, life stage). Three pivot examples across three verticals (fitness/home services/tax) with three different title shapes (listicle, declarative, question). Closes the "NASM vs ACE Certification Comparison" failure pattern — same SEO keywords captured, broader reader frame. Shape A (user-specified) untouched — user's topic+angle wins verbatim.
+
+**3. Pexels search: exactly 3 words (`shared/METHODOLOGY.md`).** The 3-word category-level keyword rule now enforces an exact count, not a max. Count spaces BEFORE sending: 2 spaces = 3 words. Applies to the first search and all retries. Closes the slip-on-first-attempt failure pattern observed on a Hyrox blog verification run where the agent searched "personal trainer client coaching" (4 words) and got mostly Pexels category-aggregator URLs instead of individual photo pages. The bad "houseplant problems care" example (keyword-pasta, no natural English flow) replaced with "plant living room" (concrete scene, parses naturally).
+
+**4. Pexels paragraph restructured for execution order (`shared/METHODOLOGY.md`).** The dense single-paragraph block (~700 words covering URL workflow + orientation + topic-fit gate + keyword salads + rejection logging + search rules + fallback exhaustion + dedup) restructured into bold-labeled sub-sections inside the numbered list item: **Search construction**, **Topic-fit gate**, **Rejection logging**, **Vary phrasing**, **Fallback exhaustion**, **URL output**, **Dedup before committing**. Same content. Order matches actual execution sequence. Bullets show "do this AND this AND this" within each layer. Standard markdown nesting (numbered list → bold labels → bullets) — no exotic structures, parses cleanly in every renderer.
+
+**5. Source image detection paragraph restructured (`shared/METHODOLOGY.md`).** Same treatment as Pexels — the long single-paragraph block for source-image extraction restructured into bold-labeled sub-sections: **Image-source patterns** (4 detection patterns), **Extraction discipline** (raw HTML vs WebFetch summary), **CDN proxy decode** (Next.js / Cloudinary / Jetpack), **Verification before commit** (HTTP 200, content-type, format whitelist, width ≥ 600px), **Signed CDN URLs** (don't try to escalate baked-in width). Same content, scannable structure.
+
+**6. URL liveness gate pulled out of the gates table (`shared/METHODOLOGY.md`).** The URL liveness rule was stuffed into a single table cell (~725 chars of decision-tree content). Pulled out into its own `### URL liveness gate` subsection after the 2a-2e procedure completes. Three-outcome decision tree (200 / dead / UNKNOWN) now rendered as proper bullets. Third-party-sourced URL clause preserved. Table row now contains a one-line pointer to the subsection — keeps the table tight while the deep dive sits properly anchored.
+
+**7. URL-PATTERNS internal-link sequencing rule (`shared/URL-PATTERNS.md`).** Added to the existing Internal-link variety section: "**Internal links lead, external links mix in later** — the first 2-3 links the reader hits are internal (on-site pages, member search, related posts). External citations mix in after that, sprinkled through later sections — not clustered." Closes a real failure pattern where agents were citing external sources in the first 1-2 link slots before exposing readers to any on-site content. Keeps SEO juice on-site, warms the reader before any outbound. Universal across all post types.
+
+**8. Events.md internal-link distribution reminder (`content-types/events.md`).** Added "distributed across opening paragraph, body sections, and CTA close, NOT clustered at the end" to the existing internal-links line. Closes a real failure pattern where event posts were clustering links in trailing paragraphs instead of weaving them through the post. The rule existed in URL-PATTERNS but events.md needed reinforcement at the per-type level.
+
+**Section structure verified:** `## Stage 1-7` top-level structure intact, `### Subsection` h3 used appropriately for deep-dives (URL liveness gate, Image strategy sub-sections), bold-labeled sub-sections inside numbered list items for parallel sub-rules. Runbook numbering blog 1-13 and events 1-13 sequential. All cross-references (`Inline body images`, `URL liveness gate`, `Image strategy`, `Pexels workflow`, `Image dedup`, `Topic bar`, `Bullets rule`, `Link shape priority`, `Shape A/B/C`) resolve to existing section anchors.
+
+**No code changes** (skill content only). No `SERVER_INFO.version` bump. No Worker deploy required. Drift check passes.
+
 ## [6.52.3] - 2026-05-19
 
 ### Iron-clad cleanup: strip unreachable code paths from reserved-data_type filter

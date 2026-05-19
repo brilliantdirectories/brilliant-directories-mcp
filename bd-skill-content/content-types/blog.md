@@ -22,14 +22,14 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 6 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
 7. **Duplicate detection** (METHODOLOGY Stage 3). For each topic angle (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10` scoped to the blog post type. Returns 0-10 matching rows. Match: title-similar AND topic-angle-overlap. Date does not factor (blogs are evergreen). Skip duplicates. **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are selected during content manufacture (Step 11), not here.
+9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are opt-in only — see the `Inline body images` section.
 10. **Image dedup (FEATURE, mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
     - `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`
     - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
     - `listUserMeta database=list_seo key=hero_image value=<exact URL>` (single-call form — returns 0-or-1 row directly)
 
     Exactly these three calls must appear in your turn before step 12 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different feature image and re-run all three. Full protocol in corpus `Rule: Image dedup`.
-11. **Content manufacture (blogs-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images selected and applied during this step per the `Inline body images` section.
+11. **Content manufacture (blogs-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).
 
@@ -103,6 +103,8 @@ User said "write articles that will go viral for my industry," "trending content
 - LLM judgment for emotional-hook potential (surprise, contrarian, useful-and-rare, deeply practical)
 
 Same surfacing logic as Shape B.
+
+**Topic bar (Shapes B and C):** topic can be specific or industry-insider; angle must be broad-appeal AND carry specific qualifiers (audience segment, geographic context, use case, life stage) — both layers together. Pivot examples: "NASM vs ACE Certification Comparison" → "5 Personal Trainer Certifications Seniors Should Actually Care About"; "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates"; "IRC §179 vs §168(k) Deductions" → "Which Vehicle Tax Deduction Saves Sole Proprietors the Most?". Broad reader frame, specific qualifiers — both. A non-expert from outside the niche should want to click. Broad ≠ beginner.
 
 **Skill always runs one shape per invocation.** Do not mix. If the user request crosses shapes ("specific article AND viral"), ask which one to prioritize.
 
@@ -202,7 +204,9 @@ Pick targets by **contextual relevance to the body sentence**. If the paragraph 
 
 ### Inline body images
 
-Long-form blogs benefit from 1 inline body image per 300-500 words (excluding the feature image). Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Source URLs use the retina variant: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?w=700`. Per corpus `Rule: Post-body formatting`.
+**Opt-in only — do NOT include inline body images by default.** Only apply this section when the user explicitly requests inline images in their prompt (e.g. "with inline images", "include body images", "add photos throughout"). Default blog runs ship with the feature image only — prose carries the post.
+
+When opted in: 1 inline body image per 300-500 words (excluding the feature image). Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Source URLs use the retina variant: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?w=700`. Per corpus `Rule: Post-body formatting`.
 
 **Inline body image dedup (intra-post only):**
 - No URL repeats within the same `post_content`.
@@ -247,7 +251,7 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_content` | assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + inline body images + FAQ + conclusion |
+| `post_content` | assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
 | `post_image` | feature image URL per image strategy. Pass `auto_image_import=1` for external images. |
 | `post_category` | best-matched category name (verbatim from `feature_categories`) |
 | `post_tags` | per **METHODOLOGY Tags** |

@@ -41,11 +41,21 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
-| URL liveness | Every URL the post links to must be verified before publish. `WebFetch` 200 with real body content = use (200 with "page not found"/"error" body text is a soft-404 — treat as dead). 404 / DNS fail = drop, or skip the record if it's the primary action URL. 403 / 401 / 429 / timeout / WAF block = **UNKNOWN, not verified** — a CDN is blocking the bot UA, not proof the page is dead; never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop. URLs sourced from a third party (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. |
+| URL liveness | Every URL the post links to must be verified before publish — see the `URL liveness gate` section below for the full decision tree. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
 **2e.** Stop at ~10-20 verified records or no new candidates.
+
+### URL liveness gate
+
+Every URL the post will link to must be verified live before publish. Three outcomes by `WebFetch` response:
+
+- **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead.)
+- **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
+- **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop.
+
+**Third-party-sourced URLs** (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. Apply the same three-outcome decision tree above.
 
 ## Stage 3: Duplicate detection
 
@@ -119,13 +129,55 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 Prefer the real source image when one is clearly usable. Fall through to Pexels otherwise. The fallback order:
 
-1. **Source image** — check FOUR patterns, not just `<img>` tags:
+1. **Source image** — prefer the real image from the source page. Check four patterns, in this order:
+
+   **Image-source patterns:**
    - `<meta property="og:image" content="...">` (canonical; usually present)
    - JSON-LD `"image": "..."` inside `<script type="application/ld+json">` (canonical; present on most events)
-   - `<img>` element src/srcset (traditional hero)
-   - **CSS `background-image: url(...)` on hero container divs** (common on modern event sites like Eventbrite, Squarespace, Webflow templates; if the AI scans only `<img>` tags it misses this)
-   **Check raw HTML, not WebFetch's model-summarized markdown** — name "og:image", "JSON-LD image", and "background-image" explicitly in your WebFetch prompt, or the summary may strip them. If the URL is a known CDN proxy (Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`, etc.), decode the embedded real URL. The presence of OG image / JSON-LD image / background-image-url all indicate the source IS an image, not a video, regardless of how the page renders it. Confirm the decoded URL returns HTTP 200, has `image/*` content-type, is one of **`png` / `jpg` / `jpeg` / `webp`** (other formats like `gif`/`svg`/`avif`/`heic`/`bmp` cause `auto_image_import` to silently fail — fall through to Pexels in that case), and is **≥ 600px wide** (600 exactly counts as pass). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute, which is display size. **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate. Use with `auto_image_import=1`.
-2. **Pexels** — follow **Rule: Image URLs** in the MCP corpus (loaded with every MCP tool) exactly. Short version: `WebSearch query="site:pexels.com/photo <topic>"` (NOT `site:pexels.com/search` — 403 on agent runtimes; and NOT `wide`/`landscape`/`horizontal` keywords in the query — Pexels searches those as photo title/tag terms, not orientation), drill to individual `/photo/<slug>-<id>/` URLs, send the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` to BD. Landscape orientation cannot be reliably verified from the agent runtime — accept whatever orientation the candidate has. Topic-fit IS verifiable from the title: the candidate title must name the post's primary subject AND match its defining context, not just share a keyword. Generic titles or wrong-context matches fail the gate; `WebFetch` the `/photo/<slug>-<id>/` detail page to verify when the title is ambiguous, or skip the candidate. Title keyword salads (4+ unrelated nouns concatenated, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title accurately describes the image. When rejecting a Pexels candidate under this gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in your chat response. One short line per rejection, max. Place rejection logs under a labeled `**Image selection notes:**` block during the selection step, before the Stage 7 audit summary. The audit summary stays clean per Stage 7. **Search with 3 category-level keywords** — name what the post IS at category level. Works across verticals: `"fitness race competition"` (events/sport), `"professional conference audience"` (events/corporate), `"wedding photographer working"` (blog/services), `"houseplant problems care"` (blog/lifestyle). Three-word category queries surface individual photo pages with real-context action shots. If your search returns mostly `/search/` URLs instead of `/photo/<slug>-<id>/` URLs, re-search at 3 words. Search topic uses per-type keywords (events: `"5k race outdoors"`, `"music festival crowd"`, `"yoga class studio"`, etc.). If the first topic returns sparse or irrelevant results, vary the phrasing — broader/simpler ("5k race" → "group race outdoors"), narrower ("yoga class" → "vinyasa studio mat"), synonyms, adjacent contexts — anything still contextually relevant to the post. After gate rejection (separate from the thin-results case above), re-search with broadened phrasing once more — then if still nothing fits, fall through to site default, then omit. Don't loop on perfect. **Before committing the chosen URL, run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on second/third picks.**
+   - `<img>` element `src`/`srcset` (traditional hero)
+   - CSS `background-image: url(...)` on hero container divs (common on modern event sites — Eventbrite, Squarespace, Webflow templates; if the AI scans only `<img>` tags it misses this)
+
+   **Extraction discipline:**
+   - Check raw HTML, NOT WebFetch's model-summarized markdown. Name `og:image`, `JSON-LD image`, and `background-image` explicitly in your WebFetch prompt, or the summary may strip them.
+   - The presence of any of the four patterns above indicates the source IS an image, not a video, regardless of how the page renders it.
+
+   **CDN proxy decode:** if the URL is a known proxy wrapper, decode the embedded real URL before downstream checks. Common proxies: Next.js `/_next/image?url=...`, Cloudinary `/image/fetch/...`, Jetpack `i0.wp.com/...`.
+
+   **Verification before commit:**
+   - HTTP 200 on the decoded URL.
+   - `Content-Type: image/*`.
+   - Format is one of `png` / `jpg` / `jpeg` / `webp`. Other formats (`gif`/`svg`/`avif`/`heic`/`bmp`) cause `auto_image_import` to silently fail — fall through to Pexels.
+   - Width ≥ 600px (600 exactly passes). Check `srcset` 2x descriptors, `?w=N` query params, or stated OG image dimensions — NOT the rendered `<img width>` attribute (display size, not asset size).
+
+   **Signed CDN URLs** (`img.evbuc.com` with `s=...`, Cloudinary signed delivery, etc.) lock to their baked-in `w=` value — the signed width IS the asset width, don't try to escalate.
+
+   Pass the decoded URL to BD with `auto_image_import=1`.
+2. **Pexels** — follow corpus `Rule: Image URLs` exactly.
+
+   **Search construction:**
+   - Query shape: `WebSearch query="site:pexels.com/photo <topic>"`. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation).
+   - **Exactly 3 words.** Count spaces BEFORE sending: 2 spaces = 3 words. Applies to the first search and all retries.
+   - Cross-vertical examples: `"fitness race competition"` (events/sport), `"professional conference audience"` (events/corporate), `"wedding photographer working"` (blog/services), `"plant living room"` (blog/lifestyle).
+   - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick three different words.
+
+   **Topic-fit gate** (every candidate before commit):
+   - Title must name the post's primary subject AND match its defining context. Sharing one keyword is not enough.
+   - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
+   - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
+   - Orientation cannot be verified from agent runtime — accept whatever orientation the candidate has.
+
+   **Rejection logging:**
+   - When rejecting a candidate under the gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in your chat response.
+   - One short line per rejection, max.
+   - Place rejection lines under a labeled `**Image selection notes:**` block during the selection step, before the Stage 7 audit summary. The audit summary stays clean.
+
+   **Vary phrasing if results are sparse or irrelevant:** broader/simpler ("5k race" → "group race outdoors"), narrower ("yoga class" → "vinyasa studio mat"), synonyms, adjacent contexts — all still 3 words.
+
+   **Fallback exhaustion:** after gate rejects every candidate, re-search with broadened phrasing once more — then if still nothing fits, fall through to site default, then omit. Don't loop on perfect.
+
+   **URL output:** drill to individual `/photo/<slug>-<id>/` URLs, send the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` to BD.
+
+   **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
 3. **Site-config default** for this post type, if defined.
 4. **Omit `post_image`** entirely.
 
