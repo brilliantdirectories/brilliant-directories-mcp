@@ -5004,6 +5004,24 @@ async function main() {
           delete workingArgs.property_value;
           delete workingArgs.property_operator;
         }
+        // Optional `value` first-class param (listUserMeta only): narrows
+        // the result to rows whose stored `value` exactly matches. Appended
+        // as a 4th pair to the same array-syntax filter — same wire form
+        // BD already supports for the identity fields. NOT counted toward
+        // the 2-of-3 safety guard (which requires identity); `value` alone
+        // would still cross-table-noise. Use case: image-dedup lookups
+        // where (database, key) scopes to "all hero_image rows on this
+        // site" and `value` narrows to "where the URL equals X" — turns
+        // a paginated client-filter into a single 0-or-1-row response.
+        if (
+          name === "listUserMeta" &&
+          workingArgs.value !== undefined &&
+          workingArgs.value !== null &&
+          String(workingArgs.value).trim() !== ""
+        ) {
+          pairs.push(["value", workingArgs.value]);
+          delete workingArgs.value;
+        }
         if (pairs.length > 0) {
           metaFilterPairs = pairs;
           args = workingArgs;

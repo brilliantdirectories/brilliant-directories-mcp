@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.0] - 2026-05-18
+
+### `listUserMeta` gains `value` first-class param — one-shot multi-condition lookup (no pagination, no client-filter)
+
+Real wrapper feature, minor version bump. Adds an optional `value` first-class parameter to `listUserMeta` that narrows the result to rows whose stored `value` exactly matches. Appended as a 4th condition to BD's `property[]`/`property_value[]`/`property_operator[]==` multi-condition wire syntax — same translator path the existing identity params already use.
+
+**Use case driving this:** image dedup hero-image check was paginating through 58+ `users_meta` rows and client-filtering, because the old form `listUserMeta database=list_seo key=hero_image` returned every hero across the site. New form: `listUserMeta database=list_seo key=hero_image value=<exact URL>` returns 0-or-1 row in one call. Same correctness, one call instead of N pages.
+
+**Safety guards preserved unchanged:**
+
+- **2-of-3 safety guard:** `value` is NOT counted toward the minimum. The guard still requires 2 of `(database, database_id, key)`. `value` alone is rejected — correct, because `value` without identity scope returns cross-table noise (same URL could exist as a `users_meta` value on multiple parent tables in theory).
+- **MIXED-STYLE guard:** unchanged. `value` is first-class, not via `property`/`property_value`, so the guard correctly stays silent when the new param is used.
+- **CROSS-TABLE guard:** unchanged.
+- **Identity-style detection:** unchanged.
+
+**Files changed:**
+
+- `mcp/index.js` line ~5006: 13-line block appending `value` to `metaFilterPairs` when present, with the same `delete workingArgs.value` pattern used by other consumed first-class params.
+- `brilliant-directories-mcp-hosted/src/index.ts` line ~5163: byte-mirror.
+- `mcp/openapi/bd-api.json` line ~8308: new `value` query param on `listUserMeta` operation, with description explaining it's not counted toward 2-of-3 guard.
+- `mcp/openapi/mcp-instructions.md`: `Rule: Image dedup` bullet 3 updated to use single-call form. Removed "client-filter" sub-clause.
+- `bd-skill-content/content-types/events.md` Step 10 verbatim listUserMeta call updated to single-call form.
+
+**Worker SERVER_INFO bumped 3.4.0 → 3.5.0.** Wrangler deploy required from `brilliant-directories-mcp-hosted/` for hosted-transport clients to see the new param. npm-stdio clients get it on next install/cache refresh.
+
+Drift check passes.
+
 ## [6.49.55] - 2026-05-18
 
 ### events.md Step 10: "All three must appear" → "Exactly these three calls must appear — no more, no fewer, no substitutes"

@@ -8305,6 +8305,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "description": "Exact-match filter on the stored `value` column. Optional fourth first-class param (listUserMeta only) — narrows a (database, key) scope to rows whose value equals this exactly. NOT counted toward the 2-of-3 safety guard; `value` alone is rejected. Use case: dedup lookups where (database=`list_seo`, key=`hero_image`, value=`<exact URL>`) returns 0-or-1 row in one call instead of paginating + client-filtering. Wrapper appends this as a 4th condition to BD's `property[]`/`property_value[]`/`property_operator[]==` multi-condition syntax.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

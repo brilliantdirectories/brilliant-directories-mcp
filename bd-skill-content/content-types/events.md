@@ -26,7 +26,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 10. **Image dedup (mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
     - `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`
     - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
-    - `listUserMeta database=list_seo key=hero_image` (then client-filter the returned rows where `value == <exact URL>`)
+    - `listUserMeta database=list_seo key=hero_image value=<exact URL>` (single-call form — returns 0-or-1 row directly)
 
     Exactly these three calls must appear in your turn before step 12 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different image and re-run all three. Full protocol (intra-batch dedup, fallback ladder, audit naming) in corpus `Rule: Image dedup`.
 11. **Content manufacture (events-specific, this file).** Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
