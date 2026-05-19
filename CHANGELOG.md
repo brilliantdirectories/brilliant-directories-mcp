@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.3] - 2026-05-18
+
+### Default research window bumped 60 → 90 days
+
+Per-skill-run date-sanity window for source research now defaults to 90 days (was 60). Catches events scheduled further out without requiring `--window=90` on every invocation. Customers can still override with `--window=<N>`.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.2] - 2026-05-18
 
 ### METHODOLOGY Stage 7: missing-variable fallback for admin URL

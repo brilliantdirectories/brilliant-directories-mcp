@@ -36,7 +36,7 @@ Autonomous: infer location from `primary_country`, vertical from site info and c
 
 | Gate | Rule |
 |---|---|
-| Date sanity | Primary date > today AND < today+window. Window defaults to 60 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
+| Date sanity | Primary date > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Auto: <8 skip. Interactive: 6-7 flag for user, <6 always skip. |
