@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.3] - 2026-05-19
+
+### Skill content: menu fallback chain + LIKE wildcard discipline in dedup queries
+
+Two live failure patterns observed on `find-fitness-pros.directoryup.com` blog/event runs:
+
+1. **Menu discovery stopped at `main%`.** METHODOLOGY Stage 1 step 4 told the agent to try `main%` first and only try `top%`/`footer%` "if no match" — read as optional, so the agent stopped at the first 0-row response and never fell back. Result: no internal nav links cached for sites whose conventional menu lives under a different name.
+
+2. **Dedup queries used bidirectional `%X%` wildcards.** blog.md step 7 had a `property_value=%<core-topic-noun>%` query that BD's WAF silently mangles (strips one `%` before the validator sees it), returning wrong results. The agent was also paraphrasing the events.md `<first-3-words>%` dedup as `%<words>%` in live runs.
+
+**Fixes (skill content only — no Worker/npm code changes):**
+
+- `bd-skill-content/shared/METHODOLOGY.md` Stage 1 step 4: rewrite menu directive as a flat three-query sequence — `main%`, then `top%`, then `footer%` — running all three rather than stopping at the first miss. Cache `{menu_name → menu_link}` from each match.
+- `bd-skill-content/content-types/blog.md` step 7: replace the broken bidirectional `%<core-topic-noun>%` query with two single-anchor queries (`<noun>%` starts-with AND `%<noun>` ends-with) merged client-side. Inline reminder: "BD's `like` only supports single-anchor wildcards — `X%` or `%X`, NEVER bidirectional `%X%`."
+- `bd-skill-content/content-types/events.md` step 6: add the same inline LIKE-wildcard reminder so the agent doesn't drift back to `%X%` when paraphrasing.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md`
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.2] - 2026-05-19
 
 ### data_type=28 (Sub Account) added to reserved set
