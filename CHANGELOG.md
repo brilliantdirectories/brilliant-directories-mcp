@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.5] - 2026-05-18
+
+### Pre-blog ground-prep: dedup scope shrink + cross-resource URL clarity
+
+Three shared/corpus tightenings before authoring blog.md as a content type. None affects events behavior; all clean up the framework for content types with multiple body images and broader internal-linking.
+
+- **Image dedup scope shrunk to FEATURE only.** Cross-table 3-call dedup applies to FEATURE image fields (`post_image`, `original_image_url`, `hero_image`). Inline `<img>` URLs inside `post_content` / `group_desc` now require intra-post uniqueness only: no body URL repeats within the same post, no body URL equals the post's feature URL. No cross-table check on inline body URLs (impractical, expensive, low-value).
+- **METHODOLOGY Stage 5 image-strategy** gains a "Multiple inline body images" clause that names the same scope split — feature gets cross-table dedup, body gets intra-post uniqueness. Universal across all content types that ship body images (blogs primarily).
+- **URL-PATTERNS line 62** rewritten. Old wording lumped "member-search pages" with WebPage-backed URLs and forbade both. Real distinction: WebPage-BACKED URLs (`list_seo` custom pages — `data_category` landings, custom `profile_search_results`) require `listWebPages` lookup and remain `/bd:seo` territory; but Pattern 1/2/3 URLs constructed for ANY post type — including the Member Listings post type (`data_type=10`, `system_name=member_listings`, varies per site via its `data_filename`) — are FULLY ALLOWED for content skills. Blog posts can deep-link to member profiles (Pattern 1: `/<user.filename>`) and member search results (Pattern 3: `/<members_data_filename>?<filters>`) using only values already known.
+
+**No code changes** (skill content + corpus only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.4] - 2026-05-18
 
 ### Close bulk-fetch detour between dedup and content manufacture

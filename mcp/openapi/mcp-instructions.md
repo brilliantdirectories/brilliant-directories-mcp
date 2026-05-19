@@ -958,9 +958,9 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dedup
 
-**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to `post_image`, `original_image_url`, or `hero_image`, dedup the URL against ALL three storage locations on the site AND against the other URLs in the same batch.
+**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`, `hero_image`), dedup the URL against ALL three storage locations on the site AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to cross-table dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
 
-- **Three storage locations to check on every write.** Any hit in any of the three = already used on this site, pick another.
+- **Three storage locations to check on every FEATURE write.** Any hit in any of the three = already used on this site, pick another.
   1. **Single-image posts** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`.
   2. **Multi-image gallery photos** (users_portfolio): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`.
   3. **WebPage hero images** (users_meta EAV — WebPage parent table is `list_seo`, NOT `web_pages`): `listUserMeta database=list_seo key=hero_image value=<exact URL>`. The `value` param is a first-class filter on `listUserMeta` — appended to BD's multi-condition syntax server-side, returning 0-or-1 row in one call (no client-filter, no pagination).

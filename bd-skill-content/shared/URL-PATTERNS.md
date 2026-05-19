@@ -59,7 +59,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Double-encode `post_filename` (already URL-safe).
 - Mix protocols (use `getSiteInfo.full_url` protocol).
 - Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL granularity: if `location_type=locality` (city-level), say the city in the link text; if `location_type=postal_code` (ZIP-level), say the city + ZIP. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
-- Build links to member-search pages, category-landing pages, or other WebPage-backed URLs from content-creation skills — that's `/bd:seo` territory.
+- Build links to WebPage-backed URLs (custom `list_seo` pages: data_category landings, custom `profile_search_results` pages, hand-built WebPages) — those require `listWebPages` discovery and are `/bd:seo` territory. **Allowed for content skills:** Pattern 1/2/3 URLs for ANY post type — including the Member Listings post type (use its `data_filename` for member search results, use `user.filename` for specific member profiles). These are constructed from values already known, no WebPage lookup needed.
 - Bulk-list existing posts to "see what's available" for internal linking. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed.
 
 ## Internal-link variety (SEO)

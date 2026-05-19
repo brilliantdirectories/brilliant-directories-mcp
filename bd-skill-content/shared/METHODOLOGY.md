@@ -128,6 +128,8 @@ Prefer the real source image when one is clearly usable. Fall through to Pexels 
 
 **Orientation preference for feature image slots.** Feature slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) prefer landscape (`w > h`). For **source images** (the original event/article/listing page), use the page's OG `og:image:width`/`og:image:height` meta tags or `srcset` 2x descriptors when available; prefer landscape but accept any orientation. For **Pexels candidates**, orientation cannot be reliably verified from the agent runtime — take the candidate. Image-on-post is the goal; perfect orientation is the nice-to-have.
 
+**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through the Pexels workflow above. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
+
 ### Voice
 
 Every word goes through `ANTI-SLOP.md`. Mandatory before posting.
