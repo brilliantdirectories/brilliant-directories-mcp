@@ -171,7 +171,7 @@ Authorization:
 
 ---
 
-## Content manufacture (Stage 9 of runbook)
+## Content manufacture (Stage 11 of runbook)
 
 Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
 
@@ -183,7 +183,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 ---
 
-## BD Events field reference (Stage 10 of runbook)
+## BD Events field reference (Stage 12 of runbook)
 
 What `createSingleImagePost` receives.
 

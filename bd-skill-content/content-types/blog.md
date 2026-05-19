@@ -28,7 +28,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
     - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
     - `listUserMeta database=list_seo key=hero_image value=<exact URL>` (single-call form — returns 0-or-1 row directly)
 
-    Exactly these three calls must appear in your turn before step 11 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different feature image and re-run all three. Full protocol in corpus `Rule: Image dedup`.
+    Exactly these three calls must appear in your turn before step 12 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different feature image and re-run all three. Full protocol in corpus `Rule: Image dedup`.
 11. **Content manufacture (blogs-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images selected and applied during this step per the `Inline body images` section.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).

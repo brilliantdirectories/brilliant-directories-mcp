@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.13] - 2026-05-18
+
+### Stage-label off-by-two in events.md + blog.md image-dedup step ref
+
+Cross-check minion caught three stale stage labels from the v6.49.46-52 image-dedup runbook insertions. The runbook step numbers were updated then but the corresponding section headers weren't, so the labels disagreed with the actual step positions.
+
+- `events.md`: `## Content manufacture (Stage 9 of runbook)` → `Stage 11`
+- `events.md`: `## BD Events field reference (Stage 10 of runbook)` → `Stage 12`
+- `blog.md`: image-dedup Step 10 text `before step 11` → `before step 12` (image dedup must complete before create, which is Step 12)
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.12] - 2026-05-18
 
 ### Align events.md and blog.md before authoring jobs.md
