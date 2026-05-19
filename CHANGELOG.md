@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.50.14] - 2026-05-18
+
+### `title` attribute required on every `<a>` in post body content
+
+URL-PATTERNS internal-vs-external table now mandates a `title="..."` attribute on ALL `<a>` tags in `post_content` / `group_desc` — both internal and external links. Short descriptive phrase (~50-80 chars) of what the link points to, not a duplicate of the anchor text. Improves screen-reader accessibility, hover previews, and SEO signal.
+
+Applies to every post type that emits internal/external links (events, blog, jobs, properties, classifieds — anything writing to body fields). One shared rule, no per-type duplication.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.50.13] - 2026-05-18
 
 ### Stage-label off-by-two in events.md + blog.md image-dedup step ref
