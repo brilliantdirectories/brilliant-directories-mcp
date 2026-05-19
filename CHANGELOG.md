@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.3] - 2026-05-19
+
+### Iron-clad cleanup: strip unreachable code paths from reserved-data_type filter
+
+Minion audit of code vs spec after v6.52.2 surfaced three dead-code paths that contradicted the spec or were unreachable per live BD response shape. None were causing user-visible bugs — but each was a future-confusion footgun where reading the code suggested a behavior the runtime didn't deliver. This release removes them so the code reads exactly what it does.
+
+**Dead path 1 — unreachable error envelope in `applyReservedDataTypeFilter`.** Code had a single-object branch returning `{status: "error", message: "Reserved post type: ..."}` for getPostType against reserved records. v6.52.2 live verification proved BD wraps every response in `message: [...]` (array) — including getPostType for a single record. The single-object branch never fired. Removed. The array-path filter handles all responses uniformly; reserved records dropped from the array produce `message: []` (empty success), matching the v6.52.2 spec promise.
+
+**Dead path 2 — unreachable top-level `data_type` opt-in.** `extractReservedOptIn` accepted both `args.data_type` (top-level argument) AND `property=data_type, property_value=N` (filter pattern) as opt-in signals. The schema never exposed `data_type` as a top-level argument on `listPostTypes`, so the first branch never fired. Removed. Single opt-in path now: `property=data_type, property_value=<value>`, which matches the live-verified spec.
+
+**Dead data — `RESERVED_DATA_TYPES` label map.** The map of `{10: "Member Listings — use ...", 13: ..., 21: ..., 27: "Admin", 29: "Reserved"}` was only consumed by the error envelope's message string. With the error envelope gone, the labels are dead. Removed the map entirely; kept the bare ID set (`RESERVED_DATA_TYPE_IDS`) which is the actual load-bearing constant. Drift-check `MIRROR_CONSTANTS` updated to drop the removed constant.
+
+**Net effect on observable behavior: zero.** Every test case from v6.52.2's verification matrix still passes identically — reserved excluded by default on listPostTypes, opt-in via property/property_value works, getPostType returns empty array for reserved records.
+
+**Net effect on code clarity: positive.** Filter function shrank from ~25 lines to ~15. One control path, one shape assumption (array), no unreachable error message claiming behavior the runtime doesn't deliver. Comments now describe what actually happens, not what was intended.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — stripped error envelope + top-level opt-in branch + label map. `SERVER_INFO.version` bumped 3.7.1 → 3.7.2.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored same cleanup.
+- `bd-cursor-config/brilliant-directories-mcp/scripts/schema-drift-check.js` — removed `RESERVED_DATA_TYPES` from `MIRROR_CONSTANTS` (constant no longer exists).
+
+**No spec changes.** Tool descriptions in `bd-api.json` already match v6.52.3's behavior — they were updated in v6.52.2 to describe the array-shape empty-message behavior we're now codifying.
+
+**Worker deploy required.** Filter function body changed even though external behavior is identical; the inline behavior must match what the deployed Worker runs.
+
 ## [6.52.2] - 2026-05-19
 
 ### Tool descriptions: align with actual opt-in mechanism (verified live)

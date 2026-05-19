@@ -995,13 +995,10 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 // mix reserved + standard values — both are returned. Mirrored byte-for-byte
 // from Worker src/index.ts.
 
-const RESERVED_DATA_TYPES = {
-  10: "Member Listings — use the Members API (listUsers, searchUsers, getUser)",
-  13: "Member Ratings — member metadata, accessed via the member API surface",
-  21: "Member Categories — use listTopCategories and listSubCategories",
-  27: "Admin",
-  29: "Reserved",
-};
+// Reserved BD-internal data_types — filtered out of listPostTypes / getPostType
+// responses by default. 10/13/21 are documented in the spec descriptions;
+// 27 (Admin) and 29 (internal) are intentionally enforced at the Worker layer
+// without surface-level documentation.
 const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27, 29]);
 
 function parseDataTypeFilter(raw) {
@@ -1012,52 +1009,38 @@ function parseDataTypeFilter(raw) {
     .filter((n) => Number.isFinite(n));
 }
 
-// Detect caller's explicit opt-in to reserved data_types.
-// Two opt-in shapes supported, matching how this tool is actually invoked:
-//  A. Top-level `data_type=<value>` arg (documented opt-in).
-//  B. BD-style filter: `property=data_type` + `property_value=<value>` (the
-//     actual mechanism agents use via the existing property/property_value
-//     filter params, since the tool schema doesn't expose data_type directly).
+// Detect caller's explicit opt-in to reserved data_types via BD's filter
+// params: `property=data_type` + `property_value=<value>` (single or
+// comma-list). This is the only opt-in path that exists — the tool schema
+// doesn't expose `data_type` as a top-level argument on listPostTypes.
 function extractReservedOptIn(args) {
   const allowed = new Set();
   if (!args) return allowed;
-  for (const n of parseDataTypeFilter(args.data_type)) {
+  if (String((args.property != null ? args.property : "")).trim() !== "data_type") return allowed;
+  for (const n of parseDataTypeFilter(args.property_value)) {
     if (RESERVED_DATA_TYPE_IDS.has(n)) allowed.add(n);
-  }
-  if (String((args.property != null ? args.property : "")).trim() === "data_type") {
-    for (const n of parseDataTypeFilter(args.property_value)) {
-      if (RESERVED_DATA_TYPE_IDS.has(n)) allowed.add(n);
-    }
   }
   return allowed;
 }
 
+// Strip reserved-data_type rows from list/get responses unless the caller
+// explicitly opted in. BD wraps every response — including getPostType for
+// a single record — in `message: [...]` (array shape), so a single filter
+// path covers both tools.
 function applyReservedDataTypeFilter(body, args, toolName) {
   if (!POST_TYPE_READ_TOOLS.has(toolName)) return body;
-  if (!body || body.status !== "success") return body;
+  if (!body || body.status !== "success" || !Array.isArray(body.message)) return body;
   const reservedAllowed = extractReservedOptIn(args);
-  const shouldKeep = (row) => {
+  const before = body.message.length;
+  body.message = body.message.filter((row) => {
     const dt = Number(row && row.data_type);
     if (!RESERVED_DATA_TYPE_IDS.has(dt)) return true;
     return reservedAllowed.has(dt);
-  };
-  if (Array.isArray(body.message)) {
-    const before = body.message.length;
-    body.message = body.message.filter(shouldKeep);
-    const removed = before - body.message.length;
-    if (removed > 0 && body.total != null) {
-      const t = Number(body.total);
-      if (Number.isFinite(t)) body.total = String(Math.max(0, t - removed));
-    }
-  } else if (body.message && typeof body.message === "object") {
-    if (!shouldKeep(body.message)) {
-      const dt = Number(body.message.data_type);
-      const label = RESERVED_DATA_TYPES[dt] || `data_type=${dt}`;
-      return {
-        status: "error",
-        message: `Reserved post type: data_type=${dt} (${label}). To access this record, pass data_type=${dt} on this call.`,
-      };
-    }
+  });
+  const removed = before - body.message.length;
+  if (removed > 0 && body.total != null) {
+    const t = Number(body.total);
+    if (Number.isFinite(t)) body.total = String(Math.max(0, t - removed));
   }
   return body;
 }
