@@ -157,7 +157,7 @@ Rate limit: 100 req/60s (raisable to 1000/min via BD support). Each call takes ~
 
 ### Rule: Member Listings post type
 
-**Member Listings post type (`data_type=10`, singleton per BD site)** - the only post type with NO profile/detail page of its own. Controls the Member Search Results page UI/UX; members render via BD's core member profile system.
+**Member Listings post type (`data_type=10`, singleton per BD site)** - the only post type with NO profile/detail page of its own. Controls the Member Search Results page UI/UX; members render via BD's core member profile system. **`data_filename` is omitted from reads** (members live at `/<user.filename>`; the member directory landing is `/search_results`; never `/listing/<id>`); all other fields return normally on opt-in.
 
 **Edit path:**
 

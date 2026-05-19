@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.6] - 2026-05-19
+
+### Menu discovery — two phases, both mandatory
+
+METHODOLOGY Stage 1 step 4 reshape: agents were stopping at `listMenus` hits without ever calling `listMenuItems` to fetch the actual link URLs. Reworked from a single combined sentence into two clearly numbered phases — **Phase 4a** (find menu_ids via four `listMenus` queries: `main%`, `top%`, `header%`, `footer%`) and **Phase 4b** (REQUIRED follow-up `listMenuItems` per collected menu_id, caching `{menu_name → menu_link}` for internal-link candidates).
+
+### events.md — internal-link distribution table
+
+events.md "Internal links" guidance gained a distribution table (mirroring blog.md's existing pattern) — `Opening paragraph: 1`, `Body sections: 1-3`, `FAQ block: 0-1`, `CTA close: 1 (always)`. Live observation: agents were clustering all internal links at the end of event posts. Tables get followed more obediently than prose; the structural fix should redistribute links across the body naturally.
+
+### Worker: strip `data_filename` on opt-in Member Listings (data_type=10) rows + skill `/search_results` pattern
+
+**Two-layer defense against `/listing/<id>` URL fabrication.** Live observation: even with the v6.52.0+ reserved-data_type filter removing data_type=10 rows from default `listPostTypes` responses, agents on the events skill were still constructing `/listing/<id>` URLs in event post bodies. Investigation chain: the rows themselves were correctly hidden, but the `/listing` slug was leaking in via menu items (`listMenuItems` on the site's nav) — the agent then pattern-matched against the universal post-URL shape `/<data_filename>/<id>` and built a fabricated URL that doesn't resolve.
+
+**Mechanical fix (Worker + npm):** when a `data_type=10` row IS returned (opt-in via `property=data_type, property_value=10, property_operator==`), strip its `data_filename` field to `null`. The agent cannot reach for a field that isn't there. All other fields on the row return normally. Surgical 5-line addition to `applyReservedDataTypeFilter`.
+
+**Belt-and-suspenders (spec + skill content):** the Worker strip is invisible at runtime. To stop the agent from *wanting* to construct the URL in the first place, three documentation surfaces now state the correct member URL patterns:
+
+1. `mcp/openapi/bd-api.json` — `listPostTypes` and `getPostType` descriptions append: `members live at /<user.filename>, member directory landing is /search_results, never /listing/<id>`.
+2. `mcp/openapi/mcp-instructions.md` — `Rule: Member Listings post type` mirrors the same clause.
+3. `bd-skill-content/shared/URL-PATTERNS.md` — Patterns table gains two new rows: `Pattern 4 (Specific member profile = /<user.filename>)` and `Pattern 5 (Member directory landing = /search_results)`. blog.md's "Link targets" enumeration realigned to use the new Pattern 4/5 numbering.
+
+**Worker behavior change** — deploy required. `SERVER_INFO.version` bumped 3.8.1 → 3.8.2.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — `applyReservedDataTypeFilter` adds the data_filename strip; `SERVER_INFO.version` bumped.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `listPostTypes` + `getPostType` description clauses.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Member Listings post type` clause.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/URL-PATTERNS.md` — Pattern 4 + 5 added to patterns table.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Link-target enumeration aligned to new pattern numbers; Pattern 5 added.
+
+**Drift check passes.**
+
 ## [6.53.5] - 2026-05-19
 
 ### Skill content: Pexels-only image strategy

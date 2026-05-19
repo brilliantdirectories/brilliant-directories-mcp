@@ -1037,6 +1037,13 @@ function applyReservedDataTypeFilter(body, args, toolName) {
     if (!RESERVED_DATA_TYPE_IDS.has(dt)) return true;
     return reservedAllowed.has(dt);
   });
+  // data_type=10 (Member Listings) opt-in rows: strip data_filename so agents
+  // cannot fabricate /listing/<id> URLs. Members live at /<user.filename>.
+  for (const row of body.message) {
+    if (Number(row && row.data_type) === 10 && row && "data_filename" in row) {
+      row.data_filename = null;
+    }
+  }
   const removed = before - body.message.length;
   if (removed > 0 && body.total != null) {
     const t = Number(body.total);

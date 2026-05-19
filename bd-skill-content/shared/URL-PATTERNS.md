@@ -11,6 +11,8 @@ Read before generating any internal link. Universal across post types.
 | 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
+| 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` / `listUsers`. Never `/listing/<id>`. |
+| 5 | Member directory landing | `/search_results` | Universal across BD sites — the bare members-search page. Location- + category-filtered member-search URLs (e.g. `/california/los-angeles/personal-trainer`) use a slug-hierarchy path that requires live lookups against `listCountries` / `listStates` / `listCities` / `listTopCategories` / `listSubCategories` — out of scope for content skills, deferred to the future `/bd:seo` skill. Use the bare `/search_results` for "find a local pro" anchors. |
 
 WebPage-backed link patterns (data_category landings, profile_search_results pages, custom WebPages) are OUT OF SCOPE for content-creation skills. Those belong to the future `/bd:seo` skill.
 
