@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.9] - 2026-05-19
+
+### Kill the "low-competition keyword" SEO myth in Shape B
+
+Smoking gun in `blog.md` Shape B (Vertical SEO seed): the final bullet told the agent to favor topics "not heavily covered by big competitors." That trains the agent to invert the actual long-tail SEO play — it goes hunting for low-competition queries (which in 2026 are mostly low-competition because nobody searches them), producing topics no real reader is looking for.
+
+**Fix:** rewrite that bullet to name the real EEAT competitive play. Agent should pick topics with real search volume and beat existing top results on depth/specificity, not chase queries with no competition.
+
+Before: `LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and not heavily covered by big competitors`
+
+After: `LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and where existing top results are thin, AI-generated, or missing concrete specifics that an EEAT-rich post could beat. Don't hunt for "low-competition keywords nobody covers" — in 2026 those are mostly low-competition because nobody searches them. Pick real reader queries and beat existing coverage on depth.`
+
+Connects with the v6.53.7 "Pick qualifiers from where real readers are stuck" rule — both directives now push the same direction: real-search-volume topics, beat existing coverage on depth.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning.
+
+**Drift check passes.**
+
 ## [6.53.8] - 2026-05-19
 
 ### Smoking-gun audit — example-bias cleanup across blog.md and events.md

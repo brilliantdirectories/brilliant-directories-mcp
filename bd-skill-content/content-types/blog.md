@@ -99,7 +99,7 @@ User said "write articles for SEO traffic," "boost organic search," or similar. 
 - `getSiteInfo.industry` + `getSiteInfo.profession` (site identity)
 - `listTopCategories limit=25` sample from Stage 1 — reveals what the site's members serve (the consumer audience the directory exists to help). Topic ideas should resonate with that audience.
 - The resolved blog post type's `feature_categories` (cached from Stage 1 `listPostTypes`) — these ARE the post categories the blog will route to. Use as taxonomy hints for topic shape.
-- LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and not heavily covered by big competitors
+- LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and where existing top results are thin, AI-generated, or missing concrete specifics that an EEAT-rich post could beat. Don't hunt for "low-competition keywords nobody covers" — in 2026 those are mostly low-competition because nobody searches them. Pick real reader queries and beat existing coverage on depth.
 
 Surface the 3-5 candidates to the user in interactive mode; pick top 1-2 in autonomous mode.
 
@@ -116,8 +116,8 @@ Same surfacing logic as Shape B.
 
 **Topic depth (Shapes B and C) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
 
-**Bad Broad Topic EXAMPLES versus Good More Specific Topic EXAMPLES**
-| Too broad (Bad LLM default) | Good with depth |
+**Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES**
+| Too broad (Bad LLM default) | Good topics with depth |
 |---|---|
 | How Much Protein to Build Muscle | How Much Protein a 160lb Lifter Needs When Losing Fat vs Gaining Muscle |
 | Best Stretches for Runners | 6 Calf Stretches That Work After a Marathon |
