@@ -980,6 +980,63 @@ function applyPostTypeLean(body, includeFlags) {
 
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 
+// --- PostType reserved-data_type filter ------------------------------------
+// listPostTypes / getPostType expose BD's internal `list_data` table which
+// includes infrastructure rows (Members, Member Ratings, Member Categories,
+// Admin) alongside customer-facing post types (events, blogs, multi-image
+// galleries, video posts). Returning the reserved rows by default trains
+// agents to confuse internal-identifier fields (`system_name`, `data_type`)
+// with URL-slug fields (`data_filename`) — a real failure observed in v6.51.x
+// where an agent fabricated `/listing` from `system_name=member_listings`.
+//
+// Default-deny: reserved rows are filtered out of responses unless the
+// caller explicitly opts in by passing `data_type=<value>` (single or
+// comma-list, e.g. `data_type=10` or `data_type=10,4,9`). Comma-lists may
+// mix reserved + standard values — both are returned. Mirrored byte-for-byte
+// from Worker src/index.ts.
+
+const RESERVED_DATA_TYPES = {
+  10: "Member Listings — use the Members API (listUsers, searchUsers, getUser)",
+  13: "Member Ratings — member metadata, accessed via the member API surface",
+  21: "Member Categories — use listTopCategories and listSubCategories",
+  27: "Admin",
+};
+const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27]);
+
+function parseDataTypeFilter(raw) {
+  if (raw == null || raw === "") return [];
+  return String(raw)
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n));
+}
+
+function applyReservedDataTypeFilter(body, args, toolName) {
+  if (!POST_TYPE_READ_TOOLS.has(toolName)) return body;
+  if (!body || body.status !== "success") return body;
+  const reservedAllowed = new Set(
+    parseDataTypeFilter(args && args.data_type).filter((d) => RESERVED_DATA_TYPE_IDS.has(d))
+  );
+  const shouldKeep = (row) => {
+    const dt = Number(row && row.data_type);
+    if (!RESERVED_DATA_TYPE_IDS.has(dt)) return true;
+    return reservedAllowed.has(dt);
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.filter(shouldKeep);
+  } else if (body.message && typeof body.message === "object") {
+    if (!shouldKeep(body.message)) {
+      const dt = Number(body.message.data_type);
+      const label = RESERVED_DATA_TYPES[dt] || `data_type=${dt}`;
+      return {
+        status: "error",
+        message: `Reserved post type: data_type=${dt} (${label}). To access this record, pass data_type=${dt} on this call.`,
+      };
+    }
+  }
+  return body;
+}
+
 // --- WEB PAGES (list/get list_seo) ----------------------------------------
 //
 // Page rows carry heavy asset fields: `content` (body HTML), `content_css`,
@@ -5646,6 +5703,10 @@ async function main() {
         else if (isFormFieldReadTool) result.body = applyFormFieldLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
+
+        // Default-deny reserved data_types on listPostTypes / getPostType.
+        // Caller opts in via explicit data_type=<value> (single or comma-list).
+        result.body = applyReservedDataTypeFilter(result.body, args, name);
       }
 
       // Attach throttle warning if we lowered the limit. Visible to the agent

@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Run in order; on per-post failure continue to the next post.
 
 1. **Mode detection** (METHODOLOGY Stage 1). User in chat → interactive. Cron/programmatic → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listPostTypes`. Cache `data_filename` for the resolved blog post type AND the Member Listings post type (`data_type=10`, `system_name=member_listings`) — needed for internal-link construction in Stage 9.
+2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listPostTypes`. Cache `data_filename` for the resolved blog post type. Do NOT look up Member Listings via `listPostTypes` — it's a reserved data_type, excluded by default. For internal links to member search, use Pattern 3 on the Members `data_filename` only if the site exposes it via a different surface; otherwise omit member-search links.
 3. **Post-type discovery (blogs-specific, this file).** Run the `Post-type discovery` section.
 4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
 5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
@@ -190,7 +190,6 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 **Link targets — all valid for blog posts:**
 
 - **Specific member profile** (Pattern 1): `/<user.filename>` — resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq` only when the agent has a specific known person to deep-link to. No bulk-listing members.
-- **Member search results** (Pattern 3 on Members post type's `data_filename`): `/<members_data_filename>?category[]=<cat>&lat=...&lng=...&location_value=...&location_type=locality` — for "find a {profession} in {city}" style anchors. Use the cached Members `data_filename` from Stage 2.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — for "more {category} {posts}" style anchors.
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.

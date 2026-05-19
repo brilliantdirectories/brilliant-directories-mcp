@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.52.0] - 2026-05-19
+
+### Reserved data_types default-excluded from listPostTypes / getPostType
+
+BD's `list_data` table mixes customer-facing post types (events, blogs, multi-image galleries, video posts) with BD-internal infrastructure rows (Member Listings, Member Ratings, Member Categories, Admin). Returning the infrastructure rows by default trained agents to confuse internal-identifier fields (`system_name`, `data_type`) with URL-slug fields (`data_filename`). A live failure on `find-fitness-pros.directoryup.com` shipped an `<a href="/listing">` link because an agent saw `system_name=member_listings` in a `listPostTypes` response and word-extracted `listing` as the URL path — fabrication that would never have happened if the Member Listings row hadn't been in the default response.
+
+This release filters reserved `data_type` values out of `listPostTypes` and `getPostType` responses by default. The MCP layer now enforces the same conceptual model customers think in: posts are posts, members are members, infrastructure is infrastructure.
+
+**Reserved data_types:** `10` (Member Listings — use `listUsers` / `searchUsers` / `getUser`), `13` (Member Ratings — member metadata), `21` (Member Categories — use `listTopCategories` / `listSubCategories`), `27` (Admin).
+
+**Default-deny, explicit-allow pattern:**
+
+- `listPostTypes` with no `data_type` filter: returns all standard post types, no reserved rows.
+- `listPostTypes data_type=10`: returns only the Member Listings row (explicit opt-in).
+- `listPostTypes data_type=10,4,9`: comma-list, returns Member Listings + multi-image + video rows. Mixed reserved + standard supported.
+- `getPostType data_id=<id-of-reserved-record>`: returns `status: "error"` with the message `"Reserved post type: data_type=10 (Member Listings — use the Members API...). To access this record, pass data_type=10 on this call."` unless `data_type=<that-value>` is passed explicitly.
+
+**Why this matters across the whole MCP, not just the skill:** the `/listing` failure surfaced in the bd-skill-content skill, but ANY MCP consumer (Cursor users writing automations, Custom GPTs, n8n workflows, future skills) calling `listPostTypes` could hit the same trap. The fix lives at the MCP layer so every consumer benefits automatically. No skill-side directive can substitute for this — the data exposure itself is the root cause.
+
+**Skill-side changes (downstream):** `content-types/blog.md` step 2 no longer instructs the agent to look up the Member Listings post type via `listPostTypes`. The Members `data_filename` is no longer cached by the skill. Member-profile internal links (Pattern 1 via `searchUsers` / `listUsers`) still work because they don't touch `listPostTypes`. Member-search-results internal links (Pattern 3 against the Members `data_filename`) are dropped from the blog link-targets list — they were depending on a discovery path that no longer works by default.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — added `RESERVED_DATA_TYPES` + `RESERVED_DATA_TYPE_IDS` constants, `parseDataTypeFilter` helper, `applyReservedDataTypeFilter` helper. Wired into dispatch after lean shaping. Worker `SERVER_INFO.version` bumped 3.6.1 → 3.7.0 (real behavioral change).
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored same logic for the stdio transport.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `listPostTypes` description: added `**Reserved data_types — default-excluded.**` block naming 10/13/21 with their right access paths and the opt-in mechanism. `getPostType` description: added `**Reserved data_types — explicit opt-in.**` block describing the error behavior. `data_type=27` (Admin) is filtered but not documented per scope.
+- `bd-cursor-config/brilliant-directories-mcp/scripts/schema-drift-check.js` — added `RESERVED_DATA_TYPES` and `RESERVED_DATA_TYPE_IDS` to `MIRROR_CONSTANTS`. Thorough check enforces byte-mirror parity across Worker + npm.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — step 2 no longer caches Members `data_filename`; member-search-results link target dropped from Stage 9 link list.
+
+**Breaking change considerations:** technically a behavioral change — callers who were getting Member Listings rows back from `listPostTypes` with no filter will stop getting them by default. In practice this was never the right access path for Members data (the Members API exists for that purpose), and the rows were silently misleading agents into URL fabrication. Explicit `data_type=10` opt-in preserves the access for any caller who genuinely needs it.
+
+**Drift check passes.** Worker typecheck clean. npm syntax check clean. Worker deploy required (`wrangler deploy` from `-hosted/`) — not skill-content-only this release.
+
+### Pexels search-query length: 3 category-level keywords
+
+Bundled in this release: METHODOLOGY Stage 5 Pexels paragraph now caps search-query length at 3 category-level keywords with concrete cross-vertical examples (`"fitness race competition"` events/sport, `"professional conference audience"` events/corporate, `"wedding photographer working"` blog/services, `"houseplant problems care"` blog/lifestyle). Closes a real failure pattern observed on the verification run: agents using 5-6 word queries returned mostly Pexels category-aggregator URLs (`/search/...`) instead of individual photo pages (`/photo/...`), forcing repeated searches. Three words is the sweet spot for Pexels' indexing: specific enough to match individual photo titles, broad enough to surface real-context action shots over static-equipment shots.
+
 ## [6.51.5] - 2026-05-19
 
 ### Image rules: keyword-salad title gate + dedup-rejection retry discipline
