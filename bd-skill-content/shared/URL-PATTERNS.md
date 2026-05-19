@@ -21,7 +21,7 @@ WebPage-backed link patterns (data_category landings, profile_search_results pag
 | `q` | `q=keyword` | Keyword search. Tags filter via `q=` (no dedicated tag param). |
 | `category[]` | `category[]=Category%20Name` | Repeat for multi-category. Skill defaults to single-category. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
-| `lat` / `lng` / `location_value` | `lat=34.05&lng=-118.25&location_value=Los+Angeles%2C+CA+90014` | Send all three together for location filtering. `lat`/`lng` drive the geo radius (implicit default from site settings); `location_value` is the human-readable label that populates the search-results address input. Use the post's `post_location` string for `location_value`. |
+| `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN+55802&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Use `location_type=locality` for city-level (default for content-skill links). Use `location_type=postal_code` for ZIP-radius filtering on sites where the city is too broad (e.g. dense metros). Use the post's `post_location` string for `location_value` regardless of mode. |
 
 ## Encoding rules
 
@@ -46,9 +46,9 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 /events
 /events?q=austin
 /events?category[]=Live%20Music
-/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX
+/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
 /events?daterange=06%2F15%2F2026+-+06%2F15%2F2026
-/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX
+/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
 ```
 
 ## Don't
@@ -58,7 +58,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Trailing slashes (BD doesn't use them).
 - Double-encode `post_filename` (already URL-safe).
 - Mix protocols (use `getSiteInfo.full_url` protocol).
-- Invent geo params. Only `lat`+`lng`+`location_value` (sent together) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip`, `postal_code` are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL: if the URL filters by city (the only location granularity available), say the city in the link text. Do not say "in [State]" or "in [Country]" when the URL geocode is city-level.
+- Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL granularity: if `location_type=locality` (city-level), say the city in the link text; if `location_type=postal_code` (ZIP-level), say the city + ZIP. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
 - Build links to member-search pages, category-landing pages, or other WebPage-backed URLs from content-creation skills — that's `/bd:seo` territory.
 
 ## Internal-link variety (SEO)

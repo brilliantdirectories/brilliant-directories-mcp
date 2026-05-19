@@ -174,7 +174,7 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 **Events-specific internal-link opportunities** (only if URL-PATTERNS.md discovery confirms the target exists):
 - More events in same category: `?category[]={cat}`
-- More events in same city: `?lat={lat}&lng={lng}&location_value={URL-encoded post_location}` (using THIS event's coords + address label so the search-results page shows the address in its input)
+- More events in same city: `?lat={lat}&lng={lng}&location_value={URL-encoded post_location}&location_type=locality` (all four params required; `location_type=locality` is what BD's sidebar form needs to render — omit it and the URL returns zero results)
 - Other events on same date: `?daterange={d}+-+{d}`
 - Highest-value combo: same category + same city
 
