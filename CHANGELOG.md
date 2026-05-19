@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.51.4] - 2026-05-19
+
+### Pexels search-breadth directive — broad-category terms before equipment-specific
+
+The topic-fit gate from v6.51.2 fixes "wrong pick from candidate pool" but doesn't fix "wrong candidate pool to begin with." Verification on a Hyrox blog post made the upstream cause visible: searching equipment-specific terms ("sled push athlete", "wall ball squat", "hyrox functional fitness") returned static gym-equipment photos because Pexels indexes equipment terms literally. The gate then had to pick from a pool that didn't contain the real-context action shots a feature image needs. Searching the broad category ("fitness race", "athletes competition") would have surfaced race-in-stadium shots — exactly what a Hyrox post needs.
+
+Fix: one sentence added to METHODOLOGY Stage 5 Pexels paragraph, placed before the existing per-type-keyword examples. Search the post's broad category first (race, class, event, competition, retreat, etc.) before narrowing to specific equipment or sub-genre. Broad-category terms surface real-context action shots; equipment-specific terms surface static-equipment shots.
+
+Doesn't redefine the gate's "primary subject" requirement — the gate still says title must name the post's primary subject AND match its defining context. The search-breadth rule sits upstream of the gate as a search-strategy directive, layering cleanly without touching the gate definition.
+
+**No code changes** (skill content only). No SERVER_INFO bump. Drift check passes.
+
 ## [6.51.3] - 2026-05-19
 
 ### Pexels rejection logs get a labeled block, audit summary stays clean
