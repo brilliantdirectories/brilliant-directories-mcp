@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.2] - 2026-05-19
+
+### data_type=28 (Sub Account) added to reserved set
+
+Live `listPostTypes` on `find-fitness-pros.directoryup.com` surfaced a `data_type=28` row ("Sub Account", filename `additional_locations`) — BD-internal infrastructure (the additional-locations record for members with multiple business locations), not a customer-facing post type. Same shape as the other Worker-level reserved data_types (10/13/21/27/29) but was missed in the original v6.52.0 + v6.52.1 reserved-set definitions.
+
+Fix: add `28` to `RESERVED_DATA_TYPE_IDS` in both Worker and npm. Same treatment as 27 (Admin) and 29 (internal) — enforced at the Worker layer, NOT documented in spec descriptions (which still list only 10/13/21 as agent-visible reserved types).
+
+Now-reserved data_types: `10` Member Listings, `13` Member Ratings, `21` Member Categories, `27` Admin, `28` Sub Account, `29` internal.
+
+**Files changed:**
+
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — `RESERVED_DATA_TYPE_IDS` set updated. `SERVER_INFO.version` bumped 3.8.0 → 3.8.1.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored.
+
+**No spec changes.** Tool descriptions still document 10/13/21 only — 27, 28, and 29 stay invisible at the docs layer, enforced at the Worker layer.
+
+**Worker deploy required** (`wrangler deploy` from `-hosted/`). Real Worker behavior change.
+
+**Drift check passes.**
+
 ## [6.53.1] - 2026-05-19
 
 ### Stage 1 site-context: cleanup, alignment, and listTopCategories properly scoped

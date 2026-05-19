@@ -997,9 +997,9 @@ const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 
 // Reserved BD-internal data_types — filtered out of listPostTypes / getPostType
 // responses by default. 10/13/21 are documented in the spec descriptions;
-// 27 (Admin) and 29 (internal) are intentionally enforced at the Worker layer
-// without surface-level documentation.
-const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27, 29]);
+// 27 (Admin), 28 (Sub Account / additional-locations), and 29 (internal) are
+// intentionally enforced at the Worker layer without surface-level documentation.
+const RESERVED_DATA_TYPE_IDS = new Set([10, 13, 21, 27, 28, 29]);
 
 function parseDataTypeFilter(raw) {
   if (raw == null || raw === "") return [];
