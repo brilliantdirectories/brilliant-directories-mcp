@@ -183,12 +183,12 @@ Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (f
 
 **Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
 
-**Internal links:** weave into body prose per **URL-PATTERNS Link shape priority** — distributed, NOT clustered at the end. Budget **3-6 internal links per event post**, distributed:
+**Internal links:** weave into body prose per **URL-PATTERNS Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post**, distributed:
 
 | Section | Recommended links |
 |---|---|
 | Opening paragraph (event hook + load-bearing facts) | 1 (category or location filter) |
-| Body sections (venue/scene/what-to-expect) | 1-3 spread across sections |
+| Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | FAQ block (when present) | 0-1 |
 | CTA close | 1 (always — the "see more events" closer) |
 

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.12] - 2026-05-20
+
+### events.md: fix internal-link clustering at end of event posts
+
+Live observation: events posts shipping with all 3 internal links clustered in the final 2 paragraphs (Eiger Ultra + Gold Coast Marathon screenshots). Blog posts don't have this problem because blog.md's distribution table caps links at "1-2 per major section, max." events.md had no equivalent cap, plus the 3-6 link budget was tight enough that the agent could legitimately fit all links in the closing area.
+
+**Two changes to events.md Internal links table:**
+
+- **Budget**: `3-6 internal links per event post` → `4-8 internal links per event post` (aligns with general SEO density of 3-10 per 1000 words; gives agent room to spread)
+- **Body sections row**: `1-3 spread across sections` → `2-5 links, maximum 1 per major body section — never two links in the same paragraph, never three links clustered in the final two sections`
+
+The "1 per major body section" cap mirrors blog.md's working rule. "Never 3 in final 2 sections" is the explicit anti-clustering trip-wire. Phrasing is heading-level-neutral ("major body section" not "H2") — H3 sub-sections under an H2 still count as part of that major section.
+
+Audit-verified: only these two lines changed in events.md vs v6.53.11. `(venue/scene/what-to-expect)` qualifier preserved. No other regressions.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. blog.md unchanged.
+
+**Drift check passes.**
+
 ## [6.53.11] - 2026-05-20
 
 ### URL-PATTERNS: Pattern 6 — filtered member directory (slug-hierarchy URLs)
