@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.14] - 2026-05-20
+
+### METHODOLOGY: promote Link order rule (internal first, external later)
+
+Live observation: agent leading posts with external source citations even though the rule "Internal links lead, external links mix in later" was already in URL-PATTERNS.md. Root cause: rule was buried inside the `Internal-link variety (SEO)` paragraph — agent read URL-PATTERNS for URL construction, not link order. Meanwhile METHODOLOGY EEAT principle 3 told it to add inline source citations early. The EEAT instruction won.
+
+**Three coordinated edits:**
+
+- **METHODOLOGY EEAT principle 3** — appended carve-out clause: `External source citations come AFTER the first 1-2 internal links — see Link order rule below.` Makes the conflict visible at the source.
+- **METHODOLOGY new `### Link order` subsection** added right after `Link policy (strict)`. Two numbered rules: first 1-2 links must be internal; external citations mix in throughout post afterward, never clustered in one footer block.
+- **URL-PATTERNS line 175** — removed the buried "Internal links lead" sentence + the "Keeps SEO juice on-site" justification. Replaced with a pointer to METHODOLOGY's `Link order` subsection. Single source of truth.
+
+Minion regression audit: clean. Quiz: 10/10 with every trick caught (external-first lead refused, footer-cluster refused, EEAT-justification-to-lead-external refused, universal scope across event/blog/future post types confirmed).
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.53.13] - 2026-05-20
 
 ### METHODOLOGY: dual-write `post_tags` to `post_meta_keywords`
