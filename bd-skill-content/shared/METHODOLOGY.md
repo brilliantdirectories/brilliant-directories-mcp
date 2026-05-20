@@ -195,6 +195,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match (autonomous mode). |
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. Per-type SKILL.md gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. Per-type SKILL.md adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
+| `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
 
 ## Tags
 
@@ -204,6 +205,7 @@ Universal `post_tags` field constraints — applies to ALL post types (single-im
 - **Hard 100-char total cap on the CSV.** BD rejects anything longer. If the assembled CSV exceeds 100 chars, drop the last tag and re-check; repeat until ≤100.
 - **Strategy:** aim for ~6 tags per post — roughly 3 broad/short-tail (general focus like `pilates`, `fitness`, `5k`) + 3 long-tail (specific phrases like `reformer class`, `boston studios`, `classical pilates`). Real long-tails ARE multi-word phrases — keep them short, don't join words with hyphens. Per-type SKILL.md may refine tag emphasis for the type (e.g. blogs may favor topical keywords over location).
 - **Tags live ONLY in the post's `post_tags` field.** Do NOT call `listTags`, `createTag`, or any Tags-resource tool — those manage a separate global tag taxonomy unrelated to per-post `post_tags`.
+- **Also pass the same CSV to `post_meta_keywords`.**
 
 ## Stage 6: Post creation
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.13] - 2026-05-20
+
+### METHODOLOGY: dual-write `post_tags` to `post_meta_keywords`
+
+Agent was leaving `post_meta_keywords` empty. Tag list already computed for `post_tags` — just pass the same CSV value to both fields.
+
+Added to METHODOLOGY universal post-fields table and Tags section.
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.53.12] - 2026-05-20
 
 ### events.md: fix internal-link clustering at end of event posts
