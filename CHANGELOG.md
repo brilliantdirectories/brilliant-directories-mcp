@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.11] - 2026-05-20
+
+### URL-PATTERNS: Pattern 6 — filtered member directory (slug-hierarchy URLs)
+
+Live observation across v6.53.10 runs: agents were linking to filtered member directories using bare `/search_results` even when the post body named a specific category AND verifiable location. "Triathlon coach or swim specialist" → bare `/search_results`. "New York City running coach directory" → `/search?lat=...&location_type=locality` (Pattern 3 query-string shape misapplied to member directory). Both work-as-coded but miss real SEO opportunity, and the second pattern is malformed.
+
+Root cause: URL-PATTERNS.md previously deferred all filtered member-directory URLs to a future `/bd:seo` skill. The corpus rule `Rule: Member search SEO pages` had the slug-hierarchy construction recipe, but the skill content told the agent it was out of scope.
+
+**Brought in scope.** Pattern 6 added as a new dedicated H2 section in URL-PATTERNS.md (universal — applies to every post type). Skill content inlines the construction recipe (slug hierarchy `country/state/city/top/sub`, strict order, contiguous subsets valid) plus the discovery lookups against `listCountries` / `listStates` / `listCities` / `listTopCategories` / `listSubCategories` using server-side keyword filter with single-anchor LIKE.
+
+**Anti-regression measures applied:**
+
+- **No WebPage confusion** — Pattern 6's intro explicitly says "do NOT call `createWebPage`" + "BD's dynamic router resolves these URLs natively." The corpus rule's WebPage-creation logic stays at `/bd:seo` scope.
+- **No fabrication** — explicit "every slug segment MUST come from a list-tool return," fallback chain (Pattern 5 bare → omit) if any lookup returns zero matches.
+- **Pattern 5 hardened** — appended "Takes NO query parameters" clause to Pattern 5's description. Common mistake (`/search_results?category[]=...` or `/search_results?lat=...`) explicitly named and refuted.
+- **Per-run caching** — explicit rule that location triples + category mappings cache once per run, never re-lookup.
+- **Strict order + invalid combinations** — examples of skipped-middle and wrong-order failure modes named.
+
+**Two minion quizzes verified clean.** 27 questions across both quizzes, zero hallucinations, every trick caught (ZIP-level out of scope, `%X%` bidirectional wildcards refused, fabrication-via-zero-match-lookup refused, skipped-middle-segment refused, generic-anchor-prefers-Pattern-5 respected, no-params-on-Pattern-5 enforced). Patterns 1-4 regression audit passed 15/15.
+
+### Bonus: Pexels image fallback budget bumped from 1 retry to 3 searches
+
+Live observation: events with valid Pexels coverage were getting empty image cards because `METHODOLOGY` Stage 5 fallback exhaustion said "re-search with broadened phrasing once more" — agent read as 2 search rounds total. Spartan Race + IRONMAN 70.3 events both omitted post_image despite obvious topic-fit candidates available with one more search.
+
+Bumped to "at least 3 distinct Pexels searches with different angles before omitting `post_image`. Omitting is the last resort." Same topic-fit + dedup quality bar, more retry budget.
+
+**No Worker/npm/spec changes.** Pure skill-content tuning. No `wrangler deploy` required.
+
+**Drift check passes.**
+
 ## [6.53.10] - 2026-05-19
 
 ### Explicit ban on 2-statement title structures

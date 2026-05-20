@@ -154,7 +154,7 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Vary phrasing if results are sparse or irrelevant:** broader/simpler ("5k race" → "group race outdoors"), narrower ("yoga class" → "vinyasa studio mat"), synonyms, adjacent contexts — all still 3 words.
 
-   **Fallback exhaustion:** after gate rejects every candidate, re-search with broadened phrasing once more — then if still nothing fits, omit. Don't loop on perfect.
+   **Fallback exhaustion:** if the first search's candidates all fail (topic-fit or dedup), re-search with broadened phrasing. Run at least 3 distinct Pexels searches with different angles before omitting `post_image`. Omitting is the last resort.
 
    **URL output + liveness probe (mandatory before BD):** drill to individual `/photo/<slug>-<id>/` URLs, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then `WebFetch` that exact URL. `"HTTP 404 Not Found"` response → drop and re-pick from the search results. Image-analysis response (JPEG/PNG/WebP content) → send to BD.
 
