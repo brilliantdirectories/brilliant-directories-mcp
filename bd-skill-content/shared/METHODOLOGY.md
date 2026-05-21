@@ -139,32 +139,13 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Image strategy
 
-Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post_image`.
+Use Pexels for all images. After all 5 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
 
 1. **Pexels** — follow corpus `Rule: Image URLs` exactly. Always send to BD with `auto_image_import=1`.
 
-   **Search construction:**
-   - Query shape: `WebSearch query="site:pexels.com/photo <topic>"`. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation).
-   - **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool). Applies to the first search and all retries.
-   - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (1 word, banned).
-   - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick different words.
+   **Axes — 5 angles, try in order, one search per axis.**
 
-   **Topic-fit gate** (identify up to 3 strong topic-fits):
-   - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
-   - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
-   - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
-   - **If zero strong topic-fits in the current pool: switch axis** (per the axis table).
-
-   **Rejection logging:**
-   - When rejecting a candidate under the gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in your chat response.
-   - One short line per rejection, max.
-   - Place rejection lines under a labeled `**Image selection notes:**` block during the selection step, before the Stage 7 audit summary. The audit summary stays clean.
-
-   **Vary the search AXIS when initial searches saturate.** After 2 same-axis searches hit dedup or topic-fit fail, pivot to a DIFFERENT axis. Each axis taps a different slice of Pexels' library. Synonyms of the same subject return the same 50-100 photos.
-
-   **Each search phrase MUST carry a topical anchor** — a word from the post's vertical that ties the photo to the topic. The anchor is a verb for action verticals (run, stretch, lift, sketch) or a noun for object/concept verticals (button, espresso machine, gavel, recipe). Without an anchor, the axis drifts into pure landscape or pure bystander stock that fails topic-fit.
-
-   Try axes in order. Within an axis, run 2 distinct phrase variations before pivoting to the next axis. Each cell below shows a 2-word and a 3-word example — both lengths are valid at every axis; pick whichever 2-3 word phrase carries the topic without filler.
+   Each search phrase must carry a topical anchor — a vertical-specific word that ties the photo to the topic.
 
    | Axis | Why | Cafe blog: "choosing an espresso machine" | Web design blog: "button color trends" |
    |---|---|---|---|
@@ -174,19 +155,28 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    | 4. Setting + topical marker | Topical location, named | `coffee shop` / `coffee shop bar` | `design studio` / `ui designer desk` |
    | 5. Adjacent activity / item | Related thing, different action | `latte art` / `coffee bean grinder` | `color swatch` / `figma wireframe sketch` |
 
-   **Fallback exhaustion:** at least 3 distinct axes attempted before omitting `post_image`. Omitting is the last resort.
+   **Per-axis loop — repeat for each axis until commit or all 5 axes attempted:**
 
-   **URL output + image verification (mandatory before BD):**
+   **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` using the current axis's phrase per the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
+   - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
+   - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, treat as zero topic-fits → switch to the next axis.
 
-   **Step 1 — Extension filter (before the tool call).** Only consider candidates whose final URL ends in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels `/photo/<slug>-<id>/` page only resolves to `.webp` / `.gif` / `.avif` / anything else, **skip it entirely — do not call the tool**. Move to the next search result.
+   **Step 2 — Topic-fit gate** (identify up to 3 strong topic-fits from the ~10 results):
+   - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
+   - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
+   - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
+   - **If zero strong topic-fits in this pool → switch to the next axis.**
 
-   **Step 2 — Dimension check (batch in parallel).** For the JPG/JPEG/PNG topic-fit survivors (up to 3), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and call `getImageDimensions` on all of them. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Per candidate:
+   **Step 3 — Extension filter (before any tool call).** Only consider candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels page only resolves to `.webp` / `.gif` / `.avif` / anything else, skip it. Move to the next candidate.
 
+   **Step 4 — Dimension check (batch in parallel).** For the surviving JPG/JPEG/PNG topic-fits (up to 3), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and call `getImageDimensions` on all of them. Per candidate:
    - **status=success + `orientation === "landscape"`** → landscape survivor, proceed to dedup.
    - **status=success + portrait OR square** → drop.
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
+   - **If zero landscape survivors → switch to the next axis.**
 
-   **Step 3 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,URL3>`, `property_operator=in`. Response rows include `original_image_url`. Commit the first landscape survivor whose URL is NOT in the response. If all are in the response, switch axis (per the axis table).
+   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,URL3>`, `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
+   - **If all survivors are in the response (all dupes) → switch to the next axis.**
 2. **Omit `post_image`** entirely.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.

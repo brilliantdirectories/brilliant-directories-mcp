@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.15] - 2026-05-21
+
+### Stage 5 image strategy: per-axis loop, one search per axis, 5-axis cap
+
+Live BJJ event test showed the agent burning 9 WebSearches in axis 1 alone before any dimension check. Old rules permitted "2 phrase variations per axis" and "2 same-axis searches before pivot," giving the agent permission to over-search inside a single axis. Agent followed the rules faithfully — the rules were wrong.
+
+Restructured Stage 5 image strategy into a per-axis loop:
+
+- **Axes table moved to top** of the section, defines the 5 angles before the loop invokes them.
+- **Topical-anchor rule** tightened to one surgical sentence ("Each search phrase must carry a topical anchor — a vertical-specific word that ties the photo to the topic."). Cut the verb/noun examples (table demonstrates by example via 20 axis cells) and the "without an anchor, axis drifts..." negation bloat.
+- **Per-axis loop with 5 numbered steps:** Step 1 search construction → Step 2 topic-fit gate → Step 3 extension filter → Step 4 dimension check → Step 5 dedup.
+- **Three exit-to-next-axis conditions:** zero strong topic-fits in pool, zero landscape survivors, all survivors are dupes. Each routes identically to the next axis.
+- **5-axis cap** stated identically in 3 places (intro line, axes header, loop preamble). Worst case: 5 search + 5 dimension + 5 dedup = 15 tool calls → omit `post_image`.
+- **Closed re-search loophole** in Step 1: `/search/` URL fallback used to say "re-pick different words" (allowed in-axis re-search). Now treats it as zero topic-fits → next axis. Eliminates the last remaining in-axis loop path.
+- **Step 1 axis-phrase clarity:** `WebSearch query="site:pexels.com/photo <topic>"` → `<axis phrase>` with named reference "per the **Axes** table" (named anchor, not spatial).
+- Cut redundant `(1 word, banned)` parenthetical in cross-vertical examples line.
+
+Blog/events runbooks: stale `Step 3` reference renumbered to `dedup step` (future-proof against further step renumbering in METHODOLOGY).
+
+All load-bearing directives from the prior version preserved: WebSearch query shape, NOT site:pexels.com/search 403 hint, NOT wide/landscape/horizontal hint, 2-3 words rule, 1-word ban, cross-vertical examples, `/search/` URL detection, topic-fit gate spirit-alignment, wrong-vertical fails, generic-title WebFetch escape, keyword-salad rule, extension filter, dimension matrix (landscape / portrait-or-square / error), `in` CSV batched dedup with commit-first-non-dupe, fallback exhaustion, inline body images intra-post-only dedup scope.
+
+Happy path: 1 axis, 3 tool calls → commit. Worst case: 5 axes, 15 tool calls → omit. Compared to live BJJ test (9 WebSearches in axis 1 alone), this is a hard, provable ceiling.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 5 image strategy restructured.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — stale `Step 3` reference renumbered to `dedup step`.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — same renumbering fix.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.14] - 2026-05-21
 
 ### Topic-fit gate fix + batched in-CSV image dedup
