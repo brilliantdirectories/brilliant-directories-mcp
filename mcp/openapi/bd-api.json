@@ -9565,6 +9565,64 @@
         }
       }
     },
+    "/_synthetic/image_dimensions": {
+      "get": {
+        "operationId": "getImageDimensions",
+        "summary": "Probe an image URL and return its dimensions + orientation.",
+        "description": "Wrapper-native synthetic tool. Range-GETs the first 64KB of an image URL and parses JPG/PNG header bytes to return width, height, format, aspect_ratio, and orientation (landscape | portrait | square). Does NOT proxy to BD. Used by content-creation skills to verify image orientation before committing to a feature-image field (`post_image`, `cover_photo`, `hero_image`). Confirms URL is live AND returns parseable dimensions in one call. JPG and PNG only — WebP/GIF/AVIF return `{ status: \"error\", message: \"unsupported image format...\" }`.\n\n**See also:** **Rule: Image dimensions**, **Rule: Image dedup**.",
+        "tags": [
+          "Design"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uri" },
+            "description": "Bare canonical image URL (e.g. `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`). Must respond with HTTP 200/206 to a Range request for the first 64KB."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dimensions parsed successfully, or error envelope on 404 / non-image / parse-fail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": { "type": "string", "enum": ["success"] },
+                        "message": {
+                          "type": "object",
+                          "properties": {
+                            "width": { "type": "integer" },
+                            "height": { "type": "integer" },
+                            "format": { "type": "string", "enum": ["jpg", "png"] },
+                            "aspect_ratio": { "type": "number" },
+                            "orientation": { "type": "string", "enum": ["landscape", "portrait", "square"] }
+                          },
+                          "required": ["width", "height", "format", "aspect_ratio", "orientation"]
+                        }
+                      },
+                      "required": ["status", "message"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": { "type": "string", "enum": ["error"] },
+                        "message": { "type": "string" }
+                      },
+                      "required": ["status", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/_synthetic/brand_kit": {
       "get": {
         "operationId": "getBrandKit",

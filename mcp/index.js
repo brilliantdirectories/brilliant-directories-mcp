@@ -177,6 +177,43 @@ function normalizeUrl(input) {
   return (input || "").trim().replace(/\/+$/, "");
 }
 
+// MIRROR: parseImageHeader must be byte-identical between Worker (src/index.ts)
+// and npm (mcp/index.js). Supports JPG/JPEG + PNG only.
+function parseImageHeader(buf) {
+  // PNG: 89 50 4E 47, IHDR width uint32 BE at byte 16, height at byte 20
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
+    if (buf.length < 24) throw new Error("PNG header truncated");
+    const dv = new DataView(buf.buffer, buf.byteOffset);
+    return { width: dv.getUint32(16), height: dv.getUint32(20), format: "png" };
+  }
+  // JPEG: FF D8 FF — scan for SOF marker
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) {
+    let i = 2;
+    while (i < buf.length - 9) {
+      if (buf[i] !== 0xFF) { i++; continue; }
+      const marker = buf[i + 1];
+      // Standalone markers (no length field): D0-D9 (RST/SOI/EOI), 01 (TEM), FF (padding)
+      if ((marker >= 0xD0 && marker <= 0xD9) || marker === 0x01 || marker === 0xFF) {
+        i += 2;
+        continue;
+      }
+      // SOF markers: C0-CF except C4 (DHT), C8 (JPG), CC (DAC)
+      if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+        if (i + 9 > buf.length) throw new Error("JPEG SOF truncated");
+        const dv = new DataView(buf.buffer, buf.byteOffset);
+        return { height: dv.getUint16(i + 5), width: dv.getUint16(i + 7), format: "jpg" };
+      }
+      // Other markers: 2-byte length field at i+2 (BE), includes itself
+      if (i + 4 > buf.length) throw new Error("JPEG segment truncated");
+      const len = (buf[i + 2] << 8) | buf[i + 3];
+      if (len < 2) throw new Error("JPEG bad segment length");
+      i += 2 + len;
+    }
+    throw new Error("JPEG SOF marker not found in first 64KB");
+  }
+  throw new Error("unsupported image format (only jpg/png)");
+}
+
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -4600,6 +4637,71 @@ async function main() {
     // whichever layout_group row comes back. We match that behavior: N parallel calls
     // (one per slot in our mapping), each filtered by setting_name only.
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
+    // Synthetic tool: getImageDimensions — wrapper-native, does NOT proxy to BD.
+    // Range-GETs first 64KB of an image URL, parses JPG/PNG header bytes, returns
+    // width/height/format/aspect_ratio/orientation.
+    if (name === "getImageDimensions") {
+      const url = args && typeof args.url === "string" ? args.url : null;
+      if (!url) {
+        return {
+          content: [{ type: "text", text: JSON.stringify({ status: "error", message: "url parameter required" }) }],
+          isError: true,
+        };
+      }
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 5000);
+      try {
+        const response = await fetch(url, {
+          headers: { Range: "bytes=0-65535", "User-Agent": "brilliant-directories-mcp" },
+          redirect: "follow",
+          signal: ctl.signal,
+        });
+        if (!response.ok && response.status !== 206) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ status: "error", message: `bad status code: ${response.status}` }) }],
+            isError: true,
+          };
+        }
+        // Memory guard: well-behaved hosts (Pexels, Unsplash) honor Range and
+        // return 206 with ~64KB. A misbehaving server can ignore Range and ship
+        // the full body. Cap any single response at 1MB so a rogue URL can't
+        // balloon Node memory before parseImageHeader runs.
+        const cl = response.headers.get("content-length");
+        if (cl && Number(cl) > 1_048_576) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ status: "error", message: `response too large: ${cl} bytes (Range ignored by host)` }) }],
+            isError: true,
+          };
+        }
+        const buf = new Uint8Array(await response.arrayBuffer());
+        const { width, height, format } = parseImageHeader(buf);
+        const aspect = width / height;
+        const orientation = width > height ? "landscape" : width < height ? "portrait" : "square";
+        return {
+          content: [{ type: "text", text: JSON.stringify({
+            status: "success",
+            message: {
+              width,
+              height,
+              format,
+              aspect_ratio: Math.round(aspect * 1000) / 1000,
+              orientation,
+            },
+          }, null, 2) }],
+        };
+      } catch (err) {
+        const message = err && err.name === "AbortError"
+          ? "fetch timed out after 5000ms"
+          : (err.message || String(err));
+        return {
+          content: [{ type: "text", text: JSON.stringify({ status: "error", message }) }],
+          isError: true,
+        };
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     if (name === "getBrandKit") {
       const SLOTS_WITH_DEFAULTS = {
         custom_1:   "rgb(255,255,255)",

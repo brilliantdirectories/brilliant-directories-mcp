@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.0] - 2026-05-21
+
+### New tool: `getImageDimensions`
+
+Wrapper-native MCP tool that Range-GETs the first 64KB of any JPG/PNG URL and parses the header bytes to return `{ width, height, format, aspect_ratio, orientation }`. Same interception pattern as `getBrandKit`. Does NOT proxy to BD.
+
+**Used by:** METHODOLOGY Pexels workflow. Replaces the legacy WebFetch liveness probe — `getImageDimensions` confirms the URL is live AND returns orientation in one call. For feature-image slots, agent requires `orientation === "landscape"` (portrait AND square rejected). `aspect_ratio` is the lever for tighter ratio gates when a skill needs them — e.g. "≥ 1.33" for 4:3 or "≥ 2.0" for 2:1 — without any tool change.
+
+**Scope:** JPG and PNG only. WebP/GIF/AVIF return `{ status: "error", message: "unsupported image format..." }` — METHODOLOGY treats that case as "URL is live, skip orientation gate, proceed to dedup" so non-JPG/PNG sources still flow.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — new `getImageDimensions` dispatch in `callTool` + `parseImageHeader` and `fetchImageDimensionsForUrl` helpers. SERVER_INFO bumped 3.8.2 → 3.9.0.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — byte-mirrored `parseImageHeader` helper + inline interception block.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — new `/_synthetic/image_dimensions` path (operationId `getImageDimensions`).
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — new `Rule: Image dimensions` block above `Rule: Image dedup`.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — replaces the URL liveness probe paragraph with the new orientation-gating step.
+
+**Worker deploy required** (new tool surface, SERVER_INFO bump).
+
+**Drift check passes.**
+
 ## [6.53.18] - 2026-05-20
 
 ### METHODOLOGY: topic-fit gate sharpened + URL uniqueness rule added + orientation noise removed
