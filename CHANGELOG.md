@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.1] - 2026-05-21
+
+### Events skill: Songkick + Ticketmaster added to source aggregators
+
+Skill-content patch. `bd-skill-content/content-types/events.md` source-candidates section now lists Songkick (artist/venue pages) and Ticketmaster (public event pages) alongside Eventbrite, Bandsintown, AllEvents.in, Meetup, and Conference Index. Broadens event-discovery coverage for music + concert + ticketed-event verticals without changing any quality gates.
+
+**Also:** rebuilt `bd-skill-content/bd-skill-content.zip` via `scripts/build-skill-zip.js` so the in-repo zip stays in sync with source (release.yml rebuilds and re-attaches on tag push too — this just keeps the committed copy fresh for direct downloads).
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.54.0] - 2026-05-21
 
 ### New tool: `getImageDimensions`

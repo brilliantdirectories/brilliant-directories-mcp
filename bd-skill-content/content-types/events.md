@@ -93,7 +93,7 @@ For METHODOLOGY Stage 2a, brainstorm 5-10 candidates from these categories, tail
 - City government event calendars, county tourism boards, chamber of commerce sites, library/community-center calendars
 - Trade association event pages, industry trade-publication event sections, CE calendars for licensed professions
 - Local university event pages, community college calendars, adult-education schedules
-- Public-page aggregators: Eventbrite public event pages, AllEvents.in, Bandsintown public artist/venue pages, public Meetup group pages, Conference Index
+- Public-page aggregators: Eventbrite public event pages, AllEvents.in, Bandsintown public artist/venue pages, Songkick artist/venue pages, Ticketmaster public event pages, public Meetup group pages, Conference Index
 - Local newspaper event sections, city alt-weeklies, hyperlocal weekend roundups
 
 Tailor by vertical: real estate → MLS open-house listings; fitness → race calendars, gym/yoga schedules; medical/dental → CME calendars, association meetings; music → venue calendars + Bandsintown; food → restaurant association events.
