@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.8] - 2026-05-21
+
+### Image rules: remove spatial cross-refs, address by name
+
+Three "above" spatial cross-references in image-context prose replaced with named references (per the no-spatial-cross-refs rule):
+
+- METHODOLOGY.md line 190: "topic-fit gate above" → "**Topic-fit gate**" (named bolded subsection in same Stage 5 image-strategy block).
+- METHODOLOGY.md line 193: "Pexels workflow above" → "corpus `Rule: Image URLs` Pexels sourcing workflow" (canonical cross-rule reference).
+- mcp-instructions.md `Rule: Image dedup` line 996: "all three `list*` checks above" → "the three storage-location `list*` checks".
+
+Also dropped stale `.webp` mention in `Rule: Image dedup` URL-form bullet (line 997) — canonical Pexels URL is `.jpeg` or `.png`; WebP candidates are skipped pre-tool per `Rule: Image dimensions`.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — 2 spatial-ref fixes.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — 1 spatial-ref fix + 1 stale-format fix.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt so the skill bundle reflects the METHODOLOGY edits.
+
+**No Worker/npm code changes.** Drift check passes.
+
 ## [6.54.7] - 2026-05-21
 
 ### Strip negation bloat from corpus image rules

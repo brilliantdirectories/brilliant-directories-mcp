@@ -187,10 +187,10 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    `aspect_ratio` is the lever for tighter ratio gates when a skill needs them — e.g. "≥ 1.33" for 4:3 or "≥ 2.0" for 2:1 — but the default gate is `orientation === "landscape"` only.
 
-   **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
+   **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.
 
-**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through the Pexels workflow above. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
+**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
 
 ### Voice
 
