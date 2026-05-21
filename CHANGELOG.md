@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.6] - 2026-05-21
+
+### Corpus rules: remove cover_photo from Pexels-feature gate list
+
+v6.54.5 fixed the `cover_photo` field description in `bd-api.json` but the corpus rules in `mcp-instructions.md` still listed `cover_photo` alongside `post_image` / `hero_image` as a Pexels-feature slot requiring strict landscape verification. Two lines updated:
+
+1. **`Rule: Image URLs` orientation-gate bullet** — `cover_photo` removed from the Pexels-strict list; now explicitly named as identity-context (User banner, sourced from subject's own web presence, WebP accepted, landscape preferred not gated).
+2. **`Rule: Image dimensions` two-step usage block** — header rewritten as "Pexels-sourced feature image slots" with `post_image`, `hero_image`, multi-image album photos. Adds explicit "NOT for `cover_photo` / `profile_photo` / `logo`" line so future maintainers don't re-introduce the over-application.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — 2 corpus-rule lines.
+
+**No Worker/npm code changes.** Tool surface unchanged. Drift check passes.
+
 ## [6.54.5] - 2026-05-21
 
 ### Regression fix: cover_photo on User records is identity-context, not Pexels-feature
