@@ -749,13 +749,14 @@ function applyPostLean(body, includeFlags) {
       delete row.data_category;
     }
 
-    // Clicks: strip click array, surface total_clicks.
+    // Clicks: strip click array; surface total_clicks only when nonzero.
+    // Zero is the absence of clicks — agents infer 0 from the field's absence.
     if (!include.clicks) {
       const total =
         row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined
-          ? row.user_clicks_schema.total_clicks
+          ? Number(row.user_clicks_schema.total_clicks)
           : 0;
-      row.total_clicks = total;
+      if (total > 0) row.total_clicks = total;
       delete row.user_clicks_schema;
     }
 

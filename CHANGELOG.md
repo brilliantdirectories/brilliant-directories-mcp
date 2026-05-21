@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.19] - 2026-05-21
+
+### Post lean: drop total_clicks=0 from default response
+
+Every post row in the default lean response carried `total_clicks: 0` — pure filler on sites where the click-tracking addon isn't installed or post traffic is low. Live response sampling on `find-fitness-pros.directoryup.com` showed 100% of probed rows surfaced `total_clicks: 0`.
+
+Surgical fix in `applyPostLean` (both transports): surface `total_clicks` ONLY when the value is > 0. Zero is the absence of clicks — agents infer 0 from the field's absence. Posts with real click counts still surface the number.
+
+Number coercion added (`Number(...)`) since BD sometimes returns the rollup as a string; ensures the `> 0` comparison works whether BD returns `"5"` or `5`.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — `applyPostLean` click handler guards on `> 0`.
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — byte-mirrored.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `include_clicks` parameter description + 4 post operation descriptions updated to document the new behavior.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — Posts paragraph updated.
+
+**Worker deploy required.** Worker SERVER_INFO bumped 3.9.1 → 3.9.2. Drift check passes.
+
 ## [6.55.18] - 2026-05-21
 
 ### Stage 3 dedup: limit=5 + explicit "one query per candidate, no brute-force variants"
