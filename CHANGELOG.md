@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.9] - 2026-05-21
+
+### URL-PATTERNS: fallback for state/country-only events
+
+Minion audit caught a gap: BD's Pattern 3 doesn't accept `country=` or `state=` as query params, but the doc only documented the prohibition — no fallback path. Agents covering regional/touring/country-level events would either fabricate a broken `country=` param or drop the geographic context silently.
+
+Extended the existing "Invent geo params" Don't bullet with the explicit fallback: drop location entirely and use category-only (e.g. `/events?category[]=Live%20Music`), OR rephrase the anchor to a city the agent can pinpoint (the tour's biggest stop).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/URL-PATTERNS.md` — 1 line extended.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.8] - 2026-05-21
 
 ### URL-PATTERNS: location + daterange combo example + ranking bump
