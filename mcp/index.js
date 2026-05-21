@@ -1445,7 +1445,7 @@ function applyMenuLean(body, includeFlags) {
 const MENU_ITEM_LEAN_INCLUDE_FLAGS = ["include_extras", "include_empty_links"];
 const MENU_ITEM_ALWAYS_KEEP = [
   "menu_item_id", "menu_name", "menu_link", "menu_order", "menu_id",
-  "master_id", "menu_title", "menu_display", "revision_timestamp", "tablesExists",
+  "master_id",
 ];
 const MENU_ITEM_READ_TOOLS = new Set(["listMenuItems", "getMenuItem"]);
 

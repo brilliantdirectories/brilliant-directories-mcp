@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.13] - 2026-05-21
+
+### Menu item lean shape: drop tablesExists / menu_display / menu_title / revision_timestamp
+
+Live test surfaced these fields as noise in `listMenuItems` / `getMenuItem` responses:
+
+- `tablesExists` — wrapper-internal diagnostic value, never actionable
+- `menu_display` — `"1"` on essentially every linkable item; if it's not displayed the agent can't link to it anyway
+- `menu_title` — almost always empty string on real sites; opt-in if you need hover-text
+- `revision_timestamp` — internal bookkeeping; agent never sorts or filters on it for menu items
+
+Removed all four from `MENU_ITEM_ALWAYS_KEEP` in both transports + the spec descriptions for `listMenuItems` and `getMenuItem` updated to match. `include_extras=1` still restores them.
+
+`master_id` retained — it's the nesting indicator needed to tell top-level from sub-menu items when constructing links.
+
+Lean keep-list is now `menu_item_id`, `menu_name`, `menu_link`, `menu_order`, `menu_id`, `master_id` — 6 load-bearing fields, every one actionable.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — `MENU_ITEM_ALWAYS_KEEP` trimmed.
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — byte-mirrored.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — both `listMenuItems` + `getMenuItem` descriptions updated.
+
+**Worker deploy required** (Worker hardcodes the keep-list constant — won't pick up via spec auto-refresh).
+
+Drift check passes.
+
 ## [6.55.12] - 2026-05-21
 
 ### DRY: move sequencing rule to METHODOLOGY, single pointer chain
