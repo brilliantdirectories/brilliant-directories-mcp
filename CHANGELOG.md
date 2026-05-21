@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.9] - 2026-05-21
+
+### Runbook alignment: blog + events Step 9 names the image gate explicitly
+
+Both per-content-type runbooks said "via the Pexels workflow" for the image-selection step, which technically pointed at METHODOLOGY Stage 5 but didn't name the three gate checkpoints. Tightened to name them inline:
+
+```
+**Topic-fit gate** → **Step 1 extension filter** (.jpg/.jpeg/.png only) → **Step 2 getImageDimensions orientation gate** (require status: "success" + orientation === "landscape")
+```
+
+Now the runbook reads cleanly on its own AND aligns byte-for-byte with METHODOLOGY's named subsections. No drift across SKILL.md → runbooks → METHODOLOGY → corpus rules.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Step 9 expanded.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — Step 9 expanded.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.54.8] - 2026-05-21
 
 ### Image rules: remove spatial cross-refs, address by name

@@ -29,7 +29,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 
     **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
-9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via the Pexels workflow before drafting body content — locking the feature image first avoids re-doing the post if it fails dedup. Inline body images are opt-in only — see the `Inline body images` section.
+9. **Image selection — FEATURE image only at this step** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via METHODOLOGY's image strategy: **Topic-fit gate** → **Step 1 extension filter** (`.jpg`/`.jpeg`/`.png` only) → **Step 2 `getImageDimensions` orientation gate** (require `status: "success"` + `orientation === "landscape"`). Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
 10. **Image dedup (FEATURE, mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
     - `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`
     - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
