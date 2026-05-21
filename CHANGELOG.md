@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.2] - 2026-05-21
+
+### Axis table: every cell shows 2-word AND 3-word example
+
+v6.55.1 mixed 2-word and 3-word examples but put them at different axes — agents would pattern-match "2-word means object close-ups, 3-word means subject+action" and treat phrase length as a per-axis rule. Wrong inference.
+
+Restructured: every axis row now shows `<2-word> / <3-word>` in BOTH the cafe column AND the web-design column. 20 cells, all `2-word / 3-word` paired. Added intro line: "Each cell below shows a 2-word and a 3-word example — both lengths are valid at every axis; pick whichever 2-3 word phrase carries the topic without filler."
+
+This makes phrase length and axis choice orthogonal in the agent's representation, which is the actual rule.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — axis table restructured + intro line added.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.1] - 2026-05-21
 
 ### Axis table: mixed 2-word and 3-word examples

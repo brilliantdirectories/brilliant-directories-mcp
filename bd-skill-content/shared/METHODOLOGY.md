@@ -163,15 +163,15 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Each search phrase MUST carry a topical anchor** — a word from the post's vertical that ties the photo to the topic. The anchor is a verb for action verticals (run, stretch, lift, sketch) or a noun for object/concept verticals (button, espresso machine, gavel, recipe). Without an anchor, the axis drifts into pure landscape or pure bystander stock that fails topic-fit.
 
-   Try axes in order. Within an axis, run 2 distinct phrase variations before pivoting to the next axis.
+   Try axes in order. Within an axis, run 2 distinct phrase variations before pivoting to the next axis. Each cell below shows a 2-word and a 3-word example — both lengths are valid at every axis; pick whichever 2-3 word phrase carries the topic without filler.
 
    | Axis | Why | Cafe blog: "choosing an espresso machine" | Web design blog: "button color trends" |
    |---|---|---|---|
-   | 1. Subject + action/state (default) | Direct topic match showing the thing in use or in its defining state | `barista pouring coffee` / `barista using machine` | `colorful button design` / `modern ui buttons` |
-   | 2. People + adjacent action | Same audience, related verb | `barista cleaning machine` / `barista weighing beans` | `designer sketching wireframe` / `designer choosing colors` |
-   | 3. Detail / object close-up | Topical object, no people | `portafilter shot` / `espresso pour` | `button mockup` / `interface element` |
-   | 4. Setting + topical marker | Topical location, named | `coffee shop bar` / `barista station setup` | `design studio` / `web design studio` |
-   | 5. Adjacent activity / item | Related thing, different action | `bean grinder` / `latte art` | `wireframe sketch` / `color swatch` |
+   | 1. Subject + action/state (default) | Direct topic match showing the thing in use or in its defining state | `barista pouring` / `barista pouring coffee` | `button design` / `colorful button design` |
+   | 2. People + adjacent action | Same audience, related verb | `barista cleaning` / `barista cleaning machine` | `designer sketching` / `designer sketching wireframe` |
+   | 3. Detail / object close-up | Topical object, no people | `portafilter shot` / `espresso shot pour` | `button mockup` / `colorful interface element` |
+   | 4. Setting + topical marker | Topical location, named | `coffee shop` / `coffee shop bar` | `design studio` / `web design studio` |
+   | 5. Adjacent activity / item | Related thing, different action | `latte art` / `coffee bean grinder` | `color swatch` / `figma wireframe sketch` |
 
    **Fallback exhaustion:** at least 3 distinct axes attempted before omitting `post_image`. Omitting is the last resort.
 
