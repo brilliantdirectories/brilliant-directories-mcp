@@ -993,7 +993,7 @@ For inline body images and other non-feature slots, orientation is informational
 
 ### Rule: Image dedup
 
-**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`), dedup the URL against the matching storage table AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to cross-table dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
+**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`), dedup the URL against the matching storage table AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to site-wide dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
 
 - **Match the dedup `list*` to the write target.** One call, `limit=1` — `total > 0` means dupe.
   - `post_image` on `createSingleImagePost` / `updateSingleImagePost` → `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator=eq limit=1`.

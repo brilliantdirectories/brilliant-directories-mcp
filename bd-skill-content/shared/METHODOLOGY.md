@@ -185,10 +185,10 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    - **status=success + portrait OR square** → drop, pick next from the same search pool.
    - **status=error** (404, timeout, parse fail, "unsupported image format" — any reason) → drop, pick next. No exceptions.
 
-   **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
+   **Dedup before committing:** run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.
 
-**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
+**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
 
 ### Voice
 

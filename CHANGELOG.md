@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.10] - 2026-05-21
+
+### Image dedup: purge stale "three list-tool calls" references that overrode the v6.55.5 single-call protocol
+
+Live test showed the agent doing the new single-call dedup at runbook step 10 (correct per v6.55.5) — then **immediately self-correcting** to run the OLD three calls, citing "the methodology requires three image dedup list-tool calls (cross-table)." Tracked the lying ghost: 5 files still had stale "three list-tool calls" / "cross-table dedup" language that survived the v6.55.5 + v6.55.6 + v6.55.7 cleanups.
+
+Five files purged:
+
+- `SKILL.md` line 44 — "its three list-tool calls" → "its `list*` call"
+- `METHODOLOGY.md` line 188 — "all three list-tool calls must appear" → "one `list*` call (matching the write tool) must appear"
+- `METHODOLOGY.md` line 191 — "cross-table dedup" → "corpus `Rule: Image dedup`"
+- `mcp-instructions.md` corpus `Rule: Image dedup` line 996 — "NOT subject to cross-table dedup" → "NOT subject to site-wide dedup"
+- `blog.md` line 233 — "NO cross-table site-wide dedup" → "NO site-wide dedup"
+
+Net effect: every place that mentions dedup now says ONE call, scoped by the write-tool-to-list-tool pairing. No 3-call protocol survives anywhere in the bundle.
+
+Also reverts the v6.55.9 country/state-only-events fallback paragraph (per user direction — over-prescription, not needed).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/SKILL.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/URL-PATTERNS.md` — v6.55.9 country fallback reverted
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — corpus Rule: Image dedup
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.9] - 2026-05-21
 
 ### URL-PATTERNS: fallback for state/country-only events

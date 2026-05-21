@@ -230,7 +230,7 @@ When opted in: 1 inline body image per 300-500 words (excluding the feature imag
 **Inline body image dedup (intra-post only):**
 - No URL repeats within the same `post_content`.
 - No body URL equals the post's own `post_image` (feature) URL.
-- NO cross-table site-wide dedup on inline body URLs.
+- NO site-wide dedup on inline body URLs.
 
 Each inline image is sourced via the Pexels workflow (corpus `Rule: Image URLs`). Vary the search topic per image so candidates differ naturally.
 
