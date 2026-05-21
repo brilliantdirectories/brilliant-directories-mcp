@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.4] - 2026-05-21
+
+### Contract-attorney sweep: feature-image field descriptions now match Rule: Image dimensions
+
+Cumulative-state audit (adversarial cross-document review) found 13 feature-image-slot field descriptions in `bd-api.json` still listing `.webp` as an acceptable extension and pointing at a stale Pexels search recipe (`?orientation=landscape`) the corpus has documented as unreliable. The agent reads field descriptions directly when constructing tool calls, so these were silently licensing WebP commits to `post_image` / `cover_photo` / `hero_image` / multi-image album photos — bypassing the v6.54.2 extension filter.
+
+Two surgical substring replacements (applied across all 13 descriptions):
+
+1. **Drop `.webp` from feature-image format list.** Was: `must end in .jpg/.jpeg/.png/.webp`. Now: `must end in .jpg/.jpeg/.png (WebP/GIF/AVIF skipped pre-tool per the same rule)`.
+2. **Replace stale Pexels recipe with `getImageDimensions` pointer.** Was: `source via https://www.pexels.com/search/<term>/?orientation=landscape`. Now: `verify orientation via getImageDimensions per Rule: Image dimensions before commit`.
+
+Identity-confirming field descriptions (`profile_photo`, `logo`) intentionally LEFT with `.webp` — no orientation gate applies, BD's import accepts WebP server-side, and Pexels stock is forbidden for these fields per **Rule: Identity-confirming fields**, so no conflict with the dimensions gate.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — 13 field descriptions across createUser / updateUser (cover_photo only) / createSingleImagePost / updateSingleImagePost / createMultiImagePost / updateMultiImagePost / createMultiImagePostPhoto / updateMultiImagePostPhoto / createWebPage / updateWebPage updated via `replace_all`.
+
+**No Worker/npm code changes. No skill content changes.** Tool surface unchanged. Drift check passes. Worker auto-refreshes spec within 5 min of GitHub push (SPEC_CACHE_TTL_MS).
+
 ## [6.54.3] - 2026-05-21
 
 ### Corpus consistency sweep: align Rule: Image sourcing + tool description with v6.54.0-.2 gate
