@@ -21,7 +21,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 6 quality gates. Land N viable candidates BEFORE any dedup check.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for events-specific match criteria.
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
-8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
+8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Image dedup.** Per METHODOLOGY Stage 5 dedup step. For events: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
 11. **Content manufacture.** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
@@ -151,7 +151,6 @@ Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` (cached
 Authorization:
 - Interactive grant ("yes, create new event categories") → skill respects for the run.
 - User-specified default category in their request → every event in the run goes to that category.
-- Default: best-existing match at ≥70% confidence, or SKIP.
 
 ---
 

@@ -20,8 +20,8 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Topic resolution.** Run the `Topic resolution` section.
 6. **Source research per topic** (METHODOLOGY Stage 2). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
-7. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Blog match criteria: title-similarity AND topic-angle-overlap (semantic, not string-exact). Date does not factor (blogs are evergreen).
-8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
+7. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
+8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
 9. **Image selection — FEATURE image only at this step.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
 10. **Image dedup (FEATURE).** Per METHODOLOGY Stage 5 dedup step. For blog: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
 11. **Content manufacture.** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
@@ -132,8 +132,6 @@ Per METHODOLOGY Stage 3. Blog-specific match criteria:
 - Topic angle: semantic overlap on the core thesis/angle, not just shared keywords.
 - Date: NOT a dedup factor (blogs are evergreen).
 
-If a published blog post on the site already covers the same angle, SKIP. Never auto-edit existing posts.
-
 ---
 
 ## Category routing (Stage 8 of runbook)
@@ -143,7 +141,6 @@ Per METHODOLOGY Stage 4. Blogs use the post type's `feature_categories` (cached 
 Authorization:
 - Interactive grant ("yes, create new blog categories") → skill respects for the run.
 - User-specified default category in their request → every post in the run goes to that category.
-- Default: best-existing match at ≥70% confidence, or SKIP.
 
 ---
 

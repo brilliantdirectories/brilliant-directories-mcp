@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.21] - 2026-05-22
+
+### Stage 7 + Stage 8 runbook consistency: thin pointer + dedicated section pattern
+
+Tightens Dedup (Stage 7) and Category routing (Stage 8) to follow the same shape across both content-type files. Surgical DRY cleanup — zero behavior change, every load-bearing rule preserved.
+
+**Pattern established for both Stage 7 + Stage 8:**
+
+- Runbook step → thin pointer (`Run METHODOLOGY 'Stage X: <Name>'. Run the '<Name>' section for <type>-specific <thing>.`)
+- Dedicated `## <Name>` section → owns ONLY the per-type bits (match criteria, authorization branches)
+- METHODOLOGY → owns the universal rule
+
+**blog.md changes:**
+
+- Step 7 (Duplicate detection): inline match criteria removed; collapsed to thin pointer matching events.md step 6 shape.
+- `## Dedup` section: cut redundant "If a published blog post on the site already covers the same angle, SKIP. Never auto-edit existing posts." line (METHODOLOGY Stage 3 owns this).
+- Step 8 (Category routing): inline ≥70% rule removed; collapsed to thin pointer.
+- `## Category routing` section: cut redundant "Default: best-existing match at ≥70% confidence, or SKIP" bullet (METHODOLOGY Stage 4 owns this). Kept the two genuinely blog-specific authorization branches (interactive grant, user-specified default category).
+
+**events.md changes:**
+
+- Step 8 (Category routing): same collapse as blog — thin pointer.
+- `## Category routing` section: cut same redundant ≥70% bullet. Kept events-specific authorization branches.
+
+**Behavioral effect:** zero. Agent still gets all rules — ≥70% confidence + SKIP-low-confidence from METHODOLOGY Stage 4, interactive grant + user-default-category from per-type Category routing section. Just deduplicated.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Stage 7 + Stage 8 thin-pointer pattern.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — Stage 8 thin-pointer pattern (Stage 6 dedup already done in v6.55.20).
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.20] - 2026-05-22
 
 ### Universal patterns extracted: Author resolution, Candidate pool discipline, Stage 3 Duplicate detection consolidated
