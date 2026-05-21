@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.4] - 2026-05-21
+
+### Axis table: variation pairs now yield genuinely different Pexels pools
+
+Three cells had pairs where the 2-word and 3-word variants shared a verb or noun, so they returned overlapping Pexels pools — running them as "2 distinct phrase variations" was wasted axis budget.
+
+| Axis × column | Was | Now |
+|---|---|---|
+| 2 / cafe | `barista cleaning` / `barista cleaning machine` | `barista cleaning` / `barista weighing beans` |
+| 2 / web design | `designer sketching` / `designer sketching wireframe` | `designer sketching` / `designer choosing colors` |
+| 4 / web design | `design studio` / `web design studio` | `design studio` / `ui designer desk` |
+
+Each pair now has a different verb (axis 2) or a different setting noun (axis 4) — Pexels returns disjoint result pools, so running both as variations actually probes different slices of the library.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — 3 cells updated.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.3] - 2026-05-21
 
 ### Axis 1 alignment: keyword combos match axis focus
