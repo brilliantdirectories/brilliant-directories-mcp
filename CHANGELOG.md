@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.6] - 2026-05-21
+
+### Corpus: remove skill-runbook leakage from Rule: Image dedup
+
+v6.55.5's rewrite of `Rule: Image dedup` referenced "data_type cached in Stage 1" — Stage 1 is a skill-runbook concept, doesn't exist for non-skill agents calling the MCP directly. Reframed the rule to pair dedup `list*` calls to the write tool, which any agent can map regardless of whether they're inside a skill.
+
+- `post_image` on `createSingleImagePost` / `updateSingleImagePost` → `listSingleImagePosts ...`
+- `original_image_url` on `createMultiImagePost` CSV / `createMultiImagePostPhoto` / `updateMultiImagePostPhoto` → `listMultiImagePostPhotos ...`
+
+Also folded the redundant "Result reading" bullet into the lead bullet (`total > 0` means dupe — was stated twice).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image dedup` lead bullets rewritten.
+
+**No Worker/npm/spec code changes. No skill content changes.** Drift check passes.
+
 ## [6.55.5] - 2026-05-21
 
 ### Image dedup: 3 calls → 1 call, branched by cached data_type
