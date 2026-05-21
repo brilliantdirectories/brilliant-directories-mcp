@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.5] - 2026-05-21
+
+### Regression fix: cover_photo on User records is identity-context, not Pexels-feature
+
+v6.54.4 over-corrected by sweeping ALL `cover_photo` field descriptions (including the one on `createUser`/`updateUser`) into the Pexels-feature JPG/PNG-only rule. That was wrong. `cover_photo` on a User record is sourced from the subject's own web presence (brand site, social header), NOT Pexels stock — the format constraint and the strict landscape gate don't apply.
+
+Fixed: `cover_photo` description on `createUser` / `updateUser` reverted to identity-context language:
+- Allows `.jpg` / `.jpeg` / `.png` / `.webp` (matches `profile_photo` and `logo`).
+- Landscape PREFERRED (it's a banner) but not strictly gated — the URL source is the subject's brand assets, agent doesn't run `getImageDimensions` on identity images.
+- Cross-references **Rule: Identity-confirming fields** for the sourcing ladder.
+
+`post_image` / `original_image_url` / `hero_image` / multi-image album photos (all Pexels-feature slots) remain on the v6.54.4 JPG/PNG-only + `getImageDimensions` gate — unchanged.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — 2 `cover_photo` descriptions (createUser + updateUser) rewritten with identity-context text.
+
+**No Worker/npm code changes.** Tool surface unchanged. Drift check passes.
+
 ## [6.54.4] - 2026-05-21
 
 ### Contract-attorney sweep: feature-image field descriptions now match Rule: Image dimensions

@@ -1908,7 +1908,7 @@
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "Cover photo URL. **LANDSCAPE only — verify orientation via `getImageDimensions` per **Rule: Image dimensions** before commit; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png` (WebP/GIF/AVIF skipped pre-tool per the same rule) — see **Rule: Image URLs**.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Cover photo URL (user/profile banner). Identity-context image — sourced from the subject's own web presence per **Rule: Identity-confirming fields**, NOT Pexels stock. **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Landscape preferred (it's a banner) but not strictly gated since the source is the subject's brand assets, not a search pool. Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
@@ -2216,7 +2216,7 @@
                   },
                   "cover_photo": {
                     "type": "string",
-                    "description": "Cover photo URL. **LANDSCAPE only — verify orientation via `getImageDimensions` per **Rule: Image dimensions** before commit; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png` (WebP/GIF/AVIF skipped pre-tool per the same rule) — see **Rule: Image URLs**.** Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
+                    "description": "Cover photo URL (user/profile banner). Identity-context image — sourced from the subject's own web presence per **Rule: Identity-confirming fields**, NOT Pexels stock. **Bare URL only — no `?query`, must end in `.jpg`/`.jpeg`/`.png`/`.webp`.** Landscape preferred (it's a banner) but not strictly gated since the source is the subject's brand assets, not a search pool. Query strings get baked into imported filenames and 404. Pair with `auto_image_import=1` to fetch externals into site storage."
                   },
                   "auto_image_import": {
                     "type": "string",
