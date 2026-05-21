@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.17] - 2026-05-21
+
+### Post lean: drop author summary + tablesExists from default response
+
+Live event-creation run showed `listSingleImagePosts` rows at ~1,150 bytes each — fat enough that a 50-row probe blew 62KB and exceeded the agent's token budget. Two pure-noise fields drove most of the bloat: the wrapper-injected 10-field `author` summary (~350 bytes/row) and the wrapper-internal `tablesExists: true` diagnostic (~22 bytes/row).
+
+Two surgical changes, posts only — no new flags, no convention churn:
+
+- **`author` summary dropped from default.** Previously the wrapper auto-injected a curated 10-field author object on every post read. Agents needing author detail use the existing `include_author_full=1` flag (returns the full BD `user` nested object) or call `getUser(user_id)` directly. Verified zero skill-file dependencies on `author` on post rows.
+- **`tablesExists` stripped always.** Wrapper-internal diagnostic, never actionable. Precedent: same field already stripped on form-field reads (form lean shaper).
+
+Net savings: ~370 bytes per row (~32%). Same 50-row probe now lands around ~40KB, well under the token ceiling.
+
+`AUTHOR_SUMMARY_FIELDS` constant removed from both npm and Worker (no longer referenced).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — `POST_LEAN_ALWAYS_KEEP` drops `author` and `tablesExists`; `applyPostLean` drops `user` nested without summary injection; per-row `delete row.tablesExists`; `AUTHOR_SUMMARY_FIELDS` constant + comment removed.
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — byte-mirrored.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `listSingleImagePosts`, `getSingleImagePost`, `listMultiImagePosts`, `getMultiImagePost` descriptions drop the `author` summary mention; `include_author_full` parameter description reworded.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — Posts lean shape paragraph updated.
+
+**Worker deploy required.** Worker SERVER_INFO bumped 3.9.0 → 3.9.1. Drift check passes.
+
 ## [6.55.16] - 2026-05-21
 
 ### Dropped-candidate pivot rule: restart Stage 2, never survey the site

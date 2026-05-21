@@ -72,8 +72,6 @@
  *     - WEB_PAGE_CODE_BUNDLE, WEB_PAGE_LEAN_INCLUDE_FLAGS
  *     - PLAN_ALWAYS_KEEP, PLAN_CONFIG_FIELDS, PLAN_DISPLAY_FLAG_FIELDS,
  *       PLAN_LEAN_INCLUDE_FLAGS
- *     - AUTHOR_SUMMARY_FIELDS — fields the author-summary injection returns
- *       on post reads; fewer fields = fewer follow-up getUser round-trips.
  *     - SLOTS_WITH_DEFAULTS (inside getBrandKit handler) — 20 custom_N slots
  *       + default values; a fourth hidden mirror the drift-check script does
  *       NOT currently validate. If BD adds a new custom_N slot for a brand
@@ -688,11 +686,10 @@ const POST_LEAN_ALWAYS_KEEP = [
   // Multi-image post fields (keep when present)
   "group_id", "group_name", "group_filename", "group_status",
   // Wrapper-shaped fields (added by shaper itself, must survive)
-  "author", "total_clicks", "total_photos", "cover_photo_url", "cover_thumbnail_url",
+  "total_clicks", "total_photos", "cover_photo_url", "cover_thumbnail_url",
   "post_content", "group_desc",
   "post_meta_title", "post_meta_description", "post_meta_keywords",
   "user", "user_clicks_schema", "users_portfolio",
-  "tablesExists",
 ];
 
 // Promoted from nested data_category. data_id + data_type are already
@@ -718,33 +715,6 @@ const POST_LEAN_SEO_BUNDLE = [
 // Single: post_content. Multi: group_desc.
 const POST_HTML_BODY_FIELDS = ["post_content", "group_desc"];
 
-// Fields returned in the inlined `_author` object on post reads (when
-// include_author=1). Goal: give the agent enough to display an author card
-// (name, company, contact, avatar, plan, active-status) without a follow-up
-// getUser round-trip. Kept deliberately minimal — anything beyond these 10
-// fields is available via an explicit getUser call.
-//
-// Rationale per field:
-//   user_id             — primary key for any follow-up user ops
-//   first_name/last_name — display name
-//   company             — optional company line on author cards
-//   email/phone_number  — contact shown on paid-tier directories
-//   filename/image_main_file — avatar (BD serves two size variants)
-//   subscription_id     — to badge the author's membership tier
-//   active              — to suppress cards for deactivated authors
-const AUTHOR_SUMMARY_FIELDS = [
-  "user_id",
-  "first_name",
-  "last_name",
-  "company",
-  "email",
-  "phone_number",
-  "filename",
-  "image_main_file",
-  "subscription_id",
-  "active",
-];
-
 function applyPostLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const include = {
@@ -759,21 +729,11 @@ function applyPostLean(body, includeFlags) {
     if (!row || typeof row !== "object") return row;
     stripKeys(row, POST_LEAN_ALWAYS_STRIP);
 
-    // Author: replace full `user` nested object with a curated summary under `author`.
-    // include_author_full=1 preserves the original `user` key untouched.
-    if (row.user && typeof row.user === "object") {
-      if (include.author_full) {
-        // Keep original `user` as-is. No summary needed.
-      } else {
-        const author = {};
-        for (const k of AUTHOR_SUMMARY_FIELDS) {
-          if (k in row.user) author[k] = row.user[k];
-        }
-        // If BD didn't include image_main_file on the nested user (varies),
-        // leave it as undefined - agent can do a getUser if they need it.
-        row.author = author;
-        delete row.user;
-      }
+    // Author: drop the BD-native `user` nested object by default.
+    // include_author_full=1 preserves the original `user` key untouched for
+    // agents that need author detail inline; otherwise call getUser(user_id).
+    if (row.user && typeof row.user === "object" && !include.author_full) {
+      delete row.user;
     }
 
     // Post-type: promote 4 identity/routing fields to top level, then drop the full
@@ -801,6 +761,9 @@ function applyPostLean(body, includeFlags) {
 
     // list_service: platform-inconsistent, almost always `false`. Strip always.
     delete row.list_service;
+
+    // tablesExists: wrapper-internal diagnostic. Strip always on post reads.
+    delete row.tablesExists;
 
     // Post content HTML body - opt-in. Field name differs: Single=post_content, Multi=group_desc.
     if (!include.content) stripKeys(row, POST_HTML_BODY_FIELDS);

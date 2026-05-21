@@ -582,11 +582,11 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 - `include_seo_hidden=1` - SEO meta bundle
 - `include_about=1` - `about_me` HTML bio
 
-**Posts** (`listSingleImagePosts` / `getSingleImagePost` / `listMultiImagePosts` / `getMultiImagePost`, ~1.5-2KB lean row): core columns + `author: {...}` 10-field summary (replaces full `user` nested object) + `total_clicks` + (Multi only) `cover_photo_url` / `cover_thumbnail_url` / `total_photos`. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call `getPostType` with `data_id` if you need it. Flags:
+**Posts** (`listSingleImagePosts` / `getSingleImagePost` / `listMultiImagePosts` / `getMultiImagePost`): core columns + `total_clicks` + (Multi only) `cover_photo_url` / `cover_thumbnail_url` / `total_photos`. Post rows always include `data_id`, `data_type`, `system_name`, `data_name`, `data_filename`, `form_name` for post-type routing. Author detail omitted by default — call `getUser(user_id)` when needed. Full post-type config (sidebars, code fields, search modules, h1/h2, timestamps) is NOT returned on post reads - call `getPostType` with `data_id` if you need it. Flags:
 
 - `include_content=1` - HTML body (`post_content` on Single, `group_desc` on Multi)
 - `include_post_seo=1` - `post_meta_title` / `post_meta_description` / `post_meta_keywords` (Single only)
-- `include_author_full=1` - restores full `user` nested object (password, token, all fields); replaces curated `author` summary
+- `include_author_full=1` - restores full `user` nested object (password, token, all fields)
 - `include_clicks=1` - click history array
 - `include_photos=1` - full `users_portfolio` photo array (Multi only; Single has single `post_image` field always kept)
 
