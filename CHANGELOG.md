@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.18] - 2026-05-21
+
+### Stage 3 dedup: limit=5 + explicit "one query per candidate, no brute-force variants"
+
+Live run on a personal-trainer blog candidate showed the agent firing 4 separate `listSingleImagePosts ... LIKE` queries on a single candidate (`How Much Does a Personal%`, `Personal Trainer Cost%`, `%Personal Trainer Cost`, `How Much%`) — including a bidirectional `%X` reverse-anchor that the existing rule already bans. Brute-forcing variants instead of picking the right 3 distinctive words once.
+
+Two surgical edits to METHODOLOGY Stage 3:
+
+- **`limit=10` → `limit=5`**. The dedup query returns 0-1 matching rows in normal use; 5 is plenty of headroom and shrinks the worst-case response further.
+- **Explicit "ONE query per candidate, no brute-force variants"** directive added next to the query block, naming the exact failure mode (`How Much%`, `Personal Trainer Cost%`, `%Personal Trainer Cost` style probes) so the agent reads the ban inline with the rule.
+
+The "pick 3 distinctive words once" rule already existed at line 76, but the agent treated dedup as a search-and-refine loop. New directive forces single-query discipline at the rule location.
+
+Also folded in: Worker doc-block prose at `brilliant-directories-mcp-hosted/src/index.ts` lines 1334-1343 was stale (still described the old `author-summary` behavior from pre-v6.55.17). Rewritten to mirror npm's accurate description. Comment-only — Worker SERVER_INFO stays at 3.9.1 per the no-bump-on-comments policy.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 3 limit + no-brute-force-variants directive.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — Worker doc-block prose mirrored from npm.
+
+No npm/spec code changes. Drift check passes.
+
 ## [6.55.17] - 2026-05-21
 
 ### Post lean: drop author summary + tablesExists from default response
