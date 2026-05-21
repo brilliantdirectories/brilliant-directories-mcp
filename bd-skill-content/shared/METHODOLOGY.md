@@ -175,12 +175,17 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Fallback exhaustion:** at least 3 distinct axes attempted before omitting `post_image`. Omitting is the last resort.
 
-   **URL output + image verification (mandatory before BD):** drill to individual `/photo/<slug>-<id>/` URLs, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then call `getImageDimensions url=<that exact URL>`. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`.
+   **URL output + image verification (mandatory before BD):**
 
-   - **status=error with "unsupported image format" message** (WebP, GIF, etc.): the URL is live but the parser doesn't cover this format. Accept the URL, skip orientation gate, proceed to dedup.
-   - **status=error** (other reasons — 404, parse fail, timeout): drop the candidate, pick the next from the same search result pool.
-   - **For feature-image slots** (`post_image`, `cover_photo`, `hero_image`): require `orientation === "landscape"`. Portrait OR square → drop, pick next. (`aspect_ratio` in the response is the lever for tighter ratio gates — e.g. "≥ 1.33" for 4:3 or "≥ 2.0" for 2:1 — but the default gate is `orientation === "landscape"` only.)
-   - Proceed to dedup when orientation passes.
+   **Step 1 — Extension filter (before the tool call).** Only consider candidates whose final URL ends in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels `/photo/<slug>-<id>/` page only resolves to `.webp` / `.gif` / `.avif` / anything else, **skip it entirely — do not call the tool**. The skill commits to `post_image` as a hotlink; downstream rendering + dedup compare exact URLs, and unsupported extensions slip past BD's import filters and render broken. Move to the next search result.
+
+   **Step 2 — Dimension check (mandatory).** For the surviving JPG/JPEG/PNG candidates, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then call `getImageDimensions url=<that exact URL>`. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Decision:
+
+   - **status=success + `orientation === "landscape"`** → pass, proceed to dedup.
+   - **status=success + portrait OR square** → drop, pick next from the same search pool.
+   - **status=error** (404, timeout, parse fail, "unsupported image format" — any reason) → drop, pick next. No exceptions.
+
+   `aspect_ratio` is the lever for tighter ratio gates when a skill needs them — e.g. "≥ 1.33" for 4:3 or "≥ 2.0" for 2:1 — but the default gate is `orientation === "landscape"` only.
 
    **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.

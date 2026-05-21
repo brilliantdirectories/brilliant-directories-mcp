@@ -969,11 +969,16 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dimensions
 
-**Wrapper-native tool: `getImageDimensions url=<image URL>`.** Range-GETs the first 64KB of any JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Returns `{ status: "error", message: <reason> }` on 404, non-image content, or parse failure.
+**Wrapper-native tool: `getImageDimensions url=<image URL>`.** Range-GETs the first 64KB of any JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Returns `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format.
 
-**How to use.** For feature image slots, require `orientation === "landscape"` — reject portrait AND square. `aspect_ratio` (e.g. 1.5 for 3:2, 1.78 for 16:9, 0.667 for portrait) is the lever for tighter ratio gates when a skill needs them (e.g. "≥ 1.33" for 4:3, "≥ 2.0" for 2:1). For inline body images and other slots, orientation is informational only.
+**Two-step usage for feature image slots** (`post_image`, `cover_photo`, `hero_image`, multi-image album photos):
 
-**Scope.** JPG and PNG only — what Pexels and most stock sources serve. WebP/GIF/AVIF return `{ status: "error", message: "unsupported image format..." }`; drop the candidate and pick another.
+1. **Extension filter — before the tool call.** Only consider candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive). Skip `.webp` / `.gif` / `.avif` / anything else outright — don't call the tool. BD's import + downstream rendering only handle JPG/PNG reliably; unsupported extensions break.
+2. **Dimension check — call the tool.** Require `status === "success"` AND `orientation === "landscape"`. Any other outcome — portrait, square, OR any error (404, timeout, parse fail, "unsupported image format") — means drop the candidate and pick another. No exceptions.
+
+`aspect_ratio` (e.g. 1.5 for 3:2, 1.78 for 16:9, 0.667 for portrait) is the lever for tighter ratio gates when a skill needs them (e.g. "≥ 1.33" for 4:3, "≥ 2.0" for 2:1).
+
+For inline body images and other non-feature slots, orientation is informational only.
 
 **See also:** **Rule: Image dedup** (always runs AFTER orientation passes).
 

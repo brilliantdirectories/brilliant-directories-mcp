@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.2] - 2026-05-21
+
+### Image-orientation gate: tightened to JPG/PNG extension whitelist + drop-on-any-error
+
+Hardens the v6.54.0 image-orientation workflow. Two changes:
+
+1. **Extension whitelist BEFORE the tool call.** Agent now skips any candidate URL that doesn't end in `.jpg` / `.jpeg` / `.png` (case-insensitive). WebP / GIF / AVIF / anything else → drop without probing. BD's import + downstream rendering only handle JPG/PNG reliably; this stops unsupported extensions from sneaking into `post_image`.
+2. **No more "accept anyway" escape hatch.** Removed the bullet that said "status=error with 'unsupported image format' → accept the URL, skip orientation gate, proceed to dedup." Any `status: "error"` outcome (404, timeout, parse fail, unsupported format) is now a drop, period. Closes a hole where a non-JPG/PNG response could slip through and break rendering downstream.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — rewrote the "URL output + image verification" step as Step 1 (extension filter) + Step 2 (dimension check, drop on any non-landscape-success).
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image dimensions` rewritten with the two-step usage block; removed the "drop the candidate and pick another" line that paired with the now-deleted "accept anyway" METHODOLOGY bullet.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt via `scripts/build-skill-zip.js`.
+
+**No Worker/npm code changes.** Tool surface unchanged. Drift check passes.
+
 ## [6.54.1] - 2026-05-21
 
 ### Events skill: Songkick + Ticketmaster added to source aggregators
