@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.20] - 2026-05-22
+
+### Universal patterns extracted: Author resolution, Candidate pool discipline, Stage 3 Duplicate detection consolidated
+
+Major skill-content restructure to consolidate universal mechanics into METHODOLOGY and collapse per-type runbooks to thin references. Closes the Bryant Park anchoring bug (10/10 fitness event runs picking the same famous event), tightens conflict points the walkthrough+quiz minions surfaced, and sets up clean reuse for future content types (jobs, properties).
+
+**METHODOLOGY changes:**
+
+- **NEW `### Author resolution (universal pattern)` section** — single canonical algorithm for resolving `user_id` across every content type. Five-step chain: pre-specified → interactive ask → autonomous copy-most-recent-of-type → subscription-plan permission lookup → `user_id=0` final fallback. Live-tested against both blog and events `data_id`s.
+- **NEW `### Candidate pool discipline (universal pattern)` section** — number candidates 1-N, walk on failure, regenerate pool 2 distinctly different from pool 1 if all fail, exit after pool 2. Explicit failure modes listed (dedup hit, source-research can't substantiate, required-field gate miss).
+- **Stage 3 Duplicate detection rewritten** — owns three-query pattern universally (title-prefix + topic-keyword starts-with + topic-keyword ends-with) with "How to Pick / How to Choose Personal Trainer" worked example, distinctive-3-words definition + "The 5th Annual Austin Tech Summit" example, stealth-near-duplicate warning ("Don't repaint same topic with a tweaked title"), unified `limit=5`. Per-type SKILL.md specifies match criteria only.
+- **Stage 1 cleanup** — removed redundant "Universal short-circuit for author" line (now owned by universal Author resolution section); removed events-flavored "Author resolution is per-type" claim.
+
+**blog.md changes:**
+
+- Step 1-13 runbook tightened to consistent reference-style pattern. Removed redundant "(blogs-specific, this file)" parentheticals across steps 3, 5, 11.
+- Step 1 Mode detection collapsed to pointer-only (`Per METHODOLOGY \`Mode detection\``).
+- Step 2 Site context discovery collapsed to pointer-only (`Run METHODOLOGY \`Stage 1: Site context\``).
+- Step 4 Author resolution → universal pattern reference, removed per-type "blog" word for pure reusability.
+- Step 5 Topic resolution — merged Shape B (SEO seed) + Shape C (viral content) into single Shape B "Vertical-derived" with conditional WebSearch sub-step. Pool discipline reference + `N=5` declared at section top. Cut "(blogs-specific, this file)" parenthetical.
+- Step 6 Source research — removed inline tool list (lives in METHODOLOGY); kept "Land 3-5 source-supported angles BEFORE drafting" load-bearing directive.
+- Step 7 Duplicate detection — collapsed from 9 lines to 1 line referencing METHODOLOGY Stage 3 + blog match criteria (title-similarity + topic-angle-overlap, date does not factor).
+- **NEW within-pool diversity rule** (Topic depth section) — "no shared anchor noun" — forces pool 1 candidates to span distinct subjects. Closes Bryant Park within-pool anchoring loophole.
+- Post-type discovery step 2 tightened to "try in order, stop at first match" with lettered sub-steps for sequential ladder clarity.
+- Source research blog-specific buckets expanded from 6 buckets (science-heavy) to 7 (broader vertical coverage — mainstream press, culture/lifestyle magazines, podcast transcripts/Substacks). Cut "Authoritative reference works" bucket (rarely cited in modern blog content).
+- Cut stale "Skill always runs one shape per invocation" rule (no longer applies after B+C merge).
+- Cut "Shapes B and C" references (now single Shape B).
+
+**events.md changes:**
+
+- Author resolution shrunk from 13-line algorithm to 1-line reference. Removed per-type "events" word.
+- Step 1 Mode detection collapsed to pointer-only (matches blog.md).
+- Step 6 Duplicate detection — collapsed dense line to 1 line referencing METHODOLOGY Stage 3 + events Dedup section.
+- Cut "(events-specific, this file)" parentheticals across steps 3, 7, 11.
+
+**Bryant Park failure-mode fixes (closes original anchoring bug):**
+
+- Within-pool diversity rule (no shared anchor noun across pool 1)
+- Pool 2 regeneration "distinctly different from pool 1, no variations"
+- Stealth-near-duplicate warning at Stage 3 ("Don't repaint same topic with a tweaked title")
+- Explicit failure modes in pool discipline
+
+**Behavioral effect:** agent reading any content-type runbook now lands on canonical universal mechanics in METHODOLOGY for author resolution, pool walking, and duplicate detection. Per-type files own only what's genuinely per-type (match criteria, source buckets, source-specific quality gates). Future jobs/properties runbooks inherit 90% of mechanics for free.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — 3 new universal sections + Stage 3 rewrite + Stage 1 cleanup.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — runbook + Topic resolution + Source research restructure.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — runbook + Author/Dedup reference cleanup.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.19] - 2026-05-21
 
 ### Post lean: drop total_clicks=0 from default response

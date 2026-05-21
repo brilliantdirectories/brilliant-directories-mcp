@@ -23,12 +23,38 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
-Interactive: ask the user for location, category, author, and whether to publish live or save as drafts (one question at a time).
-Autonomous: infer location from `primary_country`, vertical from site info and categories. Author resolution is per-type — see the per-type SKILL.md (e.g. events.md Stage 4) for the algorithm. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live.
-
-**Universal short-circuit for author:** if the user pre-specified a `user_id` (or `author_id`) in their request — interactive or autonomous, any content type — use it and skip per-type author resolution entirely. No discovery calls.
+Autonomous: infer location from `primary_country`, vertical from site info and categories. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live. Interactive question order is per-type — see the per-type SKILL.md.
 
 **Member-city targeting — NEVER bulk-list members to discover their cities.** Only fires when the user's prompt explicitly targets by member coverage ("cities where I have members," "places members are based," "areas we cover"). Use `listCities` — BD auto-seeds it on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
+
+### Author resolution (universal pattern)
+
+Resolve the `user_id` that authors the post.
+
+1. **User pre-specified `user_id` (or `author_id`) in the request →** use it, SKIP discovery entirely.
+
+2. **Interactive (user in chat, no pre-specified author; autonomous mode → skip to 3) →** ask "Which member should author post? Provide a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq`. Confirm back to the user before proceeding.
+
+3. **Autonomous (no chat, no pre-specified author) →** copy the editorial pattern already on the site. Read the most recent post of this type and reuse its `user_id`:
+    ```
+    listSingleImagePosts property=data_id property_value=<resolved data_id> property_operator=eq order_column=revision_timestamp order_type=desc limit=1
+    ```
+    (For multi-image post types where `data_type=4`, substitute `listMultiImagePosts`.) Use the returned row's `user_id`.
+
+4. **Fallback A** (zero existing posts of this type on the site) → find a member whose subscription plan is authorized to publish this post type:
+    1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
+    2. Client-side filter: keep plans where `data_settings.split(',').includes(<resolved data_id>)` — these are the subscription_ids authorized to publish this post type.
+    3. `listUsers property=subscription_id property_value=<comma_separated_matched_ids> property_operator=in order_column=user_id order_type=asc limit=1` — returns the lowest-user_id eligible author (oldest member with permission). Server-side filter + sort; lean response.
+
+5. **Fallback B** (zero matched plans OR zero eligible users) → use `user_id=0`.
+
+### Candidate pool discipline (universal pattern)
+
+When brainstorming a pool of candidates (topics, events, jobs, properties, anything the agent picks from for the user) — number the candidates 1-N. Interactive: surface the list, user picks. Autonomous: take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
+
+**Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
+
+Per-type runbooks specify the pool size (`N`) and the brainstorm shape.
 
 ## Stage 2: Source research
 
@@ -65,23 +91,21 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 Run AFTER research lands viable candidates, not before. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
 
-For each candidate, run ONE query against the relevant `list*` tool filtered by the candidate's distinctive title prefix:
+**BD's `like` supports single-anchor wildcards only** — use `X%` (starts-with) or `%X` (ends-with). NEVER bidirectional `%X%` — BD's WAF strips one `%` and the query silently returns wrong results.
 
-```
-listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=5
-```
+For each candidate, run THREE scoped queries against the relevant `list*` tool to catch overlaps from both ends of the title:
 
-One query per candidate. Do NOT brute-force variants (`How Much%`, `Personal Trainer Cost%`, `%Personal Trainer Cost`, etc.) — pick the right 3 distinctive words once. Substitute `listSingleImagePosts` for the post-type the skill targets (events use single-image, jobs/properties/blog may use other tools per their SKILL.md). BD's WAF strips one `%` from bidirectional `%foo%`, so use single-anchor prefix `foo%` only. Returns 0-1 matching rows in normal use.
+- **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=5` — catches titles with the same opening phrase.
+- **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=5` — catches titles that lead with the core noun.
+- **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=5` — catches titles ending with the core noun (e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`).
 
-**"Distinctive" means: the first 3 words that meaningfully fingerprint THIS event.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
+Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
 
-Match each returned row against the candidate:
+**"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
 
-- Title: semantic, not string-exact
-- Date: per-type tolerance from SKILL.md (events ±24h, jobs ±7d, properties ±14d)
-- Location: same city OR same venue/employer/address
+Per-type SKILL.md specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 
-Title-similar AND date-close AND location-match → duplicate → drop candidate → restart Stage 2, next un-tried candidate from the brainstormed pool. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+**On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint the same candidate with a tweaked title — that ships a stealth near-duplicate. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
 Always SKIP existing records — no auto-edit of live posts.
 
@@ -177,7 +201,7 @@ Use Pexels for all images. After all 5 axes attempted without a commit, omit `po
 
    **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,URL3>`, `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
    - **If all survivors are in the response (all dupes) → switch to the next axis.**
-   - **If a response row's `post_title` semantic-matches the candidate's topic** → drop candidate → restart Stage 2, next un-tried candidate from the brainstormed pool. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+   - **If a response row's `post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 2. **Omit `post_image`** entirely.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.

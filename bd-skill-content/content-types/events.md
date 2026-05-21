@@ -14,17 +14,17 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run the runbook in order; on per-step failure for a given event, continue to the next event.
 
-1. **Mode detection** (METHODOLOGY Stage 1). User is in the chat → interactive mode. If they invoked from a programmatic context with no chat presence → autonomous.
+1. **Mode detection.** Per METHODOLOGY `Mode detection`.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
-3. **Post-type discovery (events-specific, this file).** Run the `Post-type discovery` section.
-4. **Author resolution (this file).** **If the user pre-specified a `user_id` (or `author_id`) in the request, use it and SKIP this step entirely — no discovery calls.** Otherwise see the `Author resolution` section.
+3. **Post-type discovery.** Run the `Post-type discovery` section.
+4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 6 quality gates. Land N viable candidates BEFORE any dedup check.
-6. **Duplicate detection** (METHODOLOGY Stage 3). For each candidate (NOT bulk), run `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words-of-candidate-title>% limit=10` scoped to the events post type. **BD's `like` only supports single-anchor wildcards** — keep the `%` at the end only (or use `%X` for ends-with); never write bidirectional `%X%` (the WAF strips one `%` and the query silently returns wrong results). See METHODOLOGY Stage 3 for the "distinctive" definition. Returns 0-1 matching rows. Apply title-similarity + date-tolerance + location-match per METHODOLOGY. **If a match is found, drop this candidate BEFORE proceeding to Stage 7.** Don't run Stage 7+ on a duplicate — wastes geocoding + image selection cycles on work that will be discarded. Never bulk-pull the events feed.
-7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
+6. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for events-specific match criteria.
+7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Image dedup.** Per METHODOLOGY Stage 5 dedup step. For events: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
-11. **Content manufacture (events-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
+11. **Content manufacture.** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).
 
@@ -33,7 +33,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer before the next:
 
 1. **Post-type** (if Stage 3 found multiple `type_of_feature=1` candidates)
-2. **Author** ("Which member should author these event posts?")
+2. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
 3. **Cities / region** (if the user didn't already specify)
 4. **Categories / vertical filter** (if not already specified)
 5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
@@ -66,18 +66,7 @@ The user's explicit post-type pick always wins.
 
 ## Author resolution (Stage 4 of runbook)
 
-**Short-circuit: if the user already provided a `user_id` (or `author_id`) in the request/args, use it and SKIP this entire section.** No discovery calls needed.
-
-**Interactive (user not pre-specified):** ask "Which member should author these event posts? Give me a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq`. Confirm back to user before proceeding.
-
-**Autonomous (user not pre-specified):** find a member whose subscription plan is authorized to publish this post type, then use that user_id.
-
-1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
-2. Client-side filter: keep plans where `data_settings.split(',').includes(<events_data_id>)` — these are the subscription_ids authorized to publish events.
-3. `listUsers property=subscription_id property_value=<comma_separated_matched_ids> property_operator=in limit=10` — returns eligible authors. Server-side filter; lean response.
-4. Pick one user_id at random from the result.
-5. **Fallback:** if step 2 returns zero matched plans OR step 3 returns zero eligible users → use `user_id=0`. BD stores this as "no author" — the post page renders publicly, but won't show in member search; site admin gets a queue alert to reassign.
-
+Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id` (cached from Stage 1 `listPostTypes`).
 
 ---
 

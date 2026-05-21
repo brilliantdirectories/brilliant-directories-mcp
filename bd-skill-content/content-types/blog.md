@@ -14,24 +14,17 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 
 The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Run in order; on per-post failure continue to the next post.
 
-1. **Mode detection** (METHODOLOGY Stage 1). User in chat → interactive. Cron/programmatic → autonomous.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Cache `data_filename` for the resolved blog post type.
-3. **Post-type discovery (blogs-specific, this file).** Run the `Post-type discovery` section.
-4. **Author resolution.** If the user pre-specified a `user_id` (or `author_id`) — use it, SKIP discovery. Otherwise pick the highest-`admin_level` user via `listUsers order_column=admin_level order_type=desc limit=1`. Blogs typically run under one designated content author; no per-plan permission filter (METHODOLOGY's events-style plan check does not apply).
-5. **Topic resolution (blogs-specific, this file).** Run the `Topic resolution` section. Three input shapes: user-specified topic, vertical SEO seed, viral-content brainstorm.
-6. **Source research per topic** (METHODOLOGY Stage 2): brainstorm 5-10 candidate authoritative sources (industry trade publications, expert blogs, recognized research/data sources). `WebSearch` per candidate. `WebFetch` top 3-5. Apply all 6 quality gates EXCEPT date sanity (blogs are evergreen — no future-date requirement). Land N source-supported angles BEFORE drafting.
-7. **Duplicate detection** (METHODOLOGY Stage 3). BD's `like` only supports single-anchor wildcards — use `X%` (starts-with) or `%X` (ends-with), NEVER bidirectional `%X%` (the WAF strips one `%` and the query silently returns wrong results). Run THREE scoped queries to surface title-prefix overlaps AND topic-keyword overlaps from either side:
-    - **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=10` (catches articles with the same opening phrase)
-    - **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=10` (catches titles that lead with the core noun)
-    - **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=10` (catches titles ending with the core noun — e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`)
-
-    Merge results client-side. Apply title-similarity AND topic-angle-overlap (semantic match, not string-exact). Date does not factor (blogs are evergreen). **If ANY match is found, pivot to a different topic angle BEFORE proceeding to Stage 8.** Don't run Stage 8+ on a topic that overlaps an existing post — wastes Pexels search + image dedup cycles on work that will be discarded.
-
-    **Never bulk-pull the blog feed** — no unfiltered `listSingleImagePosts` calls on the blog post type, no "let me see what exists" scans. Sites with hundreds of blogs make that pattern wasteful and slow.
+1. **Mode detection.** Per METHODOLOGY `Mode detection`.
+2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
+3. **Post-type discovery.** Run the `Post-type discovery` section.
+4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
+5. **Topic resolution.** Run the `Topic resolution` section.
+6. **Source research per topic** (METHODOLOGY Stage 2). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
+7. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Blog match criteria: title-similarity AND topic-angle-overlap (semantic, not string-exact). Date does not factor (blogs are evergreen).
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection — FEATURE image only at this step.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
 10. **Image dedup (FEATURE).** Per METHODOLOGY Stage 5 dedup step. For blog: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
-11. **Content manufacture (blogs-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
+11. **Content manufacture.** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).
 
@@ -41,7 +34,7 @@ When running interactive, ask the user in this canonical order. One question at 
 
 1. **Post-type** (if Stage 3 found multiple blog-flavored post-type candidates)
 2. **Topic input** ("What's the article about? Or do you want me to suggest topics for SEO traffic in your vertical, or write a piece designed to go viral for your industry?")
-3. **Author** ("Which member should author these blog posts?" — only if not pre-specified)
+3. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
 4. **Categories / vertical filter** (if not pre-specified)
 5. **Post format** ("How-to, listicle, pillar/comprehensive, news/announcement?" — or autonomous default by topic shape)
 6. **Publish vs draft** ("Publish live, or save as drafts for your review?")
@@ -56,10 +49,10 @@ Resolve by user intent first, then canonical markers, then semantic match.
 
 1. **User named a post type explicitly** (e.g., "post to my 'Tips for Homeowners' section"). Match the user's phrase against `data_name`, `system_name`, `form_name` on `listPostTypes`. Single confident match wins — skip steps 2-3.
 
-2. **User didn't specify** — look for the site-owner blog in this order. Server-side filter via `listPostTypes` — do NOT `getPostType` per-candidate:
-   - `system_name=website_blog_article` (BD canonical)
-   - `form_name=blog_article_fields` (canonical blog form)
-   - `data_type=20` + semantic match on `data_name`/`system_name` (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel)
+2. **User didn't specify** — try in order, stop at first match. Server-side filter via `listPostTypes` — do NOT `getPostType` per-candidate:
+   a. `system_name=website_blog_article` (BD canonical)
+   b. `form_name=blog_article_fields` (canonical blog form)
+   c. `data_type=20` + semantic match on `data_name`/`system_name` (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel)
 
 3. **EXCLUDE from any blog resolution:**
    - `community_article` / `form_name=member_article_fields` — member-written, NOT site-owner blog
@@ -82,34 +75,21 @@ User's explicit post-type pick always wins.
 
 ## Topic resolution (Stage 5 of runbook)
 
-Blog skill accepts three input shapes. Detect by the user's request shape; if ambiguous in interactive mode, ask.
+Apply METHODOLOGY's `Candidate pool discipline (universal pattern)` when brainstorming candidates. Pool size `N=5`.
 
 ### Shape A — User-specified topic
 
 User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim. Skip vertical brainstorming. Run source research for that exact topic.
 
-### Shape B — Vertical SEO seed
+### Shape B — Vertical-derived (user picks no topic)
 
-User said "write articles for SEO traffic," "boost organic search," or similar. Derive 3-5 topic candidates from:
-- `getSiteInfo.industry` + `getSiteInfo.profession` (site identity)
-- `listTopCategories limit=25` sample from Stage 1 — reveals what the site's members serve (the consumer audience the directory exists to help). Topic ideas should resonate with that audience.
-- The resolved blog post type's `feature_categories` (cached from Stage 1 `listPostTypes`) — these ARE the post categories the blog will route to. Use as taxonomy hints for topic shape.
-- LLM judgment for long-tail SEO opportunities in that vertical that are evergreen, search-volume-friendly, and where existing top results are thin, AI-generated, or missing concrete specifics that an EEAT-rich post could beat. Don't hunt for "low-competition keywords nobody covers" — in 2026 those are mostly low-competition because nobody searches them. Pick real reader queries and beat existing coverage on depth.
+User said "write articles for SEO traffic," "organic search," "viral content," "industry news," "related to a topic," "trending content," or similar — anything that means "you pick the topic." Brainstorm `N` distinctly different topic candidates cached from **Site context discovery**.
 
-Surface the 3-5 candidates to the user in interactive mode; pick top 1-2 in autonomous mode.
+**If user signaled viral/trending intent**, also pull `WebSearch` for trending discussions/news in the vertical (last 30-60 days).
 
-### Shape C — Viral-content brainstorm
+**Topic bar (Shape B).** Frame the topic for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
 
-User said "write articles that will go viral for my industry," "trending content," or similar. Derive topic candidates from:
-- Site vertical from `getSiteInfo`
-- `WebSearch` for trending discussions / news in that vertical (last 30-60 days)
-- LLM judgment for emotional-hook potential (surprise, contrarian, useful-and-rare, deeply practical)
-
-Same surfacing logic as Shape B.
-
-**Topic bar (Shapes B and C).** Frame the topic for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
-
-**Topic depth (Shapes B and C) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
+**Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
 
 **Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES**
 | Too broad (Bad LLM default) | Good topics with depth |
@@ -121,28 +101,27 @@ Same surfacing logic as Shape B.
 
 Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
+**Within-pool diversity — no shared anchor noun.** The `N` pool candidates must span distinct subjects, not variations of one. If pool 1 has two topics anchored on the same primary noun, regenerate pool 1 with broader subject spread before taking #1.
+
 **Pick qualifiers from where real readers are stuck or searching** — the question they already type into Google ("why am I stuck at 225 bench press," "calves sore after marathon"). Not a narrowing that sounds clever to a strategist ("for tall lifters," "for career switchers").
 
-**Skill always runs one shape per invocation.** Do not mix. If the user request crosses shapes ("specific article AND viral"), ask which one to prioritize.
-
-**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shapes B and C above), then let dedup do its job at the per-candidate stage.
+**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
 
 ---
 
 ## Source research (Stage 6 of runbook)
 
-Per METHODOLOGY Stage 2, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date. All other gates (SPA/empty, required fields, confidence, source credibility) apply normally.
+Per METHODOLOGY Stage 2, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date.
 
-**Blog-specific source candidates:**
+**Blog-specific source candidate buckets:**
 
 - Industry trade publications, professional association sites
-- Established expert blogs in the vertical
-- Government/academic research, public health/data agencies, university extension publications
-- Peer-reviewed studies (Google Scholar, official journal sites)
-- Authoritative reference works (encyclopedias, definitive guides)
+- Established expert blogs / personal sites in the vertical
+- Mainstream press and vertical-relevant culture/lifestyle magazines
+- Government / academic research, public health/data agencies, university extension publications
+- Peer-reviewed studies / official journal sites (for science/medical/legal topics)
+- Reputable podcast transcripts, interview shows, popular vertical Substacks
 - Real practitioner interviews / case studies on public-facing pages
-
-Be specific. Brainstorm real domain names, not "some sites."
 
 ---
 
