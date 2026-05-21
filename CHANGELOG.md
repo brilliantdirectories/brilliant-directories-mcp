@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.11] - 2026-05-21
+
+### Runbook Step 9 → 10 sequencing: explicit "stop on portrait" + precondition
+
+Live test showed the agent batching `getImageDimensions` and `listSingleImagePosts` (dedup) in the same parallel tool call. `getImageDimensions` returned portrait (3000×4500, aspect 0.667) — agent should have stopped and picked a different candidate. Instead the dedup call already fired, wasted, and worse, would have committed a portrait image to the feature slot if dedup had passed.
+
+Root cause: Step 9 (image selection) didn't explicitly say "stop here, return to candidate selection if gate fails." Step 10 (dedup) didn't say "only run after Step 9 passes." Agent treated them as a sequential pair to batch.
+
+Two surgical adds to both blog.md and events.md runbooks:
+
+- **Step 9** now ends with: "If the orientation gate fails (portrait, square, or any error), return to candidate selection and pick a different Pexels result — do NOT proceed to Step 10."
+- **Step 10** now opens with: "**Precondition: Step 9 must have returned a landscape success.** Do not call dedup AND dimension check in the same batch — dedup runs ONLY after dimension check passes."
+- Step 10 dupe-retry path also updated: "pick a different feature image and re-run Step 9 on it" (forces the gate to re-evaluate on the new candidate, not skip to dedup).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt
+
+**No Worker/npm/spec/corpus code changes.** Drift check passes.
+
 ## [6.55.10] - 2026-05-21
 
 ### Image dedup: purge stale "three list-tool calls" references that overrode the v6.55.5 single-call protocol
