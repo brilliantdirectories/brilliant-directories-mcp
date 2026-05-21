@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.1] - 2026-05-21
+
+### Axis table: mixed 2-word and 3-word examples
+
+v6.55.0 introduced the 2-3 word rule but the axis table examples were still all 3-word — agents pattern-match on examples and would default to 3 even when 2 is cleaner.
+
+Updated the axis table to show a deliberate mix:
+- **Axes 1-2** stay 3-word (subject + action/state structure needs all three slots).
+- **Axis 3 (Detail / object close-up)** → 2-word compound nouns (`portafilter shot`, `button mockup`).
+- **Axis 4 (Setting + topical marker)** → mixed 2- and 3-word in each column.
+- **Axis 5 (Adjacent activity / item)** → 2-word (`bean grinder`, `latte art`, `color swatch`).
+
+Now ~half the examples demonstrate 2-word usage. The rule "2 words when the noun is already specific, 3 when ambiguous" is visibly modeled.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — axis table rows 3, 4, 5 updated.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.0] - 2026-05-21
 
 ### Pexels query: 2-3 words, every word must carry topic information

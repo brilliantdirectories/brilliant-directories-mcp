@@ -169,9 +169,9 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    |---|---|---|---|
    | 1. Subject + action/state (default) | Direct topic match showing the thing in use or in its defining state | `barista pouring coffee` / `barista using machine` | `colorful button design` / `modern ui buttons` |
    | 2. People + adjacent action | Same audience, related verb | `barista cleaning machine` / `barista weighing beans` | `designer sketching wireframe` / `designer choosing colors` |
-   | 3. Detail / object close-up | Topical object, no people | `portafilter coffee grounds` / `espresso shot pour` | `website button mockup` / `colorful interface element` |
-   | 4. Setting + topical marker | Topical location, named | `barista station setup` / `coffee shop bar` | `ui designer desk` / `web design studio` |
-   | 5. Adjacent activity / item | Related thing, different action | `coffee bean grinder` / `latte art cup` | `figma wireframe sketch` / `color swatch palette` |
+   | 3. Detail / object close-up | Topical object, no people | `portafilter shot` / `espresso pour` | `button mockup` / `interface element` |
+   | 4. Setting + topical marker | Topical location, named | `coffee shop bar` / `barista station setup` | `design studio` / `web design studio` |
+   | 5. Adjacent activity / item | Related thing, different action | `bean grinder` / `latte art` | `wireframe sketch` / `color swatch` |
 
    **Fallback exhaustion:** at least 3 distinct axes attempted before omitting `post_image`. Omitting is the last resort.
 
