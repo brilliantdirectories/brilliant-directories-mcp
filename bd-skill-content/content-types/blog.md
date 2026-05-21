@@ -223,8 +223,6 @@ Pick targets by **contextual relevance to the body sentence**. If the paragraph 
 
 **Anchor text:** reads as part of the sentence. The linked phrase is a noun or noun phrase that belongs naturally in the surrounding prose ("certified personal trainers in Boston" not "click here for personal trainers"). Not a standalone CTA in the middle of paragraphs.
 
-**External links:** authoritative sources (industry studies, government/academic, official organization pages) get `rel="nofollow" target="_blank"`. 1-3 external links per 2000 words is healthy; more risks linking away too much, fewer loses EEAT signal.
-
 ### Inline body images
 
 **Opt-in only — do NOT include inline body images by default.** Only apply this section when the user explicitly requests inline images in their prompt (e.g. "with inline images", "include body images", "add photos throughout"). Default blog runs ship with the feature image only — prose carries the post.

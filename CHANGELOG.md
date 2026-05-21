@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.15] - 2026-05-20
+
+### Remove FAQ-as-load-bearing-fallback + universalize external-link count
+
+Live observation: events posts shipping with FAQ blocks at the END containing load-bearing event facts (date, venue, parking). Investigation traced to:
+- METHODOLOGY line 102 said load-bearing facts go "in the first paragraph or first FAQ block" — gave agent permission to use FAQ for the facts
+- events.md line 180 mirrored the same "opening paragraph or first FAQ block" alternative
+- events.md link-distribution table listed `FAQ block (when present)` as a section row — implied FAQ exists in events posts
+
+Agent was free-choosing FAQ placement, sometimes putting it at the end with the load-bearing facts.
+
+**Five surgical edits:**
+
+1. METHODOLOGY line 102 — drop "or first FAQ block" from load-bearing-facts rule. Facts go in the first intro paragraph only.
+2. METHODOLOGY line 104 (EEAT principle 3) — rewrote from "at least one mention" → "External source citations: 1-3 per post" with concrete target types (industry publications, official event/venue/registration pages, governing-body sites). Universal external-link budget across post types.
+3. events.md line 180 — rewrote: dropped "or first FAQ block" alternative, added `parking, agenda` to the load-bearing-facts list, changed "opening paragraph" → "opening paragraphs" (allows the agent to spread across 1-2 paragraphs naturally).
+4. events.md link-distribution table — dropped the `FAQ block (when present)` row entirely. Table now has only 3 rows: Opening paragraph, Body sections, CTA close. Stops signaling FAQ as an expected events-post section.
+5. blog.md line 226 — removed the per-type "1-3 external links per 2000 words" paragraph. Now covered by METHODOLOGY's universal "1-3 per post" rule. Tracking for restoration if next 2 blog runs show external-link drift.
+
+**Blog FAQ block stays intact.** Per blog.md runbook step 7 ("FAQ block before conclusion"), blogs explicitly prescribe FAQ — that's intentional and unchanged.
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.53.14] - 2026-05-20
 
 ### METHODOLOGY: promote Link order rule (internal first, external later)
