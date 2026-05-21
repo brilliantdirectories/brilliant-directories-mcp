@@ -177,15 +177,13 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **URL output + image verification (mandatory before BD):**
 
-   **Step 1 — Extension filter (before the tool call).** Only consider candidates whose final URL ends in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels `/photo/<slug>-<id>/` page only resolves to `.webp` / `.gif` / `.avif` / anything else, **skip it entirely — do not call the tool**. The skill commits to `post_image` as a hotlink; downstream rendering + dedup compare exact URLs, and unsupported extensions slip past BD's import filters and render broken. Move to the next search result.
+   **Step 1 — Extension filter (before the tool call).** Only consider candidates whose final URL ends in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels `/photo/<slug>-<id>/` page only resolves to `.webp` / `.gif` / `.avif` / anything else, **skip it entirely — do not call the tool**. Move to the next search result.
 
-   **Step 2 — Dimension check (mandatory).** For the surviving JPG/JPEG/PNG candidates, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then call `getImageDimensions url=<that exact URL>`. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Decision:
+   **Step 2 — Dimension check.** For the surviving JPG/JPEG/PNG candidates, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then call `getImageDimensions url=<that exact URL>`. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Decision:
 
    - **status=success + `orientation === "landscape"`** → pass, proceed to dedup.
    - **status=success + portrait OR square** → drop, pick next from the same search pool.
    - **status=error** (404, timeout, parse fail, "unsupported image format" — any reason) → drop, pick next. No exceptions.
-
-   `aspect_ratio` is the lever for tighter ratio gates when a skill needs them — e.g. "≥ 1.33" for 4:3 or "≥ 2.0" for 2:1 — but the default gate is `orientation === "landscape"` only.
 
    **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.

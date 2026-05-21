@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.10] - 2026-05-21
+
+### Image-rule prose: cut duplication, no behavior change
+
+Three surgical METHODOLOGY trims after a bloat audit:
+
+1. **Step 1 (extension filter) — dropped the "why" sentence.** Removed `"The skill commits to post_image as a hotlink; downstream rendering + dedup compare exact URLs, and unsupported extensions slip past BD's import filters and render broken."` — pure justification, doesn't change the action ("skip it entirely — do not call the tool").
+2. **Step 2 header — dropped "(mandatory)".** The parent header already says `"URL output + image verification (mandatory before BD)"` two lines up. Redundant.
+3. **aspect_ratio future-lever sentence — removed from METHODOLOGY.** Identical sentence still lives in corpus `Rule: Image dimensions`; agents load both, so the lever info remains discoverable for future skills that want 4:3 / 2:1 / 16:9 gating.
+
+~30 words removed across METHODOLOGY image step. Every behavior-bearing instruction preserved exactly.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — 3 cuts in the Step 1 / Step 2 block.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.54.9] - 2026-05-21
 
 ### Runbook alignment: blog + events Step 9 names the image gate explicitly
