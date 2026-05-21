@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.7] - 2026-05-21
+
+### Separation of concerns: Rule: Image dedup is now pure dedup mechanics
+
+`Rule: Image dedup` had accumulated 3 bullets of Pexels-specific workflow policy (random-index pool selection, dupe-retry ladder, last-resort accept-dupe). Those describe what to DO when a dupe is found and how to pick candidates — workflow, not dedup mechanics. Moved them into `Rule: Image URLs` Pexels sourcing workflow where the rest of the search/retry policy lives, and converted that workflow from inline parenthesized steps `(1)(2)(3)...` into a proper 7-step markdown numbered list for readability.
+
+After cleanup:
+
+- **Rule: Image dedup** answers "how do I check for a dupe?" — 6 bullets, all dedup mechanics (write-tool-to-list-tool pairing, trigger, scope, self-exclusion, batches, URL form). Ends with a cross-ref to Rule: Image URLs for policy.
+- **Rule: Image URLs** Pexels sourcing workflow answers "what's the full Pexels-candidate workflow?" — 7 numbered steps end-to-end, including the random-index, dedup-retry-from-pool, and last-resort accept-dupe beats.
+
+Net effect: agents asking "how do I dedup?" get a clean rule. Agents running the Pexels workflow get the full retry policy in one place instead of split across two rules.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — both rules restructured.
+
+**No Worker/npm/spec code changes. No skill content changes.** Drift check passes.
+
 ## [6.55.6] - 2026-05-21
 
 ### Corpus: remove skill-runbook leakage from Rule: Image dedup
