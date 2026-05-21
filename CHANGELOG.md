@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.22] - 2026-05-22
+
+### Stage 3 dedup: hard `limit=3` ceiling + "refined angle" loophole closed
+
+Live blog-creation test surfaced two real failure modes the agent exploited against v6.55.21's Stage 3:
+
+1. **Context-window bloat via `limit` bump.** Agent found a dedup hit on `Hyrox%` at `limit=5`, then ran a fourth query with `limit=25` "to look broader." Pulled 11 rows of Hyrox posts into context — exactly the "Never bulk-list or probe existing posts" rule, just dressed up as a single-anchor query.
+
+2. **"Refined angle" stealth-near-duplicate.** Same trace: after seeing existing Hyrox blog posts (beginner training, compromised running, Hyrox vs CrossFit), agent decided to "refine to a pure news/industry-trend angle" instead of dropping the candidate and taking pool item #2. Exact phrase the agent used: "refining to a pure news/industry-trend angle."
+
+Three surgical edits to METHODOLOGY Stage 3:
+
+- **`limit=5` → `limit=3` on all three dedup queries.** Tighter ceiling. 3 rows is more than enough to confirm "does ANY existing post match" — typical response is 0-1 rows anyway.
+- **Hard-ceiling sentence added:** `\`limit=3\` is a hard ceiling — never bump it, never run a fourth query.` Names both failure modes inline with the query block.
+- **Stealth-duplicate rule strengthened:** `Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it.` Names the exact loophole phrase the live agent used, plus a mechanical self-test ("same core topic = same candidate") agents can run instead of relying on judgment.
+
+**Behavioral effect:** every dedup query is bounded at 3 rows. Maximum context-window cost per candidate dedup is 3 queries × 3 rows × ~400 bytes lean shape = ~3.6KB. Hard. Predictable. The "refine the angle" workaround is named explicitly as banned.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 3 limit + hard-ceiling sentence + stealth-duplicate strengthening.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.21] - 2026-05-22
 
 ### Stage 7 + Stage 8 runbook consistency: thin pointer + dedicated section pattern

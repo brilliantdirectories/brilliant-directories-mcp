@@ -95,17 +95,17 @@ Run AFTER research lands viable candidates, not before. Per-candidate scoped que
 
 For each candidate, run THREE scoped queries against the relevant `list*` tool to catch overlaps from both ends of the title:
 
-- **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=5` — catches titles with the same opening phrase.
-- **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=5` — catches titles that lead with the core noun.
-- **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=5` — catches titles ending with the core noun (e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`).
+- **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=3` — catches titles with the same opening phrase.
+- **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=3` — catches titles that lead with the core noun.
+- **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=3` — catches titles ending with the core noun (e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`).
 
-Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
+`limit=3` is a hard ceiling — never bump it, never run a fourth query. Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
 
 **"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
 
 Per-type SKILL.md specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 
-**On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint the same candidate with a tweaked title — that ships a stealth near-duplicate. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+**On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
 Always SKIP existing records — no auto-edit of live posts.
 
