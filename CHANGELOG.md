@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.3] - 2026-05-21
+
+### Corpus consistency sweep: align Rule: Image sourcing + tool description with v6.54.0-.2 gate
+
+Cumulative-state review found two stale corpus locations that contradicted the new `Rule: Image dimensions` + METHODOLOGY two-step gate. Fixed both.
+
+**`Rule: Image sourcing` (mcp-instructions.md ~line 966-968) was pre-v6.54.0.** It said "orientation cannot be reliably verified from the agent runtime, take what you find," listed a `.jpeg → .png → .webp` format-fallback ladder, and ended with `Format: .jpg, .png, or .webp`. All three statements directly conflicted with the post-v6.54.2 rule that says "use `getImageDimensions`, drop non-landscape, skip WebP outright." Rewrote the three bullets to:
+- Orientation-gate paragraph now defers to `Rule: Image dimensions` (no duplicated logic).
+- Pexels sourcing workflow now calls `getImageDimensions` instead of the old "WebFetch liveness probe + take-what-you-find" steps. Numbered steps tightened from 8 to 7.
+- Format line: `.jpg / .jpeg / .png` only; explicitly notes WebP/GIF/AVIF are skipped pre-tool per the dimensions rule.
+
+**Tool description in `bd-api.json` (operationId `getImageDimensions`) was misleading.** Old description said "WebP/GIF/AVIF return error envelope" — true, but framed as "feed me anything, I'll tell you." Reframed as a **caller contract**: filter to JPG/PNG BEFORE calling; parser error is defense-in-depth, not a sanctioned path. Tool description now points at `Rule: Image dimensions`.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image sourcing` 3-bullet rewrite.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `getImageDimensions` description rewritten as caller contract.
+
+**No Worker/npm code changes.** Tool surface unchanged. METHODOLOGY skill content unchanged (the zip from v6.54.2 is still current). Drift check passes.
+
 ## [6.54.2] - 2026-05-21
 
 ### Image-orientation gate: tightened to JPG/PNG extension whitelist + drop-on-any-error

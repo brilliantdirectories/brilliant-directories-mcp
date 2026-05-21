@@ -9569,7 +9569,7 @@
       "get": {
         "operationId": "getImageDimensions",
         "summary": "Probe an image URL and return its dimensions + orientation.",
-        "description": "Wrapper-native synthetic tool. Range-GETs the first 64KB of an image URL and parses JPG/PNG header bytes to return width, height, format, aspect_ratio, and orientation (landscape | portrait | square). Does NOT proxy to BD. Used by content-creation skills to verify image orientation before committing to a feature-image field (`post_image`, `cover_photo`, `hero_image`). Confirms URL is live AND returns parseable dimensions in one call. JPG and PNG only — WebP/GIF/AVIF return `{ status: \"error\", message: \"unsupported image format...\" }`.\n\n**See also:** **Rule: Image dimensions**, **Rule: Image dedup**.",
+        "description": "Wrapper-native synthetic tool. Range-GETs the first 64KB of an image URL and parses JPG/PNG header bytes to return width, height, format, aspect_ratio, and orientation (landscape | portrait | square). Does NOT proxy to BD. Used by content-creation skills to verify image orientation before committing to a feature-image field (`post_image`, `cover_photo`, `hero_image`).\n\n**Caller contract: filter candidate URLs to `.jpg` / `.jpeg` / `.png` BEFORE calling.** WebP / GIF / AVIF are unsupported — the parser returns `{ status: \"error\", message: \"unsupported image format...\" }` as a defense-in-depth fallback, but callers must not rely on it; skip non-JPG/PNG extensions outright per **Rule: Image dimensions**. Any error response (404, timeout, parse fail, unsupported format) means drop the candidate and pick another.\n\n**See also:** **Rule: Image dimensions**, **Rule: Image dedup**.",
         "tags": [
           "Design"
         ],
