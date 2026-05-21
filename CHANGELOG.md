@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.0] - 2026-05-21
+
+### Pexels query: 2-3 words, every word must carry topic information
+
+Tightened the Pexels search-construction rule. Was strict 3-word in METHODOLOGY but permissive 1-3 word in the corpus — drift between the two surfaces, and the strict 3-word rule wasted axis budget on niche topics (`"pilates reformer"` is already specific; forcing a third word shrinks the pool unnecessarily) while the permissive 1-word path returned pure-noise pools (`"plate"` → dishware + license plates + tectonic plates).
+
+New rule (aligned across both surfaces):
+- **2-3 words.**
+- **Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions.
+- **2 words** when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates).
+- **3 words** when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware).
+- **1 word is banned** (pure noise pool).
+- Applies to first search and all retries.
+
+Minor bump (6.54 → 6.55) because the search-construction contract changed shape — agents using the strict 3-word path get more flexibility, but agents that were using 1-word queries are now blocked. SemVer-correct.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Pexels query bullet rewritten + axis-variation line dropped its "3-word" qualifier (any 2-3 word variation now counts as a distinct attempt).
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image URLs` Pexels sourcing workflow step (1) rewritten to match.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm code changes. No tool surface change.** Drift check passes.
+
 ## [6.54.10] - 2026-05-21
 
 ### Image-rule prose: cut duplication, no behavior change

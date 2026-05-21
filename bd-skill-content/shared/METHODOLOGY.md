@@ -145,9 +145,9 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Search construction:**
    - Query shape: `WebSearch query="site:pexels.com/photo <topic>"`. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation).
-   - **Exactly 3 words.** Count spaces BEFORE sending: 2 spaces = 3 words. Applies to the first search and all retries.
-   - Cross-vertical examples: `"fitness race competition"` (events/sport), `"professional conference audience"` (events/corporate), `"wedding photographer working"` (blog/services), `"plant living room"` (blog/lifestyle).
-   - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick three different words.
+   - **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool). Applies to the first search and all retries.
+   - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (1 word, banned).
+   - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick different words.
 
    **Topic-fit gate** (evaluate ALL search results, pick the strongest topic-fit):
    - Title must align with the post's primary subject AND match its defining context. Sharing one keyword is not enough.
@@ -163,7 +163,7 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Each search phrase MUST carry a topical anchor** — a word from the post's vertical that ties the photo to the topic. The anchor is a verb for action verticals (run, stretch, lift, sketch) or a noun for object/concept verticals (button, espresso machine, gavel, recipe). Without an anchor, the axis drifts into pure landscape or pure bystander stock that fails topic-fit.
 
-   Try axes in order. Within an axis, run 2 distinct 3-word phrase variations before pivoting to the next axis.
+   Try axes in order. Within an axis, run 2 distinct phrase variations before pivoting to the next axis.
 
    | Axis | Why | Cafe blog: "choosing an espresso machine" | Web design blog: "button color trends" |
    |---|---|---|---|
