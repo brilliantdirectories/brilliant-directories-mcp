@@ -159,9 +159,22 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    - One short line per rejection, max.
    - Place rejection lines under a labeled `**Image selection notes:**` block during the selection step, before the Stage 7 audit summary. The audit summary stays clean.
 
-   **Vary phrasing if results are sparse or irrelevant:** broader/simpler ("5k race" → "group race outdoors"), narrower ("yoga class" → "vinyasa studio mat"), synonyms, adjacent contexts — all still 3 words.
+   **Vary the search AXIS when initial searches saturate.** After 2-3 same-axis searches hit dedup or topic-fit fail, pivot to a DIFFERENT axis. Each axis taps a different slice of Pexels' library. Synonyms of the same subject return the same 50-100 photos.
 
-   **Fallback exhaustion:** if the first search's candidates all fail (topic-fit or dedup), re-search with broadened phrasing. Run at least 3 distinct Pexels searches with different angles before omitting `post_image`. Omitting is the last resort.
+   **Each search phrase MUST carry a topical anchor** — a word from the post's vertical that ties the photo to the topic. The anchor is a verb for action verticals (run, stretch, lift, sketch) or a noun for object/concept verticals (button, espresso machine, gavel, recipe). Without an anchor, the axis drifts into pure landscape or pure bystander stock that fails topic-fit.
+
+   Try axes in order. Within an axis, run 2-3 distinct 3-word phrase variations before pivoting to the next axis.
+
+   | Axis | Why | Cafe blog: "choosing an espresso machine" | Web design blog: "button color trends" |
+   |---|---|---|---|
+   | 1. Subject + action/state (default) | Direct topic match showing the thing in use or in its defining state | `barista pouring coffee` / `barista using machine` / `espresso shot pulling` | `colorful button design` / `bold gradient interface` / `modern ui buttons` |
+   | 2. Detail / object close-up | Topical object, no people | `portafilter coffee grounds` / `espresso shot pour` / `steam wand milk` | `website button mockup` / `colorful interface element` / `app button macro` |
+   | 3. People + adjacent action | Same audience, related verb | `barista cleaning machine` / `barista weighing beans` / `barista checking timer` | `designer sketching wireframe` / `designer choosing colors` / `designer reviewing mockup` |
+   | 4. Setting + topical marker | Topical location, named | `barista station setup` / `coffee shop bar` / `cafe counter espresso` | `ui designer desk` / `web design studio` / `agency workspace screens` |
+   | 5. Adjacent activity / item | Related thing, different action | `coffee bean grinder` / `latte art cup` / `barista milk steaming` | `figma wireframe sketch` / `color swatch palette` / `design system mockup` |
+   | 6. Atmosphere + topical anchor | Scene + topic word | `morning cafe steam` / `warm coffee shop` / `cozy espresso bar` | `vibrant design palette` / `neon interface glow` / `bold color screen` |
+
+   **Fallback exhaustion:** at least 3 distinct axes attempted before omitting `post_image`. Omitting is the last resort.
 
    **URL output + liveness probe (mandatory before BD):** drill to individual `/photo/<slug>-<id>/` URLs, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then `WebFetch` that exact URL. `"HTTP 404 Not Found"` response → drop and re-pick from the search results. Image-analysis response (JPEG/PNG/WebP content) → send to BD.
 

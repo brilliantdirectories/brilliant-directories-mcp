@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.17] - 2026-05-20
+
+### Axis-based Pexels search rule replaces "vary phrasing" prose
+
+Live observation: Missoula Marathon event shipped with no image after 13 distinct Pexels searches all hit dedup. Root cause: agent cycled synonyms of the same subject axis (`mountain trail runner`, `trail running woman`, `marathon runners crowd`, etc.) all returning overlapping pools. The existing "vary phrasing" rule didn't push the agent to abandon the literal subject axis and search lateral angles. Wasted ~25K tokens, omitted the image.
+
+**Replaced METHODOLOGY Stage 5 image strategy "Vary phrasing" rule with axis-based search system:**
+
+- **Six axes ordered strongest → weakest** (Subject + action/state → Detail close-up → People + adjacent action → Setting + marker → Adjacent activity → Atmosphere). Order validated by three independent minion simulations.
+- **Universal "topical anchor" principle**: every search phrase MUST carry a topical anchor from the post's vertical. Verb for action verticals (run, stretch, sketch). Noun for object/concept verticals (button, espresso machine, gavel).
+- **Dual-vertical canonical example** (cafe + web design) teaches both anchor types in one grid. Third minion sim confirmed this transfer worked on a fitness/wellness topic the agent had never seen.
+- **3 phrase variations per cell** teaches within-axis variation discipline (not synonym churn).
+- **Fallback exhaustion bumped from "3 distinct searches" to "3 distinct axes"** — forces lateral pivoting before omitting.
+
+**Token cost analysis:** Missoula case spent ~25K tokens on 13 same-axis searches and omitted. New rule projected at ~19K tokens on ~6-9 cross-axis searches AND likely lands an image. Cheaper AND more effective.
+
+Three minion validations:
+- Sim 1 (Missoula reconstruction): proved synonym-cycling was the failure mode → justified the axis principle.
+- Sim 2 (wellness + web design): proved verb-vs-noun substitution needed explicit teaching → justified dual-vertical example.
+- Sim 3 (fitness/wellness on dual-vertical canonical): correctly inferred fitness = verb-led BY CONTRASTING with the noun-led cafe/web design examples. Adaptive ordering also confirmed (agent picked 1 → 6 → 5 → 2 → 3 → 4 unprompted).
+
+**No Worker/npm/spec changes.** Pure skill-content tuning.
+
+**Drift check passes.**
+
 ## [6.53.16] - 2026-05-20
 
 ### Three audit-driven linking-rule tightens
