@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.23] - 2026-05-22
+
+### Stage 5 image strategy: broad-aesthetic topic-fit rule + topic-fit cap bumped 3 → 5
+
+Live blog-creation test exhausted all 5 image axes and omitted `post_image` despite ~50+ viable Pexels candidates surfacing across the axes. Agent self-diagnosed two real procedural failures:
+
+1. **Topic-fit too narrow on broad-aesthetic topics.** Hyrox is a category-aesthetic topic (functional fitness sport). Agent demanded niche-specific props (sled, kettlebell, wall-ball) and dismissed category-aesthetic candidates (athlete running, athlete lifting in gym) as "not Hyrox-specific enough." Multiple landscape JPG candidates that would have committed cleanly were dropped at topic-fit.
+
+2. **Topic-fit cap of 3 left valid candidates unchecked.** Agent ran dimension+dedup on only the top 3 obvious-best titles per axis, leaving 5-7 other landscape JPG candidates per axis without verification. With 8 candidates per axis returned, picking 3 = high false-negative rate.
+
+Two surgical edits to METHODOLOGY Stage 5:
+
+- **Topic-fit cap 3 → 5** (Step 2 + Step 4). Agent now lifts up to 5 candidates per axis to dimension+dedup verification, not 3.
+- **NEW broad-aesthetic rule (Step 2):** *"Broad-aesthetic topics (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work."*
+- Dedup URL placeholder example updated `<URL1,URL2,URL3>` → `<URL1,URL2,...,URL5>` for consistency with the 5-cap.
+
+**Behavioral effect:** for category-aesthetic topics, any image within the aesthetic family passes topic-fit. Combined with the 5-cap, the agent verifies more candidates per axis. Predicted outcome (agent's own simulation against the failed Hyrox run): commit on axis 4 or 5 instead of exhaust+omit.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 5 Step 2 + Step 4 + Step 5 placeholder.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.22] - 2026-05-22
 
 ### Stage 3 dedup: hard `limit=3` ceiling + "refined angle" loophole closed
