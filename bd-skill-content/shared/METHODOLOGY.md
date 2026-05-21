@@ -167,7 +167,7 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    | Axis | Why | Cafe blog: "choosing an espresso machine" | Web design blog: "button color trends" |
    |---|---|---|---|
-   | 1. Subject + action/state (default) | Direct topic match showing the thing in use or in its defining state | `barista pouring` / `barista pouring coffee` | `button design` / `colorful button design` |
+   | 1. Subject + state (default) | The thing in its defining state | `barista pouring` / `barista pouring coffee` | `colorful buttons` / `modern ui buttons` |
    | 2. People + adjacent action | Same audience, related verb | `barista cleaning` / `barista cleaning machine` | `designer sketching` / `designer sketching wireframe` |
    | 3. Detail / object close-up | Topical object, no people | `portafilter shot` / `espresso shot pour` | `button mockup` / `colorful interface element` |
    | 4. Setting + topical marker | Topical location, named | `coffee shop` / `coffee shop bar` | `design studio` / `web design studio` |

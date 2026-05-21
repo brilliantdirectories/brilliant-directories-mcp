@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.3] - 2026-05-21
+
+### Axis 1 alignment: keyword combos match axis focus
+
+v6.55.2 left axis 1's web-design column with noun-phrase examples (`button design` / `colorful button design`) that didn't fit the original "Subject + action/state" framing — no verb, no action. Rather than force action-verbs onto conceptual blog topics that don't have them, renamed axis 1 to "**Subject + state**" so adjective-qualifier examples (`colorful buttons`) fit naturally alongside action-verb examples (`barista pouring`). A state is what a verb describes for action subjects AND what an adjective describes for conceptual subjects.
+
+- Axis 1 renamed: "Subject + action/state" → "Subject + state".
+- Axis 1 "Why" cell tightened to 5 words: "The thing in its defining state" (matches the 3-5 word length of axes 2-5).
+- Axis 1 web-design column: `colorful buttons` / `modern ui buttons` (replaces `button design` / `colorful button design`).
+
+Net result: each axis-cell combo now demonstrably matches the axis's focus.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — axis 1 row tightened.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.2] - 2026-05-21
 
 ### Axis table: every cell shows 2-word AND 3-word example
