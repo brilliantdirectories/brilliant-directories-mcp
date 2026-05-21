@@ -984,20 +984,20 @@ For inline body images and other non-feature slots, orientation is informational
 
 ### Rule: Image dedup
 
-**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`, `hero_image`), dedup the URL against ALL three storage locations on the site AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to cross-table dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
+**Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`), dedup the URL against the matching storage table AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to cross-table dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
 
-- **Three storage locations to check on every FEATURE write.** Any hit in any of the three = already used on this site, pick another.
-  1. **Single-image posts** (data_posts): `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`.
-  2. **Multi-image gallery photos** (users_portfolio): `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`.
-  3. **WebPage hero images** (users_meta EAV — WebPage parent table is `list_seo`, NOT `web_pages`): `listUserMeta database=list_seo key=hero_image value=<exact URL>`. The `value` param is a first-class filter on `listUserMeta` — appended to BD's multi-condition syntax server-side, returning 0-or-1 row in one call (no client-filter, no pagination).
+- **One call, branched by `data_type` cached in Stage 1.** `data_type=4` → multi-image; else → single-image.
+  - **Multi-image:** `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator=eq limit=1`.
+  - **Single-image:** `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator=eq limit=1`.
+- **Result reading.** `total > 0` (or `message` non-empty) → dupe, pick another candidate. `total == 0` → safe to commit. `limit=1` cuts BD's scan + payload to the minimum since existence is all we need.
 - **Trigger.** `create*` always triggers; `update*` triggers on every call that writes the image field — no self-attested no-op skip.
 - **Trigger scope.** STOCK URLs only. Stock = generic licensable photo libraries (Pexels, Unsplash, Pixabay). Everything else (user-supplied URLs, subject-domain URLs / brand assets / the event or listing source's own image, CDN-hosted source-site images like Eventbrite/news/social CDNs) is non-stock and skips dedup entirely — legitimate reuse.
-- **`update*` self-exclusion.** When updating an existing record, exclude that record's own row from the dedup result set: for `listSingleImagePosts` hits, match by `post_id`; for `listMultiImagePostPhotos` hits, match by `photo_id`; for `listUserMeta` hero hits, match by `database_id == seo_id` (the page being updated). Hits on OTHER records still count as dupes.
-- **Batches** (`createMultiImagePost` CSV, or a multi-post skill run): (a) run the three storage-location `list*` checks for EACH candidate URL, AND (b) dedup the candidates against EACH OTHER — two identical URLs in the same CSV is also a dupe. Reject and replace any URL that fails either check before committing the call.
+- **`update*` self-exclusion.** When updating an existing record, exclude that record's own row from the dedup result set: for `listSingleImagePosts` hits, match by `post_id`; for `listMultiImagePostPhotos` hits, match by `photo_id`. Hits on OTHER records still count as dupes.
+- **Batches** (`createMultiImagePost` CSV, or a multi-post skill run): (a) run the dedup call for EACH candidate URL, AND (b) dedup the candidates against EACH OTHER — two identical URLs in the same CSV is also a dupe. Reject and replace any URL that fails either check before committing the call.
 - **URL form to check.** Use the bare canonical Pexels URL exactly as it gets stored: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` (or `.png`). Exact match — no query string, no `?w=` suffix.
 - **Selection from the Pexels WebSearch pool.** Each `WebSearch site:pexels.com/photo <topic>` returns ~10 candidates. Pick a random index from the first ~10 rather than defaulting to result #1 — random selection over the pool reduces the odds that two runs on the same site converge on the same photo.
 - **If the chosen candidate is a dupe.** Try the next random candidate from the same pool. If the entire pool is dupes, run a new `WebSearch` with a varied topic phrase (`pilates class` → `pilates reformer` → `pilates studio mat`) and pick from that pool. One more variation if the second pool is also exhausted.
-- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the table in the audit ("reused stock photo X already in data_posts" / "users_portfolio" / "list_seo.hero_image").
+- **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the table in the audit ("reused stock photo X already in data_posts" or "users_portfolio").
 
 ### Rule: Banned image sources
 

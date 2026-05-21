@@ -23,12 +23,10 @@ The user invoked the skill with a request like "create event posts on my site" o
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection** (METHODOLOGY Stage 5 image strategy). Pick the `post_image` URL via METHODOLOGY's image strategy: **Topic-fit gate** → **Step 1 extension filter** (`.jpg`/`.jpeg`/`.png` only) → **Step 2 `getImageDimensions` orientation gate** (require `status: "success"` + `orientation === "landscape"`). Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup (mandatory, executes tool calls).** Run these three calls verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
-    - `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator==`
-    - `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator==`
-    - `listUserMeta database=list_seo key=hero_image value=<exact URL>` (single-call form — returns 0-or-1 row directly)
+10. **Image dedup (mandatory, executes tool call).** Run this call verbatim — DO NOT paraphrase the field name or operator. The chosen Pexels URL goes in `property_value` exactly as it will be stored (`https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`):
+    - `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator=eq limit=1`
 
-    Exactly these three calls must appear in your turn before step 12 — no more, no fewer, no substitutes. Any hit on any of the three = pick a different image and re-run all three. Full protocol (intra-batch dedup, fallback ladder, audit naming) in corpus `Rule: Image dedup`.
+    `total > 0` (or message non-empty) → dupe, pick a different image and re-run. `total == 0` → safe to commit. Full protocol (intra-batch dedup, fallback ladder, audit naming) in corpus `Rule: Image dedup`.
 11. **Content manufacture (events-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).

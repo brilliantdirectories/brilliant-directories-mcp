@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.5] - 2026-05-21
+
+### Image dedup: 3 calls → 1 call, branched by cached data_type
+
+Live skill runs showed the 3-call dedup protocol (single-image posts + multi-image gallery photos + WebPage hero) was the dominant latency bottleneck — sequential round-trips to BD. The agent already knows from Stage 1 whether the write target is a single-image or multi-image post type (cached as `data_type`). One branch, one call.
+
+**New protocol:**
+- `data_type=4` (multi-image) → `listMultiImagePostPhotos property=original_image_url property_value=<URL> property_operator=eq limit=1`
+- else (single-image) → `listSingleImagePosts property=original_image_url property_value=<URL> property_operator=eq limit=1`
+- `total > 0` → dupe, pick next. `total == 0` → safe to commit.
+
+`limit=1` because all we need is existence; BD can stop scanning after the first hit.
+
+**Dropped:** the WebPage hero check (`listUserMeta database=list_seo key=hero_image`) and the cross-table check (running both single AND multi against every URL). Tradeoff: rare cross-surface collisions (Pexels URL used both as blog feature and homepage hero) now slip through — acceptable because they're recoverable and the speed win is real (~3× faster on every image commit).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image dedup` rewritten with the branched single-call protocol.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Step 10 trimmed to one call.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — Step 10 trimmed to one call.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.4] - 2026-05-21
 
 ### Axis table: variation pairs now yield genuinely different Pexels pools
