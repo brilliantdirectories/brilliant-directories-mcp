@@ -23,7 +23,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 7. **Geocode survivors only (events-specific, this file).** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing** (METHODOLOGY Stage 4). Best-existing category at ≥70% confidence, or skip.
 9. **Image selection.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup.** Executed as the final step of METHODOLOGY Stage 5 (after orientation gate passes). For events: `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator=eq limit=1`. `total > 0` → dupe, pick another. `total == 0` → safe to commit.
+10. **Image dedup.** Per METHODOLOGY Stage 5 Step 3. For events: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
 11. **Content manufacture (events-specific, this file).** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary** (METHODOLOGY Stage 7).

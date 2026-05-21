@@ -149,10 +149,11 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (1 word, banned).
    - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick different words.
 
-   **Topic-fit gate** (evaluate ALL search results, pick the strongest topic-fit):
-   - Title must align with the post's primary subject AND match its defining context. Sharing one keyword is not enough.
+   **Topic-fit gate** (identify up to 3 strong topic-fits):
+   - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
    - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
+   - **If zero strong topic-fits in the current pool: switch axis** (per the axis table).
 
    **Rejection logging:**
    - When rejecting a candidate under the gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in your chat response.
@@ -179,15 +180,13 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Step 1 — Extension filter (before the tool call).** Only consider candidates whose final URL ends in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels `/photo/<slug>-<id>/` page only resolves to `.webp` / `.gif` / `.avif` / anything else, **skip it entirely — do not call the tool**. Move to the next search result.
 
-   **Step 2 — Dimension check.** For the surviving JPG/JPEG/PNG candidates, construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, then call `getImageDimensions url=<that exact URL>`. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Decision:
+   **Step 2 — Dimension check (batch in parallel).** For the JPG/JPEG/PNG topic-fit survivors (up to 3), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and call `getImageDimensions` on all of them. Returns `{ status, message: { width, height, format, aspect_ratio, orientation } }`. Per candidate:
 
-   - **status=success + `orientation === "landscape"`** → pass, proceed to dedup.
-   - **status=success + portrait OR square** → drop, pick next from the same search pool.
-   - **status=error** (404, timeout, parse fail, "unsupported image format" — any reason) → drop, pick next. No exceptions.
+   - **status=success + `orientation === "landscape"`** → landscape survivor, proceed to dedup.
+   - **status=success + portrait OR square** → drop.
+   - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
 
-   **Sequencing.** Dimension check and dedup are NOT parallel — dedup runs ONLY after dimension check returns landscape. Never batch the two tool calls in the same turn; the dedup call is wasted (and risks committing a non-landscape image) when the gate fails.
-
-   **Dedup before committing:** run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
+   **Step 3 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,URL3>`, `property_operator=in`. Response rows include `original_image_url`. Commit the first landscape survivor whose URL is NOT in the response. If all are in the response, switch axis (per the axis table).
 2. **Omit `post_image`** entirely.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.

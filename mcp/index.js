@@ -684,7 +684,7 @@ const POST_LEAN_ALWAYS_KEEP = [
   "post_id", "post_title", "post_filename", "post_status",
   "post_start_date", "post_expire_date", "post_location", "post_venue", "post_category",
   "data_id", "data_type", "system_name", "data_name", "data_filename",
-  "user_id", "post_image", "revision_timestamp",
+  "user_id", "post_image", "original_image_url", "revision_timestamp",
   // Multi-image post fields (keep when present)
   "group_id", "group_name", "group_filename", "group_status",
   // Wrapper-shaped fields (added by shaper itself, must survive)
@@ -1490,7 +1490,7 @@ function applyMenuItemLean(body, includeFlags) {
 // sites using photos as a shop catalog.
 const PHOTO_LEAN_INCLUDE_FLAGS = ["include_marketplace"];
 const PHOTO_LEAN_ALWAYS_KEEP = [
-  "photo_id", "user_id", "group_id", "file", "title",
+  "photo_id", "user_id", "group_id", "file", "original_image_url", "title",
   "order", "status", "image_imported", "revision_timestamp",
 ];
 const PHOTO_MARKETPLACE_FIELDS = [

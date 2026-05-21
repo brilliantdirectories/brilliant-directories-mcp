@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.14] - 2026-05-21
+
+### Topic-fit gate fix + batched in-CSV image dedup
+
+Live judo event test surfaced 2 inefficiencies in the image-selection flow:
+
+1. **Over-searching:** agent ran 4 Pexels searches looking for "the strongest" topic-fit before dimension-checking any candidate. Search 1 returned 2 strong judo-training photos; agent skipped them and kept searching. Root cause: gate phrasing "pick the strongest topic-fit" (singular) sent the agent into a search-for-the-optimum loop instead of dimension-checking the 2-3 strong fits it already had.
+
+2. **Serial dedup overhead:** dedup was 1 call per landscape candidate. If 3 candidates pass orientation, that's 3 BD round-trips on the unhappy path (some are dupes). The `in` CSV operator can dedup all 3 in 1 round-trip — but requires `original_image_url` in the lean response so the agent can see WHICH candidates hit. Lean was stripping it.
+
+Two coordinated fixes:
+
+**a. Topic-fit gate rewritten (METHODOLOGY Stage 5):**
+- "pick THE strongest" → "identify up to 3 strong topic-fits"
+- "primary subject AND defining context" → "spirit of the post's primary topic"
+- Added wrong-vertical example: "karate for a judo post always fails"
+- Added explicit "switch axis when zero strong topic-fits in pool" closing rule
+
+**b. Lean keep-list addition + batched dedup:**
+- Added `original_image_url` to `POST_LEAN_ALWAYS_KEEP` (post records) and `PHOTO_LEAN_ALWAYS_KEEP` (multi-image post photos). Small payload cost (~50 bytes per row), unlocks batched dedup.
+- METHODOLOGY Step 2 reworded as "Dimension check (batch the strong fits in parallel)" — agent runs `getImageDimensions` on all 1-3 candidates in one turn.
+- METHODOLOGY Step 3 is now "Dedup (one batched call via `in` CSV)" — one `list*` call with CSV of all landscape survivor URLs, `property_operator=in`. Response includes `original_image_url` per row in the lean default; agent commits the first URL NOT in the response.
+- corpus `Rule: Image dedup` updated to document both `eq` (single URL) and `in` (CSV) shapes.
+- blog.md / events.md runbooks Step 10 updated to show the `in` CSV form.
+
+Net effect on happy path (all 3 landscape clean): 1 `WebSearch` → 1 `getImageDimensions` batch → 1 dedup call → commit. ~4 tool calls total vs ~10+ in the live judo run.
+
+**Worker deploy required** (lean keep-list constants are hardcoded in Worker).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Topic-fit gate + Step 2 + Step 3 rewritten.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Step 10 updated to `in` CSV.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — Step 10 updated to `in` CSV.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — `Rule: Image dedup` updated.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — 4 post-related descriptions add `original_image_url` to lean keep-list.
+- `bd-cursor-config/brilliant-directories-mcp/mcp/index.js` — `POST_LEAN_ALWAYS_KEEP` + `PHOTO_LEAN_ALWAYS_KEEP` add `original_image_url`.
+- `bd-cursor-config/brilliant-directories-mcp-hosted/src/index.ts` — byte-mirrored.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+Drift check passes.
+
 ## [6.55.13] - 2026-05-21
 
 ### Menu item lean shape: drop tablesExists / menu_display / menu_title / revision_timestamp

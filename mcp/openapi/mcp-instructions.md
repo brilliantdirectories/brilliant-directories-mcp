@@ -995,9 +995,9 @@ For inline body images and other non-feature slots, orientation is informational
 
 **Required pre-write check. Never skip.** Before any `create*` or `update*` call that writes a STOCK image URL (Pexels or other stock-photo source) to a FEATURE image field (`post_image`, `original_image_url`), dedup the URL against the matching storage table AND against the other URLs in the same batch. **Inline `<img>` URLs inside post body content (`post_content`, `group_desc`) are NOT subject to site-wide dedup — they require intra-post uniqueness only:** no body URL repeats within the same post, no body URL equals the post's own feature URL.
 
-- **Match the dedup `list*` to the write target.** One call, `limit=1` — `total > 0` means dupe.
-  - `post_image` on `createSingleImagePost` / `updateSingleImagePost` → `listSingleImagePosts property=original_image_url property_value=<exact URL> property_operator=eq limit=1`.
-  - `original_image_url` on `createMultiImagePost` CSV / `createMultiImagePostPhoto` / `updateMultiImagePostPhoto` → `listMultiImagePostPhotos property=original_image_url property_value=<exact URL> property_operator=eq limit=1`.
+- **Match the dedup `list*` to the write target.** Single URL = `eq + limit=1`. Multiple candidates = `in` CSV. Response rows include `original_image_url`.
+  - `post_image` on `createSingleImagePost` / `updateSingleImagePost` → `listSingleImagePosts property=original_image_url property_value=<URL or URL1,URL2,URL3> property_operator=<eq | in>`.
+  - `original_image_url` on `createMultiImagePost` CSV / `createMultiImagePostPhoto` / `updateMultiImagePostPhoto` → `listMultiImagePostPhotos property=original_image_url property_value=<URL or URL1,URL2,URL3> property_operator=<eq | in>`.
 - **Trigger.** `create*` always triggers; `update*` triggers on every call that writes the image field — no self-attested no-op skip.
 - **Trigger scope.** STOCK URLs only. Stock = generic licensable photo libraries (Pexels, Unsplash, Pixabay). Everything else (user-supplied URLs, subject-domain URLs / brand assets / the event or listing source's own image, CDN-hosted source-site images like Eventbrite/news/social CDNs) is non-stock and skips dedup entirely — legitimate reuse.
 - **`update*` self-exclusion.** When updating an existing record, exclude that record's own row from the dedup result set: for `listSingleImagePosts` hits, match by `post_id`; for `listMultiImagePostPhotos` hits, match by `photo_id`. Hits on OTHER records still count as dupes.
