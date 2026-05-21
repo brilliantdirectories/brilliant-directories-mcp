@@ -81,7 +81,7 @@ Match each returned row against the candidate:
 - Date: per-type tolerance from SKILL.md (events ±24h, jobs ±7d, properties ±14d)
 - Location: same city OR same venue/employer/address
 
-Title-similar AND date-close AND location-match → duplicate → skip the candidate.
+Title-similar AND date-close AND location-match → duplicate → drop candidate → restart Stage 2, next un-tried candidate from the brainstormed pool. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
 Always SKIP existing records — no auto-edit of live posts.
 
@@ -177,6 +177,7 @@ Use Pexels for all images. After all 5 axes attempted without a commit, omit `po
 
    **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,URL3>`, `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
    - **If all survivors are in the response (all dupes) → switch to the next axis.**
+   - **If a response row's `post_title` semantic-matches the candidate's topic** → drop candidate → restart Stage 2, next un-tried candidate from the brainstormed pool. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 2. **Omit `post_image`** entirely.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.

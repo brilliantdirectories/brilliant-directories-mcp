@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.16] - 2026-05-21
+
+### Dropped-candidate pivot rule: restart Stage 2, never survey the site
+
+Live taekwondo event test surfaced an off-runbook detour. Stage 5 image-dedup correctly surfaced that the candidate event ("U.S. National Taekwondo Championships") was already on the site (post 580). Agent recognized the topic collision but then bulk-pulled `listSingleImagePosts data_id=8 limit=50` to "find a gap" — 62KB response, exceeded token limit, errored. Agent followed up with anchored title probes (`karate%`, `NAGA%`) on its own brainstormed vocabulary instead of using the surfaced `post_title` and got lucky finding a real gap (NAGA returned zero). Lucky outcome, broken process.
+
+Added the pivot rule at two trigger points in METHODOLOGY, redundant on purpose — agents read locally under load, not globally:
+
+- **Stage 3 (line 84)**: title-dedup hit now reads `→ duplicate → drop candidate → restart Stage 2, next un-tried candidate from the brainstormed pool. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.`
+- **Stage 5 Step 5 (sibling bullet under the all-dupes condition)**: image-dedup response row whose `post_title` semantic-matches the candidate's topic triggers the same exit — drop candidate, restart Stage 2 with the next un-tried pool candidate, no bulk-list, no probe, no user-ask.
+
+Three precise mechanical bans replace what was implicit pre-fix:
+1. Never bulk-list existing posts to find a gap
+2. Never anchored-probe site posts to find a gap (the secondary detour after the bulk-pull errored)
+3. Never ask the user for a replacement topic (interactive-mode loophole)
+
+The Stage 2 brainstormed pool is the only input to candidate selection. The site's existing posts are never an input — they exist for dedup verification only.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 3 line 84 and Stage 5 Step 5 augmented.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.15] - 2026-05-21
 
 ### Stage 5 image strategy: per-axis loop, one search per axis, 5-axis cap
