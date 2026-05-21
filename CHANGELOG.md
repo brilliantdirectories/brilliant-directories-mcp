@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.8] - 2026-05-21
+
+### URL-PATTERNS: location + daterange combo example + ranking bump
+
+Live event-post run showed the agent linking to `events?lat=...&lng=...&location_value=...&location_type=locality` for an event-near-Spokane anchor — correct location filter, but missing the daterange that would have narrowed to the event's actual weekend. The combo was supported (BD ANDs Pattern 3 params) but undocumented, so the agent didn't generate it.
+
+Two surgical edits to URL-PATTERNS.md:
+
+- Composition examples: added `location + daterange` and `category + location + daterange` URL examples alongside the existing single- and category+location combos.
+- Link shape priority: promoted **location + daterange** to its own rank above the bare daterange. Strong "what's happening near here that weekend" intent match; combines with category for the tightest anchor.
+
+User-confirmed live: BD's Pattern 3 parser ANDs all three filters when combined with `&`.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/URL-PATTERNS.md` — 2 surgical adds.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec code changes.** Drift check passes.
+
 ## [6.55.7] - 2026-05-21
 
 ### Separation of concerns: Rule: Image dedup is now pure dedup mechanics

@@ -157,6 +157,8 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 /events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
 /events?daterange=06%2F15%2F2026+-+06%2F15%2F2026
 /events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
+/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
+/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
 ```
 
 ## Don't
@@ -180,6 +182,7 @@ When picking which filter combination to link, prefer in this order:
 
 1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for properties: same neighborhood + same property type.
 2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence.
-3. **Date-range filters** (events only) — lowest. Useful only on events for "other events on this date." Skip for non-time-bound post types.
+3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
+4. **Date-range alone** (events only) — lowest. Useful for "other events on this date." Skip for non-time-bound post types.
 
 Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run to spread internal-link equity.
