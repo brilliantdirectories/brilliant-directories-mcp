@@ -185,6 +185,8 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    - **status=success + portrait OR square** → drop, pick next from the same search pool.
    - **status=error** (404, timeout, parse fail, "unsupported image format" — any reason) → drop, pick next. No exceptions.
 
+   **Sequencing.** Dimension check and dedup are NOT parallel — dedup runs ONLY after dimension check returns landscape. Never batch the two tool calls in the same turn; the dedup call is wasted (and risks committing a non-landscape image) when the gate fails.
+
    **Dedup before committing:** run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the **Topic-fit gate** before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.
 

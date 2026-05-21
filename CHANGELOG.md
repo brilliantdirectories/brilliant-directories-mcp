@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.12] - 2026-05-21
+
+### DRY: move sequencing rule to METHODOLOGY, single pointer chain
+
+v6.55.11 fixed the dimension→dedup sequencing bug but did it by duplicating precondition prose into BOTH blog.md AND events.md Step 9/10. That's a DRY violation — the sequencing rule is universal, not per-content-type.
+
+Right place for the rule: METHODOLOGY Stage 5 image strategy block (where the gate is defined). Added one sentence there:
+
+> **Sequencing.** Dimension check and dedup are NOT parallel — dedup runs ONLY after dimension check returns landscape. Never batch the two tool calls in the same turn; the dedup call is wasted (and risks committing a non-landscape image) when the gate fails.
+
+Then trimmed both runbooks back to pointers. Step 9 now says "Run METHODOLOGY Stage 5 image strategy end-to-end." Step 10 names the concrete dedup call for that runbook's write tool. **Also dropped the trailing "Full protocol in corpus Rule: Image dedup" double-pointer** — METHODOLOGY Stage 5 already references the corpus rule inline, so step 10 doesn't need to re-cite it.
+
+Net pointer chain:
+- Runbook step 9 → METHODOLOGY Stage 5
+- METHODOLOGY Stage 5 → corpus `Rule: Image dedup` (for protocol mechanics)
+- Corpus `Rule: Image dedup` → universal write-tool-to-list-tool mapping
+
+Single chain, no double-pointers, no DRY violation.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — 1 sequencing sentence added.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Step 9/10 trimmed.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — Step 9/10 trimmed.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+**No Worker/npm/spec/corpus code changes.** Drift check passes.
+
 ## [6.55.11] - 2026-05-21
 
 ### Runbook Step 9 → 10 sequencing: explicit "stop on portrait" + precondition
