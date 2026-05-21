@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.54.7] - 2026-05-21
+
+### Strip negation bloat from corpus image rules
+
+v6.54.6 added defensive "NOT for cover_photo / profile_photo / logo" carve-outs to corpus rules. That was bloat — agents already learn identity-context routing from `Rule: Identity-confirming fields` + the field descriptions in `bd-api.json`. The orientation-gate rule should just state which slots ARE Pexels-gated and let the rest fall through.
+
+Two corpus lines tightened:
+- `Rule: Image URLs` orientation-gate bullet: dropped the cover_photo + profile_photo + logo carve-outs.
+- `Rule: Image dimensions` two-step header: dropped the "NOT for cover_photo / profile_photo / logo" trailing line.
+
+Both rules now say only what they need to say.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/mcp-instructions.md` — 2 corpus rule lines trimmed.
+
+**No Worker/npm code changes.** Drift check passes.
+
 ## [6.54.6] - 2026-05-21
 
 ### Corpus rules: remove cover_photo from Pexels-feature gate list
