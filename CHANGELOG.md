@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.16] - 2026-05-20
+
+### Three audit-driven linking-rule tightens
+
+SEO expert audit (full read of METHODOLOGY + URL-PATTERNS + events.md + blog.md) flagged three real issues. All three fixed surgically.
+
+**Three edits:**
+
+1. **URL-PATTERNS line 175 — "1-3 links per post" was the worst clarity bug in the corpus.** The phrase lived inside the `Internal-link variety (SEO)` subsection but read as a global internal-link cap, directly contradicting events 4-8 and blog 5-10. Rephrased to "1-3 filtered-listing links per post within the broader internal-link budget set by the content-type SKILL.md" — scopes the cap to filtered listings (Pattern 3 + Pattern 6) only, not the post's total internal-link count.
+
+2. **METHODOLOGY 104 — external citation cap bumped 1-3 → 1-4.** Slightly more headroom for longer-form blog pillar guides. Same rule shape.
+
+3. **METHODOLOGY Link order subsection — added `Short posts exception rule`.** Bolded, named rule: "posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed." Closes the ambiguity flagged in the audit (350-word event posts couldn't naturally carry the 4-link floor). Treats the exception as a first-class rule the agent respects.
+
+Audit findings deferred for now (NOT blockers, watching real runs):
+- Target-diversity rule (no internal-target URL repeats within a post) — not observed in real output yet
+- Blog post-length scaling for the 5-10 internal range — current behavior acceptable on 1500-2500 word typical blogs
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.53.15] - 2026-05-20
 
 ### Remove FAQ-as-load-bearing-fallback + universalize external-link count
