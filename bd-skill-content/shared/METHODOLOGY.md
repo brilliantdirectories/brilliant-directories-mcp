@@ -133,6 +133,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 1. **First 1-2 links the reader hits** — must be internal links only (on-site pages, member search, related posts).
 2. **After the first 1-2 internal links**, external citations mix in throughout post — sprinkled through later sections, never clustered in one footer block.
+3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
 **Short posts exception rule:** posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed.
 
@@ -148,11 +149,10 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
    - Cross-vertical examples: `"fitness race competition"` (events/sport), `"professional conference audience"` (events/corporate), `"wedding photographer working"` (blog/services), `"plant living room"` (blog/lifestyle).
    - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, re-pick three different words.
 
-   **Topic-fit gate** (every candidate before commit):
-   - Title must name the post's primary subject AND match its defining context. Sharing one keyword is not enough.
+   **Topic-fit gate** (evaluate ALL search results, pick the strongest topic-fit):
+   - Title must align with the post's primary subject AND match its defining context. Sharing one keyword is not enough.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
    - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
-   - Orientation cannot be verified from agent runtime — accept whatever orientation the candidate has.
 
    **Rejection logging:**
    - When rejecting a candidate under the gate, name the rejected title and the rejection reason (generic / wrong-context / season / etc.) in your chat response.
@@ -180,8 +180,6 @@ Use Pexels for all images. If no candidate passes the topic-fit gate, omit `post
 
    **Dedup before committing:** run corpus `Rule: Image dedup` — all three list-tool calls must appear in your turn; any hit, pick another candidate and re-run. Every replacement candidate must pass the topic-fit gate above before its own dedup run — the gate is not skippable on retries.
 2. **Omit `post_image`** entirely.
-
-**Orientation preference for feature image slots.** Feature slots (`post_image`, `hero_image`, `cover_photo`, multi-image album photos) prefer landscape (`w > h`). Orientation cannot be reliably verified from the agent runtime — accept whatever orientation the candidate has. The topic-fit gate above applies first; image-on-post is the goal only after a candidate passes topic fit.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through the Pexels workflow above. **Dedup scope:** cross-table dedup (corpus `Rule: Image dedup`) applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
 

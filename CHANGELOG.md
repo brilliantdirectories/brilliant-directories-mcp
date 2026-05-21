@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.53.18] - 2026-05-20
+
+### METHODOLOGY: topic-fit gate sharpened + URL uniqueness rule added + orientation noise removed
+
+Live observation: agent grabbed first Pexels result without evaluating all 10 returned candidates against topic-fit. Earlier failure: agent sometimes used the same internal URL multiple times in one post. Plus the existing rules had dead text about image orientation that the agent literally cannot verify at runtime.
+
+**Five surgical edits to METHODOLOGY:**
+
+1. **Topic-fit gate header rewritten.** Was: `(every candidate before commit)`. Now: `(evaluate ALL search results, pick the strongest topic-fit)`. Names the failure mode (first-result laziness) inline. Doesn't ban picking the first result if it IS the strongest fit.
+
+2. **`Title must name` → `Title must align with`.** "Name" reads as "subject word must appear verbatim in photo title" — too rigid. "Align with" is the right level of abstraction for an LLM running a topic-fit gate.
+
+3. **Topic-fit orientation bullet deleted.** Said "orientation cannot be verified from agent runtime — accept whatever orientation the candidate has." Non-action rule (do nothing) — zero operational value. Plus orientation isn't topic-fit, wrong section.
+
+4. **Orientation preference paragraph deleted (line 184).** Same content as #3, also self-contradicting ("prefer landscape" + "agent cannot verify"). Zero operational value.
+
+5. **URL uniqueness rule added as bullet 3 in Link order subsection.** `Unique href per post. No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.` Catches the repeat-URL failure pattern in drafting (not as post-hoc correction), anchors fix to existing Pattern catalog (anti-fabrication), drops as last resort (anti-lazy-drop).
+
+Validations:
+- Sim 1 (link-uniqueness wording): three candidate phrasings tested across discoverability/clarity/anti-regression/anti-fabrication/token-economy. v2 framing ("If two anchors would target the same URL") chosen over post-hoc framing ("On repeat").
+- Sim 2 (topic-fit + first-result): minion correctly identified the grab-first-result failure mode and recommended the gate header swap.
+
+**No Worker/npm/spec changes.** Drift check passes.
+
 ## [6.53.17] - 2026-05-20
 
 ### Axis-based Pexels search rule replaces "vary phrasing" prose
