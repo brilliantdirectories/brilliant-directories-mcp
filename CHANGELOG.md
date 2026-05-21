@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.24] - 2026-05-22
+
+### Runbook step-discipline directive: close the "improvised tool call between steps" gap
+
+Live blog-creation test showed the agent making an unauthorized `listSingleImagePosts data_id=14 limit=10` bulk-pull of the blog feed right after Post-type discovery (step 3), to "see what's been covered" before picking a topic. The agent treated it as part of finishing Post-type discovery — caching markers, then sampling contents. No runbook step authorized that call; the agent filled the open space between steps with an invented one.
+
+Root cause: rule placement + open space. The "never bulk-list to pre-scan" ban lives in the Topic resolution section (step 5), which the agent hadn't reached when it made the call after step 3. Steps ended without explicit forward momentum, leaving room to improvise.
+
+Fix: strengthen the global runbook intro directive (fires before any step, covers all step boundaries) instead of per-step bandaids:
+
+> Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-{post,event} failure, continue to the next.
+
+Three short imperatives, each a separate compliance check. "no extras" bolded + standing alone catches any unauthorized call regardless of which step the agent files it under. Applied to both blog.md and events.md intros.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — runbook intro directive.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — runbook intro directive (parity).
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.23] - 2026-05-22
 
 ### Stage 5 image strategy: broad-aesthetic topic-fit rule + topic-fit cap bumped 3 → 5

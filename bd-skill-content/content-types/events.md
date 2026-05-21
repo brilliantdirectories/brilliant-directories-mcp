@@ -12,7 +12,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Run the runbook in order; on per-step failure for a given event, continue to the next event.
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-event failure, continue to the next event.
 
 1. **Mode detection.** Per METHODOLOGY `Mode detection`.
 2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).

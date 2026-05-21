@@ -12,7 +12,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 
 ## End-to-end runbook
 
-The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Run in order; on per-post failure continue to the next post.
+The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-post failure, continue to the next post.
 
 1. **Mode detection.** Per METHODOLOGY `Mode detection`.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
