@@ -214,7 +214,6 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 ### Do NOT pass
 
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
-- `post_live_date` — BD auto-sets it to the create moment in site timezone. Override only for import/migration.
 - `revision_timestamp` — BD-managed.
 
 `createSingleImagePost` accepts the `post_meta_title` and `post_meta_description` fields; the wrapper passes them through.

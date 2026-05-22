@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.29] - 2026-05-21
+
+### Drop the post_live_date "Do NOT pass" lines — negation bloat
+
+v6.55.28 removed `post_live_date` from the Required field set but added a "Do NOT pass" line in both runbooks. That negation is dead weight: the agent only ever passed the field because the Required list told it to. With that line gone, the field is out of the agent's mental model entirely — there's nothing to negate. A "don't pass X" instruction earns its place only when the agent would plausibly reach for X on its own (e.g. blog's "Do NOT pass `post_start_date`", which the agent might misapply from the events sibling). A field it never knew about doesn't qualify. Out of sight, out of mind.
+
+- **blog.md** + **events.md** — removed the `post_live_date` "Do NOT pass" lines added in v6.55.28. The field is now entirely absent from both files.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md`
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.28] - 2026-05-21
 
 ### Stop passing post_live_date: BD auto-fills it on create

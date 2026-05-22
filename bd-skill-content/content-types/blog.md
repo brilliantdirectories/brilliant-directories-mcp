@@ -252,5 +252,4 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 - `post_start_date`, `post_expire_date` — events-only; blogs do not have a scheduled date semantic.
 - `post_venue`, `post_location`, `lat`, `lon`, `country_sn`, `state_sn` — geo fields; blogs do not have a place anchor.
 - `auto_geocode` — geo-only; not applicable to blogs.
-- `post_live_date` — BD auto-sets it to the create moment in site timezone. Override only for import/migration.
 - `revision_timestamp` — BD-managed.
