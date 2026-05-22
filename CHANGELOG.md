@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.30] - 2026-05-21
+
+### Topic resolution: harden diversity, kill copy-menu examples, name search intent
+
+Live themed run ("topics a men's health magazine would cover") produced a pool where three of five candidates clustered on strength/muscle, and the agent lifted example phrases nearly verbatim (a "225lb bench press" topic straight from the example table, qualifier phrasing straight from the directive). Two failure modes confirmed: the diversity rule checked the wrong unit, and same-vertical examples were being treated as a topic menu rather than illustrations.
+
+- **Within-pool diversity rule hardened + repositioned.** Old rule triggered only on a shared "primary noun" at a two-topic threshold — three different-noun strength topics slipped through. New rule: each candidate must occupy its own sub-theme; regenerate if two or more share a sub-theme, anchor noun, focus, or subject (four-axis union, no single-axis loophole). Moved up to directly follow the brainstorm instruction so it governs pool composition before the per-candidate framing rules.
+- **Broad→specific example table re-diversified.** Was four fitness rows (the agent copied them as topics). Now four unrelated verticals (legal, roofing, dog training, wedding photography), varied title openings (no question-only or Best/Top pattern), with a header note: "read the broad→specific transformation, not the topic."
+- **Qualifier rule stripped of examples + reframed.** Removed the copyable Google-query examples; reframed on the load-bearing concept: "Pick qualifiers that match real search intent — what readers actually query, not a narrowing that sounds clever to a strategist."
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — Topic resolution section.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.29] - 2026-05-21
 
 ### Drop the post_live_date "Do NOT pass" lines — negation bloat

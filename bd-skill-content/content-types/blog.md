@@ -84,25 +84,25 @@ User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim
 
 User said "write articles for SEO traffic," "organic search," "viral content," "industry news," "related to a topic," "trending content," or similar — anything that means "you pick the topic." Brainstorm `N` distinctly different topic candidates cached from **Site context discovery**.
 
+**Within-pool diversity — span distinct subjects.** Each candidate must occupy its own sub-theme of the vertical. If two or more share a sub-theme, anchor noun, focus, or subject, regenerate with broader spread before taking #1.
+
 **If user signaled viral/trending intent**, also pull `WebSearch` for trending discussions/news in the vertical (last 30-60 days).
 
 **Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
 
 **Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper on each candidate:
 
-**Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES**
+**Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES** (each row a different vertical — read the broad→specific transformation, not the topic)
 | Too broad (Bad LLM default) | Good topics with depth |
 |---|---|
-| How Much Protein to Build Muscle | How Much Protein a 160lb Lifter Needs When Losing Fat vs Gaining Muscle |
-| Best Stretches for Runners | 6 Calf Stretches That Work After a Marathon |
-| Bench Press Tips for Lifters | Why Most Lifters Stall at 225lb Bench Press and How to Push Past It |
-| Beginner Strength Training | First-Week Strength Routine When Coming Back After ACL Surgery |
+| How to Choose a Lawyer | What to Ask a Family Lawyer Before Filing for Custody in a No-Fault State |
+| Roof Repair Tips | The Real Lifespan of a Hail-Damaged Asphalt Roof Before Replacement |
+| Dog Training Basics | Stop a Rescue Dog From Pulling on Walks in Its First Two Weeks Home |
+| Wedding Photography Ideas | Why Golden-Hour Light Transforms an Outdoor October Ceremony |
 
 Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
-**Within-pool diversity — no shared anchor noun.** The `N` pool candidates must span distinct subjects, not variations of one. If pool 1 has two topics anchored on the same primary noun, regenerate pool 1 with broader subject spread before taking #1.
-
-**Pick qualifiers from where real readers are stuck or searching** — the question they already type into Google ("why am I stuck at 225 bench press," "calves sore after marathon"). Not a narrowing that sounds clever to a strategist ("for tall lifters," "for career switchers").
+**Pick qualifiers that match real search intent** — what readers actually query, not a narrowing that sounds clever to a strategist.
 
 **Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
 
