@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.28] - 2026-05-21
+
+### Stop passing post_live_date: BD auto-fills it on create
+
+A live blog run showed the agent spawning a Bash `date` call to compute `post_live_date` before the create — a field the blog and events runbooks listed as Required. Verified live against find-fitness-pros.directoryup.com: created a draft post passing only `user_id`/`data_id`/`data_type`/`post_status`/`post_title` (no date), and BD auto-stamped `post_live_date` to the create moment in site timezone. The tool spec already says so ("Usually auto-set on create; override only for import/migration").
+
+Passing it was wasted work and a small risk surface — if the agent ever formatted the timestamp wrong, BD "silently truncates other formats, corrupting the value." Letting BD auto-set is strictly safer. `post_live_date` auto-fills for ALL single-image post types; events' `post_start_date` / `post_expire_date` (event begin/end, event-local wall-clock) are unaffected and stay required.
+
+- **blog.md** — removed `post_live_date` from Required; added to "Do NOT pass" with the auto-set reason.
+- **events.md** — same removal; fixed the Date/time formats section ("All three fields" → "Both", dropped the stale `post_live_date` bullet that wrongly described it as scheduled-publish visibility — that semantic belongs to `post_start_date`).
+
+Net effect: the agent stops making the `date` shell call and stops passing a BD-managed field.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — field-reference cleanup.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — field-reference + Date/time section cleanup.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.27] - 2026-05-21
 
 ### Dedup before research: cheap gate first, drop dupes before spending a research cycle

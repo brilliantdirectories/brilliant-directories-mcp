@@ -191,7 +191,6 @@ What `createSingleImagePost` receives.
 | `data_id` | resolved events post-type id from Stage 3 |
 | `post_title` | **Hybrid format: short headline + colon + concise hook.** Never two colons in a single title — if the headline itself contains a colon (e.g. `"Aspen Ideas: Health"`), use a different separator (e.g. comma, hyphen) or no separator for the hook. Cap at ~54 chars total. Plain text, no HTML. Aim for clarity over completeness — a reader scanning the card should immediately know what the event IS and why they'd care. **Headline conveys what the event IS, not just what it's called.** Names that already describe the event (`"Austin Tech Summit"`, `"Community Yoga"`, `"IRONMAN 70.3 Boulder"`) stand on their own. Brand or series names that don't self-explain (`"NEWLIFE Expo"`, `"Cool Sommer Mornings"`) benefit from a category appended (`"NEWLIFE Expo Wellness Retreat"`, `"Cool Sommer Mornings Triathlon"`). **Hook is whatever's most clarifying for THIS event:** venue or city when location is the draw, format/distance for races (`"5K"`, `"1.2-mi swim"`), a special angle (`"Free Class"`, `"Sunset Edition"`), or a combination if space allows. Date is optional — include when it adds context and fits within the cap. |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
-| `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
 
 ### Recommended (include when source data supports)
@@ -215,14 +214,14 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 ### Do NOT pass
 
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
+- `post_live_date` — BD auto-sets it to the create moment in site timezone. Override only for import/migration.
 - `revision_timestamp` — BD-managed.
 
 `createSingleImagePost` accepts the `post_meta_title` and `post_meta_description` fields; the wrapper passes them through.
 
 ### Date/time formats
 
-All three fields use `YYYYMMDDHHmmss` (14 digits). BD silently truncates other formats, corrupting the value.
+Both fields use `YYYYMMDDHHmmss` (14 digits). BD silently truncates other formats, corrupting the value.
 
-- `post_live_date`: when the post becomes visible (now, or future for scheduled publish). **Site timezone.**
 - `post_start_date`: event start (date AND time). **Event-local wall-clock — the time as a visitor in the event's city would read it. Do NOT convert to the site's own timezone.** A 7 PM Brooklyn event on a Los Angeles-timezoned site stores as `20260616190000`, not `20260616160000`.
 - `post_expire_date`: event end (date AND time). Same event-local wall-clock as `post_start_date`.

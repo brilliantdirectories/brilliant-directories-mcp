@@ -235,7 +235,6 @@ What `createSingleImagePost` receives.
 | `data_id` | resolved blog post-type id from Stage 3 |
 | `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~70 char target |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
-| `post_live_date` | now in site timezone, `YYYYMMDDHHmmss` |
 | `user_id` | resolved author from Stage 4 |
 
 ### Recommended (include when source data supports)
@@ -253,4 +252,5 @@ Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image,
 - `post_start_date`, `post_expire_date` — events-only; blogs do not have a scheduled date semantic.
 - `post_venue`, `post_location`, `lat`, `lon`, `country_sn`, `state_sn` — geo fields; blogs do not have a place anchor.
 - `auto_geocode` — geo-only; not applicable to blogs.
+- `post_live_date` — BD auto-sets it to the create moment in site timezone. Override only for import/migration.
 - `revision_timestamp` — BD-managed.
