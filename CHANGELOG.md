@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.26] - 2026-05-21
+
+### Blog runbook: flatten 5a/5b back to plain sequential numbers (render fix)
+
+The v6.55.25 pool-first split used `5a.`/`5b.` as runbook step markers. `5a.`/`5b.` are not valid Markdown ordered-list markers, so Claude's skill viewer rendered the whole runbook ragged — auto-numbered valid markers with hidden numbers, then literal "5a."/"5b." as plain text. The agent reads raw markdown so execution was fine, but the rendered runbook looked broken.
+
+Fix: renumber the runbook to a clean sequential `1.`–`14.`. Old `5a.` → `5` (Build the topic pool), old `5b.` → `6` (Apply pool discipline), every later step shifts down by one. The pool-first ordering is preserved (build pool at 5, apply discipline at 6, source research at 7) and the METHODOLOGY visible-pool gate still does the enforcing.
+
+Aligned all dependent references to the new numbering:
+- Section headings: Source research `(Stage 6 → 7)`, Dedup `(7 → 8)`, Category routing `(8 → 9)`, Content manufacture `(11 → 12)`, BD Blog field reference `(12 → 13)`.
+- Cross-references: Content manufacture "Proceed straight from Step 10 → Step 11"; Topic resolution "The Stage 7 → Stage 8 per-candidate dedup query".
+- METHODOLOGY stage references (Stage 1, Stage 4, Stage 5, Stage 7) left untouched — those point to METHODOLOGY.md, not this file's runbook.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — runbook renumber + reference alignment.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.25] - 2026-05-21
 
 ### Pool-first gate: stop the agent collapsing the candidate pool to its first instinct
