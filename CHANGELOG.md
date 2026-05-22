@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.31] - 2026-05-21
+
+### Title-shape variety: stop the agent defaulting every candidate to How/What/Why
+
+Across themed test runs the pool came back with all five candidates opened as How/What/Why titles — the model's default interrogative framing, not anything the skill taught. The subjects were diverse (the v6.55.30 diversity rule held); only the title *shape* was monotone. Root cause: the broad→specific example table modeled mostly instructional shapes (question/imperative), and the pool stage had no instruction to vary framing.
+
+- **Topic resolution** — expanded the broad→specific example table to 8 rows, one per title shape (Imperative, How-to, Question, Listicle, Declarative, Noun-phrase, Comparison, Guide), each in a distinct vertical (dog training, roofing, legal, finance, HVAC, photography, mattresses, gardening — none fitness, no copy-menu on a fitness site). Added `Title shape` + `What it does` columns and a lead-in: vary the framing across the `N` candidates, do not open all with How/What/Why.
+- **Title shape section** — removed the old thin 5-row pattern table (How-to/Listicle/Question/Comparison/News, fitness examples) that overlapped and underspecified the new one. Replaced with a pointer to the canonical 8-shape table plus the unique caps/anti-clickbait/single-statement rules it alone carried. One source of truth for title shapes now.
+- **prompts/blog.md** — example-prompt copy refresh; fixed `COUNT: 1 blog post` → `post(s)` so the canned routine reads correctly for any count.
+
+The `Post format → target length` table is unchanged — it governs article length/structure (a different axis from title phrasing) and is not redundant with the shape table.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — 8-shape title table + Title-shape section reconciliation.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/prompts/blog.md` — example-prompt copy.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.30] - 2026-05-21
 
 ### Topic resolution: harden diversity, kill copy-menu examples, name search intent

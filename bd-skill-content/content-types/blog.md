@@ -92,13 +92,18 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 
 **Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper on each candidate:
 
-**Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES** (each row a different vertical — read the broad→specific transformation, not the topic)
-| Too broad (Bad LLM default) | Good topics with depth |
-|---|---|
-| How to Choose a Lawyer | What to Ask a Family Lawyer Before Filing for Custody in a No-Fault State |
-| Roof Repair Tips | The Real Lifespan of a Hail-Damaged Asphalt Roof Before Replacement |
-| Dog Training Basics | Stop a Rescue Dog From Pulling on Walks in Its First Two Weeks Home |
-| Wedding Photography Ideas | Why Golden-Hour Light Transforms an Outdoor October Ceremony |
+**Bad Broad versus Good Specific — across title shapes** (each row a different shape AND a different vertical — read the broad→specific transformation and the variety of framings, not the topic). Vary the framing across your `N` candidates; do not open all of them with "How"/"What"/"Why".
+
+| Title shape | What it does | Too broad (Bad LLM default) | Good (specific, in that shape) |
+|---|---|---|---|
+| Imperative | Command, verb-first, promises an outcome | Dog Training Basics | Stop a Rescue Dog From Pulling on Walks in Its First Two Weeks Home |
+| How-to | Explicit instruction | Roof Repair Tips | How to Tell If a Hail-Damaged Roof Needs Full Replacement or a Patch |
+| Question | Poses the reader's query | Choosing a Lawyer | Do You Need a Lawyer to File for Custody in a No-Fault State? |
+| Listicle / number | Counted set | Saving for Retirement | 5 Retirement Accounts a Freelancer Should Open Before Age 40 |
+| Declarative / statement | Asserts a claim or truth | Electric Cars | Heat Pumps Are Quietly Replacing the Gas Furnace in Cold Climates |
+| Noun-phrase / definitional | Names the subject, no verb | Wedding Photography Ideas | The Real Cost of a Second Shooter for a Full-Day Wedding |
+| Comparison / vs | Pits two options against each other | Types of Mattresses | Memory Foam vs Latex for Side Sleepers With Back Pain |
+| Guide / explainer | "The complete/beginner's" framing | Houseplant Care | A Beginner's Guide to Keeping Fiddle-Leaf Figs Alive Through Winter |
 
 Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
@@ -208,15 +213,7 @@ Each inline image is sourced via the Pexels workflow (corpus `Rule: Image URLs`)
 
 ### Title shape
 
-Blog titles run different from event titles. Clickbait-flavored but anti-slop-disciplined:
-
-| Pattern | Example |
-|---|---|
-| How-to | "How Spin Training Keeps You Feeling Younger" |
-| Listicle | "7 Pilates Studios in Austin With Reformer Classes" |
-| Question | "Do You Need a Lawyer to Form an LLC?" |
-| Comparison | "Reformer Pilates vs Mat Pilates for Faster Toning" |
-| News | "Major Property Tax Reform Takes Effect Across Texas in 2026" |
+Blog titles run different from event titles — clickbait-flavored but anti-slop-disciplined. Pick a shape from the title-shape table in `Topic resolution`; vary the shape across the run rather than defaulting every title to "How"/"What"/"Why".
 
 Caps: ~70 chars where SEO matters (Google truncates title tags around there). Keep punchy. No clickbait that overpromises ("This One Trick Will Change Your Life"). No throat-clearing. No fabricated curiosity. **Single statement only — no `X: Y`, no `X (Y)`, no `X? Y`.**
 
