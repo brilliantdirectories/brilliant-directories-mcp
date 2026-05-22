@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.25] - 2026-05-21
+
+### Pool-first gate: stop the agent collapsing the candidate pool to its first instinct
+
+Live blog-creation test (autonomous, "pick a topic that fits my niche, focus on emerging current-event news") showed the agent landing on a single topic (GLP-1 drugs + muscle loss), then running deep source research and dedup on that one topic. It never brainstormed the N=5 pool — same training-data-anchoring failure class as the Bryant Park event bug. It collapsed "pick the topic" and "research the topic" into one motion.
+
+Root cause: ordering + a missing gate. `Candidate pool discipline` described how to manage a pool ("take #1, on failure drop it") but never required the full numbered pool to exist as a visible artifact before per-candidate research began. So the agent treated its first instinct as "#1" and ran with it. The blog runbook also bundled topic resolution into a single step, with the pool pointer buried in the section body where it was easy to skip past straight into research.
+
+Fix — three surgical touches, no new directives beyond one load-bearing sentence:
+
+- **METHODOLOGY `Candidate pool discipline`** — added the missing gate: "emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not." The second sentence draws the line between legitimate pool-building research and the collapse. Folded the now-redundant "number the candidates 1-N" clause into the emit sentence.
+- **blog.md runbook** — split step 5 into `5a. Build the topic pool` (N=5) + `5b. Apply pool discipline`, welding the pool-first order into the step numbers. Step 6 (source research) now structurally follows a pool that already exists. Deleted the duplicate pool pointer from the Topic resolution section body.
+- **blog.md Topic resolution** — "Frame the topic" → "Frame each candidate" (Topic bar) and "+ on each candidate" (Topic depth), so the quality bars read as applying to all five pool members, not one.
+
+Universal METHODOLOGY gate covers blog, events, and future content types. Events runbook still uses the single-step shape (separate pass).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — pool-first gate.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — 5a/5b split, duplicate-pointer removal, per-candidate framing.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.24] - 2026-05-22
 
 ### Runbook step-discipline directive: close the "improvised tool call between steps" gap

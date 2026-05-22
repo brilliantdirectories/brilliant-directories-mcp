@@ -50,7 +50,7 @@ Resolve the `user_id` that authors the post.
 
 ### Candidate pool discipline (universal pattern)
 
-When brainstorming a pool of candidates (topics, events, jobs, properties, anything the agent picks from for the user) — number the candidates 1-N. Interactive: surface the list, user picks. Autonomous: take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
+When brainstorming a pool of candidates (topics, events, jobs, properties, anything the agent picks from for the user) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Interactive: surface the list, user picks. Autonomous: take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 

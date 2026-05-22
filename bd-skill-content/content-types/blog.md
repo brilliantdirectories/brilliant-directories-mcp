@@ -18,7 +18,8 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Topic resolution.** Run the `Topic resolution` section.
+5a. **Build the topic pool.** Run the `Topic resolution` section. Pool size `N=5`.
+5b. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
 6. **Source research per topic** (METHODOLOGY Stage 2). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
 7. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
@@ -75,8 +76,6 @@ User's explicit post-type pick always wins.
 
 ## Topic resolution (Stage 5 of runbook)
 
-Apply METHODOLOGY's `Candidate pool discipline (universal pattern)` when brainstorming candidates. Pool size `N=5`.
-
 ### Shape A — User-specified topic
 
 User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim. Skip vertical brainstorming. Run source research for that exact topic.
@@ -87,9 +86,9 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 
 **If user signaled viral/trending intent**, also pull `WebSearch` for trending discussions/news in the vertical (last 30-60 days).
 
-**Topic bar (Shape B).** Frame the topic for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
+**Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
 
-**Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper:
+**Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper on each candidate:
 
 **Bad Broad Topic EXAMPLES versus Good Specific Topic EXAMPLES**
 | Too broad (Bad LLM default) | Good topics with depth |
