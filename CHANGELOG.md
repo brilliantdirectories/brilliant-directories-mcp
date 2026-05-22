@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.32] - 2026-05-22
+
+### Events runbook aligned to blog; unified reference convention across both content types
+
+The events runbook had drifted from the hardened blog runbook and carried a real bug: after the v6.55.27 METHODOLOGY Stage 2/3 swap (Stage 2 = Duplicate detection, Stage 3 = Source research), events still cited the pre-swap numbers — Step 5 source research cited "Stage 2", Step 6 dedup cited "Stage 3" — so every events stage citation pointed at the wrong METHODOLOGY stage. Fixed, plus a structural + convention pass to bring events in line with blog while preserving every events-only load-bearing detail.
+
+**events.md:**
+- Fixed the backwards METHODOLOGY stage citations (source research → `Stage 3: Source research`, dedup → `Stage 2: Duplicate detection`).
+- Made the discovery model explicit: events discovers real events from aggregator/calendar pages (discovery IS the research), so the runbook now spells out faceted discovery — derive facets (category from `feature_categories` + location + date-range), `WebSearch` to find list-pages, `WebFetch` a list-page to harvest many events in one fetch, capture ~5 candidates, number per `Candidate pool discipline`, dedup-and-advance through the captured list on a dupe (no re-fetch). Geocode + content run only on the dedup survivor.
+- De-bloated the Site-context step to delegate to METHODOLOGY `Stage 1: Site context` (the `data_filename` caching it re-listed is already mandated there).
+- Removed a redundant standalone `Author resolution` section that only restated runbook Step 4 (blog has no such section).
+- Verified against a pre-edit backup: all events-only load-bearing blocks intact byte-for-byte (Nominatim geocoding + non-Latin transliteration + adaptive retry ladder + normalize rules + extraction prompt, event-local wall-clock dates, venue/location fields, `type_of_feature=1` marker + multilingual fallback, title hybrid format, ±24h dedup tolerance, source buckets + vertical tailoring, content voice + internal-link table).
+
+**Unified reference convention (both blog.md and events.md):**
+- METHODOLOGY references are always the exact backticked heading anchor, no `##` prefix (e.g. `` `Stage 5: Content manufacture (universal)` ``, `` `Universal post fields` ``, `` `Tags` ``); sub-sections chained with `→` (`` `Stage 5: Content manufacture (universal)` → `Image strategy` ``).
+- A file's own runbook items are always "runbook Step N" — in both heading labels (`## Dedup (runbook Step 6)`) and inline cross-references — so they never read as METHODOLOGY "Stages". "Stage" now refers exclusively to METHODOLOGY; "runbook Step" exclusively to a file's own runbook.
+- In-file section pointers use the exact backticked section name. Two independent reviews confirmed zero drift across both files.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — structural alignment + discovery model + reference convention.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — reference convention only (no behavioral change).
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.31] - 2026-05-21
 
 ### Title-shape variety: stop the agent defaulting every candidate to How/What/Why

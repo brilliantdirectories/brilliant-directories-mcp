@@ -21,19 +21,19 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 5. **Build the topic pool.** Run the `Topic resolution` section. Pool size `N=5`.
 6. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
 7. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
-8. **Source research per topic** (METHODOLOGY Stage 3). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
+8. **Source research per topic.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
 9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
-10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
-11. **Image dedup (FEATURE).** Per METHODOLOGY Stage 5 dedup step. For blog: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
-12. **Content manufacture.** Proceed straight from Step 11 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
+10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
+11. **Image dedup (FEATURE).** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. For blog: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
+12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
 13. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
-14. **Audit summary** (METHODOLOGY Stage 7).
+14. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
 
 ### Interactive-mode question order
 
 When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer:
 
-1. **Post-type** (if Stage 3 found multiple blog-flavored post-type candidates)
+1. **Post-type** (if runbook Step 3 found multiple blog-flavored post-type candidates)
 2. **Topic input** ("What's the article about? Or do you want me to suggest topics for SEO traffic in your vertical, or write a piece designed to go viral for your industry?")
 3. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
 4. **Categories / vertical filter** (if not pre-specified)
@@ -44,7 +44,7 @@ Skip any question the user already answered in the original request.
 
 ---
 
-## Post-type discovery (Stage 3 of runbook)
+## Post-type discovery (runbook Step 3)
 
 Resolve by user intent first, then canonical markers, then semantic match.
 
@@ -74,7 +74,7 @@ User's explicit post-type pick always wins.
 
 ---
 
-## Topic resolution (Stage 5 of runbook)
+## Topic resolution (runbook Step 5)
 
 ### Shape A — User-specified topic
 
@@ -109,13 +109,13 @@ Specificity layers: audience segment + scenario + format. The qualifiers ARE the
 
 **Pick qualifiers that match real search intent** — what readers actually query, not a narrowing that sounds clever to a strategist.
 
-**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
+**Never bulk-list existing posts to "understand coverage" before picking a topic.** The per-candidate query in the `Dedup` section catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
 
 ---
 
-## Source research (Stage 8 of runbook)
+## Source research (runbook Step 8)
 
-Per METHODOLOGY Stage 3, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date.
+Per METHODOLOGY `Stage 3: Source research`, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date.
 
 **Blog-specific source candidate buckets:**
 
@@ -129,18 +129,18 @@ Per METHODOLOGY Stage 3, with one adjustment: the **Date sanity gate does NOT ap
 
 ---
 
-## Dedup (Stage 7 of runbook)
+## Dedup (runbook Step 7)
 
-Per METHODOLOGY Stage 2. Blog-specific match criteria:
+Per METHODOLOGY `Stage 2: Duplicate detection`. Blog-specific match criteria:
 - Title: semantic match (not string-exact).
 - Topic angle: semantic overlap on the core thesis/angle, not just shared keywords.
 - Date: NOT a dedup factor (blogs are evergreen).
 
 ---
 
-## Category routing (Stage 9 of runbook)
+## Category routing (runbook Step 9)
 
-Per METHODOLOGY Stage 4. Blogs use the post type's `feature_categories` (cached from Stage 1).
+Per METHODOLOGY `Stage 4: Category routing`. Blogs use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
 Authorization:
 - Interactive grant ("yes, create new blog categories") → skill respects for the run.
@@ -148,9 +148,9 @@ Authorization:
 
 ---
 
-## Content manufacture (Stage 12 of runbook)
+## Content manufacture (runbook Step 12)
 
-Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
 
 ### Post format → target length
 
@@ -219,7 +219,7 @@ Caps: ~70 chars where SEO matters (Google truncates title tags around there). Ke
 
 ---
 
-## BD Blog field reference (Stage 13 of runbook)
+## BD Blog field reference (runbook Step 13)
 
 What `createSingleImagePost` receives.
 
@@ -229,14 +229,14 @@ What `createSingleImagePost` receives.
 |---|---|
 | `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
 | `data_type` | `20` (single-image classification, always for blogs) |
-| `data_id` | resolved blog post-type id from Stage 3 |
+| `data_id` | resolved blog post-type id from runbook Step 3 |
 | `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~70 char target |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
-| `user_id` | resolved author from Stage 4 |
+| `user_id` | resolved author from runbook Step 4 |
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `## Tags`**. Blog-specific additions and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples below:
 
 | Field | Blog-specific note |
 |---|---|

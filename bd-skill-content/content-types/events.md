@@ -15,35 +15,35 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-event failure, continue to the next event.
 
 1. **Mode detection.** Per METHODOLOGY `Mode detection`.
-2. **Site context discovery** (METHODOLOGY Stage 1): `getSiteInfo`, `listTopCategories limit=25` (site-flavor sample only), `listPostTypes`, menus (`main%`/`top%`/`header%`/`footer%` sequence). Also fetch `data_filename` from the resolved events post type (cache for Pattern 1/2/3 URL construction in Stage 9).
+2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source research** (METHODOLOGY Stage 2): brainstorm 5-10 candidates from the `Source candidates` section, probe via `WebSearch`, extract via `WebFetch`, apply all 6 quality gates. Land N viable candidates BEFORE any dedup check.
-6. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for events-specific match criteria.
+5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture ~5 candidates and number them per METHODOLOGY `Candidate pool discipline (universal pattern)`.
+6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
-9. **Image selection.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup.** Per METHODOLOGY Stage 5 dedup step. For events: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
-11. **Content manufacture.** Proceed straight from Step 10 — no extra lookups. Follow METHODOLOGY Stage 5 universal rules; this file adds events-specific load-bearing facts.
+9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
+10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. For events: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
+11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
-13. **Audit summary** (METHODOLOGY Stage 7).
+13. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
 
 ### Interactive-mode question order
 
-When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer before the next:
+When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer:
 
-1. **Post-type** (if Stage 3 found multiple `type_of_feature=1` candidates)
+1. **Post-type** (if runbook Step 3 found multiple `type_of_feature=1` candidates)
 2. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
 3. **Cities / region** (if the user didn't already specify)
 4. **Categories / vertical filter** (if not already specified)
 5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
-6. **Category-creation grant** (only ask if Stage 8 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
+6. **Category-creation grant** (only ask if runbook Step 8 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
 
-If the user already specified any of these in their request, skip that question.
+Skip any question the user already answered in the original request.
 
 ---
 
-## Post-type discovery (Stage 3 of runbook)
+## Post-type discovery (runbook Step 3)
 
 A BD site does NOT necessarily have a post type named "Events." Site owners rename, translate, or run multiple event-flavored post types ("Open Houses" + "Property Auctions" + "Community Events").
 
@@ -64,15 +64,13 @@ The user's explicit post-type pick always wins.
 
 ---
 
-## Author resolution (Stage 4 of runbook)
+## Source candidates (runbook Step 5)
 
-Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id` (cached from Stage 1 `listPostTypes`).
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, point a `WebSearch` at them to find list-pages, then `WebFetch` a list-page to harvest many events in one fetch.
 
----
+**Facets to derive** (from site context + the user's request): category (from the resolved post type's `feature_categories`) + location + date-range, with audience/vertical as flavor.
 
-## Source candidates (Stage 5 of runbook)
-
-For METHODOLOGY Stage 2a, brainstorm 5-10 candidates from these categories, tailored to the user's vertical + location:
+**Where to point the faceted `WebSearch`** — brainstorm real domain names, not "some sites":
 
 - City government event calendars, county tourism boards, chamber of commerce sites, library/community-center calendars
 - Trade association event pages, industry trade-publication event sections, CE calendars for licensed professions
@@ -82,22 +80,22 @@ For METHODOLOGY Stage 2a, brainstorm 5-10 candidates from these categories, tail
 
 Tailor by vertical: real estate → MLS open-house listings; fitness → race calendars, gym/yoga schedules; medical/dental → CME calendars, association meetings; music → venue calendars + Bandsintown; food → restaurant association events.
 
-Be specific. Brainstorm real domain names, not "some sites."
+A single list-page `WebFetch` returns many events. Capture ~5 as the candidate pool, number them per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
 ---
 
-## Dedup (Stage 6 of runbook)
+## Dedup (runbook Step 6)
 
-Per METHODOLOGY Stage 3. Events-specific match criteria:
+Per METHODOLOGY `Stage 2: Duplicate detection`. Events-specific match criteria:
 - Title: semantic match.
 - Date: `post_start_date` within ±24 hours.
 - Location: same `post_venue` if known, else same city.
 
 ---
 
-## Geocoding (Stage 7 of runbook)
+## Geocoding (runbook Step 7)
 
-Run on survivors only (candidates that passed Stage 6 dedup) — don't waste Nominatim calls on dupes.
+Run on survivors only (candidates that passed runbook Step 6 dedup) — don't waste Nominatim calls on dupes.
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -144,9 +142,9 @@ Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `
 
 ---
 
-## Category routing (Stage 8 of runbook)
+## Category routing (runbook Step 8)
 
-Per METHODOLOGY Stage 4. Events use the post type's `feature_categories` (cached from Stage 1).
+Per METHODOLOGY `Stage 4: Category routing`. Events use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
 Authorization:
 - Interactive grant ("yes, create new event categories") → skill respects for the run.
@@ -154,9 +152,9 @@ Authorization:
 
 ---
 
-## Content manufacture (Stage 11 of runbook)
+## Content manufacture (runbook Step 11)
 
-Follow METHODOLOGY Stage 5 (universal): EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
 
 **Voice:** reads like a naturally-written editorial event page, not an SEO link container. Local context, scene details, what to expect — the reader is deciding whether to go, not parsing a directory listing.
 
@@ -178,7 +176,7 @@ Events get the full set of filter dimensions available — category, location (`
 
 ---
 
-## BD Events field reference (Stage 12 of runbook)
+## BD Events field reference (runbook Step 12)
 
 What `createSingleImagePost` receives.
 
@@ -188,14 +186,14 @@ What `createSingleImagePost` receives.
 |---|---|
 | `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
 | `data_type` | `20` (single-image classification, always for events) |
-| `data_id` | resolved events post-type id from Stage 3 |
+| `data_id` | resolved events post-type id from runbook Step 3 |
 | `post_title` | **Hybrid format: short headline + colon + concise hook.** Never two colons in a single title — if the headline itself contains a colon (e.g. `"Aspen Ideas: Health"`), use a different separator (e.g. comma, hyphen) or no separator for the hook. Cap at ~54 chars total. Plain text, no HTML. Aim for clarity over completeness — a reader scanning the card should immediately know what the event IS and why they'd care. **Headline conveys what the event IS, not just what it's called.** Names that already describe the event (`"Austin Tech Summit"`, `"Community Yoga"`, `"IRONMAN 70.3 Boulder"`) stand on their own. Brand or series names that don't self-explain (`"NEWLIFE Expo"`, `"Cool Sommer Mornings"`) benefit from a category appended (`"NEWLIFE Expo Wellness Retreat"`, `"Cool Sommer Mornings Triathlon"`). **Hook is whatever's most clarifying for THIS event:** venue or city when location is the draw, format/distance for races (`"5K"`, `"1.2-mi swim"`), a special angle (`"Free Class"`, `"Sunset Edition"`), or a combination if space allows. Date is optional — include when it adds context and fits within the cap. |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
-| `user_id` | resolved author from Stage 4 |
+| `user_id` | resolved author from runbook Step 4 |
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `## Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `## Tags`**. Events-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
 
 | Field | Events-specific note |
 |---|---|
