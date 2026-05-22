@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.33] - 2026-05-22
+
+### Events: give the location facet an explicit derivation source (stop the events-feed bulk-pull)
+
+First live events run on the aligned runbook executed cleanly end-to-end EXCEPT one deviation: at the start the agent ran `listSingleImagePosts data_id=<events> limit=10` to bulk-pull the existing events feed, justified as "understand the site's geographic focus and find internal-link targets." The runbook intro's "no extras" directive didn't stop it because the agent believed it was missing a required input — Source discovery (Step 5) named **location** as a discovery facet but never said how to derive it. With no city in the user's prompt, the agent improvised by fishing the feed.
+
+Root-cause fix (not a bare prohibition): the `Source candidates` section now gives each facet an explicit derivation method, and location gets a sanctioned source ladder — the user's request if they named a city/region; else `listCities` (BD auto-seeds it on member signup, so it surfaces the cities the site actually serves); else `getSiteInfo` `primary_country`/timezone. Plus the targeted guard at that exact decision point: "Never bulk-list existing posts to infer geographic focus — `listCities` is the sanctioned signal." This answers the question the agent was asking AND closes the bulk-pull path. Consistent with METHODOLOGY's existing `listCities` member-city guidance.
+
+Everything else in the live run validated correctly: faceted discovery, captured 5-candidate pool, three correct drops on three distinct gates (dedup hit / source can't substantiate / missing load-bearing location), dedup-before-geocode, URL liveness gate dropping an unverifiable portal, Nominatim Tier-1 venue-level geocode, image axis pipeline, Pattern 6 member link with city→state fallback, and a create payload with correct event-local wall-clock dates, venue/location split, lat/lon/US/CA, and no `post_live_date`/`auto_geocode`.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — location-facet derivation ladder + bulk-pull guard.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.32] - 2026-05-22
 
 ### Events runbook aligned to blog; unified reference convention across both content types

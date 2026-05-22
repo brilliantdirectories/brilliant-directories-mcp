@@ -68,7 +68,10 @@ The user's explicit post-type pick always wins.
 
 Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, point a `WebSearch` at them to find list-pages, then `WebFetch` a list-page to harvest many events in one fetch.
 
-**Facets to derive** (from site context + the user's request): category (from the resolved post type's `feature_categories`) + location + date-range, with audience/vertical as flavor.
+**Facets to derive:**
+- **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
+- **Location** — the user's request if they named a city/region; else `listCities` (BD auto-seeds it on member signup, so it surfaces the cities the site actually serves — pick from these); else `getSiteInfo` `primary_country`/timezone. **Never bulk-list existing posts to infer geographic focus** — `listCities` is the sanctioned signal.
+- **Date-range** — the user's window if given; else default forward window.
 
 **Where to point the faceted `WebSearch`** — brainstorm real domain names, not "some sites":
 
