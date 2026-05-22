@@ -56,7 +56,29 @@ When brainstorming a pool of candidates (topics, events, jobs, properties, anyth
 
 Per-type runbooks specify the pool size (`N`) and the brainstorm shape.
 
-## Stage 2: Source research
+## Stage 2: Duplicate detection
+
+Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
+
+**BD's `like` supports single-anchor wildcards only** — use `X%` (starts-with) or `%X` (ends-with). NEVER bidirectional `%X%` — BD's WAF strips one `%` and the query silently returns wrong results.
+
+For each candidate, run THREE scoped queries against the relevant `list*` tool to catch overlaps from both ends of the title:
+
+- **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=3` — catches titles with the same opening phrase.
+- **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=3` — catches titles that lead with the core noun.
+- **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=3` — catches titles ending with the core noun (e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`).
+
+`limit=3` is a hard ceiling — never bump it, never run a fourth query. Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
+
+**"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
+
+Per-type SKILL.md specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
+
+**On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+
+Always SKIP existing records — no auto-edit of live posts.
+
+## Stage 3: Source research
 
 **2a.** Brainstorm 5-10 candidate sources for vertical+location. Per-type SKILL.md provides candidate categories. Be specific (real domain names, not "some sites").
 
@@ -86,28 +108,6 @@ Every URL the post will link to must be verified live before publish. Three outc
 - **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop.
 
 **Third-party-sourced URLs** (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. Apply the same three-outcome decision tree above.
-
-## Stage 3: Duplicate detection
-
-Run AFTER research lands viable candidates, not before. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
-
-**BD's `like` supports single-anchor wildcards only** — use `X%` (starts-with) or `%X` (ends-with). NEVER bidirectional `%X%` — BD's WAF strips one `%` and the query silently returns wrong results.
-
-For each candidate, run THREE scoped queries against the relevant `list*` tool to catch overlaps from both ends of the title:
-
-- **Title prefix:** `listSingleImagePosts property=post_title property_operator=like property_value=<first-3-distinctive-words>% limit=3` — catches titles with the same opening phrase.
-- **Topic keyword (starts-with):** `listSingleImagePosts property=post_title property_operator=like property_value=<core-topic-noun>% limit=3` — catches titles that lead with the core noun.
-- **Topic keyword (ends-with):** `listSingleImagePosts property=post_title property_operator=like property_value=%<core-topic-noun> limit=3` — catches titles ending with the core noun (e.g. "How to Pick a Personal Trainer" vs "How to Choose a Personal Trainer" share zero first-3-words but both end with `personal trainer`).
-
-`limit=3` is a hard ceiling — never bump it, never run a fourth query. Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
-
-**"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
-
-Per-type SKILL.md specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
-
-**On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
-
-Always SKIP existing records — no auto-edit of live posts.
 
 ## Stage 4: Category routing
 

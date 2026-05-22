@@ -20,8 +20,8 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Build the topic pool.** Run the `Topic resolution` section. Pool size `N=5`.
 6. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
-7. **Source research per topic** (METHODOLOGY Stage 2). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
-8. **Duplicate detection.** Run METHODOLOGY `Stage 3: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
+7. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
+8. **Source research per topic** (METHODOLOGY Stage 3). Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
 9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
 10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY Stage 5 image strategy end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
 11. **Image dedup (FEATURE).** Per METHODOLOGY Stage 5 dedup step. For blog: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
@@ -104,13 +104,13 @@ Specificity layers: audience segment + scenario + format. The qualifiers ARE the
 
 **Pick qualifiers from where real readers are stuck or searching** — the question they already type into Google ("why am I stuck at 225 bench press," "calves sore after marathon"). Not a narrowing that sounds clever to a strategist ("for tall lifters," "for career switchers").
 
-**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 8 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
+**Never bulk-list existing posts to "understand coverage" before picking a topic.** The Stage 7 per-candidate dedup query catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
 
 ---
 
-## Source research (Stage 7 of runbook)
+## Source research (Stage 8 of runbook)
 
-Per METHODOLOGY Stage 2, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date.
+Per METHODOLOGY Stage 3, with one adjustment: the **Date sanity gate does NOT apply** to blog source research. Blogs are evergreen; sources can be from any date.
 
 **Blog-specific source candidate buckets:**
 
@@ -124,9 +124,9 @@ Per METHODOLOGY Stage 2, with one adjustment: the **Date sanity gate does NOT ap
 
 ---
 
-## Dedup (Stage 8 of runbook)
+## Dedup (Stage 7 of runbook)
 
-Per METHODOLOGY Stage 3. Blog-specific match criteria:
+Per METHODOLOGY Stage 2. Blog-specific match criteria:
 - Title: semantic match (not string-exact).
 - Topic angle: semantic overlap on the core thesis/angle, not just shared keywords.
 - Date: NOT a dedup factor (blogs are evergreen).

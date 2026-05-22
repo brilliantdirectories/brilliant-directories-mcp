@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.27] - 2026-05-21
+
+### Dedup before research: cheap gate first, drop dupes before spending a research cycle
+
+A duped candidate was costing a full source-research cycle (multiple WebSearch + WebFetch calls) before dedup caught it and dropped it. Dedup is three cheap `limit=3` queries; research is the expensive, token-heavy step. Running research first wastes it whenever the candidate is a duplicate — which is exactly when dedup matters most (mature sites with many posts). The candidate's working title and core topic noun exist at pool-build time, so dedup has everything it needs before research; the old order had no real dependency justifying it.
+
+Fix — encode the order in the METHODOLOGY stage numbering rather than a band-aid rule:
+
+- **METHODOLOGY** — swapped Stage 2 and Stage 3: Stage 2 is now Duplicate detection, Stage 3 is now Source research. Stage 2's opening line states the rationale ("Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle"). Every content type inherits the cheap-first order.
+- **blog.md runbook** — Step 7 is Duplicate detection, Step 8 is Source research (was the reverse). Aligned all dependent references to the swapped METHODOLOGY stages: runbook step tags (Step 7 → Stage 2, Step 8 → Stage 3), and the section-body cross-refs ("Per METHODOLOGY Stage 3" in Source research, "Per METHODOLOGY Stage 2" in Dedup).
+
+Full mapping re-audited: all 14 runbook steps point at the correct METHODOLOGY stage, all section labels match their runbook step numbers, and the coincidental "Stage 3" references that mean the post-type-discovery runbook step (not a METHODOLOGY stage) were correctly left unchanged.
+
+Events runbook still uses research-before-dedup and references the pre-swap stage numbers (separate pass).
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/shared/METHODOLOGY.md` — Stage 2/3 swap.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/blog.md` — runbook reorder + reference alignment.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.26] - 2026-05-21
 
 ### Blog runbook: flatten 5a/5b back to plain sequential numbers (render fix)
