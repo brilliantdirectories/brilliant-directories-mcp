@@ -70,7 +70,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
-- **Location** — the user's request if they named a city/region; else `listCities` (BD auto-seeds it on member signup, so it surfaces the cities the site actually serves — pick from these); else `getSiteInfo` `primary_country`/timezone. **Never bulk-list existing posts to infer geographic focus** — `listCities` is the sanctioned signal.
+- **Location** — the user's named city/region; else infer from the prompt + `getSiteInfo` `primary_country`/timezone — any locally-relevant city, not only cities where you have members. Use `listCities` **only** when the user explicitly asks for events in member cities ("where I have members," "cities we cover"); never find member cities by listing members. Never bulk-list existing posts to infer geographic focus.
 - **Date-range** — the user's window if given; else default forward window.
 
 **Where to point the faceted `WebSearch`** — brainstorm real domain names, not "some sites":

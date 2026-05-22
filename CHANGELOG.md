@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.34] - 2026-05-22
+
+### Events location facet: "find local events" ≠ "events in my member cities"
+
+v6.55.33 made `listCities` the default fallback for the location facet whenever the user didn't name a city. A second live run exposed the flaw: a prompt saying "find local events" (generic, no city) fell into the `listCities` branch, so the agent anchored only to the cities where the site already has members — capping events to that seeded set and starving the long tail of relevant cities. "Local" was conflated with "member cities" — two different things.
+
+Fix: the location facet now derives from the user's named city/region, else the prompt's intent + `getSiteInfo` `primary_country`/timezone — **any locally-relevant city, not only cities where you have members.** `listCities` fires ONLY when the user explicitly asks for events in member cities ("where I have members," "cities we cover"); the never-find-member-cities-by-listing-members and never-bulk-list-posts guards are retained. Tightened to remove cramming — every clause carries a distinct obligation.
+
+Member-directory internal linking is unaffected: the Pattern 6 slug-resolution (`listStates`/`listCities` at content-manufacture time, with city→state fallback) lives in URL-PATTERNS.md and was not touched — that lookup still happens as before when building a member link for the event's actual city.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/content-types/events.md` — location-facet derivation.
+- `bd-cursor-config/brilliant-directories-mcp/bd-skill-content/bd-skill-content.zip` — rebuilt.
+
+No Worker/npm/spec code changes. Drift check passes.
+
 ## [6.55.33] - 2026-05-22
 
 ### Events: give the location facet an explicit derivation source (stop the events-feed bulk-pull)
