@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.35] - 2026-05-22
+
+### getSiteInfo: document `main_directory_url_relative` / `main_directory_url_absolute`
+
+BD extended `getSiteInfo` with two new fields. Live-confirmed both present in the response. Documented the high-value one in the tool's response shape + a semantics bullet:
+
+- **`main_directory_url_relative` / `main_directory_url_absolute`** = the site's main member-search-results page (unfiltered directory landing). The canonical "browse all members" / "see the full directory" internal-link target — previously the agent had to guess or construct it. Mirrors the `brand_images_relative/absolute` pattern. Live values: relative `"search"` (no leading slash), absolute `"https://<site>/search"`. Bullet notes to compose relative as `<full_url>/<relative>`.
+
+Deliberately NOT documented: `calendar_24hour_format` (also added by BD). It's a display-only 12h/24h flag; dates are always passed/stored as `YYYYMMDDHHmmss`, so it carries no value for an AI agent composing content. Same call as the cache `verbose` param — real BD field, negligible agent value, left out to avoid description bloat on a tool read on every conversation.
+
+**Files changed:**
+- `bd-cursor-config/brilliant-directories-mcp/mcp/openapi/bd-api.json` — `getSiteInfo` description: response-shape list + one semantics bullet.
+
+Spec-only (no lean shaper on getSiteInfo). No Worker/npm code mirror, no skill zip. Worker auto-refreshes spec from GitHub. Drift check passes.
+
 ## [6.55.34] - 2026-05-22
 
 ### Events location facet: "find local events" ≠ "events in my member cities"
