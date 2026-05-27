@@ -743,13 +743,10 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Multi-condition AND across different fields not supported** — validator accepts one operator per call. For `(A=X AND B=Y)`, make two filtered calls and intersect client-side. Single-field multi-value works via `in` / `not_in` / `between`.
 
-**Validation behavior — clean errors, no silent fallback:**
+**Validation behavior — clean `status: error`, no silent fallback.** Two error sources, different messages:
 
-- Single-value operator + CSV → `Operator "X" does not accept CSV values; use "in" or "not_in"`
-- `between` reversed range → `received reversed range "5,1"; pass values in low,high order`
-- `between` wrong cardinality → `requires exactly 2 values`
-- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`. **Bidirectional `%foo%` is rejected** (WAF strips one `%`). For substring use `contains` / `not_contains` (one call, no wildcard); for prefix/suffix use `starts_with` / `ends_with`.
-- Unknown operator → `Unrecognized filter operator "X"`
+- **Unknown operator name** → rejected by the wrapper with a specific message listing the allowed set ("…is not a supported filter operator. Allowed (case-insensitive): …").
+- **All other shape violations** (single-value op given CSV, `between` reversed range, `between`/`length_between` wrong cardinality, `like`/`not_like` without a wildcard) → forwarded to BD, which returns a single generic `Invalid filter parameters`. BD does NOT return a distinct message per case — do not branch on specific error text; treat `status: error` as "request shape rejected, fix and retry." **Bidirectional `%foo%` is rejected** (WAF strips one `%`); for substring use `contains` / `not_contains`, for prefix/suffix use `starts_with` / `ends_with`.
 
 **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
 

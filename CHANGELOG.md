@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.38] - 2026-05-27
+
+### Filter operators: correct the validation-error message claims
+
+Thoroughness pass on v6.55.36/37. The `Rule: Filter operators` "Validation behavior" block promised five *distinct* error strings (e.g. `requires exactly 2 values`, `received reversed range`, `Operator "X" does not accept CSV values`). Live testing shows that's false: the wrapper rejects only unknown operator NAMES with a specific message; every other shape violation (single-value op given CSV, `between` reversed/wrong cardinality, `like` without wildcard) is forwarded to BD, which returns a single generic `Invalid filter parameters`. An agent branching on the promised strings would mis-handle the error.
+
+- Rewrote the block to state the two real error sources: wrapper-specific message for unknown operators; generic `Invalid filter parameters` from BD for all other shape violations. Added "do not branch on specific error text; treat `status: error` as request-shape-rejected."
+- Verified the behavioral guarantee still holds: all six violation classes return clean `status: error` (no silent fallback to `=`). Only the message-specificity claim was wrong.
+
+Also confirmed this pass (no change needed): the 21 operators work identically on `data_posts` as on `user` (global, as documented); CSV-with-spaces is tolerated (`sample, fitness` → 7); operator names are case-insensitive (`CONTAINS`, `Starts_With` → same result).
+
+**Files changed:**
+- `mcp/openapi/mcp-instructions.md` — `Rule: Filter operators` validation-behavior block.
+
+Corpus-only. Worker auto-refreshes from GitHub; npm bundles the `.md`. Drift check passes.
+
 ## [6.55.37] - 2026-05-27
 
 ### Filter operators: mark CSV-capability consistently; `starts_with`/`ends_with` accept CSV-OR
