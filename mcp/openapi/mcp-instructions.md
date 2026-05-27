@@ -683,8 +683,8 @@ Example: 118 members at `limit=10` = 12 calls.
 
 **Common patterns:**
 - "Top N by Y" — sortable column: `order_column=Y order_type=DESC limit=N`. Derived metric (member count, revenue): narrow the fan-out per **Rule: Filter operators**.
-- "Where X is populated" — `is_not_null` on real-NULL columns (e.g. `users_data.logo`); empty-string columns false-positive — paginate and trim client-side. "Where X is unset" — `is_null` broken; paginate and filter client-side.
-- "Recent activity" — date-pivot operators on the appropriate timestamp column.
+- "Where X is populated" — `is_set` (handles `''` and NULL together). "Where X is unset" — `is_not_set`.
+- "Recent activity" — `since_days` / `until_days` on the appropriate date column (NOT `gt`/`lt`).
 
 **Token budget:** typical `listUsers` row is 2-5 KB lean. 1,000 rows ≈ 3-5 MB. Default to filtering, summarize per batch, or page-and-discard.
 
@@ -707,7 +707,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params; symbol forms never reach PHP. Word-form aliases survive.
 
-**Verified working operators (live 2026-04-30):**
+**Verified working operators (live 2026-05-27):**
 
 | Operator | Value shape | Example query string |
 |---|---|---|
@@ -719,10 +719,20 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 | `gte` | single numeric value | `property=user_id&property_value=100&property_operator=gte` |
 | `in` | **CSV** (`a,b,c`) | `property=user_id&property_value=1,2,3&property_operator=in` |
 | `not_in` | **CSV** (`a,b,c`) | `property=active&property_value=3,4,5&property_operator=not_in` |
-| `between` | **CSV exactly 2** (`low,high`) | `property=user_id&property_value=100,200&property_operator=between` |
+| `between` | **CSV exactly 2** (`low,high`), numeric/14-digit only | `property=user_id&property_value=100,200&property_operator=between` |
 | `like` | single value with `_` wildcard | `property=email&property_value=jane_@example.com&property_operator=like` |
 | `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
-| `is_not_null` | value param ignored | `property=logo&property_operator=is_not_null` |
+| `contains` / `not_contains` | substring, CSV = OR | `property=email&property_value=fitness&property_operator=contains` |
+| `starts_with` / `not_starts_with` | prefix (no `%`) | `property=email&property_value=jane&property_operator=starts_with` |
+| `ends_with` / `not_ends_with` | suffix (no `%`) | `property=email&property_value=.com&property_operator=ends_with` |
+| `year_eq` / `not_year_eq` | single or CSV; date column | `property=signup_date&property_value=2026&property_operator=year_eq` |
+| `month_eq` / `not_month_eq` | 1-12, single or CSV; date column | `property=signup_date&property_value=2&property_operator=month_eq` |
+| `day_eq` / `not_day_eq` | 1-31, single or CSV; date column | `property=signup_date&property_value=14&property_operator=day_eq` |
+| `since_days` / `until_days` | N days back from now; date column | `property=signup_date&property_value=30&property_operator=since_days` |
+| `length_eq` / `length_lt` / `length_gt` | single numeric (string length) | `property=email&property_value=20&property_operator=length_gt` |
+| `length_between` | **CSV exactly 2** (`lo,hi`) | `property=email&property_value=15,25&property_operator=length_between` |
+| `is_set` / `is_not_set` | value param ignored; populated = NOT NULL AND `!= ''` | `property=phone_number&property_operator=is_set` |
+| `is_null` / `is_not_null` | value param ignored; literal SQL NULL (counts `''` as populated) | `property=logo&property_operator=is_null` |
 
 **CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — wrapper expects scalar string. **WRITES are stricter** — see **Rule: CSV no spaces** for stored-CSV fields where spaces become persisted data.
 
@@ -738,7 +748,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 - Single-value operator + CSV → `Operator "X" does not accept CSV values; use "in" or "not_in"`
 - `between` reversed range → `received reversed range "5,1"; pass values in low,high order`
 - `between` wrong cardinality → `requires exactly 2 values`
-- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`. **Bidirectional `%foo%` is also rejected** with the same misleading "missing wildcard" error — BD's WAF strips one of the `%` chars before the validator sees it. Use single-anchor `foo%` (starts-with) or `%foo` (ends-with). For substring search, run both queries and union client-side, OR use the `_` single-char wildcard which survives the WAF intact.
+- `like` / `not_like` without wildcard → `requires a SQL wildcard (% or _)`. **Bidirectional `%foo%` is rejected** (WAF strips one `%`). For substring use `contains` / `not_contains` (one call, no wildcard); for prefix/suffix use `starts_with` / `ends_with`.
 - Unknown operator → `Unrecognized filter operator "X"`
 
 **Zero-sentinel** on integer FKs — `property=profession_id&property_value=0&property_operator=eq` returns rows with unset FK.
@@ -747,10 +757,9 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Architecture:** `property_operator` is honored ONLY on `/get` (list) endpoints. `/search` (POST) silently ignores it (keyword-only via `q=`). `/update` and `/delete` reject filter-only calls — no bulk-where mutation path exists.
 
-**Currently broken server-side — do not use, will be fixed in upcoming BD push:**
+**Populated vs NULL:** `is_set` = `IS NOT NULL AND != ''` (directory-UI "is populated") — use this for "has a value". `is_not_null` is literal SQL and counts empty strings as populated. `is_null` matches literal NULL only (not `''`); for "is unset" on a text column that may store `''`, use `is_not_set`.
 
-- `is_null` — wrapper rejects with `Unrecognized filter operator` because BD's underlying handler returns `status: error, "<table> not found"` instead of matching NULL rows. Workaround: paginate and filter client-side until BD fixes.
-- `is_not_null` does literal SQL `IS NOT NULL`, NOT directory-UI "is populated". On empty-string columns (`list_seo.h2`, many `users_data` text fields) it false-positives every empty-string row. Use only on columns where unset = real NULL (e.g. `users_data.logo`).
+**Date columns — use date operators, not raw comparators.** For `signup_date`, `post_start_date`, `modtime`, etc.: use `year_eq`/`month_eq`/`day_eq` (+`not_`) or `since_days`/`until_days`. `gt`/`gte`/`lt`/`lte`/`between` mis-compare ISO-stored dates (string comparison) and `since_date`/`until_date`/`between_dates` are BD-broken (value ignored / always 0) — they are excluded for dates. Calendar ops skip empty-string-date rows (those drop from both the operator and its complement).
 
 ### Rule: Silent-drop check
 
@@ -758,7 +767,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Empty-string filtering
 
-**Empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL): paginate with `limit=100` and filter client-side. `is_null` is rejected; `is_not_null` matches empty strings as populated. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
+**Empty-string fields** (e.g. members with no `phone_number` — stored as `''`, not NULL): use `is_set` for "populated" and `is_not_set` for "blank or NULL" — these handle `''` and NULL together. `is_null`/`is_not_null` match literal NULL only and count `''` as populated. Exception: integer FKs stored as `0` for unset — use the zero-sentinel pattern in **Rule: Filter operators**.
 
 ### Rule: Clearing fields
 

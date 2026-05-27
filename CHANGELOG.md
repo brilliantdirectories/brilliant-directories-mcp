@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.36] - 2026-05-27
+
+### Filter operators: add 21 verified Phase 3 operators; fix stale `is_null` / `%foo%` guidance
+
+BD's PR 5183 shipped a new batch of filter operators live. The wrapper's `FILTER_OPERATOR_ALLOWED` gate rejected them client-side before they could reach BD, so agents couldn't use them. Each operator below was live-verified against `find-fitness-pros.directoryup.com` with a two-different-values proof (two distinct inputs must produce two distinct, independently-expected counts — the test that exposed the broken ones as no-ops). Added 21 to the allowlist, spec enum, and corpus:
+
+- **Substring (6):** `contains` / `not_contains` (true mid-string match in one call — replaces the old two-query `foo%`+`%foo` WAF workaround), `starts_with` / `not_starts_with`, `ends_with` / `not_ends_with`.
+- **Calendar (6):** `year_eq` / `month_eq` / `day_eq` and their `not_` forms. Format-agnostic across ISO and 14-digit date columns; skip empty-string-date rows.
+- **Relative date (2):** `since_days` / `until_days` (N days back from now).
+- **String length (4):** `length_eq` / `length_lt` / `length_gt` / `length_between` (CSV exactly 2).
+- **Null / populated (3):** `is_set` (`IS NOT NULL AND != ''`, the "is populated" semantics), `is_not_set`, and `is_null` (BD fixed the server-side handler that previously errored).
+
+**Excluded (live-verified broken on BD):** `since_date` / `until_date` (pivot value ignored — return the same count for any date), `between_dates` (returns 0 for any valid range, both date formats). For date-range filtering use `since_days` / `until_days` or the calendar operators. Raw `gt` / `gte` / `lt` / `lte` / `between` also mis-compare ISO-stored dates (string comparison) and are excluded for date use. The PR's `month_ne` / `year_ne` / `day_ne` names are not recognized server-side; the `not_*` forms are the live names.
+
+**Corpus cleanup (net-shorter):** removed the "Currently broken server-side" block (both bullets now false — `is_null` works; `is_not_null` populated-vs-NULL is resolved by `is_set`), the `%foo%` two-query workaround paragraph, and the "`is_null` broken / paginate client-side" guidance in the narrowing-axes and empty-string rules. Added a single date-operator correctness rule.
+
+**Files changed:**
+- `mcp/index.js` + `brilliant-directories-mcp-hosted/src/index.ts` — `FILTER_OPERATOR_ALLOWED` Set (byte-identical mirror), validator error string, header comment.
+- `mcp/openapi/bd-api.json` — `property_operator` enum (13 → 34) + description.
+- `mcp/openapi/mcp-instructions.md` — `Rule: Filter operators` table rows, date rule, populated-vs-NULL guidance; cleaned narrowing-axes + empty-string rules.
+
+Drift check passes (npm/Worker Sets identical). Worker `tsc --noEmit` clean, npm `--verify` OK. Worker auto-refreshes the corpus from GitHub; `src/index.ts` change requires a `wrangler deploy`.
+
 ## [6.55.35] - 2026-05-22
 
 ### getSiteInfo: document `main_directory_url_relative` / `main_directory_url_absolute`

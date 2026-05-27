@@ -2881,18 +2881,25 @@ function validateFilterValuesInArgs(args) {
 // strips `<`, `>`, `<>`, `%` from URL params before PHP sees them, so symbol
 // inequality forms are unreachable on this endpoint — word-form aliases are
 // canonical. `=` and `!=` survive the WAF and are accepted server-side; kept
-// for back-compat. `is_null` is BD-broken (returns "<table> not found" on rows
-// that should match) — excluded until BD fixes; agents fall back to client-side
-// pagination per the corpus rule. PR 5166 hardening: BD now returns clean
-// errors for unknown operators, CSV-on-single-value, between range/cardinality
-// violations, and like-without-wildcard — no more silent fallback to `=`.
+// for back-compat. PR 5166 hardening: BD returns clean errors for unknown
+// operators, CSV-on-single-value, between range/cardinality violations, and
+// like-without-wildcard — no more silent fallback to `=`. PR 5183 adds the
+// substring/calendar/relative/length/null operators below and fixes `is_null`.
+// Date filtering: use `year_eq`/`month_eq`/`day_eq` (+`not_`) or
+// `since_days`/`until_days`; `gt`/`gte`/`lt`/`lte`/`between` mis-compare
+// ISO-stored dates and `since_date`/`until_date`/`between_dates` are
+// BD-broken, so they are excluded for date use.
 const FILTER_OPERATOR_ALLOWED = new Set([
   "eq", "ne", "neq", "lt", "lte", "gt", "gte",
   "=", "!=",
   "in", "not_in",
   "between",
   "like", "not_like", "LIKE",
-  "is_not_null",
+  "is_null", "is_not_null", "is_set", "is_not_set",
+  "contains", "not_contains", "starts_with", "not_starts_with", "ends_with", "not_ends_with",
+  "year_eq", "not_year_eq", "month_eq", "not_month_eq", "day_eq", "not_day_eq",
+  "since_days", "until_days",
+  "length_eq", "length_lt", "length_gt", "length_between",
 ]);
 function validateFilterOperatorInArgs(args) {
   if (!args || typeof args !== "object") return null;
@@ -2904,7 +2911,7 @@ function validateFilterOperatorInArgs(args) {
     const lower = s.toLowerCase();
     const ok = FILTER_OPERATOR_ALLOWED.has(s) || FILTER_OPERATOR_ALLOWED.has(lower);
     if (!ok) {
-      return `${label}='${s}' is not a supported filter operator. Allowed (case-insensitive): eq, ne/neq, lt, lte, gt, gte, in, not_in, between, like, not_like, is_not_null. Symbol forms <, >, <>, % are stripped by BD's WAF — use word-form aliases. is_null is currently broken server-side; paginate and filter client-side until BD ships the fix.`;
+      return `${label}='${s}' is not a supported filter operator. Allowed (case-insensitive): eq, ne/neq, lt, lte, gt, gte, in, not_in, between, like, not_like, is_null, is_not_null, is_set, is_not_set, contains, not_contains, starts_with, not_starts_with, ends_with, not_ends_with, year_eq, not_year_eq, month_eq, not_month_eq, day_eq, not_day_eq, since_days, until_days, length_eq, length_lt, length_gt, length_between. Symbol forms <, >, <>, % are stripped by BD's WAF — use word-form aliases. For date columns use year_eq/month_eq/day_eq or since_days/until_days; gt/gte/lt/lte/between mis-compare ISO-stored dates.`;
     }
     return null;
   };
