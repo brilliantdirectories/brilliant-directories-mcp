@@ -449,7 +449,7 @@ function buildTools(spec) {
           properties.page = { type: "string", description: "Pagination cursor (use next_page from previous response)" };
           properties.property = { type: "string", description: "Field name to filter by" };
           properties.property_value = { type: "string", description: "Value to filter by" };
-          properties.property_operator = { type: "string", description: "Filter operator: =, LIKE, >, <, >=, <=" };
+          properties.property_operator = { type: "string", description: "Filter operator (word-form; symbol forms WAF-stripped). Single: eq, ne, lt, lte, gt, gte, like, not_like. CSV: in, not_in, between. Substring: contains, starts_with, ends_with (+not_). Date: year_eq, month_eq, day_eq (+not_), since_days, until_days. Length: length_eq, length_lt, length_gt, length_between. Null: is_set, is_not_set, is_null, is_not_null. See Rule: Filter operators for value shapes." };
           properties.order_column = { type: "string", description: "Column to sort by" };
           properties.order_type = { type: "string", description: "Sort direction: ASC or DESC" };
         }

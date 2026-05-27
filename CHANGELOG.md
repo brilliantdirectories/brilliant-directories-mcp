@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.39] - 2026-05-27
+
+### Filter operators: fix the hardcoded `property_operator` tool-schema description (the string agents actually read)
+
+A Cursor restart exposed that the rich `property_operator` description shipped to `bd-api.json` in v6.55.36 was never what agents see. The wrapper HARDCODES the description for the seven list-query params (`limit`/`page`/`property`/`property_value`/`property_operator`/`order_column`/`order_type`) when it builds each `list*` tool schema — it does not read these from the spec. Both files carried stale AND mutually-inconsistent strings:
+
+- npm `index.js` → `"Filter operator: =, LIKE, >, <, >=, <="` (listed `<`/`>` symbol forms the WAF strips — actively misleading)
+- Worker `src/index.ts` → `"Operator: =, !=, >=, in, not_in, LIKE"`
+
+Neither mentioned any of the 21 v6.55.36 operators, and they disagreed with each other — so an agent on npm vs the Worker got different, both-wrong operator hints on every list call. Replaced both with one byte-identical accurate string grouping all operators (single / CSV / substring / date / length / null) and pointing to **Rule: Filter operators** for value shapes. The full table + caveats remain in the corpus; this inline hint just had to stop misleading.
+
+**Files changed:**
+- `mcp/index.js` + `brilliant-directories-mcp-hosted/src/index.ts` — hardcoded `property_operator` tool-schema description (now byte-identical).
+
+Drift check passes; Worker `tsc --noEmit` clean; npm `--verify` OK. `src/index.ts` changed → Worker redeployed.
+
 ## [6.55.38] - 2026-05-27
 
 ### Filter operators: correct the validation-error message claims
