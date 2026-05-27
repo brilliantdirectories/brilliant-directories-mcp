@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.37] - 2026-05-27
+
+### Filter operators: mark CSV-capability consistently; `starts_with`/`ends_with` accept CSV-OR
+
+Follow-up to v6.55.36. An agent reading the operator table couldn't reliably tell which operators accept a comma-separated value list — the CSV marking was inconsistent (bold `CSV` on some, plain "CSV = OR" or "single or CSV" on others) and `starts_with`/`ends_with` were silent on it. Live-verified the actual behavior and made the value-shape column state CSV-capability on every row:
+
+- **`starts_with` / `ends_with` (+ `not_`) accept CSV = OR** — verified live (`starts_with sample,james` → 6 = genuine union; `ends_with .com,.org` → 30). Previously unmarked, so agents split "starts with A or B" into two calls; now it's one call.
+- Marked CSV consistently across all CSV-capable operators: `in`, `not_in`, `contains`/`not_contains`, `starts_with`/`not_starts_with`, `ends_with`/`not_ends_with`, `year_eq`/`month_eq`/`day_eq` (+`not_`) carry **CSV = OR**; `between` and `length_between` carry **CSV exactly 2**.
+- Single-only operators (reject CSV with a clean error — verified: `since_days`, `length_eq` → "Invalid filter parameters") carry no CSV marker.
+
+**Files changed:**
+- `mcp/openapi/mcp-instructions.md` — `Rule: Filter operators` table value-shape column.
+
+Corpus-only. Worker auto-refreshes from GitHub; npm bundles the `.md`. Drift check passes.
+
 ## [6.55.36] - 2026-05-27
 
 ### Filter operators: add 21 verified Phase 3 operators; fix stale `is_null` / `%foo%` guidance

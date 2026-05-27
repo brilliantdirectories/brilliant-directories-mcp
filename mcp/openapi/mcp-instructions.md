@@ -722,12 +722,12 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 | `between` | **CSV exactly 2** (`low,high`), numeric/14-digit only | `property=user_id&property_value=100,200&property_operator=between` |
 | `like` | single value with `_` wildcard | `property=email&property_value=jane_@example.com&property_operator=like` |
 | `not_like` | single value with `_` wildcard | `property=email&property_value=spam_@example.com&property_operator=not_like` |
-| `contains` / `not_contains` | substring, CSV = OR | `property=email&property_value=fitness&property_operator=contains` |
-| `starts_with` / `not_starts_with` | prefix (no `%`) | `property=email&property_value=jane&property_operator=starts_with` |
-| `ends_with` / `not_ends_with` | suffix (no `%`) | `property=email&property_value=.com&property_operator=ends_with` |
-| `year_eq` / `not_year_eq` | single or CSV; date column | `property=signup_date&property_value=2026&property_operator=year_eq` |
-| `month_eq` / `not_month_eq` | 1-12, single or CSV; date column | `property=signup_date&property_value=2&property_operator=month_eq` |
-| `day_eq` / `not_day_eq` | 1-31, single or CSV; date column | `property=signup_date&property_value=14&property_operator=day_eq` |
+| `contains` / `not_contains` | substring; **CSV** = OR (`a,b`) | `property=email&property_value=fitness&property_operator=contains` |
+| `starts_with` / `not_starts_with` | prefix, no `%`; **CSV** = OR (`a,b`) | `property=email&property_value=jane&property_operator=starts_with` |
+| `ends_with` / `not_ends_with` | suffix, no `%`; **CSV** = OR (`a,b`) | `property=email&property_value=.com,.org&property_operator=ends_with` |
+| `year_eq` / `not_year_eq` | single or **CSV** = OR; date column | `property=signup_date&property_value=2026&property_operator=year_eq` |
+| `month_eq` / `not_month_eq` | 1-12, single or **CSV** = OR; date column | `property=signup_date&property_value=2&property_operator=month_eq` |
+| `day_eq` / `not_day_eq` | 1-31, single or **CSV** = OR; date column | `property=signup_date&property_value=14&property_operator=day_eq` |
 | `since_days` / `until_days` | N days back from now; date column | `property=signup_date&property_value=30&property_operator=since_days` |
 | `length_eq` / `length_lt` / `length_gt` | single numeric (string length) | `property=email&property_value=20&property_operator=length_gt` |
 | `length_between` | **CSV exactly 2** (`lo,hi`) | `property=email&property_value=15,25&property_operator=length_between` |
