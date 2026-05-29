@@ -761,6 +761,9 @@
           "post_price": {
             "type": "number"
           },
+          "post_promo": {
+            "type": "number"
+          },
           "post_token": {
             "type": "string"
           }
@@ -3917,6 +3920,10 @@
                   "post_price": {
                     "type": "number"
                   },
+                  "post_promo": {
+                    "type": "number",
+                    "description": "Jobs-only twin of post_price. On job posts, BD requires post_promo to populate post_price too — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
+                  },
                   "post_image": {
                     "type": "string",
                     "description": "Feature image URL. **LANDSCAPE only — verify orientation via `getImageDimensions` per **Rule: Image dimensions** before commit; bare URL, no `?query`, must end in `.jpg`/`.jpeg`/`.png` (WebP/GIF/AVIF skipped pre-tool per the same rule) — see **Rule: Image URLs**.** Query strings (`?w=1600`, `?auto=compress`) get baked into the imported filename and 404. Default: Pexels landscape URL + `auto_image_import=1` (skip only on explicit no-image request)."
@@ -4071,6 +4078,10 @@
                   },
                   "post_price": {
                     "type": "number"
+                  },
+                  "post_promo": {
+                    "type": "number",
+                    "description": "Jobs-only twin of post_price. On job posts, BD requires post_promo to populate post_price too — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
                   },
                   "post_image": {
                     "type": "string",

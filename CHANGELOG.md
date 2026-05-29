@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.40] - 2026-05-29
+
+### Jobs salary: expose `post_promo` on createSingleImagePost + updateSingleImagePost
+
+Live smoke-test on `find-fitness-pros.directoryup.com` proved BD jobs need `post_promo` populated, not `post_price` alone. Three tests showed an asymmetric back-fill: sending `post_promo=X` populates both `post_promo` AND `post_price` to `X`; sending `post_price=X` populates only `post_price`, leaves `post_promo` null. Before this change the wrapper's tool schema didn't expose `post_promo` (additionalProperties: false), so AI clients honoring the schema literally could not produce a complete job post — `post_promo` always landed null.
+
+Added `post_promo` as a numeric optional property to both endpoints' request bodies in `bd-api.json`. Description on the create/update entries spells out the back-fill semantic so the AI sends `post_promo` (not `post_price`) for jobs. Worker bundles the spec on cold start; redeploy required. Runbook `jobs.md` updated to match: one field rule on `post_promo` instead of the impossible mirror-write.
+
+**Files changed:**
+- `mcp/openapi/bd-api.json` — `post_promo` property added to `createSingleImagePost`, `updateSingleImagePost`, and the shared post-schema component.
+- `bd-skill-content/content-types/jobs.md` — field reference row rewritten: `post_promo` is now the single salary field; back-fill behavior documented inline.
+- `bd-skill-content/bd-skill-content.zip` — rebuilt with updated `jobs.md`.
+
+Drift check passes. npm `--verify` OK. Worker redeploy required (spec is cold-bundled).
+
 ## [6.55.39] - 2026-05-27
 
 ### Filter operators: fix the hardcoded `property_operator` tool-schema description (the string agents actually read)
