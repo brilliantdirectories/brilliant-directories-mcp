@@ -74,7 +74,7 @@ Resolution order (try in order, stop at first match; server-side filter via `lis
 
 The user's explicit post-type pick always wins.
 
-**After resolution, one extra MCP call.** `getPostTypeCustomFields data_id=<resolved>` (or `system_name=<resolved>`). Cache the response — it carries the live `post_category.choices` AND `post_job.choices` for this site (admin may have customized either). `getSingleImagePostFields` returns a stale fallback list for jobs — do NOT use it for `post_category` or `post_job` enums.
+**After resolution, call `getPostTypeCustomFields data_id=<resolved>`** (or `system_name=<resolved>`). Cache the response — it carries the live `post_category.choices` AND `post_job.choices` for this site (admin may have customized either). `getSingleImagePostFields` returns a stale fallback list for jobs — do NOT use it for `post_category` or `post_job` enums.
 
 ---
 
@@ -104,7 +104,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 
 Tailor by vertical AND country: pick the country-native association + the country's national job portal first, then ATS pages of companies operating in that country.
 
-**30-day staleness gate.** During candidate harvest, capture each listing's source-page posted-date and reject candidates with posted-date >30 days old. User can override per run by specifying a wider window in their prompt.
+**30-day staleness gate.** During candidate harvest, capture each listing's source-page posted-date and reject candidates with posted-date >30 days old.
 
 A single list-page `WebFetch` returns many jobs. Capture ~5 as the candidate pool, number them per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
@@ -190,9 +190,9 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
 | `post_venue` | **Company name** (per BD helpText). Verbatim from source. Examples: `"Acme Corp"`, `"Austin Independent School District"`, `"Texas General Land Office"`. |
-| `post_start_date` | Role start date in source if listed, else **today's date** (the listing passed the 30-day staleness gate at Step 5, so the role is treated as ready-to-start). Format `YYYYMMDD` (8 digits, **NO time** — different from events' 14-digit format). Example: `"20260901"`. |
+| `post_start_date` | Role start date in source if listed, else **today's date**. Format `YYYYMMDD` (8 digits, **NO time** — different from events' 14-digit format). Example: `"20260901"`. |
 | `post_price` | Yearly salary, numeric only — no currency symbol, no commas, decimals optional (`75000` or `75000.50` both valid). On salary range, use midpoint of low+high. OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
-| `post_job` | **Discover at runtime** from cached `getPostTypeCustomFields.post_job.choices` (Step 3). BD default is `Full-Time` / `Part-Time` / `Freelance` / `Internship` / `Consultant` / `Contract`, but admin may have customized — always map source text against the LIVE choices, not the defaults. Map case-insensitive to the closest semantic match in the live enum ("full time/FT" → whichever live choice means full-time; "intern" → whichever means internship; "contract/contractor" → contract-equivalent; etc.). **If source text is ambiguous or absent, default to the live choice that means "Full-Time"** (the most common employment type — fallback to the first non-empty live choice if no full-time-equivalent exists). Always pass a value; never OMIT. |
+| `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
 | `post_location` | Full street address only — do NOT prepend the company name (already in `post_venue`). Example: `"500 W 2nd St, Austin, TX 78701"`, NOT `"Acme Corp, 500 W 2nd St, Austin, TX 78701"`. Many remote/hybrid postings have no street; OMIT then. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
