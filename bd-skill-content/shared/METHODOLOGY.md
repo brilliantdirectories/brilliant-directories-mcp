@@ -70,7 +70,7 @@ For each candidate, run THREE scoped queries against the relevant `list*` tool t
 
 `limit=3` is a hard ceiling — never bump it, never run a fourth query. Merge results client-side. Substitute the `list*` tool that matches the post-type family. Pick the right 3 distinctive words and the right core noun once — do NOT brute-force variants.
 
-**Scope to the resolved post type, client-side.** BD's wrapper rejects multi-property AND in one call, so the three `like` queries above can't include `data_id` server-side. After merging the results, FILTER to `row.data_id === <resolved data_id from Step 3>` before comparing semantics. Without this filter, a job titled "Yoga Flow Instructor" can false-positive against an event titled "Yoga Flow Instructor Open Mat" and drop a legit candidate.
+**Scope to the resolved post type, client-side.** The three `like` queries above return rows across all single-image post types. After merging, FILTER to `row.data_id === <resolved data_id>` before semantic comparison — cross-type title overlaps would otherwise false-positive as duplicates.
 
 **"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
 
