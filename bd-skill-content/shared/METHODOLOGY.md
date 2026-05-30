@@ -167,6 +167,8 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 Use Pexels for all images. After all 5 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
 
+**Memory scope on image inventory:** prior-run findings like "Pexels exhausted for `<topic>`" rank-order axis priority (start with the axes most likely to surface fresh results) but never short-circuit the loop. All 5 axes run fresh every run. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
+
 1. **Pexels** — follow corpus `Rule: Image URLs` exactly. Always send to BD with `auto_image_import=1`.
 
    **Axes — 5 angles, try in order, one search per axis.**
@@ -280,3 +282,4 @@ That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If 
 - **Never auto-create BD categories in autonomous mode.** User's taxonomy is curated; grow it deliberately.
 - **Never auto-edit existing live posts.**
 - **Never write content failing the anti-slop self-check.**
+- **Do not save image-inventory verdicts to memory.** "Pexels exhausted," "axes N-M saturated for `<topic>`," and similar findings are derivable from current state; re-run the search instead. Saving them creates a shortcut on read that lets future runs skip the 5-axis image loop ceremonially.
