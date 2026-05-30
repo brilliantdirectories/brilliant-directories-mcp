@@ -1674,7 +1674,7 @@ const AUTO_REFRESH_SCOPE = {
 
 // Native-column registry for inverse-routing parents. BD admins clone forms
 // on these 5 tables and add custom fields freely; the wrapper partitions per
-// call by case-insensitive lookup here — name matches → write to the parent
+// call by case-sensitive lookup here — name matches → write to the parent
 // table; name doesn't match → upsert to users_meta with database=<table>.
 // Source of truth: bd-cursor-config/memory/product/_directory-schema.sql.
 // Mirrored byte-for-byte in Worker src/index.ts.
@@ -1753,7 +1753,7 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
 // EAV split-storage routing (mirror of Worker's EAV_ROUTES). Two routing
 // modes: legacy "allowlist" (default — enumerated eavFields go EAV, all
 // others go to the parent) and "inverse" (default — non-column names go
-// EAV via case-insensitive lookup against PARENT_TABLE_NATIVE_COLUMNS).
+// EAV via case-sensitive lookup against PARENT_TABLE_NATIVE_COLUMNS).
 // Allowlist routes (list_seo hero bundle, single-image-post event times)
 // remain narrow by design. Inverse routes cover member/post/lead/review
 // surfaces where admins clone forms and add custom fields per site —
