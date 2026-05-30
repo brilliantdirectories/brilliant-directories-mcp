@@ -1732,11 +1732,11 @@ const PARENT_TABLE_NATIVE_COLUMNS = {
   ]),
 };
 
-// Wrapper-injected interaction directives. These ride alongside native columns
-// on create/update calls but aren't BD table columns — they steer wrapper
-// behavior (credit adjustments, photo bundles, tag/category linking, clears).
-// On inverse-routing tools these names must NEVER auto-route to users_meta as
-// custom fields; they pass through to the existing wrapper-internal handlers.
+// Non-native names that must bypass inverse-route EAV partitioning and
+// forward to BD's controller as body params. Mix of wrapper-internal
+// directives (`_clear_fields`, `credit_action`, etc.) and BD controller-
+// intercept fields (`post_promo` back-fills `post_price` on data_posts;
+// `auto_geocode` / `auto_image_import` trigger BD-side handlers).
 // Mirrored byte-for-byte in Worker src/index.ts.
 const WRAPPER_INTERACTION_FIELDS = new Set([
   "_clear_fields",
@@ -1748,6 +1748,7 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
   "auto_geocode", "auto_image_import",
   "subscription_schema", "profession_schema", "photos_schema",
   "tags", "services_schema", "user_clicks_schema",
+  "post_promo",
 ]);
 
 // EAV split-storage routing (mirror of Worker's EAV_ROUTES). Two routing

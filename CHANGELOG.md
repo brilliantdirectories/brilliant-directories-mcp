@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.42] - 2026-05-30
+
+### Fix: `post_promo` regressed to users_meta on jobs posts after v6.55.41
+
+v6.55.41 added inverse routing to `createSingleImagePost` / `updateSingleImagePost`. Inverse routing partitions args by parent-table native column membership, and `post_promo` is not a native `data_posts` column — it's a BD-controller-intercept field (sending `post_promo=X` to the controller back-fills `data_posts.post_price`). The new partition routed `post_promo` into `users_meta` before BD's controller ever saw it, so jobs posts started losing the salary back-fill.
+
+Fix: add `post_promo` to `WRAPPER_INTERACTION_FIELDS` so it always bypasses inverse partitioning and forwards to BD's controller. Verified live on QA — `createSingleImagePost` with `post_promo=75` now produces `data_posts.post_price=75.00` (back-fill restored).
+
 ## [6.55.41] - 2026-05-29
 
 ### Custom-field auto-route: `createUser`/`updateUser` and 8 other create/update tools no longer silent-drop admin-added custom fields
