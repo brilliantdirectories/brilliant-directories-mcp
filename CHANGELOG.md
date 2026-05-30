@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.41] - 2026-05-29
+
+### Custom-field auto-route: `createUser`/`updateUser` and 8 other create/update tools no longer silent-drop admin-added custom fields
+
+Customer report (inhouseapac.com, website_id 30508): nine custom listing fields on members were "readable but not writable" through the API. Live smoke tests confirmed the wrapper was the gap. BD's `POST /user/create` auto-seeds users_meta for non-column body params, and BD's read-path merges those rows back on `getUser` — so reads showed the fields. But the MCP wrapper's `updateUser` schema validated against the spec's `updateUser` body and silently dropped anything else. Same gap existed on `createUser`, `createSingleImagePost`/`updateSingleImagePost`, `createMultiImagePost`/`updateMultiImagePost`, `createLead`/`updateLead`, `createReview`/`updateReview` — anywhere admins can add custom fields on the BD side.
+
+Introduced a new routing mode `routingMode: "inverse"` in `EAV_ROUTES`. Inverse routes consult `PARENT_TABLE_NATIVE_COLUMNS` (a per-parent-table Set of canonical SQL columns sourced from `_directory-schema.sql`) and partition per call: native column → write to parent table; everything else → upsert to users_meta with `database=<parent table>` and `database_id=<row id>`. The 10 new routes cover `users_data`, `data_posts`, `users_portfolio_groups`, `leads`, and `users_reviews` — the five tables where BD admins routinely extend forms with custom fields. Existing allowlist routes (`updateWebPage`, `updateMembershipPlan`, the `updateSingleImagePost` event-time derivation) remain unchanged; the new inverse mode is additive.
+
+Also hardened `writeEavFields`'s existence lookup: previously the wrapper filtered by `key` alone with `limit=100` and then partitioned in memory, which could miss its own row for popular custom-field names shared across many parent rows and silently create a duplicate. The lookup now binds `key`, `database`, and `database_id` server-side via BD's `property[]`/`property_value[]` compound-filter syntax — definitive, no false-negative risk. Benefits the 3 pre-existing EAV routes too. `_clear_fields` guard was softened to accept any non-reserved name on inverse routes (custom fields are valid clear targets, where clearing means deleting the EAV row).
+
+Live verification on QA:
+- `updateUser` native-only (`quote`) — lands users_data, no `eav_results` block.
+- `updateUser` custom-only (`target_customers`) — `eav_results: action=created` first call, `action=updated` on repeat call with same meta_id, total still 1.
+- `createUser` with 5 customer-style custom fields — all 5 created in users_meta.
+- Mixed native+custom calls — partitioned correctly across users_data and users_meta.
+- Case-sensitive routing (`awards` lower → native, `Awards` upper → EAV) — confirms BD's own case-sensitive column matching is mirrored honestly in `eav_results`.
+- Regression: `updateWebPage` hero bundle and `updateSingleImagePost` event-time derivation still work via the allowlist mode.
+
+**Files changed:**
+- `mcp/index.js` + `brilliant-directories-mcp-hosted/src/index.ts` — added `PARENT_TABLE_NATIVE_COLUMNS` (5 Sets, ~200 native columns total) and `WRAPPER_INTERACTION_FIELDS` constants; 10 new inverse-mode entries in `EAV_ROUTES`; `splitEavParams` extended with inverse branch; `writeEavFields` lookup switched to compound filter; `_clear_fields` guard softened on inverse routes.
+- `mcp/openapi/mcp-instructions.md` — `Rule: EAV auto-route` extended with 5 new bullets covering the new parent tables.
+- `scripts/schema-drift-check.js` — `PARENT_TABLE_NATIVE_COLUMNS` and `WRAPPER_INTERACTION_FIELDS` registered in `MIRROR_CONSTANTS`.
+
+Drift check passes. npm `--verify` OK. Worker `tsc --noEmit` OK. Worker redeploy required (Worker bundles the spec, but more importantly bundles the routing logic).
+
 ## [6.55.40] - 2026-05-29
 
 ### Jobs salary: expose `post_promo` on createSingleImagePost + updateSingleImagePost

@@ -1672,14 +1672,95 @@ const AUTO_REFRESH_SCOPE = {
   updatePostType: "",
 };
 
-// EAV split-storage routing (mirror of Worker's EAV_ROUTES). BD stores ~27
-// `list_seo` fields in `users_meta` with `database=list_seo`; `updateWebPage`
-// on the parent silently drops them. We peel EAV fields off before the parent
-// update, then upsert each via users_meta (update existing, create if missing).
-// The upsert covers the "add hero to a page originally created without hero"
-// flow — BD only auto-seeds hero rows on create-with-hero, not later updates.
-// Only enumerated eavFields reach this code path, so typo'd keys can't
-// pollute users_meta (they flow to the parent update and BD drops them).
+// Native-column registry for inverse-routing parents. BD admins clone forms
+// on these 5 tables and add custom fields freely; the wrapper partitions per
+// call by case-insensitive lookup here — name matches → write to the parent
+// table; name doesn't match → upsert to users_meta with database=<table>.
+// Source of truth: bd-cursor-config/memory/product/_directory-schema.sql.
+// Mirrored byte-for-byte in Worker src/index.ts.
+const PARENT_TABLE_NATIVE_COLUMNS = {
+  users_data: new Set([
+    "user_id", "first_name", "last_name", "email", "company", "phone_number",
+    "address1", "address2", "city", "zip_code", "state_code", "state_ln",
+    "country_code", "country_ln", "website", "twitter", "youtube", "facebook",
+    "linkedin", "blog", "quote", "experience", "affiliation", "awards",
+    "about_me", "featured", "modtime", "subscription_id", "filename",
+    "password", "active", "token", "ref_code", "signup_date", "cookie",
+    "last_login", "position", "instagram", "credentials", "bitly",
+    "profession_id", "facebook_id", "google_id", "verified", "pinterest",
+    "nationwide", "cv", "work_experience", "rep_matters", "gmap",
+    "listing_type", "lat", "lon", "no_geo", "user_consent", "search_description",
+  ]),
+  data_posts: new Set([
+    "post_id", "post_video", "post_title", "post_caption", "post_content",
+    "post_category", "post_org_url", "post_filename", "post_image", "post_type",
+    "data_type", "post_clicks", "post_price", "feed_id", "blog_id", "post_date",
+    "post_tags", "post_status", "post_live_date", "post_author", "post_token",
+    "post_updated", "post_featured", "post_image_saved", "twitter_post",
+    "user_id", "service_id", "additional_fields", "post_expire_date",
+    "post_start_date", "data_id", "lat", "lon", "revision_timestamp",
+    "post_job", "recurring_type", "sticky_post", "post_location",
+    "sticky_post_expiration_date", "country_sn", "state_sn", "revision_count",
+    "image_imported", "original_image_url",
+  ]),
+  users_portfolio_groups: new Set([
+    "group_id", "user_id", "group_name", "group_desc", "group_location",
+    "group_date", "date_updated", "group_order", "group_token",
+    "group_filename", "group_status", "structure_id", "facebook_id",
+    "additional_fields", "group_type", "data_type", "data_id",
+    "group_category", "revision_timestamp", "lat", "lon", "post_tags",
+    "property_status", "property_type", "property_price", "property_beds",
+    "property_baths", "property_sqr_foot", "sticky_post", "post_location",
+    "sticky_post_expiration_date", "country_sn", "state_sn", "revision_count",
+  ]),
+  leads: new Set([
+    "lead_id", "lead_name", "lead_email", "lead_phone", "token", "date_added",
+    "status", "lead_price", "lead_more", "lead_notes", "revision_timestamp",
+    "lead_message", "top_id", "sub_id", "lat", "lng", "swlat", "swlng",
+    "nelat", "nelng", "location_type", "lead_location", "utoken", "country_sn",
+    "adm_lvl_1_sn", "flow_source", "formname", "contact_type",
+    "additional_replies", "url_from", "date", "origin_ip", "user_consent",
+  ]),
+  users_reviews: new Set([
+    "review_id", "user_id", "review_title", "review_description",
+    "review_worked", "service_id", "review_name", "review_email", "review_zip",
+    "review_status", "review_added", "review_approved", "ip", "cookie",
+    "httpr", "member_id", "review_token", "review_updated", "rating_overall",
+    "rating_service", "rating_response", "rating_expertise", "rating_results",
+    "spoken_language", "gender", "rating_language", "recommend",
+    "review_company", "revision_timestamp", "formname", "user_consent",
+  ]),
+};
+
+// Wrapper-injected interaction directives. These ride alongside native columns
+// on create/update calls but aren't BD table columns — they steer wrapper
+// behavior (credit adjustments, photo bundles, tag/category linking, clears).
+// On inverse-routing tools these names must NEVER auto-route to users_meta as
+// custom fields; they pass through to the existing wrapper-internal handlers.
+// Mirrored byte-for-byte in Worker src/index.ts.
+const WRAPPER_INTERACTION_FIELDS = new Set([
+  "_clear_fields",
+  "credit_action", "credit_amount",
+  "images_action",
+  "member_tag_action", "member_tags",
+  "create_new_categories",
+  "send_email_notifications",
+  "auto_geocode", "auto_image_import",
+  "subscription_schema", "profession_schema", "photos_schema",
+  "tags", "services_schema", "user_clicks_schema",
+]);
+
+// EAV split-storage routing (mirror of Worker's EAV_ROUTES). Two routing
+// modes: legacy "allowlist" (default — enumerated eavFields go EAV, all
+// others go to the parent) and "inverse" (default — non-column names go
+// EAV via case-insensitive lookup against PARENT_TABLE_NATIVE_COLUMNS).
+// Allowlist routes (list_seo hero bundle, single-image-post event times)
+// remain narrow by design. Inverse routes cover member/post/lead/review
+// surfaces where admins clone forms and add custom fields per site —
+// neither the spec nor a hardcoded whitelist could enumerate them.
+// Only the legacy entries' eavFields reach the allowlist branch, so typo'd
+// keys there can't pollute users_meta (they flow to the parent and BD drops
+// them). Inverse entries trust the native-column registry as authoritative.
 const EAV_ROUTES = {
   updateMembershipPlan: {
     eavDatabase: "subscription_types",
@@ -1716,6 +1797,66 @@ const EAV_ROUTES = {
     eavDatabase: "data_posts",
     parentPK: "post_id",
     eavFields: new Set(["start_time", "end_time"]),
+    routingMode: "inverse",
+    parentTable: "data_posts",
+  },
+  // Inverse-routing parents: any field name not in the parent table's native
+  // column registry auto-routes to users_meta with database=<table>. Closes
+  // the wrapper's silent-drop gap on admin-added custom fields. eavFields
+  // overlays are unused here — the registry is the source of truth.
+  createSingleImagePost: {
+    eavDatabase: "data_posts",
+    parentPK: "post_id",
+    routingMode: "inverse",
+    parentTable: "data_posts",
+  },
+  createMultiImagePost: {
+    eavDatabase: "users_portfolio_groups",
+    parentPK: "group_id",
+    routingMode: "inverse",
+    parentTable: "users_portfolio_groups",
+  },
+  updateMultiImagePost: {
+    eavDatabase: "users_portfolio_groups",
+    parentPK: "group_id",
+    routingMode: "inverse",
+    parentTable: "users_portfolio_groups",
+  },
+  createUser: {
+    eavDatabase: "users_data",
+    parentPK: "user_id",
+    routingMode: "inverse",
+    parentTable: "users_data",
+  },
+  updateUser: {
+    eavDatabase: "users_data",
+    parentPK: "user_id",
+    routingMode: "inverse",
+    parentTable: "users_data",
+  },
+  createLead: {
+    eavDatabase: "leads",
+    parentPK: "lead_id",
+    routingMode: "inverse",
+    parentTable: "leads",
+  },
+  updateLead: {
+    eavDatabase: "leads",
+    parentPK: "lead_id",
+    routingMode: "inverse",
+    parentTable: "leads",
+  },
+  createReview: {
+    eavDatabase: "users_reviews",
+    parentPK: "review_id",
+    routingMode: "inverse",
+    parentTable: "users_reviews",
+  },
+  updateReview: {
+    eavDatabase: "users_reviews",
+    parentPK: "review_id",
+    routingMode: "inverse",
+    parentTable: "users_reviews",
   },
 };
 
@@ -1767,8 +1908,35 @@ function splitEavParams(operation, params) {
   if (!route) return { direct: params, eav: {}, route: null };
   const direct = {};
   const eav = {};
+  // Inverse-mode routes consult PARENT_TABLE_NATIVE_COLUMNS for the per-call
+  // partition: native column → direct (parent table write); anything else →
+  // users_meta upsert. Wrapper-injected interaction fields always pass through
+  // to existing handlers. The eavFields Set, when present on an inverse route,
+  // acts as an explicit "always-EAV" overlay (used today only for
+  // updateSingleImagePost's start_time/end_time derivation).
+  //
+  // Case-sensitive equality is intentional: BD's parent-table controllers are
+  // themselves case-sensitive on column names, so a case-variant ("Awards" vs
+  // native "awards") would route to users_meta server-side even if the wrapper
+  // tried to canonicalize. Matching BD's own behavior keeps the eav_results
+  // receipt honest — when the wrapper says "created" or "updated" with a key,
+  // that's the exact key BD landed in users_meta.
+  const inverse = route.routingMode === "inverse";
+  const nativeSet = inverse ? PARENT_TABLE_NATIVE_COLUMNS[route.parentTable] : null;
   for (const [k, v] of Object.entries(params || {})) {
-    if (route.eavFields.has(k)) eav[k] = v;
+    let isEav;
+    if (inverse) {
+      if (route.eavFields && route.eavFields.has(k)) {
+        isEav = true;
+      } else if (WRAPPER_INTERACTION_FIELDS.has(k)) {
+        isEav = false;
+      } else {
+        isEav = !(nativeSet && nativeSet.has(k));
+      }
+    } else {
+      isEav = route.eavFields.has(k);
+    }
+    if (isEav) eav[k] = v;
     else direct[k] = v;
   }
   return { direct, eav, route };
@@ -1780,24 +1948,30 @@ async function writeEavFields(config, route, parentId, eavParams) {
     let metaId = null;
     let existingValue = null;
     try {
+      // Compound-filter lookup: bind key + database + database_id server-side
+      // via BD's property[]/property_value[] array syntax. A naive single-prop
+      // filter on `key` would return the first 100 rows site-wide for that
+      // key name, then we'd filter in-memory — for popular custom-field names
+      // shared across many parents, the row we want may not be in those 100,
+      // producing a false "not found" and a duplicate createUserMeta on the
+      // next branch. Compound binding makes the lookup definitive.
       const listResult = await makeRequest(
         config,
         "GET",
         "/api/v2/users_meta/get",
-        { property: "key", property_value: key, property_operator: "=", limit: 100 },
+        {
+          "property[]": ["key", "database", "database_id"],
+          "property_value[]": [key, route.eavDatabase, String(parentId)],
+          "property_operator[]": ["=", "=", "="],
+          limit: 5,
+        },
         null
       );
       const listBody = listResult && listResult.body;
       const rows = listBody && Array.isArray(listBody.message) ? listBody.message : [];
-      const matches = rows.filter(
-        (row) =>
-          row &&
-          String(row.database) === String(route.eavDatabase) &&
-          String(row.database_id) === String(parentId)
-      );
-      if (matches.length > 0 && matches[0].meta_id) {
-        metaId = matches[0].meta_id;
-        existingValue = matches[0].value !== undefined ? String(matches[0].value) : null;
+      if (rows.length > 0 && rows[0] && rows[0].meta_id) {
+        metaId = rows[0].meta_id;
+        existingValue = rows[0].value !== undefined ? String(rows[0].value) : null;
       }
     } catch {
       results.push({ key, action: "updated", status: "error", message: "EAV lookup failed" });
@@ -5178,8 +5352,17 @@ async function main() {
         // the tool's bodyProps OR EAV_ROUTES.eavFields (legitimate EAV-routed
         // columns not in base bodyProps). Any unknown → refuse the whole call
         // so the agent fixes the typo and retries — never partial success.
-        const eavSet = EAV_ROUTES[name]?.eavFields;
-        const isKnown = (n) => (toolDef.bodyProps && n in toolDef.bodyProps) || (eavSet ? eavSet.has(n) : false);
+        const routeForClear = EAV_ROUTES[name];
+        const eavSet = routeForClear?.eavFields;
+        const inverseClear = routeForClear?.routingMode === "inverse";
+        // Inverse-routing tools accept any non-reserved name as a clear target:
+        // native columns are valid clears (handled by BD's clear-fields path)
+        // and non-native names route to users_meta where clearing means
+        // deleting the EAV row. The reserved-name guard (B) above already
+        // refused wrapper-managed fields, so any survivor is fair game.
+        const isKnown = (n) => (toolDef.bodyProps && n in toolDef.bodyProps)
+          || (eavSet ? eavSet.has(n) : false)
+          || inverseClear;
         const unknownNames = clearFields.filter((n) => !isKnown(n));
         if (unknownNames.length > 0) {
           return { content: [{ type: "text", text: `_clear_fields contains unknown column name(s) for ${name}: [${unknownNames.join(", ")}]. Check spelling against the tool schema or EAV-routed field list.` }], isError: true };
