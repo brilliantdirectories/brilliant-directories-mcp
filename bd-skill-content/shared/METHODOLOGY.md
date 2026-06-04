@@ -95,7 +95,7 @@ Always SKIP existing records — no auto-edit of live posts.
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
-| URL liveness | Every URL the post links to must be verified before publish per the `### URL liveness gate` section. |
+| URL liveness | Every URL the post links to must be verified before publish per `URL liveness gate`. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
@@ -127,7 +127,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. Per-type SKILL.md specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
-3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links per the `### Link order` section.**
+3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links per `Link order`.**
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
