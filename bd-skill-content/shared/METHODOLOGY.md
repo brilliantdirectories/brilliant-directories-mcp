@@ -165,13 +165,13 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Image strategy
 
-Use Pexels for all images. After all 5 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
+Use Pexels for all images. After all 10 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
 
-**Memory scope on image inventory:** memory may flag prior axes as exhausted for `<topic>`, but every run still attempts all 5 axes fresh in the table-defined order. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
+**Memory scope on image inventory:** memory may flag prior axes as exhausted for `<topic>`, but every run still attempts all 10 axes fresh in the table-defined order. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
 
 1. **Pexels** — follow corpus `Rule: Image URLs` exactly. Always send to BD with `auto_image_import=1`.
 
-   **Axes — 5 angles, try in order, one search per axis.**
+   **Axes — 10 angles, try in order, one search per axis.**
 
    Each search phrase must carry a topical anchor — a vertical-specific word that ties the photo to the topic.
 
@@ -182,19 +182,24 @@ Use Pexels for all images. After all 5 axes attempted without a commit, omit `po
    | 3. Detail / object close-up | A topical **prop or equipment** shot, no people | `portafilter shot` / `espresso shot pour` | `button mockup` / `colorful interface element` |
    | 4. Setting + topical marker | Topical location, named | `coffee shop` / `coffee shop bar` | `design studio` / `ui designer desk` |
    | 5. Adjacent activity / item | Related thing, different action | `latte art` / `coffee bean grinder` | `color swatch` / `figma wireframe sketch` |
+   | 6. Result / outcome | The finished artifact, static, no process | `latte cup` / `finished espresso drink` | `finished website` / `launched landing page` |
+   | 7. Process step / intermediate stage | A pre- or transitional workflow moment, not the headline action | `coffee beans roasting` / `tamping grounds` | `wireframe sketches` / `mood board layout` |
+   | 8. Materials / raw inputs | Ingredients or textures before they become the subject | `coffee beans` / `roasted coffee` | `color palette` / `font samples` |
+   | 9. Customer / recipient POV | The consumer side, not the practitioner | `customer drinking coffee` / `person ordering coffee` | `user browsing phone` / `person reading website` |
+   | 10. Hands / body-part isolation | Symbolic close-up, hands as stand-in, no faces | `hands holding cup` / `hands pouring coffee` | `hands typing keyboard` / `hands sketching design` |
 
-   **Comparison-shape posts ("X vs Y"):** Axes 3-5 must cover BOTH halves of the comparison, not just the primary subject. For "espresso vs pour-over" the prop axis needs items from both methods; for "React vs Vue" the setting axis needs developers using both stacks.
+   **Comparison-shape posts ("X vs Y"):** Axes 3-10 must cover BOTH halves of the comparison, not just the primary subject. For "espresso vs pour-over" the prop axis needs items from both methods; for "React vs Vue" the setting axis needs developers using both stacks.
 
    **One search per axis.** If the first search returns weak or dedup'd candidates, SWITCH to the next axis. Do not retry the same axis with a different wording — that drift ("let me try axis 2 with one more phrase") is the most common axis-discipline failure.
 
-   **Per-axis loop — repeat for each axis until commit or all 5 axes attempted:**
+   **Per-axis loop — repeat for each axis until commit or all 10 axes attempted:**
 
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` using the current axis's phrase per the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
    - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, treat as zero topic-fits → switch to the next axis.
    - **Axis-duplicate guard.** If an axis search returns only `/photo/<id>/` URLs already seen in a prior axis, that axis didn't generate fresh candidates — log it as a wasted axis and move to the next. Do not re-probe the same images with `getImageDimensions`. Widen vocabulary on the next axis instead of reusing the same search space.
 
-   **Step 2 — Topic-fit gate** (identify up to 5 strong topic-fits from the ~10 results):
+   **Step 2 — Topic-fit gate** (identify every strong topic-fit from the ~10 results — up to 10):
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
    - **Broad-aesthetic topics** (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
@@ -203,13 +208,13 @@ Use Pexels for all images. After all 5 axes attempted without a commit, omit `po
 
    **Step 3 — Extension filter (before any tool call).** Only consider candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels page only resolves to `.webp` / `.gif` / `.avif` / anything else, skip it. Move to the next candidate.
 
-   **Step 4 — Dimension check (batch in parallel).** For the surviving JPG/JPEG/PNG topic-fits (up to 5), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and call `getImageDimensions` on all of them. Per candidate:
+   **Step 4 — Dimension check (batch in parallel).** For the surviving JPG/JPEG/PNG topic-fits (up to 10), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and call `getImageDimensions` on all of them. Per candidate:
    - **status=success + `orientation === "landscape"`** → landscape survivor, proceed to dedup.
    - **status=success + portrait OR square** → drop.
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **If zero landscape survivors → switch to the next axis.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URL5>`, `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
+   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 10), `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
    - **If all survivors are in the response (all dupes) → switch to the next axis.**
    - **If a response row's `post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 2. **Omit `post_image`** entirely.
