@@ -4784,10 +4784,6 @@ async function main() {
     // (one per slot in our mapping), each filtered by setting_name only.
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
     // Synthetic tool: getImageDimensions — wrapper-native, does NOT proxy to BD.
-    // Reads first 64KB of an image URL (Range-requested; if host ignores Range
-    // and streams the full file, we read the first 64KB from the body and
-    // cancel the rest). Parses JPG/PNG header bytes, returns
-    // width/height/format/aspect_ratio/orientation.
     if (name === "getImageDimensions") {
       const url = args && typeof args.url === "string" ? args.url : null;
       if (!url) {
@@ -4810,11 +4806,8 @@ async function main() {
             isError: true,
           };
         }
-        // Streaming read with hard cap. Some CDNs (notably Pexels' image CDN)
-        // ignore Range headers and stream the full body. Read up to CAP bytes
-        // from the stream, then cancel — `parseImageHeader` only needs the
-        // first ~30 bytes for JPG SOF / PNG IHDR, so 64KB is comfortable
-        // headroom while keeping Node memory bounded regardless of file size.
+        // Some CDNs (e.g. Pexels) ignore Range and stream the full body.
+        // Read up to CAP, slicing the first chunk if oversized, then cancel.
         const CAP = 65536;
         if (!response.body) {
           return {
@@ -4828,17 +4821,23 @@ async function main() {
         while (total < CAP) {
           const { done, value } = await reader.read();
           if (done) break;
-          chunks.push(value);
-          total += value.length;
+          const room = CAP - total;
+          const piece = value.length > room ? value.subarray(0, room) : value;
+          chunks.push(piece);
+          total += piece.length;
         }
-        try { await reader.cancel(); } catch { /* ignore */ }
-        const buf = new Uint8Array(Math.min(total, CAP));
+        try { await reader.cancel(); } catch {}
+        if (total === 0) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ status: "error", message: "empty response body" }) }],
+            isError: true,
+          };
+        }
+        const buf = new Uint8Array(total);
         let offset = 0;
         for (const chunk of chunks) {
-          const len = Math.min(chunk.length, CAP - offset);
-          buf.set(chunk.subarray(0, len), offset);
-          offset += len;
-          if (offset >= CAP) break;
+          buf.set(chunk, offset);
+          offset += chunk.length;
         }
         const { width, height, format } = parseImageHeader(buf);
         const aspect = width / height;

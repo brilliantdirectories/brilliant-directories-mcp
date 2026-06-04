@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.44] - 2026-06-04
+
+### Polish: `getImageDimensions` empty-body guard + ingest-time chunk slicing
+
+Three targeted improvements on top of v6.55.43's streaming-read fix:
+
+- Empty-body guard: a 200 OK with zero bytes now returns a clean `"empty response body"` error instead of falling through to `parseImageHeader` and reporting `"unsupported image format"`.
+- First-chunk slicing: chunks are sliced to remaining capacity at ingest time so peak memory is strictly bounded to 64KB regardless of HTTP/2 chunk sizing (could previously hold a 256KB+ chunk transiently before the copy-loop sliced it down).
+- Simplified buffer assembly: since every queued chunk is now pre-sliced to fit, the copy loop drops redundant `Math.min(chunk.length, CAP - offset)` and break-on-overflow checks.
+
+No response-shape change. Same behavior on every URL that worked under v6.55.43; cleaner errors on edge cases. Drift-check + tsc + end-to-end smoke (5 Pexels URLs + 1 known-404) all green.
+
 ## [6.55.43] - 2026-06-04
 
 ### Fix: `getImageDimensions` no longer rejects images when host ignores Range header
