@@ -214,7 +214,7 @@ Use Pexels for all images. After all 10 axes attempted without a commit, omit `p
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **If zero landscape survivors → switch to the next axis.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 10), `property_operator=in`. Response rows include `original_image_url` and `post_title`. Before committing, walk survivors in order and apply per candidate:
+   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 10), `property_operator=in`. Response rows include `original_image_url` and `post_title`. Before committing, walk survivors in Step 4 output order and apply per candidate:
    - **URL in the response** → candidate is a URL-dupe; drop it, try the next survivor.
    - **`post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
    - **Neither hit** → commit this URL as `post_image`.
