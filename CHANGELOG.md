@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.43] - 2026-06-04
+
+### Fix: `getImageDimensions` no longer rejects images when host ignores Range header
+
+Pexels' image CDN (`images.pexels.com`) and other hosts can silently ignore HTTP `Range` requests and stream the full file. The previous implementation read `await response.arrayBuffer()` to pull the entire body and pre-rejected anything where `Content-Length > 1MB` with a "response too large (Range ignored by host)" error — even though `parseImageHeader` only needs the first ~30 bytes for JPG SOF / PNG IHDR.
+
+Effect: roughly half of Pexels candidates in real autonomous-content runs were silently dropped before orientation could be determined. Two of four "silent fails" in a live trace turned out to be valid landscape images the wrapper would never have parsed.
+
+Fix: streaming reader (`response.body.getReader()`) reads up to 64KB regardless of `Content-Length`, then cancels the rest of the stream. Same memory bound as before (64KB), no full-body buffering, no pre-reject. Bandwidth on the server side actually improves because we cancel instead of consuming the full file.
+
+Verified live on the exact 5 Pexels URLs from a failing autonomous run plus a known-404 URL: all 5 parse correctly to width/height/orientation, 404 returns clean "bad status code: 404". No regression on the existing error path. Drift-check + tsc + node syntax all clean.
+
 ## [6.55.42] - 2026-05-30
 
 ### Fix: `post_promo` regressed to users_meta on jobs posts after v6.55.41

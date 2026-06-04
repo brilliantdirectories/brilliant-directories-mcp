@@ -4784,7 +4784,9 @@ async function main() {
     // (one per slot in our mapping), each filtered by setting_name only.
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
     // Synthetic tool: getImageDimensions — wrapper-native, does NOT proxy to BD.
-    // Range-GETs first 64KB of an image URL, parses JPG/PNG header bytes, returns
+    // Reads first 64KB of an image URL (Range-requested; if host ignores Range
+    // and streams the full file, we read the first 64KB from the body and
+    // cancel the rest). Parses JPG/PNG header bytes, returns
     // width/height/format/aspect_ratio/orientation.
     if (name === "getImageDimensions") {
       const url = args && typeof args.url === "string" ? args.url : null;
@@ -4808,18 +4810,36 @@ async function main() {
             isError: true,
           };
         }
-        // Memory guard: well-behaved hosts (Pexels, Unsplash) honor Range and
-        // return 206 with ~64KB. A misbehaving server can ignore Range and ship
-        // the full body. Cap any single response at 1MB so a rogue URL can't
-        // balloon Node memory before parseImageHeader runs.
-        const cl = response.headers.get("content-length");
-        if (cl && Number(cl) > 1_048_576) {
+        // Streaming read with hard cap. Some CDNs (notably Pexels' image CDN)
+        // ignore Range headers and stream the full body. Read up to CAP bytes
+        // from the stream, then cancel — `parseImageHeader` only needs the
+        // first ~30 bytes for JPG SOF / PNG IHDR, so 64KB is comfortable
+        // headroom while keeping Node memory bounded regardless of file size.
+        const CAP = 65536;
+        if (!response.body) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ status: "error", message: `response too large: ${cl} bytes (Range ignored by host)` }) }],
+            content: [{ type: "text", text: JSON.stringify({ status: "error", message: "empty response body" }) }],
             isError: true,
           };
         }
-        const buf = new Uint8Array(await response.arrayBuffer());
+        const reader = response.body.getReader();
+        const chunks = [];
+        let total = 0;
+        while (total < CAP) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          total += value.length;
+        }
+        try { await reader.cancel(); } catch { /* ignore */ }
+        const buf = new Uint8Array(Math.min(total, CAP));
+        let offset = 0;
+        for (const chunk of chunks) {
+          const len = Math.min(chunk.length, CAP - offset);
+          buf.set(chunk.subarray(0, len), offset);
+          offset += len;
+          if (offset >= CAP) break;
+        }
         const { width, height, format } = parseImageHeader(buf);
         const aspect = width / height;
         const orientation = width > height ? "landscape" : width < height ? "portrait" : "square";
