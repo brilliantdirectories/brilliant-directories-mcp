@@ -95,7 +95,7 @@ Always SKIP existing records — no auto-edit of live posts.
 | Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
-| URL liveness | Every URL the post links to must be verified before publish — see the `URL liveness gate` section below for the full decision tree. |
+| URL liveness | Every URL the post links to must be verified before publish per the `### URL liveness gate` section. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
 
@@ -127,7 +127,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. Per-type SKILL.md specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
-3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links — see `Link order` rule below.**
+3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links per the `### Link order` section.**
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
@@ -214,9 +214,11 @@ Use Pexels for all images. After all 10 axes attempted without a commit, omit `p
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **If zero landscape survivors → switch to the next axis.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 10), `property_operator=in`. Response rows include `original_image_url`. Commit ONE survivor — the first whose URL is NOT in the response.
-   - **If all survivors are in the response (all dupes) → switch to the next axis.**
-   - **If a response row's `post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 10), `property_operator=in`. Response rows include `original_image_url` and `post_title`. Before committing, walk survivors in order and apply per candidate:
+   - **URL in the response** → candidate is a URL-dupe; drop it, try the next survivor.
+   - **`post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
+   - **Neither hit** → commit this URL as `post_image`.
+   - **If every survivor drops → switch to the next axis.**
 2. **Omit `post_image`** entirely.
 
 **Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
