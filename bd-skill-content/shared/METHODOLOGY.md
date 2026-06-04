@@ -179,15 +179,20 @@ Use Pexels for all images. After all 5 axes attempted without a commit, omit `po
    |---|---|---|---|
    | 1. Subject + state (default) | The thing in its defining state | `barista pouring` / `barista pouring coffee` | `colorful buttons` / `modern ui buttons` |
    | 2. People + adjacent action | Same audience, related verb | `barista cleaning` / `barista weighing beans` | `designer sketching` / `designer choosing colors` |
-   | 3. Detail / object close-up | Topical object, no people | `portafilter shot` / `espresso shot pour` | `button mockup` / `colorful interface element` |
+   | 3. Detail / object close-up | A topical **prop or equipment** shot, no people | `portafilter shot` / `espresso shot pour` | `button mockup` / `colorful interface element` |
    | 4. Setting + topical marker | Topical location, named | `coffee shop` / `coffee shop bar` | `design studio` / `ui designer desk` |
    | 5. Adjacent activity / item | Related thing, different action | `latte art` / `coffee bean grinder` | `color swatch` / `figma wireframe sketch` |
+
+   **Comparison-shape posts ("X vs Y"):** Axes 3-5 must cover BOTH halves of the comparison, not just the primary subject. For "espresso vs pour-over" the prop axis needs items from both methods; for "React vs Vue" the setting axis needs developers using both stacks.
+
+   **One search per axis.** If the first search returns weak or dedup'd candidates, SWITCH to the next axis. Do not retry the same axis with a different wording — that drift ("let me try axis 2 with one more phrase") is the most common axis-discipline failure.
 
    **Per-axis loop — repeat for each axis until commit or all 5 axes attempted:**
 
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` using the current axis's phrase per the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
    - If results return mostly `/search/` URLs instead of `/photo/<slug>-<id>/`, treat as zero topic-fits → switch to the next axis.
+   - **Axis-duplicate guard.** If an axis search returns only `/photo/<id>/` URLs already seen in a prior axis, that axis didn't generate fresh candidates — log it as a wasted axis and move to the next. Do not re-probe the same images with `getImageDimensions`. Widen vocabulary on the next axis instead of reusing the same search space.
 
    **Step 2 — Topic-fit gate** (identify up to 5 strong topic-fits from the ~10 results):
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
