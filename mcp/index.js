@@ -1690,6 +1690,8 @@ const PARENT_TABLE_NATIVE_COLUMNS = {
     "profession_id", "facebook_id", "google_id", "verified", "pinterest",
     "nationwide", "cv", "work_experience", "rep_matters", "gmap",
     "listing_type", "lat", "lon", "no_geo", "user_consent", "search_description",
+    "services", // passthrough write-param (BD expands CSV → rel_services links); native so it isn't EAV-diverted
+
   ]),
   data_posts: new Set([
     "post_id", "post_video", "post_title", "post_caption", "post_content",

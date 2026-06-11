@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.45] - 2026-06-10
+
+### Fix: `createUser`/`updateUser` `services` now creates real sub-category links
+
+`services` (the comma-separated sub-category assignment on members) was missing from the `users_data` native-column registry, so inverse EAV routing diverted it to a `users_meta` row instead of passing it through to BD. BD never ran its sub-category handler — the call returned success but created no `rel_services` links, and reads echoed the stale `users_meta` value, masking the failure.
+
+Added `services` to `PARENT_TABLE_NATIVE_COLUMNS.users_data` (npm + Worker) so it passes through as a direct write param. BD then expands the CSV into real sub-category links. Verified against the live API: `services=23,24` now produces actual `rel_services` records. Drift-check green.
+
 ## [6.55.44] - 2026-06-04
 
 ### Polish: `getImageDimensions` empty-body guard + ingest-time chunk slicing
