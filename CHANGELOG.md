@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.49] - 2026-06-12
+
+### Fix: describe `menu_name`/`menu_link` on `updateMenuItem` (matched to `createMenuItem`)
+
+`updateMenuItem` left `menu_name` and `menu_link` bare (`{"type":"string"}`) while `createMenuItem` described them, so an agent asked to change a menu link's text didn't know `menu_name` is the visible label — it wasted rounds hunting for a nonexistent `menu_title` field. Added matching descriptions to both: `menu_name` = "Display text — the visible menu link label. Supports `[widget=Name]` shortcodes." / `menu_link` = "URL or path". create + update now identical.
+
 ## [6.55.48] - 2026-06-11
 
 ### Fix: `getWebPage`/`listWebPages` now return `enable_hero_section` by default

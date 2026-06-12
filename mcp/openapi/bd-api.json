@@ -7529,7 +7529,7 @@
                   },
                   "menu_name": {
                     "type": "string",
-                    "description": "Display text"
+                    "description": "Display text — the visible menu link label. Supports `[widget=Name]` shortcodes."
                   },
                   "menu_link": {
                     "type": "string",
@@ -7603,10 +7603,12 @@
                     "type": "integer"
                   },
                   "menu_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Display text — the visible menu link label. Supports `[widget=Name]` shortcodes."
                   },
                   "menu_link": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "URL or path"
                   },
                   "menu_order": {
                     "type": "integer"
