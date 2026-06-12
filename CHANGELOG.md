@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.50] - 2026-06-12
+
+### Fix: multi-image album photo import — `post_image` was EAV-routed instead of forwarded to BD's importer
+
+Third instance of the inverse-routing-vs-controller-intercept bug class (after `services` and `post_promo`). On `createMultiImagePost` / `updateMultiImagePost` (both `routingMode: "inverse"` on `users_portfolio_groups`), `post_image` is NOT a native column of `users_portfolio_groups` — it's a controller-intercept field that triggers BD's photo importer. Inverse routing classified it as a custom field and upserted it to `users_meta` before BD's controller saw it, so the call returned `status: success` (with `eav_results: [{key:"post_image", action:"created/updated"}]`) but zero `users_portfolio` photo rows were created — albums came back empty. Fix: add `post_image` to `WRAPPER_INTERACTION_FIELDS` so it bypasses inverse partitioning and forwards to BD's controller. Verified live: `createMultiImagePost` with `auto_image_import=1` now produces real `users_portfolio` rows (`file` populated, `image_imported=2`). No effect on single-image posts — `post_image` IS a native `data_posts` column there, so it already forwarded (interaction-field and native-column both route direct).
+
+### Fix: `AUTO_REFRESH_SCOPE` npm/Worker alignment (drift)
+
+The npm mirror's `AUTO_REFRESH_SCOPE` had diverged from the Worker: it still used scoped values (`web_pages`, `data_widgets`) and lacked the menu entries, while the Worker switched to full refresh (`""`) for all cache-gated writes and added create/update/delete Menu + MenuItem. Aligned npm to the Worker (all `""` + 6 menu entries). npm gates refresh on `name in AUTO_REFRESH_SCOPE`, so the menu entries are live with no other code change.
+
 ## [6.55.49] - 2026-06-12
 
 ### Fix: describe `menu_name`/`menu_link` on `updateMenuItem` (matched to `createMenuItem`)

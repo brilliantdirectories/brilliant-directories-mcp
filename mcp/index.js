@@ -1666,11 +1666,17 @@ async function autoRefreshCache(config, scope) {
 
 // Tool -> refresh scope map. "" means full refresh (no scope param).
 const AUTO_REFRESH_SCOPE = {
-  createWebPage: "web_pages",
-  updateWebPage: "web_pages",
-  createWidget: "data_widgets",
-  updateWidget: "data_widgets",
+  createWebPage: "",
+  updateWebPage: "",
+  createWidget: "",
+  updateWidget: "",
   updatePostType: "",
+  createMenu: "",
+  updateMenu: "",
+  deleteMenu: "",
+  createMenuItem: "",
+  updateMenuItem: "",
+  deleteMenuItem: "",
 };
 
 // Native-column registry for inverse-routing parents. BD admins clone forms
@@ -1749,6 +1755,7 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
   "create_new_categories",
   "send_email_notifications",
   "auto_geocode", "auto_image_import",
+  "post_image",
   "subscription_schema", "profession_schema", "photos_schema",
   "tags", "services_schema", "user_clicks_schema",
   "post_promo",
