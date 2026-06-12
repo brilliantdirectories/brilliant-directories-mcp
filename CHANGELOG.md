@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.47] - 2026-06-11
+
+### Fix: `updateWebPage` hero-section disambiguation
+
+"Hero section" is ambiguous — a page can have a programmatic hero (`enable_hero_section` + `hero_*` fields) OR a hero baked into `content`. The model would rewrite `content` to "remove the hero" even when `enable_hero_section` was on (the correct action was setting it to `0`), destroying unrelated content. Added a disambiguation directive to the top of `updateWebPage`'s hero block: read the current `enable_hero_section` first — `1`/`2` means the programmatic hero (restyle via `hero_*`, remove via `enable_hero_section=0`, never rewrite `content`); `0` means the hero lives in `content`; ambiguous add / both-heroes → ask. Spec-only; `createWebPage` and the `enable_hero_section` field prose unchanged.
+
 ## [6.55.46] - 2026-06-11
 
 ### Docs: add Abacus.AI (ChatLLM Agent) setup section
