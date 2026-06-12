@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.46] - 2026-06-11
+
+### Docs: add Abacus.AI (ChatLLM Agent) setup section
+
+Documented Abacus.AI as a supported platform in both READMEs (root + npm package, kept byte-mirrored). Covers the stdio/npm config (passes `--api-key`/`--url` as args, the reliable path) and the remote URL config flagged as header-dependent, with the `Missing X-BD-Site-URL` fallback note. No code or spec changes.
+
 ## [6.55.45] - 2026-06-10
 
 ### Fix: `createUser`/`updateUser` `services` now creates real sub-category links

@@ -62,6 +62,7 @@ The change is immediate — no key rotation, no AI restart needed. Re-run the fa
   - [n8n](#n8n)
   - [Make.com](#makecom)
   - [Zapier](#zapier)
+  - [Abacus.AI (ChatLLM Agent)](#abacusai-chatllm-agent)
   - [curl / any HTTP client](#curl--any-http-client)
 - [What you can ask the AI](#what-you-can-ask-the-ai)
 - [Updates are automatic](#updates-are-automatic)
@@ -743,6 +744,49 @@ The "MCP Client by Zapier" app only supports OAuth / Bearer Token — no custom-
 Use one of these paths instead:
 - **BD's existing Zapier app** (if it covers what you need) — same underlying API, same API key.
 - **Webhooks by Zapier** against `https://www.your-site.com/api/v2/*`, with Custom Headers `X-Api-Key: <your key>` and `X-BD-Site-URL: https://www.your-site.com`. This hits BD's REST API directly and skips MCP entirely — every BD operation reachable.
+
+---
+
+### Abacus.AI (ChatLLM Agent)
+
+Abacus AI Agent supports MCP servers — both stdio (npm) and remote (URL) — via its **Configure MCP** page (Agent Settings → MCP Server Config). See <a href="https://abacus.ai/help/chatllm-ai-super-assistant/mcp-servers" target="_blank" rel="noopener noreferrer">Abacus's MCP docs</a>.
+
+**✅ Recommended (stdio / npm — passes both credentials reliably):** paste this into the MCP Server Config JSON. It runs the package in Abacus's hosted environment and passes your API key + site URL as args, so no custom-headers support is needed.
+
+```json
+{
+  "brilliant-directories": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "--prefer-online",
+      "brilliant-directories-mcp@latest",
+      "--api-key", "ENTER_API_KEY",
+      "--url", "https://www.your-site.com"
+    ]
+  }
+}
+```
+
+Replace `ENTER_API_KEY` with your BD API key and `https://www.your-site.com` with your BD site URL. Abacus will query the server and list every BD tool.
+
+**🚀 Remote URL (only if your Abacus MCP config accepts custom headers):** our Worker needs **two** headers (`X-Api-Key` AND `X-BD-Site-URL`). Abacus's documented remote-server example shows only a `url` field — if your config also accepts a headers/env block, use:
+
+```json
+{
+  "brilliant-directories": {
+    "url": "https://brilliantmcp.com",
+    "headers": {
+      "X-Api-Key": "ENTER_API_KEY",
+      "X-BD-Site-URL": "https://www.your-site.com"
+    }
+  }
+}
+```
+
+If Abacus sends only a single token (no second header), the Worker rejects with `Missing X-BD-Site-URL header` — use the stdio config above instead.
+
+> Paste only the server-config JSON, not a `{ "mcpServers": { ... } }` wrapper — Abacus expects the inner object. Abacus allows up to 5 servers / 50 active tools; the BD server alone exposes more than 50, so keep other servers light or scope which tools you enable.
 
 ---
 
