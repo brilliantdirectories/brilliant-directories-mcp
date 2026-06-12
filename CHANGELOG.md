@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.48] - 2026-06-11
+
+### Fix: `getWebPage`/`listWebPages` now return `enable_hero_section` by default
+
+The web-page lean keep-list omitted `enable_hero_section` (a native `list_seo` column), so default reads stripped it. An agent asked to "remove the hero section" never saw whether a hero was enabled and would rewrite `content` instead of setting the field to `0`. Added `enable_hero_section` to `WEB_PAGE_LEAN_ALWAYS_KEEP` (Worker + npm mirror) so the master switch is always returned; the `hero_*` styling fields still return only with `include_extras=1`. Pairs with the v6.55.47 hero disambiguation directive.
+
 ## [6.55.47] - 2026-06-11
 
 ### Fix: `updateWebPage` hero-section disambiguation

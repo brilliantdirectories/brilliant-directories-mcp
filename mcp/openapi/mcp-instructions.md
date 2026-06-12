@@ -598,7 +598,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 - `include_post_comment_settings=1` - restores `post_comment_settings` JSON.
 - `include_review_notifications=1` - restores the 5 review-notification email template fields.
 
-**Web pages** (`listWebPages` / `getWebPage`): all structural + metadata fields always returned (seo_id, seo_type, filename, title, meta_desc, meta_keywords, h1/h2, content_active, content_layout, form_name, menu_layout, enable_hero_section, all hero_* fields, etc.). Strips: `content` (body HTML), `content_css`, `content_head`, `content_footer_html`. On heavy-content sites a row can be 10-30KB with code assets; opt in only when editing asset content. Flags:
+**Web pages** (`listWebPages` / `getWebPage`): all structural + metadata fields always returned (seo_id, seo_type, filename, title, meta_desc, meta_keywords, h1/h2, content_active, content_layout, form_name, menu_layout, enable_hero_section, etc.). `hero_*` styling fields return with `include_extras=1`. Strips: `content` (body HTML), `content_css`, `content_head`, `content_footer_html`. On heavy-content sites a row can be 10-30KB with code assets; opt in only when editing asset content. Flags:
 
 - `include_content=1` - restores `content` (body HTML).
 - `include_code=1` - restores `content_css`, `content_head`, `content_footer_html`. Needed before `updateWebPage` edits to CSS/head/footer JS so you have the current value to modify.

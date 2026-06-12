@@ -1085,6 +1085,7 @@ const WEB_PAGE_LEAN_ALWAYS_KEEP = [
   "seo_id", "seo_type", "filename", "title", "h1", "h2", "nickname",
   "linked_post_category", "linked_post_type",
   "date_updated", "revision_timestamp",
+  "enable_hero_section", // hero master switch — agent needs it to tell if a hero is on
   // Wrapper-controlled opt-in fields (gated by include_content / include_code)
   "content", "content_css", "content_head", "content_footer_html",
   "tablesExists",
