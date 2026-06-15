@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.52] - 2026-06-15
+
+### Fix: `delete_categories` was EAV-routed instead of forwarded; also add it to the `updateUser` schema
+
+Fifth instance of the inverse-routing-vs-controller-intercept bug class (after `services`, `post_promo`, `post_image`, member image URLs). `delete_categories=1` on `updateUser` tells BD to wipe the member's existing `rel_services` links before applying new `services` (turning `services` from append into replace). It's not a native `users_data` column, so inverse routing EAV-diverted it to `users_meta` — the call returned `status: success` (with `eav_results: [{key:"delete_categories", action:"created"}]`) but BD never ran the wipe. Verified live: `delete_categories=1 + services=Yoga,Pilates` left the member with the OLD categories PLUS the new ones (append, not replace). Fix: add `delete_categories` to `WRAPPER_INTERACTION_FIELDS` so it forwards to BD's controller. Also added `delete_categories` to the `updateUser` OpenAPI schema (it was entirely undocumented — the field existed in BD but no MCP tool exposed it). Verified live post-fix: no `eav_results`, old links wiped, only the new `services` remain.
+
 ## [6.55.51] - 2026-06-15
 
 ### Fix: member image import — `profile_photo` / `logo` / `cover_photo` were EAV-routed instead of forwarded to BD's importer

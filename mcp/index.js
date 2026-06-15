@@ -1753,7 +1753,7 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
   "credit_action", "credit_amount",
   "images_action",
   "member_tag_action", "member_tags",
-  "create_new_categories",
+  "create_new_categories", "delete_categories",
   "send_email_notifications",
   "auto_geocode", "auto_image_import",
   "post_image",
