@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.56] - 2026-06-15
+
+### Schema: `updateUser.services` now states the additive default + points to `delete_categories`
+
+Alignment review found the replace-vs-append fact lived only on the `delete_categories` field — an agent reading just `services` (told to "replace this member's sub-categories") could re-send `services` expecting replacement and instead silently APPEND (duplicate links). Added one clause to `updateUser.services`: it's additive by default; pass `delete_categories=1` to replace the whole set. Schema prose only. No contradictions found elsewhere — corpus and schema are aligned on `delete_categories`, inline sub-sub creation, and image handling.
+
 ## [6.55.55] - 2026-06-15
 
 ### Corpus: document `delete_categories` in the category-assignment rule

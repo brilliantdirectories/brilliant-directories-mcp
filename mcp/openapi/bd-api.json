@@ -2066,7 +2066,7 @@
                   },
                   "services": {
                     "type": "string",
-                    "description": "Sub-categories for this member. Formats: `category=>service1,service2` OR `service1,service2` (top category defaults to member's current `profession_id`). Supports sub-sub-categories via `Parent=>Child` (e.g. `Honda=>2022,Honda=>2023,Toyota`).\n\nUnknown names silently ignored unless `create_new_categories=1` is also set (on update - create auto-creates always).\n\n**WARNING:** changing `profession_id` in the same call WIPES all existing sub-category links. Re-send the full `services` list to preserve them."
+                    "description": "Sub-categories for this member. Formats: `category=>service1,service2` OR `service1,service2` (top category defaults to member's current `profession_id`). Supports sub-sub-categories via `Parent=>Child` (e.g. `Honda=>2022,Honda=>2023,Toyota`).\n\nUnknown names silently ignored unless `create_new_categories=1` is also set (on update - create auto-creates always).\n\n**Additive by default** — these links are ADDED to the member's existing ones. To REPLACE the whole set instead, pass `delete_categories=1` in the same call.\n\n**WARNING:** changing `profession_id` in the same call WIPES all existing sub-category links. Re-send the full `services` list to preserve them."
                   },
                   "auto_geocode": {
                     "type": "string",
