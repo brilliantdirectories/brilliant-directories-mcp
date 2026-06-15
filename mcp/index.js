@@ -1745,7 +1745,8 @@ const PARENT_TABLE_NATIVE_COLUMNS = {
 // forward to BD's controller as body params. Mix of wrapper-internal
 // directives (`_clear_fields`, `credit_action`, etc.) and BD controller-
 // intercept fields (`post_promo` back-fills `post_price` on data_posts;
-// `auto_geocode` / `auto_image_import` trigger BD-side handlers).
+// `auto_geocode` / `auto_image_import` trigger BD-side handlers;
+// `profile_photo` / `logo` / `cover_photo` are the image URLs `auto_image_import` consumes).
 // Mirrored byte-for-byte in Worker src/index.ts.
 const WRAPPER_INTERACTION_FIELDS = new Set([
   "_clear_fields",
@@ -1756,6 +1757,7 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
   "send_email_notifications",
   "auto_geocode", "auto_image_import",
   "post_image",
+  "profile_photo", "logo", "cover_photo",
   "subscription_schema", "profession_schema", "photos_schema",
   "tags", "services_schema", "user_clicks_schema",
   "post_promo",

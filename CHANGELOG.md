@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.51] - 2026-06-15
+
+### Fix: member image import — `profile_photo` / `logo` / `cover_photo` were EAV-routed instead of forwarded to BD's importer
+
+Fourth instance of the inverse-routing-vs-controller-intercept bug class (after `services`, `post_promo`, `post_image`). On `createUser` / `updateUser` (both `routingMode: "inverse"` on `users_data`), the member image-URL fields are NOT native `users_data` columns — they're controller-intercept inputs that BD's `auto_image_import` handler consumes. Inverse routing classified them as custom fields and upserted them to `users_meta` before BD's controller saw them, so the call returned `status: success` (with `eav_results: [{key:"profile_photo", action:"created"}]`) but `auto_image_import` received no URL — `image_main_file` stayed unchanged and no image was imported. The trigger flag (`auto_image_import`) forwarded correctly, but the URLs it acts on did not. Fix: add `profile_photo`, `logo`, `cover_photo` to `WRAPPER_INTERACTION_FIELDS` so they bypass inverse partitioning and forward to BD's controller. Verified live: `updateUser` with `profile_photo` + `auto_image_import=1` reproduced the empty import (URL landed in `users_meta`, `image_main_file` unchanged); after the fix the image imports and the member photo displays. The direct platform API was always correct — this was wrapper-only.
+
 ## [6.55.50] - 2026-06-12
 
 ### Fix: multi-image album photo import — `post_image` was EAV-routed instead of forwarded to BD's importer
