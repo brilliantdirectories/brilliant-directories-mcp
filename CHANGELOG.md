@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.54] - 2026-06-15
+
+### Fix: accuracy of `delete_categories` and `create_new_categories` descriptions (verified against BD source)
+
+Corrected both against BD's actual `userCategoriesUpdate` / `createUserCategoryRelation` logic. `delete_categories` deletes EVERY `rel_services` row for the member — sub- AND sub-sub-category links, not just sub — and leaves the top-level (`profession_id`) and `list_services` definitions intact; description now states both. `create_new_categories` previously claimed sub-sub nesting "requires a separate `createSubCategory` call" — false: the code creates sub-subs inline via the `Sub=>SubSub` format in `services`. It also creates top-levels via `profession_name`. Description corrected (and shortened). No code/routing change — schema prose only.
+
 ## [6.55.53] - 2026-06-15
 
 ### Fix: `delete_categories` schema type — `string` not `integer` (match the working 0/1-flag pattern)

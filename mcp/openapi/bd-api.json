@@ -2260,7 +2260,7 @@
                       0,
                       1
                     ],
-                    "description": "Set `1` to auto-create unknown category/service names on `updateUser`. Without it, unknown names in `services`/`profession_name` are silently skipped. **Has no effect on `createUser`** (which always auto-creates, hardcoded).\n\nAuto-created sub-categories go under the member's current top-level category with `master_id=0`; deeper nesting requires a separate `createSubCategory` call."
+                    "description": "Set `1` to auto-create unknown category names on `updateUser`. Without it, unknown names in `services`/`profession_name` are silently skipped. **No effect on `createUser`** (always auto-creates). Creates whatever level the name references: top-level via `profession_name`, sub via `services`, and sub-sub inline via the `Sub=>SubSub` format in `services` (no separate `createSubCategory` call needed)."
                   },
                   "delete_categories": {
                     "type": "string",
@@ -2268,7 +2268,7 @@
                       "0",
                       "1"
                     ],
-                    "description": "Set `1` to wipe ALL the member's existing sub-category links (`rel_services` rows) BEFORE applying any `services` in the same call — turns `services` from append into replace. The `list_services` definitions are untouched. Without it, `services` is additive (new links added, existing kept). Combine with `services` (and `create_new_categories=1` for unknown names) to replace the member's entire sub-category set in one call. `updateUser` only."
+                    "description": "Set `1` to wipe ALL the member's sub- and sub-sub-category links (every `rel_services` row) BEFORE applying any `services` in the same call — turns `services` from append into replace. Does NOT remove the top-level category (`profession_id`) or any `list_services` definitions. Without it, `services` is additive. Combine with `services` (and `create_new_categories=1` for unknown names) to replace the member's entire sub-category set in one call. `updateUser` only."
                   },
                   "last_login": {
                     "type": "string",
