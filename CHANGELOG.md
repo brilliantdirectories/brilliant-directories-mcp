@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.55] - 2026-06-15
+
+### Corpus: document `delete_categories` in the category-assignment rule
+
+The corpus (`mcp-instructions.md`) thoroughly covered 3-tier category assignment but never mentioned the `delete_categories` flag (added to the schema in v6.55.52-54). Added one line in **Rule: Category taxonomy** constraints: `delete_categories=1` + `services` replaces a member's whole sub/sub-sub set in ONE `updateUser` call, and explicitly to NOT loop `deleteMemberSubCategoryLink` per link — steering the agent off the slow N+1 path it would otherwise take to wipe categories. Corpus-only; single-source `.md`, served live by the Worker from GitHub.
+
 ## [6.55.54] - 2026-06-15
 
 ### Fix: accuracy of `delete_categories` and `create_new_categories` descriptions (verified against BD source)

@@ -800,6 +800,7 @@ Member category assignment on `createUser` / `updateUser` (3-tier classification
 - CSV: comma-only, NO spaces after commas — see **Rule: CSV no spaces**.
 - Auto-create on `createUser` is hardcoded ON. On `updateUser`, pass `create_new_categories=1` to allow inline creation.
 - Changing `profession_id` on `updateUser` WIPES existing sub-category relations. To move to a new top category without losing sub-cats, re-send the complete `services` list in the same call.
+- To REPLACE a member's whole sub/sub-sub set (without changing top category), pass `delete_categories=1` + the new `services` in ONE `updateUser` call — it wipes all the member's `rel_services` links first, then applies `services`. Do NOT loop `deleteMemberSubCategoryLink` per link. Top-level and `list_services` definitions are untouched.
 
 ### Rule: Category SEO routing
 
