@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.53] - 2026-06-15
+
+### Fix: `delete_categories` schema type — `string` not `integer` (match the working 0/1-flag pattern)
+
+v6.55.52 added `delete_categories` to the `updateUser` schema typed `integer`/`enum:[0,1]` (mirroring `create_new_categories`). But BD's API is form-urlencoded — the proven-working 0/1 flags (`auto_image_import`, `nationwide`, `verified`, etc.) are typed `string`/`enum:["0","1"]`, and callers send `"1"`. The integer typing rejected string `"1"` at the client validation layer. Corrected `delete_categories` to `string`/`enum:["0","1"]` to match the working pattern. Worker routing (v6.55.52, `WRAPPER_INTERACTION_FIELDS`) was already correct and type-agnostic — this is a client-schema correction only. (`create_new_categories` remains `integer` — pre-existing, left untouched to avoid scope creep.)
+
 ## [6.55.52] - 2026-06-15
 
 ### Fix: `delete_categories` was EAV-routed instead of forwarded; also add it to the `updateUser` schema

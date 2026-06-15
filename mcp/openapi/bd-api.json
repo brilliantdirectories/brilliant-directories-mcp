@@ -2263,10 +2263,10 @@
                     "description": "Set `1` to auto-create unknown category/service names on `updateUser`. Without it, unknown names in `services`/`profession_name` are silently skipped. **Has no effect on `createUser`** (which always auto-creates, hardcoded).\n\nAuto-created sub-categories go under the member's current top-level category with `master_id=0`; deeper nesting requires a separate `createSubCategory` call."
                   },
                   "delete_categories": {
-                    "type": "integer",
+                    "type": "string",
                     "enum": [
-                      0,
-                      1
+                      "0",
+                      "1"
                     ],
                     "description": "Set `1` to wipe ALL the member's existing sub-category links (`rel_services` rows) BEFORE applying any `services` in the same call — turns `services` from append into replace. The `list_services` definitions are untouched. Without it, `services` is additive (new links added, existing kept). Combine with `services` (and `create_new_categories=1` for unknown names) to replace the member's entire sub-category set in one call. `updateUser` only."
                   },
