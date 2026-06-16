@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (Worker only — no npm code change)
+
+- **Numeric params sent as strings no longer rejected.** The hosted Worker built strict `z.number()` validators from the spec's `integer`/`number` types, so an agent (or BD's own responses, which return IDs as strings) sending `seo_id: "295"` was rejected with an opaque `-32602` before the request reached BD — even though BD parses string params fine. The Worker's `jsonSchemaToZodShape` now wraps numeric fields in `z.preprocess(coerceNumericString, z.number())`: a non-empty all-numeric string is converted to a number; everything else (`""`, `null`, non-numeric strings, omitted) passes through unchanged, so rejection behavior for those is byte-identical to before (no silent `""→0` coercion). Fixes all 456 integer/number params at one chokepoint. The npm package was never affected (its low-level CallTool handler does not strict-validate arguments), so no npm release accompanies this. Worker deployed; spec unchanged.
+
 ## [6.55.60] - 2026-06-15
 
 ### Corpus: trim `Rule: Public URL composition` to its essence
