@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.57] - 2026-06-15
+
+### Add: `the_public_url` on create/update/get for User, WebPage, SingleImagePost, MultiImagePost
+
+These responses returned only the relative slug (`filename` / `post_filename` / `group_filename`), so an agent wanting to hand the user a live link had to separately call `getSiteInfo` for the domain, then concatenate. Now the response carries `the_public_url` (= `<site domain>/<slug>`) directly — no extra lookup. Assembled at the single response-shaping chokepoint from `auth.domain` (which the Worker already resolves to route the request) and the record's slug. One helper + one slug map (single source of truth), applied after lean-shaping so it survives the keep-set strip. Guarded on a non-empty slug, so records without a public page (e.g. `data_type=10` Member Listings) get no field rather than a broken link. Scoped to single-record surfaces (create/update/get) — `list*`/`search*` are excluded to avoid per-row token bloat (rows already carry the slug). Field named `the_public_url` to stay distinct from any current or future BD column. Verified live across all four types; list rows confirmed to NOT carry it. Mirrored in npm + Worker; drift-clean.
+
 ## [6.55.56] - 2026-06-15
 
 ### Schema: `updateUser.services` now states the additive default + points to `delete_categories`

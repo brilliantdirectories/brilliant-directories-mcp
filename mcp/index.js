@@ -1578,6 +1578,29 @@ const WRITE_KEEP_SETS = {
   updateMultiImagePostPhoto: ["photo_id","user_id","group_id","file","title","order","status","image_imported","revision_timestamp"],
 };
 
+// Single source of truth: tool → the record field holding its public-facing slug.
+// `the_public_url` is named un-BD-like to stay distinct from any current or future BD column.
+const PUBLIC_URL_SLUG_FIELD = {
+  createUser: "filename", updateUser: "filename", getUser: "filename",
+  createWebPage: "filename", updateWebPage: "filename", getWebPage: "filename",
+  createSingleImagePost: "post_filename", updateSingleImagePost: "post_filename", getSingleImagePost: "post_filename",
+  createMultiImagePost: "group_filename", updateMultiImagePost: "group_filename", getMultiImagePost: "group_filename",
+};
+
+// Add `the_public_url` (= <domain>/<slug>) to the shaped record(s). Handles `{message:{}}` and `{message:[]}`.
+// Requires a non-empty slug, so listings without a public page stay link-free.
+function attachPublicUrl(body, toolName, domain) {
+  const slugField = PUBLIC_URL_SLUG_FIELD[toolName];
+  if (!slugField || !domain || !body || typeof body !== "object" || !body.message) return;
+  const base = domain.replace(/\/+$/, "");
+  const set = (row) => {
+    if (row && typeof row === "object" && typeof row[slugField] === "string" && row[slugField] !== "") {
+      row.the_public_url = base + "/" + String(row[slugField]).replace(/^\/+/, "");
+    }
+  };
+  Array.isArray(body.message) ? body.message.forEach(set) : set(body.message);
+}
+
 // Apply ONLY to success responses. Errors pass through untouched so the
 // agent sees the full BD error message.
 //
@@ -6089,6 +6112,7 @@ async function main() {
         else if (isMenuItemReadTool) result.body = applyMenuItemLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
+        attachPublicUrl(result.body, name, config.apiUrl);
 
         // Default-deny reserved data_types on listPostTypes / getPostType.
         // Caller opts in via explicit data_type=<value> (single or comma-list).
