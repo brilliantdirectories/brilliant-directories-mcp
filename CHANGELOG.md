@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.59] - 2026-06-15
+
+### Corpus: tighten `Rule: Public URL composition` prose
+
+Follow-up to v6.55.58. Adversarial review flagged three issues in the reworked rule: it used a `{path_field}` template-variable syntax found nowhere else in the corpus, it omitted that `the_public_url` is absent from `list*`/`search*` rows (the named single-record tools all have high-traffic list siblings — an agent could overgeneralize and trust a field that isn't there), and it restated "no composition needed" after already saying "use verbatim". Rule now: states the field is absent from lists and page-less records, maps each slug field to its record type inline, drops the brace syntax for the prose `getSiteInfo full_url` reference shape used by `Rule: Site grounding`. Corpus-only; Worker serves it live on cache TTL.
+
 ## [6.55.58] - 2026-06-15
 
 ### Corpus: teach `Rule: Public URL composition` to prefer `the_public_url`
