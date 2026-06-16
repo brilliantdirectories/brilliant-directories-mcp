@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.60] - 2026-06-15
+
+### Corpus: trim `Rule: Public URL composition` to its essence
+
+v6.55.59 was still over-built — it enumerated all four single-record tools and spelled out every absence case, when "if the field is present use it, else compose" already self-corrects (a list row simply won't have the field). Cut the tool roster and the page-less-record clause; kept one compressed parenthetical noting the field is single-record-only, not `list*`/`search*` rows (cheap guard against an agent pre-deciding to trust a field before seeing the row). Net ~40% shorter. Corpus-only; Worker serves it live on cache TTL.
+
 ## [6.55.59] - 2026-06-15
 
 ### Corpus: tighten `Rule: Public URL composition` prose
