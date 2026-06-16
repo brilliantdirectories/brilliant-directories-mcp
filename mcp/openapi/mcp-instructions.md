@@ -914,7 +914,7 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 
 ### Rule: Public URL composition
 
-**Public URL composition.** Always `{getSiteInfo.full_url}/{path_field}` where `path_field` is `post_filename` / `group_filename` / `filename` from the record. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
+**Public URL composition.** When a create/update/get response carries `the_public_url`, use it as-is — `getUser` / `getWebPage` / `getSingleImagePost` / `getMultiImagePost` and their create/update twins already return the full absolute URL; no composition or `getSiteInfo` lookup needed. Otherwise compose `{getSiteInfo.full_url}/{path_field}` where `path_field` is `post_filename` / `group_filename` / `filename` from the record. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
 
 ### Rule: Brand kit
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.58] - 2026-06-15
+
+### Corpus: teach `Rule: Public URL composition` to prefer `the_public_url`
+
+v6.55.57 added `the_public_url` to create/update/get responses, but the corpus rule still told the agent to always compose the URL from `getSiteInfo.full_url` + slug — the exact extra lookup the field eliminates. Rule now says: when a response carries `the_public_url`, use it as-is (no `getSiteInfo`); otherwise fall back to composition. Corpus-only; served live by the Worker on its cache TTL, no redeploy.
+
 ## [6.55.57] - 2026-06-15
 
 ### Add: `the_public_url` on create/update/get for User, WebPage, SingleImagePost, MultiImagePost
