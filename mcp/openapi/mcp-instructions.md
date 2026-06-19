@@ -917,9 +917,10 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 **Public URL composition.** If a response includes `the_public_url`, use it verbatim — it's the full absolute URL, no lookup needed (single records only, not `list*` / `search*` rows). Otherwise compose it: `getSiteInfo`'s `full_url` + `/` + the record's slug — `filename`, `post_filename`, or `group_filename`. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
 
 **Plan signup/checkout URL.** Read the plan's `custom_checkout_url` via `getMembershipPlan` + `include_extras=1` (it's EAV-stored — stripped from lean reads, and `include_plan_config` does NOT surface it; without `include_extras=1` you'll see it absent and wrongly fall back). Then:
-- `custom_checkout_url` is an absolute URL (starts with `http`) → use it verbatim, prepend nothing (a site may point a plan at an external checkout).
-- `custom_checkout_url` is a slug/id → compose `getSiteInfo`'s `full_url` + `/` + `default_checkout_url` + `/` + `custom_checkout_url`.
-- `custom_checkout_url` empty/absent → same compose, using `subscription_id` as the final segment.
+Trim `custom_checkout_url` first; treat empty, whitespace-only, or absent as "no value". Then:
+- absolute URL (starts with `http`) → use it verbatim, prepend nothing (a site may point a plan at an external checkout).
+- a slug/id → compose `getSiteInfo`'s `full_url` + `/` + `default_checkout_url` + `/` + the trimmed `custom_checkout_url`.
+- no value → same compose, using `subscription_id` as the final segment.
 
 `default_checkout_url` varies by site (`checkout`, `join`, `signup`, …) — use the returned value, never a hardcoded guess. `full_url` has no trailing slash; join with single `/`. E.g. `https://site.com/checkout/2`.
 
