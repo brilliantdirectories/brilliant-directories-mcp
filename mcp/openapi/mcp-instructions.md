@@ -916,7 +916,7 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 
 **Public URL composition.** If a response includes `the_public_url`, use it verbatim — it's the full absolute URL, no lookup needed (single records only, not `list*` / `search*` rows). Otherwise compose it: `getSiteInfo`'s `full_url` + `/` + the record's slug — `filename`, `post_filename`, or `group_filename`. Never guess the origin. If `full_url` isn't cached, call `getSiteInfo` first. About to write a literal domain not from `full_url`? Re-call `getSiteInfo` — that's a hallucination signal.
 
-**Plan signup/checkout URL.** To link a visitor to a specific membership plan's signup page, compose `getSiteInfo`'s `full_url` + `/` + `getSiteInfo`'s `default_checkout_url` + `/` + the plan's `custom_checkout_url` (from `getMembershipPlan`) if set, else its `subscription_id` — e.g. `https://site.com/checkout/2`. `/join` and `/signup` are generic landing pages, NOT per-plan checkout — never use them to target a plan.
+**Plan signup/checkout URL.** To link a visitor to a specific membership plan's signup page, compose `getSiteInfo`'s `full_url` + `/` + `getSiteInfo`'s `default_checkout_url` + `/` + the plan's `custom_checkout_url` (from `getMembershipPlan`) if set, else its `subscription_id` — e.g. `https://site.com/checkout/2`. Always read `default_checkout_url` from `getSiteInfo` rather than assuming `checkout`; a site may set it to `join`, `signup`, or any slug.
 
 ### Rule: Brand kit
 
