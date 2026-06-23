@@ -4019,6 +4019,14 @@
                       1
                     ],
                     "description": "**Auto-import images to site storage.** Set `1` when any external image URL field on this single-image post (e.g. `post_image`) holds a URL - BD fetches the image and saves locally. Without the flag, BD stores the URL as-is; images break if source host goes down.\n\n**Recommended default when supplying external image URLs**; omit or set `0` only if user explicitly wants the external URL reference. Supports JPG/PNG/GIF/WebP/SVG. Processing delay: several minutes."
+                  },
+                  "post_url": {
+                    "type": "string",
+                    "description": "Explicit CTA button link rendered under the feature image on the post-detail page. Use when the owner wants a prominent button. Full `http(s)://` URL. Stored in `users_meta` (database=`data_posts`, database_id=this `post_id`, key=`post_url`), not the `data_posts` column - the wrapper routes it automatically, scoped to this post."
+                  },
+                  "post_venue": {
+                    "type": "string",
+                    "description": "Event/post venue name/landmark where the event is held (e.g. `Staples Center`) - distinct from `post_location` (the street address). Free text. Stored in `users_meta` (database=`data_posts`, database_id=this `post_id`, key=`post_venue`), not the `data_posts` column - the wrapper routes it automatically, scoped to this post."
                   }
                 }
               }
@@ -4171,6 +4179,14 @@
                       1
                     ],
                     "description": "**Auto-import images to site storage.** Set `1` when any external image URL field on this single-image post (e.g. `post_image`) holds a URL - BD fetches the image and saves locally. Without the flag, BD stores the URL as-is; images break if source host goes down.\n\n**Recommended default when supplying external image URLs**; omit or set `0` only if user explicitly wants the external URL reference. Supports JPG/PNG/GIF/WebP/SVG. Processing delay: several minutes."
+                  },
+                  "post_url": {
+                    "type": "string",
+                    "description": "Explicit CTA button link rendered under the feature image on the post-detail page. Use when the owner wants a prominent button. Full `http(s)://` URL. Stored in `users_meta` (database=`data_posts`, database_id=this `post_id`, key=`post_url`), not the `data_posts` column - the wrapper routes it automatically, scoped to this post."
+                  },
+                  "post_venue": {
+                    "type": "string",
+                    "description": "Event/post venue name/landmark where the event is held (e.g. `Staples Center`) - distinct from `post_location` (the street address). Free text. Stored in `users_meta` (database=`data_posts`, database_id=this `post_id`, key=`post_venue`), not the `data_posts` column - the wrapper routes it automatically, scoped to this post."
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"

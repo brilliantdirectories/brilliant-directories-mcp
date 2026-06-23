@@ -839,6 +839,45 @@ Comprehensive coverage across members, posts, leads, reviews, pages, forms, menu
 
 > ⚠️ **The AI can also DELETE and MODIFY live data.** Writes go directly to your live site — no undo. Before running bulk or destructive operations, test on ONE record first. Consider a backup. If unsure, ask the AI to *preview* (list/show) before it *acts*.
 
+## Growth-automation skill (bd-skill-content)
+
+This repo ships a companion **Claude Skill** that uses the BD MCP to do high-leverage content workflows for you: researching public sources, manufacturing SEO-rich posts, deduplicating, and posting to your BD site.
+
+### Download
+
+Get the latest skill zip from the GitHub Releases page: **[bd-skill-content.zip](https://github.com/brilliantdirectories/brilliant-directories-mcp/releases/latest)**.
+
+### Install
+
+1. Open claude.ai → Settings → Customize → Skills → Upload Skill.
+2. Upload the `bd-skill-content.zip` file you downloaded.
+3. Ensure your BD MCP is connected (either the hosted `https://brilliantmcp.com` or the npm-installed local server).
+4. Start a chat and tell Claude what you want: "create event posts for upcoming fitness events in Austin."
+
+### Content types in v0.1
+
+- **Events** — researches local events from public web sources (chamber sites, tourism boards, civic calendars, public Eventbrite pages, etc.), creates structured event posts with FAQ, internal links to related events, source attribution, and Nominatim-geocoded coordinates.
+
+More content types (jobs, properties, blog, SEO landing pages) coming in future releases. They will share the same shared methodology and ship in the same zip.
+
+### Defaults
+
+- Drafts by default in autonomous runs (you review before publishing)
+- Free to run (no API keys, no paid services)
+- Whitehat scraping (facts only, public pages only, attribution always)
+- Realistic run time: 30-60 minutes for 10-20 posts
+
+### Build from source
+
+The skill source lives in [`bd-skill-content/`](./bd-skill-content/). Rebuild the zip yourself:
+
+```bash
+node scripts/build-skill-zip.js
+# Output: bd-skill-content/bd-skill-content.zip
+```
+
+All built on the same foundation: shared research methodology, quality gates, dedup, anti-slop writing voice, whitehat sourcing.
+
 ## Updates are automatic
 
 Once set up, you get new MCP versions automatically the next time you fully quit and reopen your AI app.
