@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.62] - 2026-06-30
+
+### Added
+
+- **`createWidget` / `updateWidget` responses now carry `_admin_edit_url`.** Previously only `createWebPage` / `updateWebPage` returned an admin deep-link; widget writes returned none, so an agent reporting "widget created" had no clickable way to open it and would fabricate a wrong URL (`widgets.php?faction=edit` instead of the real `formViewWidgets.php?...&myid=...&method=Edit`). The URL is built server-side from the written `widget_id` (read from `message.widget_id`) + the resolved `website_id`, mirroring the existing web-page builder. Mirrored byte-identically in Worker (`src/index.ts`) and npm (`mcp/index.js`); `_buildWidgetAdminEditUrl` registered in the drift-check `MIRROR_FUNCTIONS` list.
+
+### Changed
+
+- **Admin-edit URL scheme now mirrors the customer site's scheme.** Both `_admin_edit_url` builders previously hardcoded `https://ww2.managemydirectory.com`. The centralized admin host is unchanged, but the scheme now follows the site's own (`http` or `https`) — derived from `config.apiUrl` (npm) / `auth.domain` (Worker) — so http-only customer sites get a working `http://` admin link instead of an https one that fails. For the common https site the output is byte-identical to before (no regression). The shared `scheme://ww2.managemydirectory.com/admin` prefix is now built once in `_adminBase()` (DRY) instead of repeated per builder.
+
 ## [6.55.61] - 2026-06-23
 
 ### Added

@@ -2499,8 +2499,20 @@ async function getWebsiteInfoCached(domain, apiKey) {
   } catch { return null; }
 }
 
+// Centralized admin is always ww2.managemydirectory.com; the scheme mirrors
+// the customer site's (http or https), derived from config.apiUrl.
+function _adminBase() {
+  let scheme = "https";
+  try { if (new URL(config.apiUrl).protocol === "http:") scheme = "http"; } catch {}
+  return `${scheme}://ww2.managemydirectory.com/admin`;
+}
+
 function _buildAdminEditUrl(websiteId, seoId) {
-  return `https://ww2.managemydirectory.com/admin/contentManage.php?template_type=&faction=edittemplate&seo_id=${encodeURIComponent(String(seoId))}&newsite=${encodeURIComponent(websiteId)}`;
+  return `${_adminBase()}/contentManage.php?template_type=&faction=edittemplate&seo_id=${encodeURIComponent(String(seoId))}&newsite=${encodeURIComponent(websiteId)}`;
+}
+
+function _buildWidgetAdminEditUrl(websiteId, widgetId) {
+  return `${_adminBase()}/formViewWidgets.php?website_id=${encodeURIComponent(websiteId)}&form_name=widgets&myid=${encodeURIComponent(String(widgetId))}&method=Edit`;
 }
 
 function _parseFeatureCategories(raw) {
@@ -6253,6 +6265,24 @@ async function main() {
           const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
           if (websiteId) {
             result.body._admin_edit_url = _buildAdminEditUrl(websiteId, writtenSeoId);
+          }
+        }
+      }
+      if (
+        (name === "createWidget" || name === "updateWidget") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const writtenWidgetId = (() => {
+          const m = result.body.message;
+          if (m && typeof m === "object" && !Array.isArray(m) && m.widget_id) return m.widget_id;
+          if (Array.isArray(m) && m[0] && m[0].widget_id) return m[0].widget_id;
+          return args.widget_id;
+        })();
+        if (writtenWidgetId !== undefined && writtenWidgetId !== null && writtenWidgetId !== "") {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            result.body._admin_edit_url = _buildWidgetAdminEditUrl(websiteId, writtenWidgetId);
           }
         }
       }
