@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.64] - 2026-06-30
+
+### Added (corpus)
+
+- **`Rule: Default-merge models` teaches the `is_default` filter + ordering on the 7 merge endpoints.** `listWidgets`/`listForms`/`listFormFields`/`listSidebars`/`listMenus`/`listMenuItems` return a union of the site's own records and uncustomised platform master defaults, each flagged `is_default`. Agents had no documented way to act on only the site's records or to find "the newest widget" — the merge surfaced master defaults (null PK) ahead of the site's real records. New rule documents `property=is_default property_value=false` to scope to the site, and `order_column`/`order_type` to sort. Pointer (`See **Rule: Default-merge models**`) added to all 6 list-tool descriptions in the spec. Corpus + spec only; the BD-core change that makes `is_default` filterable and applies ordering on the merge path deploys separately.
+
 ## [6.55.63] - 2026-06-30
 
 ### Added
