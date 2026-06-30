@@ -6286,6 +6286,26 @@ async function main() {
           }
         }
       }
+      // Widget reads carry the same admin deep-link, per row. getWidget
+      // returns one record (object or single-row array); listWidgets an
+      // array. Resolve website_id once, stamp _admin_edit_url on each row
+      // that has a widget_id.
+      if (
+        (name === "getWidget" || name === "listWidgets") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const m = result.body.message;
+        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
+        if (rows.some((r) => r && r.widget_id)) {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            for (const r of rows) {
+              if (r && r.widget_id) r._admin_edit_url = _buildWidgetAdminEditUrl(websiteId, r.widget_id);
+            }
+          }
+        }
+      }
       // deleteWebPage cascade — wipe the 301 redirect that pointed at the
       // deleted data_category page's slug.
       if (

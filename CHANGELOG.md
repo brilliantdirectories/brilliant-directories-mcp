@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.63] - 2026-06-30
+
+### Added
+
+- **`getWidget` / `listWidgets` now carry `_admin_edit_url` per record.** v6.55.62 added the widget admin deep-link on create/update only; reads returned none, so an agent listing or inspecting widgets had to fabricate the edit URL. The read path now stamps `_admin_edit_url` on every returned row that has a `widget_id` (getWidget = one record; listWidgets = each row), resolving `website_id` once per call. Runs after lean-shaping so the field survives; widget reads are not lean-shaped, so no keep-set change needed. Mirrored byte-identically in Worker (`src/index.ts`) and npm (`mcp/index.js`).
+
 ## [6.55.62] - 2026-06-30
 
 ### Added
