@@ -241,7 +241,7 @@ Every form belongs to ONE of three classes, keyed on `form_table` (and `form_act
 
 Ambiguity prompt: "Standard public form (saves to your forms inbox) or Lead-saving form (auto-routes to matching members via BD's Get-Matched flow)?"
 
-Read-back tools per class: inquiries via the site's forms inbox, leads via `listLeadMatches` / `listLeads`, member fields via `getUser` / `listUserMeta`.
+Read-back tools per class: inquiries via `listFormInquiries` / `getFormInquiry` (the forms inbox), leads via `listLeadMatches` / `listLeads`, member fields via `getUser` / `listUserMeta`.
 
 **Canonical `field_name` values for Standard public forms (`form_table=website_contacts`)** — BD's forms inbox + the `form_inquiries` table read these column names on submit. Use them verbatim for matching purposes; anything else is a custom field (still works, just doesn't surface in the canonical inbox columns):
 
@@ -571,7 +571,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 ### Rule: Lean read responses
 
-**Row weight - lean-by-default with opt-in `include_*` flags** across 12 resource families. Only opt in when the task actually needs that nested data.
+**Row weight - lean-by-default with opt-in `include_*` flags** across 13 resource families. Only opt in when the task actually needs that nested data.
 
 **Users** (`listUsers` / `getUser` / `searchUsers`, ~2KB lean row): core columns + `revenue` + `image_main_file` + `filename_hidden` + `total_clicks` + `total_photos` always returned. Flags:
 
@@ -625,6 +625,8 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_view_flags=1` - restores the 5 view-flag toggles (`field_input_view`, `field_display_view`, `field_search_view`, `field_email_view`, `field_grid_view`) + admin-only flag (`field_input_view_admin_only`) + 5 alt-label override columns. Use when editing field visibility.
 - `include_meta=1` - restores `json_meta` longtext blob (UI rendering metadata + per-field validator config). Use when adding/editing per-field validators. See **Rule: Forms** § Field anatomy → `json_meta`.
+
+**Forms Inbox** (`listFormInquiries` / `getFormInquiry`): parses the `inquiry_content` HTML blob into `fields: [{label, value}]`; sparse columns drop when empty. `include_raw=1` returns the raw `inquiry_content` in place of `fields`.
 
 **Menus** (`listMenus` / `getMenu`): 4 essential fields always returned (`menu_id`, `menu_name`, `menu_title`, `revision_timestamp`). Styling / target / rel / json_meta fields stripped — restore via `include_extras=1` when editing menu appearance.
 

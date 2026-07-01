@@ -1001,6 +1001,7 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 | Email Templates | `/api/v2/email_templates/` | list, get, create, update, delete |
 | Forms | `/api/v2/form/` | list, get, create, update, delete |
 | Form Fields | `/api/v2/form_fields/` | list, get, create, update, delete |
+| Forms Inbox | `/api/v2/form_inquiries/` | listFormInquiries, getFormInquiry |
 | Membership Plans | `/api/v2/subscription_types/` | list, get, create, update, delete |
 | Menus | `/api/v2/menus/` | list, get, create, update, delete |
 | Menu Items | `/api/v2/menu_items/` | list, get, create, update, delete |

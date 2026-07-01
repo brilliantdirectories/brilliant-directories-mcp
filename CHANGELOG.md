@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.68] - 2026-06-30
+
+### Documentation
+
+- **Document the Forms Inbox tools in the READMEs and corpus.** Added a `Forms Inbox` row (`/api/v2/form_inquiries/`, `listFormInquiries` / `getFormInquiry`) to the Available Resources table in `README.md` and `mcp/README.md`. In `mcp-instructions.md`, the Rule: Forms read-back line now names `listFormInquiries` / `getFormInquiry` (was "the site's forms inbox"), and Rule: Lean read responses gains a Forms Inbox block (family count 12 → 13) covering the `inquiry_content` → `fields` parse and `include_raw`.
+
 ## [6.55.67] - 2026-06-30
 
 ### Added
