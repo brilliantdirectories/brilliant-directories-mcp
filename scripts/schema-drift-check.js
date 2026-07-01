@@ -455,6 +455,7 @@ if (toolCount < 100 || toolCount > 250) {
 const MIRROR_FUNCTIONS = [
   "validateFilterValuesInArgs",
   "validateFilterOperatorInArgs",
+  "validateFilterArrayParity",
   "validateBooleanIntInArgs",
   "validateMoneyInArgs",
   "validateDatetime14InArgs",

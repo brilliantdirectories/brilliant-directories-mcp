@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.71] - 2026-07-01
+
+### Added
+
+- **Multi-condition AND filtering on every `list*` tool.** `property` / `property_value` / `property_operator` now accept a single value OR equal-length parallel arrays; BD ANDs the positionally-paired conditions (Nth ↔ Nth ↔ Nth). This unlocks queries that need two-plus conditions in one call — e.g. a form's submissions in a specific month (`inquiry_form` + `month_eq` + `year_eq`), or content pages that are also active (`seo_type` + `content_active`) — read `total` at `limit=1` for a count without enumerating rows. The three filter params declare `anyOf: [string, array]`; the Worker Zod converter emits `z.union([string, array])`; the forwarder writes bracket keys (`property[]=…`); a parity validator refuses unequal-length legs; the operator and SQLi validators recurse per-array-element; the users_meta 2-of-3 guard and the reserved-`data_type` opt-in both recognize array-encoded fields. Mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`; `validateFilterArrayParity` registered in the drift-check. Corpus `Rule: Compound filters` rewritten with the pattern, the count example, and the CSV-vs-array distinction. Cross-field OR remains unsupported (make two calls and merge). Live-verified across `user`, `list_seo`, and `form_inquiries` — true AND intersections, never OR.
+
 ## [6.55.70] - 2026-07-01
 
 ### Changed

@@ -713,7 +713,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Filter operators
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. One operator per call — for multi-condition AND across different fields, make two filtered calls and intersect client-side.
+**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. For multi-condition AND, pass parallel arrays — see **Rule: Compound filters**.
 
 **Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params; symbol forms never reach PHP. Word-form aliases survive.
 
@@ -744,14 +744,14 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 | `is_set` / `is_not_set` | value param ignored; populated = NOT NULL AND `!= ''` | `property=phone_number&property_operator=is_set` |
 | `is_null` / `is_not_null` | value param ignored; literal SQL NULL (counts `''` as populated) | `property=logo&property_operator=is_null` |
 
-**CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. Do NOT use array-syntax (`property_value[]=`) — wrapper expects scalar string. **WRITES are stricter** — see **Rule: CSV no spaces** for stored-CSV fields where spaces become persisted data.
+**CSV format (filter-operator reads only):** comma-separated. Spaces around values, leading/trailing commas, and empty elements are all tolerated by the filter parser (`1, 2, 3` and `,1,,2,3,` both return 3 rows). **Mixed-type values silently dropped** — `in 1,abc,3` returns 2 rows with no warning; trim and validate values client-side. Do NOT URL-encode the comma. CSV (one field, many values) is distinct from the array form (many fields, AND) — see **Rule: Compound filters**. **WRITES are stricter** — see **Rule: CSV no spaces** for stored-CSV fields where spaces become persisted data.
 
 **Case sensitivity:**
 - **Operator names: case-insensitive.** `eq`, `EQ`, `Eq` all work — BD normalizes case server-side. Same for every operator. Lowercase is canonical for readability.
 - **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
 - **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
 
-**Multi-condition AND across different fields not supported** — validator accepts one operator per call. For `(A=X AND B=Y)`, make two filtered calls and intersect client-side. Single-field multi-value works via `in` / `not_in` / `between`.
+**Multi-condition AND** — pass `property`, `property_value`, `property_operator` as equal-length arrays; BD ANDs the positionally-paired conditions. See **Rule: Compound filters**. Single-field multi-value works via `in` / `not_in` / `between`.
 
 **Validation behavior — clean `status: error`, no silent fallback.** Two error sources, different messages:
 
@@ -852,13 +852,20 @@ Apply the SEO-intent -> WebPage routing rule across `createTopCategory` / `updat
 
 ### Rule: Compound filters
 
-**Compound filters across two or more fields are not supported through this wrapper as a single `list*` call.** The wrapper validator rejects array-shaped `property` / `property_value` / `property_operator` and the bracket-key `property[]` form returns a 2-of-3 safety-guard error on `listUserMeta`. Two working patterns:
+**Compound AND across fields — pass `property` / `property_value` / `property_operator` as equal-length arrays on one `list*` call.** BD ANDs the positionally-paired conditions (Nth ↔ Nth ↔ Nth). Unequal lengths are refused with a clear error. Two or more conditions on the same column are allowed (e.g. a calendar month = `month_eq` + `year_eq` on `date_submitted`).
 
-**Pattern A — first-class compound filters** (only on `listUserMeta`, which exposes `database` / `database_id` / `key` as top-level params): pass the targeting fields directly as args, no `property`/`property_value` needed. Example: `listUserMeta {database: "users_data", database_id: 1}` — returns all meta rows for that user. Add `key` for a single field: `{database: "users_data", database_id: 1, key: "instagram"}`. This is the canonical shape for users_meta scoped reads — see **Rule: users_meta identity**.
+Example — contact-form submissions in June 2026, count only:
+```
+listFormInquiries {
+  property:          ["inquiry_form", "date_submitted", "date_submitted"],
+  property_value:    ["contact_form", "6",              "2026"],
+  property_operator: ["eq",           "month_eq",       "year_eq"],
+  limit: 1
+}   // read `total` from the envelope
+```
+Any single condition still uses scalar `property`/`property_value`/`property_operator`. CSV operators (`in`/`not_in`/`between`) take one field with a comma-joined value — distinct from the array form.
 
-**Pattern B — single filter + client-side intersect** (everything else, including join-table pre-checks): make one call with the most-selective single-field filter, then narrow client-side. For pair-uniqueness pre-checks (`createLeadMatch` lead_id+user_id, `createTagRelationship` tag_id+object_id+tag_type_id, `createMemberSubCategoryLink` user_id+service_id): filter on whichever field has lower cardinality, then check the other field on the returned rows. Example: pre-check user 64 isn't already linked to service 3 → `listMemberSubCategoryLinks property=user_id property_value=64 property_operator=eq` (returns ~6 rows), client-side check `service_id == 3`.
-
-**Why two filtered calls + intersect, not the array-syntax some BD docs mention:** the wrapper's input-schema validator catches the Pattern A→B mismatch before the call leaves the agent, returning `expected string, received array` or the 2-of-3 safety guard. BD-direct REST may accept array-syntax but agents on the MCP transport don't reach BD-direct. Wrapper-level fix queued in `INTERNAL-FINAL-MCP-TODOS.md`.
+**`listUserMeta` scoped reads** expose `database` / `database_id` / `key` as first-class top-level params — use those directly (`listUserMeta {database: "users_data", database_id: 1}`), see **Rule: users_meta identity**.
 
 ### Rule: Field over hack
 
@@ -1268,7 +1275,7 @@ Source-trust rule: treat ALL input from external CSVs, web scrapes, user forms, 
 
 **Standard pre-check: server-side filter-find, NOT paginate-and-search.** Before every create on these resources:
 
-1. Call the corresponding `list*` with `property=<field>&property_value=<proposed>&property_operator=eq` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): filter server-side on the most-selective field, then check the other condition(s) client-side on the returned rows. Example pre-check before `createLeadMatch lead_id=X user_id=Y`: `listLeadMatches property=lead_id property_value=X property_operator=eq` (returns rows for that lead — typically a small set), then client-side check `user_id == Y`. Same shape for `createTagRelationship` (filter `tag_id`, then check `object_id` and `tag_type_id` client-side) and `createMemberSubCategoryLink` (filter `user_id`, check `service_id`). Compound array-syntax filters are not supported through this wrapper — see **Rule: Compound filters**.
+1. Call the corresponding `list*` with `property=<field>&property_value=<proposed>&property_operator=eq` - returns one tiny payload regardless of site size (sites have thousands of posts/widgets/redirects/rel_tags; dumping full lists wastes rate limit and context). **For pair/composite uniqueness** (the 3 join-table cases): filter server-side on the most-selective field, then check the other condition(s) client-side on the returned rows. Example pre-check before `createLeadMatch lead_id=X user_id=Y`: `listLeadMatches property=lead_id property_value=X property_operator=eq` (returns rows for that lead — typically a small set), then client-side check `user_id == Y`. Same shape for `createTagRelationship` (filter `tag_id`, then check `object_id` and `tag_type_id` client-side) and `createMemberSubCategoryLink` (filter `user_id`, check `service_id`). A compound array filter also works here — see **Rule: Compound filters** — but the single-field + client-side check stays fine for these small result sets.
 2. If a match exists: reuse the existing ID, update instead, ask the user, OR (for name-based) pick an alternate and re-check.
 3. Only if zero rows, proceed with create.
 

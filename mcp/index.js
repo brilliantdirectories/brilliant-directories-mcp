@@ -447,9 +447,9 @@ function buildTools(spec) {
         if (hasLimit) {
           properties.limit = { type: "integer", description: "Records per page (default 25, max 100)" };
           properties.page = { type: "string", description: "Pagination cursor (use next_page from previous response)" };
-          properties.property = { type: "string", description: "Field name to filter by — a column key present on the response rows (a wrong name silently returns empty)" };
-          properties.property_value = { type: "string", description: "Value to filter by" };
-          properties.property_operator = { type: "string", description: "Filter operator (word-form; symbol forms WAF-stripped). Single: eq, ne, lt, lte, gt, gte, like, not_like. CSV: in, not_in, between. Substring: contains, starts_with, ends_with (+not_). Date: year_eq, month_eq, day_eq (+not_), since_days, until_days. Length: length_eq, length_lt, length_gt, length_between. Null: is_set, is_not_set, is_null, is_not_null. See Rule: Filter operators for value shapes." };
+          properties.property = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Column key to filter by (present on the response rows; a wrong name silently returns empty). For multi-condition AND, pass parallel arrays here and in `property_value`/`property_operator` — equal length, Nth entries paired. See Rule: Compound filters." };
+          properties.property_value = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Value to filter by; array to pair with a `property` array (same length)." };
+          properties.property_operator = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Filter operator (word-form; symbol forms WAF-stripped). Single: eq, ne, lt, lte, gt, gte, like, not_like. CSV: in, not_in, between. Substring: contains, starts_with, ends_with (+not_). Date: year_eq, month_eq, day_eq (+not_), since_days, until_days. Length: length_eq, length_lt, length_gt, length_between. Null: is_set, is_not_set, is_null, is_not_null. Array to pair with a `property` array (same length). See Rule: Filter operators for value shapes." };
           properties.order_column = { type: "string", description: "Column to sort by — a column key present on the response rows (a wrong name silently returns empty)" };
           properties.order_type = { type: "string", description: "Sort direction: ASC or DESC" };
         }
@@ -1017,8 +1017,18 @@ function parseDataTypeFilter(raw) {
 function extractReservedOptIn(args) {
   const allowed = new Set();
   if (!args) return allowed;
-  if (String((args.property != null ? args.property : "")).trim() !== "data_type") return allowed;
-  for (const n of parseDataTypeFilter(args.property_value)) {
+  // Resolve the property_value paired with a `data_type` filter — scalar, or the
+  // aligned entry when the compound-filter arrays are used.
+  let dataTypeValue;
+  if (Array.isArray(args.property)) {
+    const i = args.property.indexOf("data_type");
+    if (i < 0) return allowed;
+    dataTypeValue = Array.isArray(args.property_value) ? args.property_value[i] : args.property_value;
+  } else {
+    if (String((args.property != null ? args.property : "")).trim() !== "data_type") return allowed;
+    dataTypeValue = args.property_value;
+  }
+  for (const n of parseDataTypeFilter(dataTypeValue)) {
     if (RESERVED_DATA_TYPE_IDS.has(n)) allowed.add(n);
   }
   return allowed;
@@ -3184,6 +3194,10 @@ function validateFilterValuesInArgs(args) {
   if (!args || typeof args !== "object") return null;
   const check = (label, val) => {
     if (val === undefined || val === null || val === "") return null;
+    if (Array.isArray(val)) {
+      for (let i = 0; i < val.length; i++) { const e = check(`${label}[${i}]`, val[i]); if (e) return e; }
+      return null;
+    }
     const s = String(val);
     for (const pat of SQLI_PATTERNS) {
       if (pat.test(s)) {
@@ -3236,10 +3250,32 @@ const FILTER_OPERATOR_ALLOWED = new Set([
   "since_days", "until_days",
   "length_eq", "length_lt", "length_gt", "length_between",
 ]);
+
+// The filter triplet — a single value, or parallel arrays for multi-condition AND.
+const FILTER_TRIPLET_KEYS = new Set(["property", "property_value", "property_operator"]);
+
+// BD pairs the triplet positionally (Nth property <-> Nth value <-> Nth operator), so
+// array legs must be equal length. Returns an error string, or null if OK.
+function validateFilterArrayParity(args) {
+  if (!args) return null;
+  const lens = ["property", "property_value", "property_operator"]
+    .map((k) => (Array.isArray(args[k]) ? args[k].length : null))
+    .filter((n) => n !== null);
+  if (lens.length === 0) return null;
+  if (new Set(lens).size > 1) {
+    return "property, property_value, and property_operator arrays must be the same length — each condition needs one of each, paired by position.";
+  }
+  return null;
+}
+
 function validateFilterOperatorInArgs(args) {
   if (!args || typeof args !== "object") return null;
   const check = (label, val) => {
     if (val === undefined || val === null || val === "") return null;
+    if (Array.isArray(val)) {
+      for (let i = 0; i < val.length; i++) { const e = check(`${label}[${i}]`, val[i]); if (e) return e; }
+      return null;
+    }
     const s = String(val);
     // BD's operator parser is case-insensitive — match the same way to avoid
     // rejecting `EQ` / `Between` etc. that BD itself accepts.
@@ -4508,16 +4544,18 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFiel
     const baseUrl = (config.apiUrl || "").replace(/\/+$/, "");
     const fullUrl = new URL(urlPath, baseUrl);
 
-    // Add query params. Arrays expand as repeated keys — BD's multi-condition
-    // filter wants `property[]=X&property[]=Y` (via callers passing `key="property[]"`
-    // with an array value), which URLSearchParams produces correctly via append().
+    // Add query params. BD builds a multi-condition array from bracket keys
+    // (property[]=X&property[]=Y), so the filter triplet appends under `${key}[]`;
+    // other array params use the bare key. .append() per item (not .set(), which
+    // joins as "a,b").
     if (queryParams) {
       for (const [key, val] of Object.entries(queryParams)) {
         if (val === undefined || val === null || val === "") continue;
         if (Array.isArray(val)) {
+          const wireKey = FILTER_TRIPLET_KEYS.has(key) ? `${key}[]` : key;
           for (const item of val) {
             if (item === undefined || item === null || item === "") continue;
-            fullUrl.searchParams.append(key, String(item));
+            fullUrl.searchParams.append(wireKey, String(item));
           }
         } else {
           fullUrl.searchParams.set(key, String(val));
@@ -5461,6 +5499,9 @@ async function main() {
             a.property_value !== undefined && String(a.property_value).trim() !== "") {
           hit.add(a.property);
         }
+        if (Array.isArray(a.property)) {
+          for (const p of a.property) if (["database", "database_id", "key"].includes(p)) hit.add(p);
+        }
         if (hit.size < 2) {
           return {
             content: [{
@@ -5722,6 +5763,15 @@ async function main() {
       if (opErr) {
         return {
           content: [{ type: "text", text: opErr }],
+          isError: true,
+        };
+      }
+
+      // Multi-condition AND: filter-triplet array legs must be equal length.
+      const parityErr = validateFilterArrayParity(args);
+      if (parityErr) {
+        return {
+          content: [{ type: "text", text: parityErr }],
           isError: true,
         };
       }
