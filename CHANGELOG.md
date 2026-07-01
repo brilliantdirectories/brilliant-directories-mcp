@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.69] - 2026-06-30
+
+### Changed
+
+- **`listFormInquiries` documents `url_origin` filtering.** The `url_origin` field gloss now names it as the page URL the form was submitted on and shows the filter pattern (`contains`/`starts_with`/`ends_with`) for pulling submissions from one page — with the live-verified gotcha that a leading `/` in the value is WAF-stripped (`property_value=about/contact`, not `/about/contact`). Spec description only.
+
 ## [6.55.68] - 2026-06-30
 
 ### Documentation
