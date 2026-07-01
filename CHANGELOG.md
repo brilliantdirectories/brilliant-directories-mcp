@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.73] - 2026-07-01
+
+### Fixed
+
+- **Date-operator prose now states only what works, under its exact conditions.** Removed the wrapper-rejected `since_date`/`until_date`/`between_dates` from the corpus and spec date guidance (they error at BD; listing them was negation about operators an agent can never use — the historical changelog still records the exclusion). The date guidance now reads: filter with `year_eq`/`month_eq`/`day_eq`/`since_days`/`until_days`; `gt`/`gte`/`lt`/`lte`/`between` also work but only with a 14-digit `YYYYMMDDHHmmss` value (ISO string-compares wrong); `starts_with` matches the display string so it returns wrong rows on dates. Added the two capability gaps found by live audit: the comparator table rows now say "numeric or 14-digit date value" (they work on date columns, not just numbers), and the multi-condition AND rule states each leg is independent — operators and fields may be mixed across legs. New warnings, all raw-API-verified: calendar/`month_eq`/`day_eq`/`between`/`starts_with` bucket a near-midnight row by its UTC-stored value (off-by-one vs the localized display, with a `success` envelope); `lt`/`lte`/`until_days` include empty-date rows while calendar ops and `since_days` exclude them.
+- **Corrected a false OR claim and a stale operator enum in `listUsers`.** The description told agents to get OR via `property_operator[]=OR` + a `property_logic[]` param (both invented — live-verified 0/ignored); replaced with the truth (one-field OR = `in` + CSV; AND across fields = parallel arrays; no OR operator). Its `**Enums:**` line listed WAF-stripped symbol operators (`=`, `>`, `<`, …) that return wrong results; replaced with the word-form set + a pointer to Rule: Filter operators.
+
 ## [6.55.72] - 2026-07-01
 
 ### Fixed

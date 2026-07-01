@@ -723,10 +723,10 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 |---|---|---|
 | `eq` | single value | `property=user_id&property_value=5&property_operator=eq` |
 | `ne` / `neq` | single value | `property=active&property_value=3&property_operator=ne` |
-| `lt` | single numeric value | `property=user_id&property_value=100&property_operator=lt` |
-| `lte` | single numeric value | `property=user_id&property_value=100&property_operator=lte` |
-| `gt` | single numeric value | `property=user_id&property_value=100&property_operator=gt` |
-| `gte` | single numeric value | `property=user_id&property_value=100&property_operator=gte` |
+| `lt` | single numeric or 14-digit date value | `property=user_id&property_value=100&property_operator=lt` |
+| `lte` | single numeric or 14-digit date value | `property=user_id&property_value=100&property_operator=lte` |
+| `gt` | single numeric or 14-digit date value | `property=user_id&property_value=100&property_operator=gt` |
+| `gte` | single numeric or 14-digit date value | `property=user_id&property_value=100&property_operator=gte` |
 | `in` | **CSV** (`a,b,c`) | `property=user_id&property_value=1,2,3&property_operator=in` |
 | `not_in` | **CSV** (`a,b,c`) | `property=active&property_value=3,4,5&property_operator=not_in` |
 | `between` | **CSV exactly 2** (`low,high`), numeric/14-digit only | `property=user_id&property_value=100,200&property_operator=between` |
@@ -751,7 +751,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 - **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
 - **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
 
-**Multi-condition AND** — pass `property`, `property_value`, `property_operator` as equal-length arrays; BD ANDs the positionally-paired conditions. See **Rule: Compound filters**. **OR on one field** (field = A or B or C) — `property_operator=in` with a CSV `property_value` (`A,B,C`); there is no `OR` operator.
+**Multi-condition AND** — pass `property`, `property_value`, `property_operator` as equal-length arrays; BD ANDs the positionally-paired conditions. Each leg is independent — mix operators and fields freely (e.g. `contains` on one, `month_eq` on another). See **Rule: Compound filters**. **OR on one field** (field = A or B or C) — `property_operator=in` with a CSV `property_value` (`A,B,C`); there is no `OR` operator.
 
 **Validation behavior — clean `status: error`, no silent fallback.** Two error sources, different messages:
 
@@ -766,7 +766,11 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Populated vs NULL:** `is_set` = `IS NOT NULL AND != ''` (directory-UI "is populated") — use this for "has a value". `is_not_null` is literal SQL and counts empty strings as populated. `is_null` matches literal NULL only (not `''`); for "is unset" on a text column that may store `''`, use `is_not_set`.
 
-**Date columns — use date operators, not raw comparators.** For `signup_date`, `post_start_date`, `modtime`, etc.: use `year_eq`/`month_eq`/`day_eq` (+`not_`) or `since_days`/`until_days`. `gt`/`gte`/`lt`/`lte`/`between` work with a 14-digit `YYYYMMDDHHmmss` value but mis-compare an ISO `YYYY-MM-DD` value (string comparison) — pass the 14-digit form. `since_date`/`until_date`/`between_dates` are BD-broken (value ignored / always 0) — excluded for dates. `starts_with` on a date column leaks adjacent-day rows across the UTC midnight boundary — use `year_eq`/`month_eq`/`day_eq` for a calendar unit. Calendar ops skip empty-string-date rows (those drop from both the operator and its complement).
+**Date columns** (`signup_date`, `post_start_date`, `modtime`, etc.) — filter with `year_eq`/`month_eq`/`day_eq` (+`not_`) or `since_days`/`until_days`. `gt`/`gte`/`lt`/`lte`/`between` also work, but only with a 14-digit `YYYYMMDDHHmmss` value (an ISO `YYYY-MM-DD` value string-compares wrong) — pass the 14-digit form. `starts_with` matches the display string, not the stored value, so it returns wrong rows on a date column — use the calendar operators.
+
+**UTC vs display (all date operators).** Filters match the UTC-stored value; the response shows a localized display string. A near-midnight row can display one calendar day/month while `month_eq`/`day_eq`/`between`/`starts_with` bucket it in the next — a count off by that row with a `success` envelope. `year_eq` is safe unless the row is near a year boundary; for an exact calendar day, cross-check the returned `date_submitted` strings.
+
+**Empty-date rows.** `year_eq`/`month_eq`/`day_eq` (+`not_`) and `since_days` exclude rows with an empty date. `lt`/`lte`/`until_days` include them (empty sorts below any value) — add a `since_days` lower bound, or filter the empties out client-side.
 
 ### Rule: Silent-drop check
 
