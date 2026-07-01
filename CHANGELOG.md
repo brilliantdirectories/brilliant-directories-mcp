@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.70] - 2026-07-01
+
+### Changed
+
+- **`property` / `order_column` param descriptions now warn that a wrong column name silently returns empty.** BD reuses its `"<table> not found"` response for both an empty result and a malformed query, so a `list*` call that sorts or filters on a non-existent column comes back as an empty success — the agent reads it as "no records" and never learns the column name was wrong. Both wrapper-injected params now state that the value must be a column key present on the response rows. Injection-code only (Worker `src/index.ts` + npm `mcp/index.js`, byte-parallel); not in the spec.
+
 ## [6.55.69] - 2026-06-30
 
 ### Changed
