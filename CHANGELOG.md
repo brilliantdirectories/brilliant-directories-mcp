@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.72] - 2026-07-01
+
+### Fixed
+
+- **Removed a false OR-filter claim from `listUsers` and documented the real one.** The `listUsers` description told agents to get "OR-across-meta-values" via `property_operator[]=OR` + a `property_logic[]` param — both invented (live-verified: the param is ignored, `OR` is not an operator, the call returns 0). Replaced with the truth: OR on one field (any of N values) uses `property_operator=in` with a CSV `property_value`; AND across fields uses parallel arrays; there is no OR operator. Cross-field OR still needs two calls. Corpus `Rule: Filter operators` now names `in` as the one-field-OR mechanism.
+- **Sharpened date-operator guidance.** `gt`/`gte`/`lt`/`lte`/`between` work with a 14-digit `YYYYMMDDHHmmss` value but mis-compare an ISO `YYYY-MM-DD` value (live-verified both ways); `starts_with` on a date column leaks adjacent-day rows across the UTC midnight boundary — use `year_eq`/`month_eq`/`day_eq` for a calendar unit.
+
 ## [6.55.71] - 2026-07-01
 
 ### Added

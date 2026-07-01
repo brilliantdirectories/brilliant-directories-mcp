@@ -751,7 +751,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 - **String-equality values: case-insensitive.** BD's MySQL collation is `utf8_general_ci` — `eq email=Foo@Bar.com` and `eq email=foo@bar.com` both match the same row. No need to lowercase before filtering.
 - **Wildcards (`like` / `not_like`): the `_` wildcard is also case-insensitive.** `_attle` matches both `Battle` and `battle`.
 
-**Multi-condition AND** — pass `property`, `property_value`, `property_operator` as equal-length arrays; BD ANDs the positionally-paired conditions. See **Rule: Compound filters**. Single-field multi-value works via `in` / `not_in` / `between`.
+**Multi-condition AND** — pass `property`, `property_value`, `property_operator` as equal-length arrays; BD ANDs the positionally-paired conditions. See **Rule: Compound filters**. **OR on one field** (field = A or B or C) — `property_operator=in` with a CSV `property_value` (`A,B,C`); there is no `OR` operator.
 
 **Validation behavior — clean `status: error`, no silent fallback.** Two error sources, different messages:
 
@@ -766,7 +766,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 **Populated vs NULL:** `is_set` = `IS NOT NULL AND != ''` (directory-UI "is populated") — use this for "has a value". `is_not_null` is literal SQL and counts empty strings as populated. `is_null` matches literal NULL only (not `''`); for "is unset" on a text column that may store `''`, use `is_not_set`.
 
-**Date columns — use date operators, not raw comparators.** For `signup_date`, `post_start_date`, `modtime`, etc.: use `year_eq`/`month_eq`/`day_eq` (+`not_`) or `since_days`/`until_days`. `gt`/`gte`/`lt`/`lte`/`between` mis-compare ISO-stored dates (string comparison) and `since_date`/`until_date`/`between_dates` are BD-broken (value ignored / always 0) — they are excluded for dates. Calendar ops skip empty-string-date rows (those drop from both the operator and its complement).
+**Date columns — use date operators, not raw comparators.** For `signup_date`, `post_start_date`, `modtime`, etc.: use `year_eq`/`month_eq`/`day_eq` (+`not_`) or `since_days`/`until_days`. `gt`/`gte`/`lt`/`lte`/`between` work with a 14-digit `YYYYMMDDHHmmss` value but mis-compare an ISO `YYYY-MM-DD` value (string comparison) — pass the 14-digit form. `since_date`/`until_date`/`between_dates` are BD-broken (value ignored / always 0) — excluded for dates. `starts_with` on a date column leaks adjacent-day rows across the UTC midnight boundary — use `year_eq`/`month_eq`/`day_eq` for a calendar unit. Calendar ops skip empty-string-date rows (those drop from both the operator and its complement).
 
 ### Rule: Silent-drop check
 
