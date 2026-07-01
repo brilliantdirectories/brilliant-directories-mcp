@@ -53,7 +53,7 @@ Example: a `users_meta` row's `database=users_data` value identifies which paren
 
 Tool naming: `<verb><Entity>` where Entity is the agent-facing concept name, NOT the table name. `users_data` → `User` → `createUser`/`getUser`/`listUsers`. `list_professions` → `TopCategory` → `createTopCategory`/`listTopCategories`. `rel_services` → `MemberSubCategoryLink` → `createMemberSubCategoryLink`. **Never guess by transforming a table name** — always consult the lookup table in **Rule: Table to endpoint**.
 
-If a tool you need from this lookup is missing from your loaded `tools/list`, that is a session-config issue, NOT evidence the tool doesn't exist. Tell the user to verify their MCP client is loading the full BD catalog (173 tools); do not work around the absence.
+If a tool you need from this lookup is missing from your loaded `tools/list`, that is a session-config issue, NOT evidence the tool doesn't exist. Tell the user to verify their MCP client is loading the full BD catalog (170 tools); do not work around the absence.
 
 ### Rule: Live production writes
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.77] - 2026-07-01
+
+### Changed
+
+- **Corpus catalog count corrected to 170 tools** (`mcp-instructions.md`) — an agent reading the old count could have wrongly concluded its `tools/list` was under-loaded. Made the dev-facing tool-count comments in the Worker and npm package count-agnostic ("all tools" / "every tool") so they never drift again on a tool add/remove.
+- **`docs/api-membership-plans.md`** gained a binding-for-agents note that the MCP exposes membership plans as read-only (`listMembershipPlans` / `getMembershipPlan`); plan creation and editing live in the BD admin area. The file still documents BD's raw REST endpoints for reference.
+- Trimmed a dead `'plans-checkout'` value from the npm `SLUG_TOOL_CONFIG` scope comment (matches the Worker, which never listed it).
+
 ## [6.55.76] - 2026-07-01
 
 ### Removed

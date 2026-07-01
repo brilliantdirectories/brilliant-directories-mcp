@@ -1,6 +1,8 @@
 # BD API — Membership Plans (Subscription Types) Endpoints
 _Source: https://support.brilliantdirectories.com/support/solutions/articles/12000108102_
 
+> **MCP wrapper note (binding for agents):** This file documents BD's raw REST API. The MCP wrapper exposes membership plans as read-only — `listMembershipPlans` and `getMembershipPlan`. Plan creation and editing happen in the BD admin area (Membership Levels), which owns the full plan-configuration form.
+
 ## Endpoints
 
 ### 1. List Membership Plans

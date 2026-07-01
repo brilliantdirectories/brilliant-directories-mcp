@@ -122,7 +122,7 @@ const { URL } = require("url");
 // with package.json). If package.json is somehow unreadable (malformed tarball,
 // filesystem permission issue), fall back to the literal string "unknown".
 // This is deliberate — hard-failing at startup would be worse (the MCP server
-// can still serve all 173 tools without a valid version string). The "unknown"
+// can still serve all tools without a valid version string). The "unknown"
 // value shows up in the User-Agent sent to BD and in the serverInfo echoed
 // on initialize; BD treats both as informational only. If you see "unknown"
 // in logs, check the npm tarball's package.json is intact.
@@ -3842,7 +3842,7 @@ const SLUG_AUTO_SUFFIX_QUIET_THRESHOLD = 4; // suffixes 1-3 are silent; 4+ surfa
 
 // Per-tool routing. Static map = no pattern-matching surprises if BD adds tools.
 //   slugField:    which arg holds the slug
-//   scope:        'site' | 'plans-checkout' | 'post-type'
+//   scope:        'site' | 'post-type'
 //   ownTable:     the resource's own table (excluded from collision scan on update)
 //   ownIdField:   the primary-key arg name (for update self-exclusion)
 //   autoSuffix:   true = categories (auto -1, -2, ...); false = everything else (reject)
