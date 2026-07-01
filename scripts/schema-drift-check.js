@@ -456,6 +456,7 @@ const MIRROR_FUNCTIONS = [
   "validateFilterValuesInArgs",
   "validateFilterOperatorInArgs",
   "validateFilterArrayParity",
+  "coerceStringifiedFilterArrays",
   "validateBooleanIntInArgs",
   "validateMoneyInArgs",
   "validateDatetime14InArgs",

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.74] - 2026-07-01
+
+### Fixed
+
+- **Compound filters now work from MCP clients that JSON-stringify array args (Claude Desktop, and others).** Multi-condition AND requires `property`/`property_value`/`property_operator` as arrays, but many MCP clients serialize array arguments to a literal string (`["eq","month_eq","year_eq"]`) before sending. The wrapper received that as one operator and rejected the call — so the feature only worked from clients that pass true arrays. Added `coerceStringifiedFilterArrays` (mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`; registered in the drift-check): before the filter validators run, a filter-triplet value that is a `[...]`-shaped string is `JSON.parse`d back to an array (defensive — non-array strings, CSV values like `Company,Individual`, and plain scalars pass through untouched; numeric elements are stringified for the wire). The parity and operator validators still fire on the coerced arrays, so a length mismatch or bad operator is still rejected. Verified with stringified-array calls (reproducing the client behavior), not just true arrays.
+
 ## [6.55.73] - 2026-07-01
 
 ### Fixed

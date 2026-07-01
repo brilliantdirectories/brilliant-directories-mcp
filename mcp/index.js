@@ -3254,6 +3254,22 @@ const FILTER_OPERATOR_ALLOWED = new Set([
 // The filter triplet — a single value, or parallel arrays for multi-condition AND.
 const FILTER_TRIPLET_KEYS = new Set(["property", "property_value", "property_operator"]);
 
+// Some MCP clients JSON-stringify array args (a `["a","b"]` array arrives as the
+// literal string). Parse a stringified array back on the filter triplet so the
+// compound-filter path sees a real array. Mutates args in place.
+function coerceStringifiedFilterArrays(args) {
+  if (!args || typeof args !== "object") return;
+  for (const k of FILTER_TRIPLET_KEYS) {
+    const v = args[k];
+    if (typeof v === "string" && v.length > 1 && v[0] === "[" && v[v.length - 1] === "]") {
+      try {
+        const parsed = JSON.parse(v);
+        if (Array.isArray(parsed)) args[k] = parsed.map((x) => String(x));
+      } catch (e) { /* leave as-is; validators handle a genuine string */ }
+    }
+  }
+}
+
 // BD pairs the triplet positionally (Nth property <-> Nth value <-> Nth operator), so
 // array legs must be equal length. Returns an error string, or null if OK.
 function validateFilterArrayParity(args) {
@@ -4972,6 +4988,7 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name } = request.params;
     let args = request.params.arguments;
+    coerceStringifiedFilterArrays(args);
 
     // Synthetic tool: getBrandKit - intercept BEFORE the toolMap lookup so the handler
     // is independent of whether the spec entry happens to be registered in toolMap.
