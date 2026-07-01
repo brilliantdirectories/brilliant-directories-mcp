@@ -1654,8 +1654,6 @@ const WRITE_KEEP_SETS = {
   // echo only identity + classification + timestamps + shortcode.
   createWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
   updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
-  createMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
-  updateMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
   createEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
   updateEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
 
@@ -1921,11 +1919,6 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
 // keys there can't pollute users_meta (they flow to the parent and BD drops
 // them). Inverse entries trust the native-column registry as authoritative.
 const EAV_ROUTES = {
-  updateMembershipPlan: {
-    eavDatabase: "subscription_types",
-    parentPK: "subscription_id",
-    eavFields: new Set(["custom_checkout_url"]),
-  },
   updateWebPage: {
     eavDatabase: "list_seo",
     parentPK: "seo_id",
@@ -2814,8 +2807,7 @@ async function _cascadeStripUsersMeta(domain, apiKey, database, databaseId) {
 
 // Map of delete operations → (database, idArgKey) for cascade cleanup.
 // `database` is the LITERAL string BD writes into `users_meta.database`
-// (verified via live probe — NOT always the parent table column name; e.g.
-// membership plans use `subscription_types`). `idArgKey` is the arg name
+// (verified via live probe). `idArgKey` is the arg name
 // carrying the parent row's PK on the delete tool. Strict pair invariant
 // is enforced in `_cascadeStripUsersMeta`.
 const USERS_META_CASCADE_DELETES = {
@@ -2826,7 +2818,6 @@ const USERS_META_CASCADE_DELETES = {
   deleteSingleImagePost: { database: "data_posts", idArgKey: "post_id" },
   deleteMultiImagePost: { database: "users_portfolio_groups", idArgKey: "group_id" },
   deleteUser: { database: "users_data", idArgKey: "user_id" },
-  deleteMembershipPlan: { database: "subscription_types", idArgKey: "subscription_id" },
 };
 
 const DATA_CATEGORY_FILENAME_LEN = 10;
@@ -3660,7 +3651,6 @@ const TIMESTAMP_TABLE_RULES = [
   { create: "createSubCategory",  update: "updateSubCategory",  fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
   { create: "createDataType",     update: "updateDataType",     fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
   { update: "updatePostType",                                   fields: [{ field: "revision_timestamp", format: "19", when: "update" }] },
-  { create: "createMembershipPlan", update: "updateMembershipPlan", fields: [{ field: "revision_timestamp", format: "19", when: "both" }] },
 
   { create: "createSingleImagePost", update: "updateSingleImagePost", fields: [
     { field: "revision_timestamp", format: "19", when: "both" },
@@ -3870,8 +3860,6 @@ const SLUG_TOOL_CONFIG = {
   updateTopCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_professions",  ownIdField: "profession_id", autoSuffix: true,  allowSlash: false, allowEmpty: false },
   createSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: null,           autoSuffix: true,  allowSlash: false, allowEmpty: false },
   updateSubCategory:    { slugField: "filename",              scope: "site",            ownTable: "list_services",     ownIdField: "service_id",   autoSuffix: true,  allowSlash: false, allowEmpty: false },
-  createMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: null,           autoSuffix: false, allowSlash: false, allowEmpty: true  },
-  updateMembershipPlan: { slugField: "subscription_filename", scope: "site",            ownTable: "subscription_types", ownIdField: "subscription_id", autoSuffix: false, allowSlash: false, allowEmpty: true  },
   // member profile filename — site-wide URL namespace (cross-collides with
   // web pages, categories, plans). Path-style slug (state/city/cat/name).
   // BD auto-generates if absent; agents rarely pass it but when they do it
@@ -4399,7 +4387,6 @@ async function reserveSiteUrlSlug(config, toolName, args) {
     list_seo: "updateWebPage",
     list_professions: "updateTopCategory",
     list_services: "updateSubCategory",
-    subscription_types: "updateMembershipPlan",
     users_data: "updateUser",
     data_posts: "updateSingleImagePost",
     users_portfolio_groups: "updateMultiImagePost",

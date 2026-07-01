@@ -158,17 +158,10 @@ const WRITE_KEEP_SETS = {
   updateWebPage: ["seo_id","seo_type","master_id","filename","nickname","title","meta_desc","h1","h2","date_updated","revision_timestamp"],
   createWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
   updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
-  createMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
-  updateMembershipPlan: ["subscription_id","subscription_name","subscription_type","profile_type"],
 };
 
 // EAV routes
 const EAV_ROUTES = {
-  updateMembershipPlan: {
-    eavDatabase: "subscription_types",
-    parentPK: "subscription_id",
-    eavFields: new Set(["custom_checkout_url"]),
-  },
   updateWebPage: {
     eavDatabase: "list_seo",
     parentPK: "seo_id",

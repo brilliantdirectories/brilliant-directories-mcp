@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.76] - 2026-07-01
+
+### Removed
+
+- **Membership plans are now read-only via the MCP** — removed `createMembershipPlan`, `updateMembershipPlan`, and `deleteMembershipPlan`; `listMembershipPlans` and `getMembershipPlan` remain. BD's `subscription_types` table has 200+ fields, most of them category- or post-type-scoped keys and internal form-state that an AI cannot author coherently. A create from the ~11 exposable fields yields a hollow, half-configured plan (no dashboard tabs, forms, or email templates); a partial update can silently corrupt a scoped setting under a `success` envelope. Plan creation and editing belong in the BD admin UI, which knows the full form contract. Same precedent as `createPostType`. Purged across spec (`bd-api.json` — 3 operation blocks), Worker (`src/index.ts`) and npm (`mcp/index.js`) in parallel — `WRITE_KEEP_SETS`, `EAV_ROUTES` (`custom_checkout_url`), `USERS_META_CASCADE_DELETES`, revision-timestamp injection, slug config, and the table→update-tool map — plus the drift-check maps, corpus, and READMEs. Drift-check green (171 operations). When a user asks to create or edit a plan, the AI directs them to the admin area via **Rule: Missing tool**.
+
 ## [6.55.75] - 2026-07-01
 
 ### Changed
