@@ -81,7 +81,7 @@ After the API returns success, BD asynchronously downloads the image and replace
 - Category/service NAME references in any field should be wrapped in single quotes (e.g. `'25-30'`, `'Cosmetic Dentistry'`) to avoid parser confusion on dashes/spaces.
 
 ### Prerequisites
-- `subscription_id` MUST reference an existing membership plan (from `listMembershipPlans` or `createMembershipPlan`).
+- `subscription_id` MUST reference an existing membership plan (from `listMembershipPlans`).
 - Categories do NOT need to exist beforehand on `createUser` — see "Category handling" below.
 
 ### Category handling — IDs and NAMES both work (verified live 2026-04-18)

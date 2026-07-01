@@ -1089,58 +1089,6 @@
           }
         }
       },
-      "MembershipPlan": {
-        "type": "object",
-        "properties": {
-          "subscription_id": {
-            "type": "integer"
-          },
-          "subscription_name": {
-            "type": "string"
-          },
-          "subscription_type": {
-            "type": "string"
-          },
-          "monthly_amount": {
-            "type": "number"
-          },
-          "yearly_amount": {
-            "type": "number"
-          },
-          "profile_type": {
-            "type": "string",
-            "enum": [
-              "paid",
-              "free",
-              "claim"
-            ]
-          },
-          "sub_active": {
-            "type": "integer",
-            "enum": [
-              0,
-              1
-            ]
-          },
-          "searchable": {
-            "type": "integer",
-            "enum": [
-              0,
-              1
-            ]
-          },
-          "search_priority": {
-            "type": "integer"
-          },
-          "payment_default": {
-            "type": "string",
-            "enum": [
-              "yearly",
-              "monthly"
-            ]
-          }
-        }
-      },
       "Menu": {
         "type": "object",
         "properties": {
