@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.75] - 2026-07-01
+
+### Changed
+
+- **Rule: Silent-drop check now offers a one-call discriminator for `total: 0`.** When a filtered read returns 0 and a match was expected, the rule already advised checking the `property` is a real column via the fields endpoints; added a second method — a single `property=<col> property_operator=is_not_null limit=1` control call, where a real populated column returns a positive `total` and a nonexistent column returns 0. Faster than a schema fetch. Live-verified against the API (`user_group is_not_null` → 0 for a fake column, `inquiry_form is_not_null` → positive for a real one). Corpus prose only.
+
 ## [6.55.74] - 2026-07-01
 
 ### Fixed

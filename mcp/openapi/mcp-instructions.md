@@ -774,7 +774,7 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Silent-drop check
 
-**`total: 0` is ambiguous through this wrapper.** Unknown column NAME, derived/computed field, and legitimate "no match" all return the same `{status: success, message: [], total: 0}` envelope. If a filtered call returns 0 and you expected matches, verify the `property` is a real persisted column via `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields` before concluding the table is empty. Bad operator name, CSV-shape mismatch, and other validator-catchable issues return `status: error` (no ambiguity).
+**`total: 0` is ambiguous through this wrapper.** Unknown column NAME, derived/computed field, and legitimate "no match" all return the same `{status: success, message: [], total: 0}` envelope. If a filtered call returns 0 and you expected matches, confirm the `property` is a real persisted column before concluding the table is empty — two ways: (a) check the name appears as a key on a real row via `getUserFields` / `getSingleImagePostFields` / `getMultiImagePostFields` / `getPostTypeCustomFields`; or (b) one control call `property=<col> property_operator=is_not_null limit=1` — a real populated column returns a positive `total`, a nonexistent column returns 0. Bad operator name, CSV-shape mismatch, and other validator-catchable issues return `status: error` (no ambiguity).
 
 ### Rule: Empty-string filtering
 
