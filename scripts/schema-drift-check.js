@@ -116,6 +116,7 @@ const CATEGORY_READ_TOOLS = new Set([
 const POST_TYPE_READ_TOOLS = new Set(["listPostTypes", "getPostType"]);
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const WIDGET_READ_TOOLS = new Set(["listWidgets", "getWidget"]);
+const FORM_INQUIRY_READ_TOOLS = new Set(["listFormInquiries", "getFormInquiry"]);
 const PLAN_READ_TOOLS = new Set(["listMembershipPlans", "getMembershipPlan"]);
 const EMAIL_TEMPLATE_READ_TOOLS = new Set(["listEmailTemplates", "getEmailTemplate"]);
 const REVIEW_READ_TOOLS = new Set(["listReviews", "getReview"]);
@@ -252,6 +253,7 @@ checkFamily("CATEGORY_READ_TOOLS", CATEGORY_READ_TOOLS);
 checkFamily("POST_TYPE_READ_TOOLS", POST_TYPE_READ_TOOLS);
 checkFamily("WEB_PAGE_READ_TOOLS", WEB_PAGE_READ_TOOLS);
 checkFamily("WIDGET_READ_TOOLS", WIDGET_READ_TOOLS);
+checkFamily("FORM_INQUIRY_READ_TOOLS", FORM_INQUIRY_READ_TOOLS);
 checkFamily("PLAN_READ_TOOLS", PLAN_READ_TOOLS);
 checkFamily("EMAIL_TEMPLATE_READ_TOOLS", EMAIL_TEMPLATE_READ_TOOLS);
 checkFamily("REVIEW_READ_TOOLS", REVIEW_READ_TOOLS);

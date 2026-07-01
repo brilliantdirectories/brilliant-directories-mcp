@@ -1160,6 +1160,85 @@ function applyWidgetLean(body, includeFlags) {
   return body;
 }
 
+// --- Form Inquiry lean shaper ---------------------------------------------
+// Applies to listFormInquiries / getFormInquiry (Forms Inbox submissions).
+// The submitted data lives in `inquiry_content` — a 1.5-5KB email-HTML blob
+// that is the ONLY field populated on every row (the flat email/name/phone
+// columns are sparse). Parse it server-side into `fields: [{label,value}]`
+// so the agent gets clean data, not raw HTML. Custom form fields are
+// auto-discovered (no hardcoded schema). Keep-list = the useful columns;
+// everything else (inquiry_status, email/name/comments display cols,
+// tablesExists, etc.) is dropped. include_raw=1 returns the raw
+// inquiry_content HTML instead of the parsed fields. Mirrored byte-for-byte
+// from Worker src/index.ts.
+const FORM_INQUIRY_LEAN_INCLUDE_FLAGS = ["include_raw"];
+const FORM_INQUIRY_LEAN_ALWAYS_KEEP = [
+  "inquiry_id", "inquiry_email", "inquiry_ip", "yourname", "phone",
+  "inquiry_user_id", "inquiry_form", "form_title", "url_origin", "date_submitted",
+  "inquiry_content", "fields",
+];
+// Columns whose absence is meaningful — dropped when they carry no value, so
+// `fields` stays the single source of truth for submission content. Value "0"
+// on inquiry_user_id means guest, so it drops like empty.
+const FORM_INQUIRY_DROP_WHEN_EMPTY = ["inquiry_email", "yourname", "phone"];
+const FORM_INQUIRY_DROP_WHEN_ZERO = ["inquiry_user_id"];
+const FORM_INQUIRY_READ_TOOLS = new Set(["listFormInquiries", "getFormInquiry"]);
+
+// Decode the HTML entities BD emits in submission values.
+function fiDecodeEntities(s) {
+  return String(s)
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+    .replace(/&#(\d+);/g, function (_m, n) { return String.fromCharCode(+n); });
+}
+function fiStripTags(s) {
+  return fiDecodeEntities(String(s).replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+}
+// Parse inquiry_content -> [{label,value}]. Three tiers:
+//   1. structured <b>Label</b><br>value</p> pairs inside the data table
+//   2. table present but no pairs -> stacked stripped lines (label null)
+//   3. no data table -> null (caller keeps raw inquiry_content)
+function fiParseContent(html) {
+  if (!html || typeof html !== "string") return null;
+  const block = html.match(/<table[^>]*table-striped[^>]*>([\s\S]*?)<\/table>/i);
+  if (!block) return null;
+  const inner = block[1];
+  const pairs = [];
+  const re = /<b>([\s\S]*?)<\/b>\s*<br\s*\/?>\s*([\s\S]*?)<\/p>/gi;
+  let m;
+  while ((m = re.exec(inner)) !== null) {
+    const label = fiStripTags(m[1]);
+    const value = fiStripTags(m[2]);
+    if (label || value) pairs.push({ label: label || null, value: value });
+  }
+  if (pairs.length) return pairs;
+  const lines = inner.replace(/<[^>]*>/g, "\n").split("\n").map(function (l) { return fiDecodeEntities(l).trim(); }).filter(Boolean);
+  return lines.length ? lines.map(function (v) { return { label: null, value: v }; }) : null;
+}
+
+function applyFormInquiryLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const includeRaw = !!includeFlags.include_raw;
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (!includeRaw) {
+      const parsed = fiParseContent(row.inquiry_content);
+      if (parsed) { row.fields = parsed; delete row.inquiry_content; }
+    }
+    const keep = new Set(FORM_INQUIRY_LEAN_ALWAYS_KEEP);
+    for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    for (const k of FORM_INQUIRY_DROP_WHEN_EMPTY) if (String(row[k] == null ? "" : row[k]).trim() === "") delete row[k];
+    for (const k of FORM_INQUIRY_DROP_WHEN_ZERO) { const v = String(row[k] == null ? "" : row[k]).trim(); if (v === "" || v === "0") delete row[k]; }
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
 // --- MEMBERSHIP PLANS ------------------------------------------------------
 //
 // BD's subscription_types table has ~170 columns. Most agent tasks just need
@@ -5106,6 +5185,7 @@ async function main() {
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
       const isWidgetReadTool = WIDGET_READ_TOOLS.has(name);
+      const isFormInquiryReadTool = FORM_INQUIRY_READ_TOOLS.has(name);
       const isPlanReadTool = PLAN_READ_TOOLS.has(name);
       const isEmailTemplateReadTool = EMAIL_TEMPLATE_READ_TOOLS.has(name);
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
@@ -5126,6 +5206,8 @@ async function main() {
                 ? WEB_PAGE_LEAN_INCLUDE_FLAGS
                 : isWidgetReadTool
                   ? WIDGET_LEAN_INCLUDE_FLAGS
+                  : isFormInquiryReadTool
+                  ? FORM_INQUIRY_LEAN_INCLUDE_FLAGS
                   : isPlanReadTool
                   ? PLAN_LEAN_INCLUDE_FLAGS
                   : isEmailTemplateReadTool
@@ -6153,6 +6235,7 @@ async function main() {
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
         else if (isWidgetReadTool) result.body = applyWidgetLean(result.body, includeFlags);
+        else if (isFormInquiryReadTool) result.body = applyFormInquiryLean(result.body, includeFlags);
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (isEmailTemplateReadTool) result.body = applyEmailTemplateLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.67] - 2026-06-30
+
+### Added
+
+- **Forms Inbox is now readable via `listFormInquiries` / `getFormInquiry`.** Two read-only tools over `/api/v2/form_inquiries/get` — the Forms Inbox that holds every contact-form, newsletter, and custom landing-page submission. BD stores the submission as `inquiry_content`, a 1.5–5KB email-HTML blob that is the only field populated on every row (the flat `email`/`name`/`phone` columns are sparse). The shaper (`applyFormInquiryLean`, mirrored byte-for-byte in Worker `src/index.ts` and npm `mcp/index.js`; `FORM_INQUIRY_READ_TOOLS` registered in the drift-check) parses that blob server-side into `fields: [{label, value}]` — auto-discovering custom form fields — and trims each row to the keep-list (`inquiry_id`, `inquiry_email`, `inquiry_ip`, `yourname`, `phone`, `inquiry_user_id`, `inquiry_form`, `form_title`, `url_origin`, `date_submitted`, `fields`). Sparse columns are dropped when they carry no value so `fields` stays the single source of truth: `inquiry_email`/`yourname`/`phone` drop when empty, `inquiry_user_id` drops when `0`/empty (guest), so a field's presence is meaningful and no empty column sits beside a populated `fields` pair. `include_raw=1` returns the raw HTML instead. Live-verified against production across 6 form variants: parse yields clean pairs on all; filter by `inquiry_form` + `since_days` + `order` works; `form_title` is display-only on `form_inquiries` (filterable on the `forms` table, so the description routes pretty-name lookups through `getForm` → `form_name`).
+
 ## [6.55.66] - 2026-06-30
 
 ### Added (corpus)
