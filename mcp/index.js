@@ -1126,6 +1126,40 @@ function applyWebPageLean(body, includeFlags) {
 
 const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 
+// --- Widget lean shaper ----------------------------------------------------
+// Applies to listWidgets / getWidget. The three code fields (widget_data /
+// widget_style / widget_javascript) can be 200KB+ on template widgets; strip
+// them by default and restore with include_code=1. Keep-list aligned with
+// WRITE_KEEP_SETS.createWidget plus is_default (the default-merge flag).
+// Mirrored byte-for-byte from Worker src/index.ts.
+const WIDGET_LEAN_INCLUDE_FLAGS = ["include_code"];
+const WIDGET_CODE_BUNDLE = ["widget_data", "widget_style", "widget_javascript"];
+const WIDGET_LEAN_ALWAYS_KEEP = [
+  "widget_id", "widget_name", "widget_type", "widget_viewport", "short_code",
+  "date_updated", "revision_timestamp", "is_default",
+  "widget_data", "widget_style", "widget_javascript",
+  "tablesExists",
+];
+const WIDGET_READ_TOOLS = new Set(["listWidgets", "getWidget"]);
+
+function applyWidgetLean(body, includeFlags) {
+  if (!body || body.status !== "success") return body;
+  const includeCode = !!includeFlags.include_code;
+  const shapeRow = (row) => {
+    if (!row || typeof row !== "object") return row;
+    if (!includeCode) stripKeys(row, WIDGET_CODE_BUNDLE);
+    const keep = new Set(WIDGET_LEAN_ALWAYS_KEEP);
+    for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
+    return row;
+  };
+  if (Array.isArray(body.message)) {
+    body.message = body.message.map(shapeRow);
+  } else if (body.message && typeof body.message === "object") {
+    body.message = shapeRow(body.message);
+  }
+  return body;
+}
+
 // --- MEMBERSHIP PLANS ------------------------------------------------------
 //
 // BD's subscription_types table has ~170 columns. Most agent tasks just need
@@ -5071,6 +5105,7 @@ async function main() {
       const isCategoryReadTool = CATEGORY_READ_TOOLS.has(name);
       const isPostTypeReadTool = POST_TYPE_READ_TOOLS.has(name);
       const isWebPageReadTool = WEB_PAGE_READ_TOOLS.has(name);
+      const isWidgetReadTool = WIDGET_READ_TOOLS.has(name);
       const isPlanReadTool = PLAN_READ_TOOLS.has(name);
       const isEmailTemplateReadTool = EMAIL_TEMPLATE_READ_TOOLS.has(name);
       const isReviewReadTool = REVIEW_READ_TOOLS.has(name);
@@ -5089,7 +5124,9 @@ async function main() {
               ? POST_TYPE_LEAN_INCLUDE_FLAGS
               : isWebPageReadTool
                 ? WEB_PAGE_LEAN_INCLUDE_FLAGS
-                : isPlanReadTool
+                : isWidgetReadTool
+                  ? WIDGET_LEAN_INCLUDE_FLAGS
+                  : isPlanReadTool
                   ? PLAN_LEAN_INCLUDE_FLAGS
                   : isEmailTemplateReadTool
                     ? EMAIL_TEMPLATE_LEAN_INCLUDE_FLAGS
@@ -6115,6 +6152,7 @@ async function main() {
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
+        else if (isWidgetReadTool) result.body = applyWidgetLean(result.body, includeFlags);
         else if (isPlanReadTool) result.body = applyPlanLean(result.body, includeFlags);
         else if (isEmailTemplateReadTool) result.body = applyEmailTemplateLean(result.body, includeFlags);
         else if (isReviewReadTool) result.body = applyReviewLean(result.body, includeFlags);

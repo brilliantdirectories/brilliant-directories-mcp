@@ -5367,6 +5367,19 @@
           },
           {
             "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "include_code",
+            "in": "query",
+            "description": "Opt in to return `widget_data`, `widget_style`, `widget_javascript` (the HTML/CSS/JS) on each row. Default stripped. Needed before `updateWidget` edits to the code.",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
+            }
           }
         ],
         "responses": {
@@ -5381,7 +5394,7 @@
             }
           }
         },
-        "description": "Paginated enumeration of widget records. Read-only.\n\n**Use when:** discovering the reusable HTML/CSS/JS components available for embedding in pages (via `[widget=Name]` shortcode) or email templates. For fetching one specific widget by ID use `getWidget`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability. Useful filter: `widget_viewport=front` to list only public-facing widgets.\n\n**See also:** `getWidget` (single by ID), `createWidget` (add new), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record carries the full widget object (fields enumerated in the table that follows).\n\n\n**Widget object fields (from BD support article 12000108056):**\n\n| Field | Type | Description |\n|---|---|---|\n| `widget_id` | integer | Primary key (read-only) |\n| `widget_name` | string | Widget name/label - REQUIRED on create; unique per site |\n| `widget_type` | string | Widget classification (default: `Widget`) |\n| `widget_data` | text | Widget HTML content |\n| `widget_style` | text | Widget CSS styles |\n| `widget_javascript` | text | Widget JavaScript code |\n| `widget_settings` | text | Configuration (JSON or serialized) |\n| `widget_values` | text | Widget variable values |\n| `widget_class` | string | CSS class names applied to container |\n| `widget_viewport` | string | Where widget appears: `front`, `admin`, `both` |\n| `widget_html_element` | string | Container element (default: `div`) |\n| `div_id` | string | HTML ID attribute for container |\n| `short_code` | string | Shortcode reference for this widget |\n| `bootstrap_enabled` | integer | `1` if Bootstrap framework loaded |\n| `ssl_enabled` | integer | `1` if SSL/HTTPS required |\n| `mobile_enabled` | integer | `1` if mobile viewport enabled |\n| `file_type` | string | File type of the widget |\n| `revision_timestamp` | timestamp | Last modified (auto-updated) |\n\n Site records and platform master defaults are merged in the response — see **Rule: Default-merge models** to filter to one and to sort."
+        "description": "Paginated enumeration of widget records. Read-only.\n\n**Lean-by-default keep-list:** rows return only `widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`. The code fields (`widget_data`, `widget_style`, `widget_javascript`) are stripped — restore with `include_code=1`.\n\n**Use when:** discovering the reusable HTML/CSS/JS components available for embedding in pages (via `[widget=Name]` shortcode) or email templates. For fetching one specific widget by ID use `getWidget`.\n\n**Pagination:** cursor-based (`limit`, `page`). See **Rule: Pagination** for full cursor/cap/stop semantics.\n\n**Filter/sort:** `property`+`property_value`+`property_operator`, `order_column`+`order_type`. See **Rule: Filter operators** for the verified-working operator set, silent-drop detection, and derived-field unfilterability. Useful filter: `widget_viewport=front` to list only public-facing widgets.\n\n**See also:** `getWidget` (single by ID), `createWidget` (add new), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", total, current_page, total_pages, next_page, prev_page, message: [...records] }`. Each record carries the full widget object (fields enumerated in the table that follows).\n\n\n**Widget object fields (from BD support article 12000108056):**\n\n| Field | Type | Description |\n|---|---|---|\n| `widget_id` | integer | Primary key (read-only) |\n| `widget_name` | string | Widget name/label - REQUIRED on create; unique per site |\n| `widget_type` | string | Widget classification (default: `Widget`) |\n| `widget_data` | text | Widget HTML content |\n| `widget_style` | text | Widget CSS styles |\n| `widget_javascript` | text | Widget JavaScript code |\n| `widget_settings` | text | Configuration (JSON or serialized) |\n| `widget_values` | text | Widget variable values |\n| `widget_class` | string | CSS class names applied to container |\n| `widget_viewport` | string | Where widget appears: `front`, `admin`, `both` |\n| `widget_html_element` | string | Container element (default: `div`) |\n| `div_id` | string | HTML ID attribute for container |\n| `short_code` | string | Shortcode reference for this widget |\n| `bootstrap_enabled` | integer | `1` if Bootstrap framework loaded |\n| `ssl_enabled` | integer | `1` if SSL/HTTPS required |\n| `mobile_enabled` | integer | `1` if mobile viewport enabled |\n| `file_type` | string | File type of the widget |\n| `revision_timestamp` | timestamp | Last modified (auto-updated) |\n| `is_default` | boolean | `false` = the site's own record, `true` = an uncustomised master default (read-only; filter with `property=is_default`). See **Rule: Default-merge models**. |\n\n Site records and platform master defaults are merged in the response — see **Rule: Default-merge models** to filter to one and to sort."
       }
     },
     "/api/v2/data_widgets/get/{widget_id}": {
@@ -5399,6 +5412,19 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "include_code",
+            "in": "query",
+            "description": "Opt in to return `widget_data`, `widget_style`, `widget_javascript` (the HTML/CSS/JS). Default stripped. Needed before `updateWidget` edits to the code.",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "enum": [
+                0,
+                1
+              ]
+            }
           }
         ],
         "responses": {
@@ -5413,7 +5439,7 @@
             }
           }
         },
-        "description": "Fetch a single widget record by `widget_id`. Returns the raw HTML/CSS/JS source. Read-only.\n\n**Use when:** you have a `widget_id` (from `listWidgets` or admin) and want the widget's SOURCE code to edit or audit. To preview the rendered widget on the front-end, embed it on a page via `[widget=Name]` shortcode and view the page.\n\n**Required:** `widget_id` (path parameter).\n\n**See also:** `listWidgets` (enumerate), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record with all widget fields (`widget_data` = HTML, `widget_style` = CSS, `widget_javascript` = JS, plus metadata).\n\n\nFor the full field list, see `listWidgets`.\n\n"
+        "description": "Fetch a single widget record by `widget_id`. Read-only.\n\n**Lean-by-default keep-list:** returns only `widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`. The code fields (`widget_data`, `widget_style`, `widget_javascript`) are stripped — restore with `include_code=1`.\n\n**Use when:** you have a `widget_id` (from `listWidgets` or admin) and want the widget's SOURCE code to edit or audit. To preview the rendered widget on the front-end, embed it on a page via `[widget=Name]` shortcode and view the page.\n\n**Required:** `widget_id` (path parameter).\n\n**See also:** `listWidgets` (enumerate), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record with all widget fields (`widget_data` = HTML, `widget_style` = CSS, `widget_javascript` = JS, plus metadata).\n\n\nFor the full field list, see `listWidgets`.\n\n"
       }
     },
     "/api/v2/data_widgets/create": {

@@ -571,7 +571,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 ### Rule: Lean read responses
 
-**Row weight - lean-by-default with opt-in `include_*` flags** across 11 resource families. Only opt in when the task actually needs that nested data.
+**Row weight - lean-by-default with opt-in `include_*` flags** across 12 resource families. Only opt in when the task actually needs that nested data.
 
 **Users** (`listUsers` / `getUser` / `searchUsers`, ~2KB lean row): core columns + `revenue` + `image_main_file` + `filename_hidden` + `total_clicks` + `total_photos` always returned. Flags:
 
@@ -606,6 +606,10 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 
 - `include_content=1` - restores `content` (body HTML).
 - `include_code=1` - restores `content_css`, `content_head`, `content_footer_html`. Needed before `updateWebPage` edits to CSS/head/footer JS so you have the current value to modify.
+
+**Widgets** (`listWidgets` / `getWidget`): identity + metadata always returned (`widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`). Strips the three code fields (`widget_data`, `widget_style`, `widget_javascript`), which reach 200KB+ on template widgets. Flags:
+
+- `include_code=1` - restores `widget_data`, `widget_style`, `widget_javascript`. Needed before `updateWidget` edits to the code.
 
 **Email templates** (`listEmailTemplates` / `getEmailTemplate`): all identity/metadata fields always returned (`email_id`, `email_name`, `email_subject`, `email_type`, `triggers`, `category_id`, `notemplate`, `signature`, `unsubscribe_link`, etc.). Strips: `email_body` (full HTML, ~8KB avg per row, up to tens of KB). Flags:
 

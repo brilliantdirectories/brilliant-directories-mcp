@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.65] - 2026-06-30
+
+### Added
+
+- **`listWidgets` / `getWidget` are now lean by default with `include_code=1` opt-in.** Widget reads previously returned the full `widget_data` / `widget_style` / `widget_javascript` on every row — 200KB+ on template widgets — even when the caller only needed the widget's identity. Writes were already lean (`WRITE_KEEP_SETS`); reads were the lone exception among the resource families. Now the two read tools strip the three code fields by default (keep-set: `widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`) and restore them with `include_code=1`. Mirrors the existing web-page lean pattern exactly. Shaper + flag-list + read-tool set mirrored byte-for-byte in Worker (`src/index.ts`) and npm (`mcp/index.js`); `WIDGET_READ_TOOLS` registered in the drift-check; `include_code` param + `**Lean-by-default keep-list:**` line added to both tool descriptions; `Rule: Lean read responses` gains a Widgets block (family count 11 → 12). The `_admin_edit_url` deep-link is injected after lean-shaping, so it survives on every widget read row.
+
 ## [6.55.64] - 2026-06-30
 
 ### Added (corpus)
