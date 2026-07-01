@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.66] - 2026-06-30
+
+### Added (corpus)
+
+- **`getWebPage` now points to `Rule: List-first` for name-based lookups.** `getWebPage` hard-requires `seo_id` (path), but agents frequently know a page only by title/filename/nickname and would blind-call `getWebPage` without an id — which the wrapper rejects. The `**See also:**` line gains one clause directing the agent to resolve the `seo_id` via `listWebPages` first when it doesn't have one, cross-referencing the existing `Rule: List-first` (list returns the same identity fields as get, so a single `listWebPages` call resolves the id). Live-verified against production: `listWebPages` by `filename`/`nickname` resolves to `seo_id`, which then succeeds in `getWebPage`; list and get carry identical `seo_id`/`seo_type`/`filename`/`title`/`nickname` values. Spec-only, single-line `getWebPage` description edit; the Worker fetches `bd-api.json` from GitHub `main` at runtime so it picks this up with no redeploy.
+
 ## [6.55.65] - 2026-06-30
 
 ### Added
