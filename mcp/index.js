@@ -1273,14 +1273,14 @@ const PLAN_LEAN_INCLUDE_FLAGS = [
 const PLAN_ALWAYS_KEEP = [
   "subscription_id", "subscription_name", "subscription_type", "profile_type",
   "monthly_amount", "yearly_amount", "initial_amount", "lead_price", "searchable",
-  "data_settings",
+  "search_membership_permissions", "data_settings",
 ];
 
 // Restored with include_plan_config=1 — activation, limits, sidebars, forms,
 // email templates, upgrade chain, payment/display/index settings.
 const PLAN_CONFIG_FIELDS = [
   "sub_active", "search_priority", "auto_activate", "status_after_upgrade",
-  "upgradable_membership", "search_membership_permissions",
+  "upgradable_membership",
   "photo_limit", "style_limit", "service_limit", "location_limit",
   "about_form", "listing_details_form", "contact_details_form",
   "signup_sidebar", "profile_sidebar", "signup_email_template",

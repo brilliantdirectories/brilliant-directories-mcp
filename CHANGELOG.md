@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.78] - 2026-07-01
+
+### Changed
+
+- **Membership-plan lean rows now surface `search_membership_permissions`**, and both public-visibility fields are documented. An AI asked to find members with a publicly accessible profile previously failed ("couldn't find one") because `search_membership_permissions` was gated behind `include_plan_config` and `searchable` had no description — so the AI couldn't determine which plans are public. Added `search_membership_permissions` to `PLAN_ALWAYS_KEEP` (Worker + npm, byte-parallel; removed from `PLAN_CONFIG_FIELDS` to avoid duplication), and documented in `listMembershipPlans`/`getMembershipPlan` that a plan's members have a publicly accessible profile only when `searchable=1` AND `search_membership_permissions` contains `visitor`. Added the read-only workflow to the corpus: `listMembershipPlans` → keep those plans → `listUsers property=subscription_id property_operator=in`. Live-verified the chain returns real members. Drift-check green (171 operations).
+
 ## [6.55.77] - 2026-07-01
 
 ### Changed
