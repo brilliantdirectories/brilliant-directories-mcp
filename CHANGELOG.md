@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.55.79] - 2026-07-01
+
+### Changed
+
+- **Plan public-visibility wording now aliases BD's on-screen label** so it matches how customers phrase it. The `listMembershipPlans`/`getMembershipPlan` descriptions and the corpus workflow now say "a publicly accessible, searchable profile (BD's UI calls this 'Listing Searchable')" — covering public/searchable/listing phrasing and tying to the exact admin-UI label. Prose-only (spec descriptions + corpus); Worker fetches both from GitHub live, no redeploy.
+
 ## [6.55.78] - 2026-07-01
 
 ### Changed

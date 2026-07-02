@@ -850,7 +850,7 @@ Apply the SEO-intent -> WebPage routing rule across `createTopCategory` / `updat
 
 - Category name -> `listTopCategories` -> match `name` -> grab `profession_id` -> then `listUsers`.
 - Subscription/plan name -> `listMembershipPlans` -> grab `subscription_id` -> filter `listUsers` by `subscription_id`.
-- Members with a publicly accessible profile -> `listMembershipPlans` -> keep plans where `searchable=1` AND `search_membership_permissions` contains `visitor` -> `listUsers property=subscription_id property_value=<matched ids CSV> property_operator=in`.
+- Members with a publicly accessible, searchable profile/listing -> `listMembershipPlans` -> keep plans where `searchable=1` AND `search_membership_permissions` contains `visitor` -> `listUsers property=subscription_id property_value=<matched ids CSV> property_operator=in`.
 - Sub-category on users -> `listMemberSubCategoryLinks` filtered by `service_id` to get `user_id`s, then fetch those users. Don't LIKE-match the CSV `service` column on users.
 
 **Ranking-by-membership warning (N+1 fan-out):** there is no server-side `ORDER BY member_count` on categories. "Top N categories by member count" on a site with K categories requires `K × listUsers limit=1 property=profession_id&property_value=<id>` calls. If K > 20, tell the user the scope upfront and ask whether to narrow (e.g. active categories only, or top-level only) before fanning out.
