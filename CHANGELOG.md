@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Skill cross-references now resolve by exact string in both worlds** (claude.ai loose files and flattened blobs): 13 "per-type SKILL.md" / "content-type SKILL.md" misnomers in `shared/METHODOLOGY.md` + `shared/URL-PATTERNS.md` renamed to "the content-type file", anchored once at first use as `content-types/<type>.md`. Naming-only — zero instruction changes (word-diff verified).
 - `scripts/build-skill-zip.js` prunes `bd-skill-content/flattened/` so generated system prompts never ship in the customer-facing claude.ai skill zip; zip rebuilt (now includes `shared/GEOCODING.md`).
+- **`schema-drift-check.js` CHECK 11 — skill-content drift is now part of the mandatory pre-publish gate.** Delegates to `python scripts/flatten.py --check`, which byte-compares both derived skill artifacts (flattened system prompts AND `bd-skill-content.zip`) against the loose sources, so a skill edit pushed without regenerating either artifact fails the gate with the exact fix command.
 
 ## [6.55.79] - 2026-07-01
 

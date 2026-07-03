@@ -802,6 +802,23 @@ try {
   warn(`Could not run constant mirror check: ${e.message}.`);
 }
 
+// CHECK 11: Skill-content drift — flattened system prompts + skill zip must
+// be regenerated whenever bd-skill-content/ loose files change (delegates to
+// scripts/flatten.py --check, which byte-compares both artifacts).
+{
+  const { spawnSync } = require("child_process");
+  const args = [require("path").join(__dirname, "flatten.py"), "--check"];
+  let res = spawnSync("python", args, { encoding: "utf8" });
+  if (res.error && res.error.code === "ENOENT") {
+    res = spawnSync("python3", args, { encoding: "utf8" });
+  }
+  if (res.error) {
+    err(`Skill drift check could not run (python unavailable): ${res.error.message}`);
+  } else if (res.status !== 0) {
+    err(`Skill content drift: ${(res.stderr || res.stdout).trim().replace(/\s+/g, " ")}`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------

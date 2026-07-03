@@ -10,8 +10,8 @@ content.
 Usage (from the repo root):
   python scripts/flatten.py           regenerate flattened/
   python scripts/flatten.py --check   drift-check: fail (exit 1) if any
-                                      flattened file is stale vs. the
-                                      loose sources
+                                      flattened file OR the skill zip is
+                                      stale vs. the loose sources
 
 Output is deterministic (CRLF normalized to LF, one trailing newline per
 section) so --check is a meaningful byte-compare and git diffs are clean.
@@ -19,6 +19,7 @@ section) so --check is a meaningful byte-compare and git diffs are clean.
 import json
 import re
 import sys
+import zipfile
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parent.parent / "bd-skill-content"
@@ -68,6 +69,28 @@ def flatten(manifest):
     return out
 
 
+def check_zip():
+    zip_path = SRC / "bd-skill-content.zip"
+    if not zip_path.is_file():
+        return ["bd-skill-content.zip is missing"]
+    with zipfile.ZipFile(zip_path) as zf:
+        entries = {name: zf.read(name) for name in zf.namelist()}
+    expected = {}
+    for p in SRC.rglob("*"):
+        if not p.is_file() or p.suffix.lower() == ".zip" or p.parent == OUT_DIR:
+            continue
+        expected[p.relative_to(SRC.parent).as_posix()] = p.read_bytes()
+    problems = []
+    for name in sorted(set(expected) - set(entries)):
+        problems.append(f"missing from zip: {name}")
+    for name in sorted(set(entries) - set(expected)):
+        problems.append(f"unexpected in zip: {name}")
+    for name in sorted(set(expected) & set(entries)):
+        if expected[name] != entries[name]:
+            problems.append(f"stale in zip: {name}")
+    return problems
+
+
 def main():
     check = "--check" in sys.argv[1:]
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8-sig"))
@@ -83,14 +106,20 @@ def main():
             target = OUT_DIR / f"{skill}.system.md"
             if not target.is_file() or target.read_bytes() != text.encode("utf-8"):
                 stale.append(skill)
-        if stale or orphans:
+        zip_problems = check_zip()
+        if stale or orphans or zip_problems:
             msg = "DRIFT:"
             if stale:
                 msg += " stale for: " + ", ".join(stale) + "."
             if orphans:
                 msg += " orphaned (not in manifest): " + ", ".join(orphans) + "."
-            sys.exit(msg + "\nRun: python scripts/flatten.py")
-        print(f"OK: flattened/ is current ({len(flattened)} skills)")
+            for p in zip_problems:
+                msg += f" {p}."
+            sys.exit(
+                msg + "\nRun: python scripts/flatten.py"
+                + (" && node scripts/build-skill-zip.js" if zip_problems else "")
+            )
+        print(f"OK: flattened/ + skill zip are current ({len(flattened)} skills)")
         return
 
     OUT_DIR.mkdir(exist_ok=True)
