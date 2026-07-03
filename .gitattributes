@@ -1,0 +1,5 @@
+# flatten.py --check byte-compares these against regenerated LF output;
+# CRLF checkout rewrites would fail the check on every fresh clone.
+bd-skill-content/flattened/*.system.md text eol=lf
+scripts/flatten.py text eol=lf
+scripts/skill-reading-order.json text eol=lf
