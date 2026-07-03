@@ -7,6 +7,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 1. `../shared/METHODOLOGY.md`: universal protocol.
 2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
 3. `../shared/URL-PATTERNS.md`: internal URL construction.
+4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, retry ladder, normalization).
 
 ---
 
@@ -123,11 +124,9 @@ Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
 ## Geocoding (runbook Step 7)
 
-Run on survivors only (candidates that passed runbook Step 6 dedup) — don't waste Nominatim calls on dupes.
+Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
 
-Geocoding behavior for jobs is identical to events. Run the Nominatim ladder per `content-types/events.md` § Geocoding — transliteration, 4-tier `post_venue` known / 2-tier `post_venue` empty, normalization (`country_sn` uppercase, `state_sn` ISO-3166-2 2-letter code). Note: for jobs, `post_venue` = company name, so tier 1 (`q="<company>, <city>, <state-name>"`) only hits if Nominatim has the company's headquarters indexed; tiers 2-4 (street → city-only fallback) carry the load more often.
-
-Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `auto_geocode=1`.
+For jobs, `post_venue` = company name, so retry-ladder tier 1 (`q="<company>, <city>, <state-name>"`) only hits if Nominatim has the company's headquarters indexed; tiers 2-4 (street → city-only fallback) carry the load more often.
 
 ---
 

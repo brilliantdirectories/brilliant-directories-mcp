@@ -1,6 +1,6 @@
 # METHODOLOGY: BD growth-skills protocol
 
-Read first. Every `/bd:*` skill follows this. Per-type SKILL.md layers in type-specific details.
+Read first. Every `/bd:*` skill follows this. The content-type file (`content-types/<type>.md`, routed to by `SKILL.md`) layers in type-specific details.
 
 ## Mode detection (first step)
 
@@ -14,7 +14,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
-3. `listPostTypes` → per-type SKILL.md provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. The cached `feature_categories` is the authoritative list for post-category routing.
+3. `listPostTypes` → the content-type file provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. The cached `feature_categories` is the authoritative list for post-category routing.
 4. **Menu discovery — two phases, both mandatory.**
 
    **Phase 4a (find menus):** `listMenus` four times in sequence — `property=menu_name property_value=main% property_operator=like`, then `top%`, then `header%`, then `footer%`. Collect every `menu_id` from every match.
@@ -23,7 +23,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
-Autonomous: infer location from `primary_country`, vertical from site info and categories. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live. Interactive question order is per-type — see the per-type SKILL.md.
+Autonomous: infer location from `primary_country`, vertical from site info and categories. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live. Interactive question order is per-type — see the content-type file.
 
 **Member-city targeting — NEVER bulk-list members to discover their cities.** Only fires when the user's prompt explicitly targets by member coverage ("cities where I have members," "places members are based," "areas we cover"). Use `listCities` — BD auto-seeds it on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
 
@@ -74,7 +74,7 @@ For each candidate, run THREE scoped queries against the relevant `list*` tool t
 
 **"Distinctive" means: the first 3 words that meaningfully fingerprint THIS candidate.** If the title starts with throwaway leaders that don't uniquely identify it — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`) — skip them and pick the next 3 words that do. Example: `"The 5th Annual Austin Tech Summit"` → use `Austin Tech Summit%`, not `The 5th Annual%`.
 
-Per-type SKILL.md specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
+The content-type file specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 
 **On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
@@ -82,7 +82,7 @@ Always SKIP existing records — no auto-edit of live posts.
 
 ## Stage 3: Source research
 
-**2a.** Brainstorm 5-10 candidate sources for vertical+location. Per-type SKILL.md provides candidate categories. Be specific (real domain names, not "some sites").
+**2a.** Brainstorm 5-10 candidate sources for vertical+location. The content-type file provides candidate categories. Be specific (real domain names, not "some sites").
 
 **2b.** `WebSearch site:<domain> <keywords> <location>` per candidate. Drop dead/empty/archive pages.
 
@@ -92,7 +92,7 @@ Always SKIP existing records — no auto-edit of live posts.
 |---|---|
 | Date sanity | Primary date > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
-| Required fields | Per-type SKILL.md specifies. Missing any → skip. No synthesis. |
+| Required fields | The content-type file specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
 | Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
 | URL liveness | Every URL the post links to must be verified before publish per `URL liveness gate`. |
@@ -115,7 +115,7 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 Interactive: ask user when ambiguous. Autonomous: fuzzy-match source category vs BD `feature_categories`. ≥70% confidence → use match. <70% → SKIP the record (do NOT auto-create categories).
 
-Per-type SKILL.md may specify a fallback category.
+The content-type file may specify a fallback category.
 
 ## Stage 5: Content manufacture (universal)
 
@@ -125,7 +125,7 @@ Per-type SKILL.md may specify a fallback category.
 
 Good posts leave the reader genuinely informed: core facts, practical considerations, useful context, honest comparisons, deeper insights on the location/category/focus where the source supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (tighter when the source is thin, expanded when source data + confident knowledge support more).
 
-1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. Per-type SKILL.md specifies which facts are load-bearing for the data type.
+1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. The content-type file specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links per `Link order`.**
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
@@ -245,14 +245,14 @@ Scan the assembled body. Fix anything that fires:
 
 ## Universal post fields
 
-Field rules that apply across ALL post types via `createSingleImagePost` (and `createMultiImagePost`). Per-type SKILL.md files reference these universally and add only type-specific examples or additions.
+Field rules that apply across ALL post types via `createSingleImagePost` (and `createMultiImagePost`). Content-type files reference these universally and add only type-specific examples or additions.
 
 | Field | Rule |
 |---|---|
 | `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit. |
 | `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match (autonomous mode). |
-| `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. Per-type SKILL.md gives type-specific examples. |
-| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. Per-type SKILL.md adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
+| `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
+| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
 
 ## Tags
@@ -261,7 +261,7 @@ Universal `post_tags` field constraints — applies to ALL post types (single-im
 
 - **Format:** comma-separated, lowercase, no hyphens, no special chars. Spaces inside a tag are fine (`pilates,reformer class,boston studios`).
 - **Hard 100-char total cap on the CSV.** BD rejects anything longer. If the assembled CSV exceeds 100 chars, drop the last tag and re-check; repeat until ≤100.
-- **Strategy:** aim for ~6 tags per post — roughly 3 broad/short-tail (general focus like `pilates`, `fitness`, `5k`) + 3 long-tail (specific phrases like `reformer class`, `boston studios`, `classical pilates`). Real long-tails ARE multi-word phrases — keep them short, don't join words with hyphens. Per-type SKILL.md may refine tag emphasis for the type (e.g. blogs may favor topical keywords over location).
+- **Strategy:** aim for ~6 tags per post — roughly 3 broad/short-tail (general focus like `pilates`, `fitness`, `5k`) + 3 long-tail (specific phrases like `reformer class`, `boston studios`, `classical pilates`). Real long-tails ARE multi-word phrases — keep them short, don't join words with hyphens. The content-type file may refine tag emphasis for the type (e.g. blogs may favor topical keywords over location).
 - **Tags live ONLY in the post's `post_tags` field.** Do NOT call `listTags`, `createTag`, or any Tags-resource tool — those manage a separate global tag taxonomy unrelated to per-post `post_tags`.
 - **Also pass the same CSV to `post_meta_keywords`.**
 

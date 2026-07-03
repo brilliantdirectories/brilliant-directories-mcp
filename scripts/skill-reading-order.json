@@ -1,0 +1,8 @@
+{
+  "core_order": ["SKILL.md", "shared/METHODOLOGY.md", "shared/ANTI-SLOP.md", "shared/URL-PATTERNS.md"],
+  "skills": {
+    "blog": ["content-types/blog.md"],
+    "events": ["shared/GEOCODING.md", "content-types/events.md"],
+    "jobs": ["shared/GEOCODING.md", "content-types/jobs.md"]
+  }
+}

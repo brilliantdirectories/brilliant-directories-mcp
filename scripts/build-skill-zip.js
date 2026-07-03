@@ -49,6 +49,10 @@ dst = sys.argv[2]
 src_parent = os.path.dirname(src)
 with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as zf:
     for root, dirs, files in os.walk(src):
+        # flattened/ holds generated system prompts (scripts/flatten.py
+        # output) — never part of the customer-facing skill zip.
+        if 'flattened' in dirs:
+            dirs.remove('flattened')
         for f in files:
             if f.lower().endswith('.zip'):
                 continue
