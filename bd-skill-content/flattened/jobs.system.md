@@ -303,6 +303,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
+- Same href twice? Re-derive one under a different Pattern, or drop it.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -397,7 +398,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay" → cut |
 | Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
-| Fabricated authority | "studies show", "experts agree", "research suggests" without citation → cite or rewrite as opinion |
+| Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes..." as the sentence opener for every citation → state the fact in your own sentence with the source linked mid- or end-sentence; max one speech-verb opener per post |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 
@@ -608,7 +609,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor.
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
