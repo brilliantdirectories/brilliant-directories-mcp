@@ -222,7 +222,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 ### Link order (universal — internal first, external later)
 
 1. **First 1-2 links the reader hits** — must be internal links only (on-site pages, member search, related posts).
-2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never clustered in one footer block.
+2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same paragraph, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
 **Short posts exception rule:** posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed.
@@ -527,25 +527,26 @@ Invalid combinations:
 - Skipped middle segment (e.g. `country/city/top` — state missing between country and city)
 - Wrong order (e.g. `top/state/city`)
 
-### Discovery lookups (server-side keyword filter — never bulk-list)
+### Discovery lookups
 
-Every slug segment MUST come from a live list-tool return. Single-anchor LIKE wildcards only (`X%` or `%X`, never `%X%` — BD's WAF strips one `%`).
+Every slug segment MUST come from a live list-tool return. LIKE wildcards: `X%` or `%X` only, never `%X%` — BD's WAF strips one `%`.
 
-**Top category** (by anchor keyword):
-
-```
-listTopCategories property=name property_value=<keyword>% property_operator=like limit=10
-```
-
-For ambiguous anchors, also run ends-with: `property_value=%<keyword>`. Union client-side, pick best semantic match's `filename` for the slug.
-
-**Sub category** (when the anchor names a service within a top):
+**Categories — once per run, both levels:**
 
 ```
-listSubCategories property=name property_value=<keyword>% property_operator=like limit=10
+listTopCategories limit=100
+listSubCategories limit=100
 ```
 
-Scope to a resolved top via additional `profession_id` filter when known. Use the returned `filename`.
+`total_pages: 1` → the full tree is cached; semantic-match the topic against it (a weightlifting topic matches "Strength Training" — keyword filters cannot make that match). Sites with one generic top (e.g. "Members") carry the real taxonomy at sub/sub-sub level (`master_id`). `total_pages > 1` → do NOT page; probe with `property=name property_value=<keyword> property_operator=contains limit=10` per distinct topic keyword (max 3), plus `in` with a CSV of exact candidate names to confirm several in one call. Slugs come from the returned `filename`; subs scope to a resolved top via `profession_id`.
+
+**Member-count gate (every category directory URL):**
+
+```
+searchUsers pid=<profession_id> (+ tid=<service_id>) limit=1
+```
+
+Link only when `total_members >= 1` — an empty directory page is worse than no link. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
