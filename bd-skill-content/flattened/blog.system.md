@@ -398,6 +398,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests" without citation → cite or rewrite as opinion |
+| Formulaic attribution | "[Org] says/notes/describes..." as the sentence opener for every citation → state the fact in your own sentence with the source linked mid- or end-sentence; max one speech-verb opener per post |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 
 ## Self-check before posting
