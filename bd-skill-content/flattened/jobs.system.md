@@ -222,7 +222,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 ### Link order (universal — internal first, external later)
 
 1. **First 1-2 links the reader hits** — must be internal links only (on-site pages, member search, related posts).
-2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in consecutive sentences, never clustered in one footer block.
+2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
 **Short posts exception rule:** posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed.
@@ -546,7 +546,7 @@ listSubCategories limit=100
 searchUsers pid=<profession_id> (+ tid=<service_id>) limit=1
 ```
 
-Location-bearing URLs verify with `listUsers` instead — `searchUsers` cannot filter location: compound-filter the most specific location field (`city`, `state_code`, or `country_code`) plus `profession_id` per `Rule: Compound filters`, `limit=1`. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Location-bearing URLs verify with `listUsers` instead — `searchUsers` cannot filter location: compound-filter the most specific location field (`city`, `state_code`, or `country_code`) plus `profession_id` per `Rule: Compound filters`, `limit=1`. This proves the top category only — a location URL with a sub-category segment cannot be count-verified in one call, so link the location + top form instead. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
