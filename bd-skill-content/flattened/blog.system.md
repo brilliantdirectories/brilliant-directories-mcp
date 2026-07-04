@@ -192,6 +192,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. The content-type file specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **External source citations: 1-4 per post.** Authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) linked in flowing prose with `rel="nofollow" target="_blank"`. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals. NOT a forced "Source: X" footer — natural and conversational. **External source citations come AFTER the first 1-2 internal links per `Link order`.**
+   **Static destinations only.** Cite a specific article, abstract, or official page — never a search-results/query URL (`?term=`, `?q=`, `search?`, tag/archive indexes). A search/index URL is allowed at most once per post, framed in-sentence as a browsable resource, only after a static citation on the same subject.
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
@@ -301,6 +302,8 @@ Scan the assembled body. Fix anything that fires:
 - Unsourced claim presented as fact? Cite or rewrite.
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link missing `rel="nofollow" target="_blank"`? Add.
+- Citation on a search/query URL? Replace with the static source page, or drop.
+- Anchor over 5 words? Tighten; move the description to `title`.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -604,6 +607,8 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | External | `<a href="https://..." title="<descriptive>" rel="nofollow" target="_blank">text</a>` |
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
+
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor.
 
 ## Composition examples (substitute `data_filename` for prefix)
 
