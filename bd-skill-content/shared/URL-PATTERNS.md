@@ -85,7 +85,7 @@ listSubCategories limit=100
 searchUsers pid=<profession_id> (+ tid=<service_id>) limit=1
 ```
 
-Location-bearing URLs verify with `listUsers` instead — `searchUsers` cannot filter location: compound-filter the most specific location field (`city`, `state_code`, or `country_code`) plus `profession_id` per `Rule: Compound filters`, `limit=1`. This proves the top category only — a location URL with a sub-category segment cannot be count-verified in one call, so link the location + top form instead. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Location-bearing URLs verify with `listUsers` — `searchUsers` cannot filter location. Compound-filter the most specific location field (`city`, `state_code`, or `country_code`) plus `profession_id` per `Rule: Compound filters`, `limit=1`. This proves the top only, so a location URL stops at the top segment. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
