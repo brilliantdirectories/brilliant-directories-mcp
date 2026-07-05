@@ -507,6 +507,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 
 - **Strict order.** Any contiguous subset is valid: drop segments from the left (state/city/top), the right (country/state/city), or both ends — but never reorder, never skip a segment in the middle.
 - **A sub-sub filename (`master_id != 0`) takes the sub slot, replacing its parent sub** — never three category segments.
+- **A city segment always follows its state** — city names collide across states.
 - **No leading slash on the slug itself** (the full URL starts with `/`).
 - **Slugs are case-sensitive lowercase**, exactly as returned by the list tools.
 - **Prefer the most specific slug-hierarchy you can verify.** Country+state+city+top beats state+top beats top alone.
@@ -515,7 +516,6 @@ Valid combinations include (non-exhaustive):
 
 - `top` alone
 - `top/sub`
-- `city/top`
 - `state/top`
 - `state/top/sub`
 - `state/city/top`
@@ -523,7 +523,7 @@ Valid combinations include (non-exhaustive):
 - `country/state/top`
 - `country/state/city/top`
 - `country/state/city/top/sub`
-- `state` / `state/city` / `country` / `country/state` / `country/state/city` — location only; city never stands alone (city names collide across states)
+- `state` / `state/city` / `country` / `country/state` / `country/state/city` — location only
 
 Invalid combinations:
 
