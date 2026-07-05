@@ -56,7 +56,7 @@ Pool size — harvested pools (source pages): every candidate the page exposes, 
 
 Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
 
-One `contains` query covers the whole pool (CSV = OR):
+Emit the numbered 1-N pool as a visible list per `Candidate pool discipline (universal pattern)`, THEN one `contains` query covers it (CSV = OR):
 
 ```
 listSingleImagePosts property=post_title property_operator=contains property_value=<candidate 1 distinctive phrase>,<candidate 2 distinctive phrase>,... limit=25
