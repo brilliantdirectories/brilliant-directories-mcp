@@ -278,7 +278,7 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
 
 - The receipt starts at `{` and ends at `}` — no markdown fences, no prefix labels, nothing after the closing brace.
-- Return complete, valid JSON — never partial or truncated. Pretty-print: 2-space indent, one field per line.
+- Return complete, valid JSON — never partial or truncated. Pretty-print at every nesting level: 2-space indent, one field per line — including each object inside `posts`, never compacted onto one line.
 - ONLY these fields, in this order — never add extra fields: `summary_html`, `post_create`, `post_create_goal`, `post_create_count`, `posts`.
 - `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Only when `post_create_count` is under the goal: one line explaining why the remaining posts could not be created.
 - `post_create`: `1` (this run's task was creating posts). `post_create_goal`: the requested post count. `post_create_count`: posts actually created this run.
@@ -295,7 +295,14 @@ Example:
   "post_create_goal": 2,
   "post_create_count": 2,
   "posts": [
-    {"post_id": 1061, "post_type_id": 8, "post_type_name": "Event", "post_title": "Tampa Sunrise 5K", "post_url": "https://site.com/events/tampa-sunrise-5k", "post_author_id": 5}
+    {
+      "post_id": 1061,
+      "post_type_id": 8,
+      "post_type_name": "Event",
+      "post_title": "Tampa Sunrise 5K",
+      "post_url": "https://site.com/events/tampa-sunrise-5k",
+      "post_author_id": 5
+    }
   ]
 }
 ```
