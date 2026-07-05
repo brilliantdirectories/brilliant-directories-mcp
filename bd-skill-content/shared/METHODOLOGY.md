@@ -275,8 +275,8 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ### OUTPUT FORMAT — the final message is ONLY a raw JSON object
 
-- The first character of the final message is `{` and the last is `}` — no announcement before it, no text after it, no markdown fences, no prefix labels.
-- Pretty-print: 2-space indent, one field per line.
+- The first character of the final message is `{` and the last is `}` — no announcement before it, no text after it, no markdown fences, no prefix labels. Never narrate your own output format or mechanics ("Emitting the receipt", "Here is the JSON").
+- Return complete, valid JSON — never partial or truncated. Pretty-print: 2-space indent, one field per line.
 - ONLY these fields, in this order — never add extra fields: `summary_html`, `post_create`, `post_create_goal`, `post_create_count`, `posts`.
 - `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Skipped candidates: one line with the count and plain-language reason.
 - `post_create`: `1` (this run's task was creating posts). `post_create_goal`: the requested post count. `post_create_count`: posts actually created this run.
