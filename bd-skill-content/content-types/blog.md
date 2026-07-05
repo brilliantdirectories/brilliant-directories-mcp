@@ -189,7 +189,8 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 **Link targets — all valid for blog posts:**
 
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq` only when the agent has a specific known person to deep-link to. No bulk-listing members.
-- **Member directory landing** (Pattern 5): `/search_results` — links to the entire directory of members with no location or category filter applied. Location- + category-filtered member-search URLs are slug-hierarchy paths (out of scope for content skills, deferred to `/bd:seo`).
+- **Member directory landing** (Pattern 5): `/search_results` — the entire member directory, no filters.
+- **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — for "more {category} {posts}" style anchors.
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.

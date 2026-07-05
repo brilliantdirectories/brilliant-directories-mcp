@@ -44,7 +44,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 
 `country/state/city/top-category/sub-category`
 
-- **Strict order.** Any contiguous subset is valid: drop segments from the left (state/city/top), the right (country/state/city), or both ends — but never reorder, never skip a segment in the middle.
+- **Strict order, block-contiguous.** Never reorder. No gaps inside the location chain (country→state→city) or the category pair (top→sub); the location block may meet the category block at any level.
 - **A sub-sub filename (`master_id != 0`) takes the sub slot, replacing its parent sub** — never three category segments.
 - **A city segment always follows its state** — city names collide across states.
 - **No leading slash on the slug itself** (the full URL starts with `/`).
@@ -96,12 +96,12 @@ Location-bearing URLs (`searchUsers` cannot filter location):
 listUsers property=[<location fields>(, profession_id)] limit=1
 ```
 
-Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code` (city names collide in member data too); state URLs `state_code`; country URLs `country_code`. Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code`; state URLs `state_code`; country URLs `country_code`. Filter values come from the cached discovery rows — `city_ln`, `state_sn`, `country_code` — never the URL slug (`state_code=texas` silently returns zero; the value is `TX`). Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
 ```
-listCountries property=name property_value=<country>% property_operator=like limit=5
+listCountries property=country_name property_value=<country>% property_operator=like limit=5
 ```
 
 Slug = lowercase country_name with hyphens (e.g. "United States" → `united-states`). No `filename` field exists on this resource.
@@ -109,7 +109,7 @@ Slug = lowercase country_name with hyphens (e.g. "United States" → `united-sta
 **State:**
 
 ```
-listStates property=state_sn property_value=<2-letter-code> property_operator==
+listStates property=state_sn property_value=<2-letter-code> property_operator=eq
 ```
 
 Slug = `state_filename` from the return.
@@ -117,7 +117,7 @@ Slug = `state_filename` from the return.
 **City:**
 
 ```
-listCities property=city_name property_value=<city>% property_operator=like limit=10
+listCities property=city_ln property_value=<city>% property_operator=like limit=10
 ```
 
 Slug = `city_filename` from the return.
