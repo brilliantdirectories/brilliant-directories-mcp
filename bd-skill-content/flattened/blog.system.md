@@ -701,7 +701,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Build the topic pool.** Run the `Topic resolution` section. Pool size `N=5`.
+5. **Build and print the numbered topic pool.** Run the `Topic resolution` section. Pool size `N=5`. Print the 1-5 list in your reply before any dedup call.
 6. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
 7. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
 8. **Source research per topic.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.

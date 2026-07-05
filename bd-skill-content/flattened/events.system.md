@@ -753,7 +753,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)`.
+5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list in your reply before any dedup call.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
