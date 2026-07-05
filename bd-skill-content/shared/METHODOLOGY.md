@@ -271,11 +271,13 @@ Universal `post_tags` field constraints — applies to ALL post types (single-im
 
 Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart. On failure: continue to next record. Do not retry blindly.
 
-## Stage 7: JSON receipt (the final message, always)
+## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
-### OUTPUT FORMAT — the final message is ONLY a raw JSON object
+**Part 1 — the human reply.** 1-3 plain sentences: what got created, with the live link(s). Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
-- The first character of the final message is `{` and the last is `}` — no announcement before it, no text after it, no markdown fences, no prefix labels. Never narrate your own output format or mechanics ("Emitting the receipt", "Here is the JSON").
+**Part 2 — the receipt**, a raw JSON object directly after the reply:
+
+- The receipt starts at `{` and ends at `}` — no markdown fences, no prefix labels, nothing after the closing brace.
 - Return complete, valid JSON — never partial or truncated. Pretty-print: 2-space indent, one field per line.
 - ONLY these fields, in this order — never add extra fields: `summary_html`, `post_create`, `post_create_goal`, `post_create_count`, `posts`.
 - `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Skipped candidates: one line with the count and plain-language reason.
