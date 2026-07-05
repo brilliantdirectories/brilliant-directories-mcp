@@ -76,7 +76,7 @@ Read first. Every `/bd:*` skill follows this. The content-type file (`content-ty
 
 Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation. Informs vertical alignment, category routing, anchor-text choices, and internal-link inventory.
 
-1. `getSiteInfo` → industry, profession, primary_country, language, timezone, brand.
+1. `getSiteInfo` → industry, profession, primary_country, language, timezone (IANA identifier, e.g. `America/Los_Angeles`), brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
 3. `listPostTypes` → the content-type file provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. The cached `feature_categories` is the authoritative list for post-category routing.
 4. **Menu discovery — two phases, both mandatory.**
@@ -323,7 +323,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
-| `post_live_date` | Required on every create: the current UTC datetime converted to `getSiteInfo.timezone`, `YYYYMMDDHHmmss` (14 digits). |
+| `post_live_date` | Required on every create: the current UTC datetime converted to `getSiteInfo.timezone`, `YYYYMMDDHHmmss` (14 digits). Current UTC comes from the `Current UTC datetime:` line in your prompt; if absent, from the environment-stated current datetime. |
 
 ## Tags
 
@@ -876,7 +876,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_live_date, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
 
 | Field | Events-specific note |
 |---|---|

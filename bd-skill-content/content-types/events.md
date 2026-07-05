@@ -156,7 +156,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_live_date, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
 
 | Field | Events-specific note |
 |---|---|

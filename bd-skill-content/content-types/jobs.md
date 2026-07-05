@@ -183,13 +183,13 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_live_date, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples below:
 
 | Field | Jobs-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
 | `post_venue` | **Company name** (per BD helpText). Verbatim from source. Examples: `"Acme Corp"`, `"Austin Independent School District"`, `"Texas General Land Office"`. |
-| `post_start_date` | Role start date in source if listed, else **today's date**. Format `YYYYMMDDHHmmss` (14 digits, time defaults to `000000` if start-of-day not specified in source). Example: `"20260901000000"`. |
+| `post_start_date` | Role start date in source if listed, else **today's date in the site's timezone — take the date digits from `post_live_date`**, time `000000`. Format `YYYYMMDDHHmmss` (14 digits). Example: `"20260901000000"`. |
 | `post_promo` | Salary or hourly rate as shown in the source — numeric only, no currency symbol, no commas, decimals optional. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
