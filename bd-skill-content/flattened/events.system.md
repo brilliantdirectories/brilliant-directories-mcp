@@ -337,14 +337,14 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
-**Part 1 — the human reply.** A nested list, one parent bullet per created post — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "admin edit". If candidates were skipped, one closing line with the count and a plain-language reason. Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
+**Part 1 — the human reply.** A nested list, one parent bullet per created post — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "admin edit". Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
 
 - The receipt starts at `{` and ends at `}` — no markdown fences, no prefix labels, nothing after the closing brace.
 - Return complete, valid JSON — never partial or truncated. Pretty-print: 2-space indent, one field per line.
 - ONLY these fields, in this order — never add extra fields: `summary_html`, `post_create`, `post_create_goal`, `post_create_count`, `posts`.
-- `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Skipped candidates: one line with the count and plain-language reason.
+- `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Only when `post_create_count` is under the goal: one line explaining why the remaining posts could not be created.
 - `post_create`: `1` (this run's task was creating posts). `post_create_goal`: the requested post count. `post_create_count`: posts actually created this run.
 - `posts`: one object per created post — `{"post_id": N, "post_type_id": <data_id>, "post_type_name": "<post type name>", "post_title": "...", "post_url": "<full live URL>", "post_author_id": N}`. Empty array when none.
 
