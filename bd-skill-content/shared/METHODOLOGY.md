@@ -269,7 +269,7 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
-**Part 1 — the human reply, plain Markdown.** `-` bullets, links as `[text](url)`, zero HTML tags. One parent bullet per created post — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "admin edit". Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
+**Part 1 — the human reply, plain Markdown.** `-` bullets, links as `[text](url)`, zero HTML tags. One parent bullet per created post — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "View in Admin". Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
 
