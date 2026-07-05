@@ -30,7 +30,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
-| Formulaic attribution | "[Org] says/notes/describes..." as the sentence opener for every citation → state the fact in your own sentence with the source linked mid- or end-sentence; max one speech-verb opener per post |
+| Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 | Site self-reference | "on this site", "the site's X", "our directory", "our members", sentences that exist only to deliver a link → write as a publication about the subject, not about the website; the sentence must survive with the link removed |
 
