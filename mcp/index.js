@@ -212,6 +212,94 @@ function parseImageHeader(buf) {
   throw new Error("unsupported image format (only jpg/png)");
 }
 
+async function fetchImageDimensionsForUrl(url) {
+  if (!url || typeof url !== "string") {
+    return { status: "error", message: "url parameter required" };
+  }
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 5000);
+  try {
+    const response = await fetch(url, {
+      headers: { Range: "bytes=0-65535", "User-Agent": "brilliant-directories-mcp" },
+      redirect: "follow",
+      signal: ctl.signal,
+    });
+    if (!response.ok && response.status !== 206) {
+      return { status: "error", message: `bad status code: ${response.status}` };
+    }
+    // Some CDNs (e.g. Pexels) ignore Range and stream the full body.
+    // Read up to CAP, slicing the first chunk if oversized, then cancel.
+    const CAP = 65536;
+    if (!response.body) {
+      return { status: "error", message: "empty response body" };
+    }
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    while (total < CAP) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const room = CAP - total;
+      const piece = value.length > room ? value.subarray(0, room) : value;
+      chunks.push(piece);
+      total += piece.length;
+    }
+    try { await reader.cancel(); } catch {}
+    if (total === 0) {
+      return { status: "error", message: "empty response body" };
+    }
+    const buf = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      buf.set(chunk, offset);
+      offset += chunk.length;
+    }
+    const { width, height, format } = parseImageHeader(buf);
+    const aspect = width / height;
+    const orientation = width > height ? "landscape" : width < height ? "portrait" : "square";
+    return {
+      status: "success",
+      message: {
+        width,
+        height,
+        format,
+        aspect_ratio: Math.round(aspect * 1000) / 1000,
+        orientation,
+      },
+    };
+  } catch (err) {
+    const message = err && err.name === "AbortError"
+      ? "fetch timed out after 5000ms"
+      : (err.message || String(err));
+    return { status: "error", message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Batch variant: up to 10 URLs probed in parallel, each resolving
+// independently — a 404/timeout/parse failure becomes that URL's own error
+// entry and never breaks the batch envelope.
+async function fetchImageDimensionsBatch(urlsArg) {
+  const list = Array.isArray(urlsArg)
+    ? urlsArg.map((u) => String(u).trim())
+    : typeof urlsArg === "string"
+      ? urlsArg.split(",").map((u) => u.trim())
+      : [];
+  const urls = list.filter(Boolean);
+  if (!urls.length) {
+    return { status: "error", message: "urls parameter requires at least one URL" };
+  }
+  if (urls.length > 10) {
+    return { status: "error", message: `urls accepts at most 10 URLs (got ${urls.length})` };
+  }
+  const results = await Promise.all(urls.map(async (u) => {
+    const one = await fetchImageDimensionsForUrl(u);
+    return { url: u, ...one };
+  }));
+  return { status: "success", count: results.length, results };
+}
+
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -4987,86 +5075,23 @@ async function main() {
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
     // Synthetic tool: getImageDimensions — wrapper-native, does NOT proxy to BD.
     if (name === "getImageDimensions") {
-      const url = args && typeof args.url === "string" ? args.url : null;
-      if (!url) {
+      if (args && args.urls !== undefined) {
+        const batch = await fetchImageDimensionsBatch(args.urls);
         return {
-          content: [{ type: "text", text: JSON.stringify({ status: "error", message: "url parameter required" }) }],
+          content: [{ type: "text", text: JSON.stringify(batch, null, 2) }],
+          isError: batch.status === "error",
+        };
+      }
+      const one = await fetchImageDimensionsForUrl(args && args.url);
+      if (one.status === "error") {
+        return {
+          content: [{ type: "text", text: JSON.stringify(one) }],
           isError: true,
         };
       }
-      const ctl = new AbortController();
-      const timer = setTimeout(() => ctl.abort(), 5000);
-      try {
-        const response = await fetch(url, {
-          headers: { Range: "bytes=0-65535", "User-Agent": "brilliant-directories-mcp" },
-          redirect: "follow",
-          signal: ctl.signal,
-        });
-        if (!response.ok && response.status !== 206) {
-          return {
-            content: [{ type: "text", text: JSON.stringify({ status: "error", message: `bad status code: ${response.status}` }) }],
-            isError: true,
-          };
-        }
-        // Some CDNs (e.g. Pexels) ignore Range and stream the full body.
-        // Read up to CAP, slicing the first chunk if oversized, then cancel.
-        const CAP = 65536;
-        if (!response.body) {
-          return {
-            content: [{ type: "text", text: JSON.stringify({ status: "error", message: "empty response body" }) }],
-            isError: true,
-          };
-        }
-        const reader = response.body.getReader();
-        const chunks = [];
-        let total = 0;
-        while (total < CAP) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const room = CAP - total;
-          const piece = value.length > room ? value.subarray(0, room) : value;
-          chunks.push(piece);
-          total += piece.length;
-        }
-        try { await reader.cancel(); } catch {}
-        if (total === 0) {
-          return {
-            content: [{ type: "text", text: JSON.stringify({ status: "error", message: "empty response body" }) }],
-            isError: true,
-          };
-        }
-        const buf = new Uint8Array(total);
-        let offset = 0;
-        for (const chunk of chunks) {
-          buf.set(chunk, offset);
-          offset += chunk.length;
-        }
-        const { width, height, format } = parseImageHeader(buf);
-        const aspect = width / height;
-        const orientation = width > height ? "landscape" : width < height ? "portrait" : "square";
-        return {
-          content: [{ type: "text", text: JSON.stringify({
-            status: "success",
-            message: {
-              width,
-              height,
-              format,
-              aspect_ratio: Math.round(aspect * 1000) / 1000,
-              orientation,
-            },
-          }, null, 2) }],
-        };
-      } catch (err) {
-        const message = err && err.name === "AbortError"
-          ? "fetch timed out after 5000ms"
-          : (err.message || String(err));
-        return {
-          content: [{ type: "text", text: JSON.stringify({ status: "error", message }) }],
-          isError: true,
-        };
-      } finally {
-        clearTimeout(timer);
-      }
+      return {
+        content: [{ type: "text", text: JSON.stringify(one, null, 2) }],
+      };
     }
 
     if (name === "getBrandKit") {

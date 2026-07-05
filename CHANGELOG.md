@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.57.0] - 2026-07-05
+
+### Added
+
+- **`getImageDimensions` batch mode** — new `urls` parameter (comma-separated, up to 10) probes all candidates in parallel and returns one envelope with per-URL results in input order; a failed URL (404, timeout, parse fail) is its own error entry and never breaks the batch. Single-`url` calls unchanged. Spec, hosted Worker, and npm server updated together; **Rule: Image dimensions** and the skill corpus dimension-check step now prescribe one batched call for 2+ candidates.
+
+### Changed
+
+- **Skill corpus menu harvest** — Stage 1 menu discovery collapsed from two phases (4× `listMenus` LIKE + per-menu `listMenuItems`) to one unfiltered `listMenuItems limit=100` call. Fixes a silent coverage gap: platform-default menus report `menu_id: null` on the menu row while their items carry master ids, so the old `menu_id eq` item fetch skipped them entirely (including uncustomized main/footer menus). Verified live: `contains` and `is_set`/`is_not_set` are non-functional on the menu endpoints (fail-empty / silently ignored), so the harvest relies only on the wrapper's default empty-link exclusion; rows whose `menu_link` contains `%%%` are skipped client-side.
+
 ## [6.56.0] - 2026-07-02
 
 ### Added

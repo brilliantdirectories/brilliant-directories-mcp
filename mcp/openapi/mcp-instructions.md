@@ -1002,7 +1002,7 @@ Applies to all image fields, all contexts.
   1. `WebSearch query="site:pexels.com/photo <2-3 word topic>"` — 2-3 words, every word must carry topic information (no filler, no redundant adjectives); 2 words when the noun is already specific (`"pilates reformer"`), 3 words when it isn't (`"pasta plate restaurant"`); 1-word queries are banned (return noise pool). Returns ~10 result URLs of the shape `https://www.pexels.com/photo/<slug>-<id>/`.
   2. Pick a candidate at a **random index** in the first ~10 results rather than defaulting to #1 — anti-clustering across runs on the same site.
   3. Extract `<id>` (trailing digits before the final `/`) and construct the bare canonical `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`.
-  4. Call `getImageDimensions` per **Rule: Image dimensions** — pass only on `status: "success"` + `orientation === "landscape"`. Any other outcome drops the candidate; try the next random index from the same pool.
+  4. Vet candidates with `getImageDimensions` per **Rule: Image dimensions** (batch 2+ into one `urls=` call) — pass only on `status: "success"` + `orientation === "landscape"`. Any other outcome drops the candidate; try the next random index from the same pool.
   5. **Rotate.** Never reuse an ID from earlier in the same skill run. Vary the search topic across posts (`pilates class` → `pilates reformer` → `pilates studio`).
   6. Survivors flow to **Rule: Image dedup** before BD commit. On a dedup hit, try the next random index from the same pool. If the entire pool is dupes, run a new `WebSearch` with a varied topic phrase and pick from that pool. One more variation if the second pool is also exhausted.
   7. **Last resort.** If three varied searches still surface only dupes, accept the dupe rather than ship a post without an image — name the reused URL and source table in the audit (`data_posts` or `users_portfolio`). If WebSearch returns nothing across both varied queries, say "no Pexels result for [topic]" and skip — do not guess at random photo IDs.
@@ -1012,7 +1012,7 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dimensions
 
-**Wrapper-native tool: `getImageDimensions url=<image URL>`.** Range-GETs the first 64KB of any JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Returns `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format.
+**Wrapper-native tool: `getImageDimensions`.** One candidate: `url=<image URL>`. Two or more: ONE call with `urls=<comma-separated, up to 10>` — all probed in parallel, one response with per-URL results in input order; a 404/timeout/parse failure is that URL's own error entry and never breaks the batch. Range-GETs the first 64KB of each JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Per-URL `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format means drop that candidate.
 
 **Two-step usage for Pexels-sourced feature image slots** (`post_image`, `hero_image`, multi-image album photos via `createMultiImagePost.post_image` CSV + `createMultiImagePostPhoto.original_image_url`):
 
