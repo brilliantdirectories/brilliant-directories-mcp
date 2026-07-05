@@ -476,7 +476,7 @@ Read before generating any internal link. Universal across post types.
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
 | 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check in corpus **Rule: Filter by ID** (`searchable=1` AND `search_membership_permissions` contains `visitor`). Never `/listing/<id>`. |
-| 5 | Member directory landing — entire directory | `/search_results` | Universal across BD sites. Links to the entire directory of members with no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the reader finds there ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — `/search_results?category[]=...` and `/search_results?lat=...` do not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6 below. |
+| 5 | Member directory landing — entire directory | `/<getSiteInfo.main_directory_url_relative>` | The site's own directory landing (`search` on some sites, `search_results` on others), cached from the run's `getSiteInfo` call. Links to the entire directory of members with no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the reader finds there ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — appending `?category[]=...` or `?lat=...` does not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6 below. |
 | 6 | Member directory — filtered by location and/or category | `/<slug-hierarchy>` | Slug-hierarchy URL that narrows the member directory by category and/or location (e.g. `/california/los-angeles/personal-trainer`). See the `Pattern 6 — Filtered member directory` section below for the full construction recipe. |
 
 WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) are OUT OF SCOPE for content-creation skills — those require `listWebPages` discovery and belong to the future `/bd:seo` skill. Pattern 6 slug-hierarchy URLs are NOT in this category — BD's dynamic router resolves them natively, no WebPage lookup needed.
@@ -500,7 +500,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 
 ## Pattern 6 — Filtered member directory (slug-hierarchy URLs)
 
-**Use when:** anchor text names a specific category and/or location for the member directory (e.g. "running coach in NYC", "yoga instructors in Austin", "personal trainers in Brazil"). When no category or location qualifier fits, use Pattern 5 (`/search_results`).
+**Use when:** anchor text names a specific category and/or location for the member directory (e.g. "running coach in NYC", "yoga instructors in Austin", "personal trainers in Brazil"). When no category or location qualifier fits, use Pattern 5.
 
 **Do NOT call `createWebPage`.** BD's dynamic router resolves these URLs natively. No WebPage needs to exist for the URL to work.
 
@@ -596,8 +596,8 @@ Slug = `city_filename` from the return.
 
 - Every slug segment MUST come from a list-tool return.
 - Never invent slugs.
-- If ANY segment lookup returns zero matches, fall back to Pattern 5 (bare `/search_results`) — at most once per post per METHODOLOGY `Link order` — or omit the link.
-- A `/search_results` link is always safer than a fabricated `/austin/running-coach` URL that 404s.
+- If ANY segment lookup returns zero matches, fall back to Pattern 5 (the bare directory landing) — at most once per post per METHODOLOGY `Link order` — or omit the link.
+- A Pattern 5 link is always safer than a fabricated `/austin/running-coach` URL that 404s.
 
 ### Examples
 
@@ -610,7 +610,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** (`/search_results`) when no verifiable category or location fits the sentence. Anchor text still names who the reader finds there ("local personal trainers"), never site furniture ("our directory," "browse trainers").
+- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the reader finds there ("local personal trainers"), never site furniture ("our directory," "browse trainers").
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes
