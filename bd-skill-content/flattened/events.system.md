@@ -506,6 +506,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 `country/state/city/top-category/sub-category`
 
 - **Strict order.** Any contiguous subset is valid: drop segments from the left (state/city/top), the right (country/state/city), or both ends — but never reorder, never skip a segment in the middle.
+- **A sub-sub filename (`master_id != 0`) takes the sub slot, replacing its parent sub** — never three category segments.
 - **No leading slash on the slug itself** (the full URL starts with `/`).
 - **Slugs are case-sensitive lowercase**, exactly as returned by the list tools.
 - **Prefer the most specific slug-hierarchy you can verify.** Country+state+city+top beats state+top beats top alone.
@@ -516,11 +517,13 @@ Valid combinations include (non-exhaustive):
 - `top/sub`
 - `city/top`
 - `state/top`
+- `state/top/sub`
 - `state/city/top`
 - `state/city/top/sub`
 - `country/state/top`
 - `country/state/city/top`
 - `country/state/city/top/sub`
+- `city` / `state` / `state/city` / `country` / `country/state` / `country/state/city` — location only
 
 Invalid combinations:
 
@@ -551,10 +554,10 @@ searchUsers pid=<profession_id> (+ tid=<service_id>) limit=1
 Location-bearing URLs (`searchUsers` cannot filter location):
 
 ```
-listUsers property=[<city|state_code|country_code>, profession_id] limit=1
+listUsers property=[<city|state_code|country_code>(, profession_id)] limit=1
 ```
 
-Compound-filter the most specific location segment plus `profession_id` per `Rule: Compound filters`. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Compound-filter the most specific location segment, plus `profession_id` when the URL has a category segment, per `Rule: Compound filters`. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
@@ -603,7 +606,7 @@ Slug = `city_filename` from the return.
 
 ### When to use Pattern 6 vs Pattern 5
 
-- **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug.
+- **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
 - **Use Pattern 5** (`/search_results`) when anchor text is generic ("our directory," "browse trainers").
 - **When in doubt, Pattern 5 is the safer default.**
 
