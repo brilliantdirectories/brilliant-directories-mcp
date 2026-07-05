@@ -271,21 +271,24 @@ Universal `post_tags` field constraints — applies to ALL post types (single-im
 
 Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart. On failure: continue to next record. Do not retry blindly.
 
-## Stage 7: Audit summary (always printed)
+## Stage 7: JSON receipt (the final message, always)
 
-Brief. Customer-facing receipt of deliverables — what got created, where to find it. Do NOT narrate the process (candidates probed, gates failed, retries, geocode tier landed). That's internal noise; the customer cares about results.
+### OUTPUT FORMAT — the final message is ONLY a raw JSON object, no prefix labels, no markdown fences
+
+- ONLY these fields are allowed — never add extra fields: `post_create`, `post_create_goal`, `post_create_count`, `posts`, `summary_html`.
+- `post_create`: `1` (this run's task was creating posts). `post_create_goal`: the requested post count. `post_create_count`: posts actually created this run.
+- `posts`: one object per created post — `{"post_id": N, "post_type_id": <data_id>, "post_type_name": "<post type name>", "post_title": "...", "post_url": "<full live URL>", "post_author_id": N}`. Empty array when none.
+- `summary_html`: the customer-facing receipt. Allowed tags ONLY: `b`, `strong`, `i`, `em`, `small`, `br`, `p`, `ul`, `ol`, `li`, `a`, `h3`, `h4`, `code`. What got created and where to find it — never narrate the process (candidates probed, gates failed, retries, geocode tiers). Each created post: title linked to its live URL, plus its `<admin_edit_url>`. Skipped candidates: one line with the count and plain-language reason.
 
 **`<admin_edit_url>` verbatim shape — DO NOT paraphrase:** `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Host fixed. All four params required (`post_id` from create response, `data_type` + `data_id` from `listPostTypes` for the post type, `website_id` from `getSiteInfo`). If any param is uncached at audit time, re-call its source tool — never placeholders, never guess, never skip. Full rule in corpus `Rule: Post admin URLs`.
 
-```
-Created N posts:
-- <title> · <post_id> · <admin_edit_url>
-- <title> · <post_id> · <admin_edit_url>
+Example:
 
-Skipped M (already existed or no usable source data).
+```
+{"post_create":1,"post_create_goal":2,"post_create_count":2,"posts":[{"post_id":1061,"post_type_id":8,"post_type_name":"Event","post_title":"Tampa Sunrise 5K","post_url":"https://site.com/events/tampa-sunrise-5k","post_author_id":5}],"summary_html":"<p>Created <b>2</b> of <b>2</b> requested event posts.</p><ul><li>...</li></ul>"}
 ```
 
-That's it. No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the customer asks "why did you skip event X," answer then.
+No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the customer asks "why did you skip event X," answer then.
 
 ## Hard rules (every BD growth skill, forever)
 
