@@ -25,7 +25,7 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 
 ### Rule: Default-merge models
 
-`listWidgets`, `listForms`, `listFormFields`, `listSidebars`, `listMenus`, `listMenuItems` return a UNION of the site's own records and uncustomised platform master defaults, each flagged `is_default` (`false` = the site's own, `true` = a master default). Filter `property=is_default property_value=false` to act on only the site's records; `order_column`/`order_type` sort the merged result (e.g. add `order_column=revision_timestamp order_type=DESC limit=1` for the newest).
+`listWidgets`, `listForms`, `listFormFields`, `listSidebars`, `listMenus`, `listMenuItems` return a UNION of the site's own records and uncustomised platform master defaults. Filter `property=is_default property_value=false` for only the site's records, `true` for only master defaults — literal `false`/`true`; numeric forms are silently ignored. Lean rows omit the `is_default` flag; `include_extras=1` restores it. `order_column`/`order_type` sort the merged result (e.g. add `order_column=revision_timestamp order_type=DESC limit=1` for the newest).
 
 ### Rule: Table to endpoint
 
