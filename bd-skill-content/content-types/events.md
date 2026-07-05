@@ -133,7 +133,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening paragraph (event hook + load-bearing facts) | 1 (category or location filter) |
 | Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| CTA close | 1 (always — the "see more events" closer) |
+| Closing paragraph | 1 (always — a next-step sentence linking related events, anchor names the events, e.g. "other spring races in Austin") |
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
 

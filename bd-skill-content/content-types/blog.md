@@ -173,7 +173,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link whose href is not yet used in the post (CTA shape — "Browse {Category} listings on {site}" or "See more {topic} resources" — anchor text reads as part of a sentence).
+8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link whose href is not yet used in the post. The closing sentence gives the reader a concrete next step and survives with the link removed; the anchor is a noun phrase naming the destination's subject ("marathon training coaches in Austin"), never the website itself.
 
 ### Internal-link strategy
 
@@ -188,7 +188,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 
 **Link targets — all valid for blog posts:**
 
-- **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq` only when the agent has a specific known person to deep-link to. No bulk-listing members.
+- **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
 - **Member directory landing** (Pattern 5): `/search_results` — the entire member directory, no filters.
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.

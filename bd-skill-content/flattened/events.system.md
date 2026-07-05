@@ -401,6 +401,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes..." as the sentence opener for every citation → state the fact in your own sentence with the source linked mid- or end-sentence; max one speech-verb opener per post |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
+| Site self-reference | "on this site", "the site's X", "our directory", "our members", sentences that exist only to deliver a link → write as a publication about the subject, not about the website; the sentence must survive with the link removed |
 
 ## Self-check before posting
 
@@ -424,6 +425,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
+16. Sentence names the site ("this site", "our directory") or exists only to carry a link? Rewrite about the subject; the sentence must survive with the link removed.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
@@ -472,8 +474,8 @@ Read before generating any internal link. Universal across post types.
 | 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
-| 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` / `listUsers`. Never `/listing/<id>`. |
-| 5 | Member directory landing — entire directory | `/search_results` | Universal across BD sites. Links to the entire directory of members with no location or category filter applied. Use when the anchor text is generic ("our member directory," "browse trainers"). **Takes NO query parameters** — `/search_results?category[]=...` and `/search_results?lat=...` do not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6 below. |
+| 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check in corpus **Rule: Filter by ID** (`searchable=1` AND `search_membership_permissions` contains `visitor`). Never `/listing/<id>`. |
+| 5 | Member directory landing — entire directory | `/search_results` | Universal across BD sites. Links to the entire directory of members with no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the reader finds there ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — `/search_results?category[]=...` and `/search_results?lat=...` do not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6 below. |
 | 6 | Member directory — filtered by location and/or category | `/<slug-hierarchy>` | Slug-hierarchy URL that narrows the member directory by category and/or location (e.g. `/california/los-angeles/personal-trainer`). See the `Pattern 6 — Filtered member directory` section below for the full construction recipe. |
 
 WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) are OUT OF SCOPE for content-creation skills — those require `listWebPages` discovery and belong to the future `/bd:seo` skill. Pattern 6 slug-hierarchy URLs are NOT in this category — BD's dynamic router resolves them natively, no WebPage lookup needed.
@@ -497,7 +499,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 
 ## Pattern 6 — Filtered member directory (slug-hierarchy URLs)
 
-**Use when:** anchor text names a specific category and/or location for the member directory (e.g. "running coach in NYC", "yoga instructors in Austin", "personal trainers in Brazil"). Generic anchors use Pattern 5 (`/search_results`).
+**Use when:** anchor text names a specific category and/or location for the member directory (e.g. "running coach in NYC", "yoga instructors in Austin", "personal trainers in Brazil"). When no category or location qualifier fits, use Pattern 5 (`/search_results`).
 
 **Do NOT call `createWebPage`.** BD's dynamic router resolves these URLs natively. No WebPage needs to exist for the URL to work.
 
@@ -557,7 +559,7 @@ Location-bearing URLs (`searchUsers` cannot filter location):
 listUsers property=[<location fields>(, profession_id)] limit=1
 ```
 
-Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code`; state URLs `state_code`; country URLs `country_code`. Filter values come from the cached discovery rows: `city` = `city_ln`, `state_code` = `state_sn`, `country_code` = the row's `country_code`. Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code`; state URLs `state_code`; country URLs `country_code`. Filter values come from the cached discovery rows: `city` = `city_ln`, `state_code` = `state_sn`, `country_code` = the row's `country_code`. Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run. Gate rows verify counts only — never recycle a returned member row as a Pattern 4 link target.
 
 **Country:**
 
@@ -593,7 +595,7 @@ Slug = `city_filename` from the return.
 
 - Every slug segment MUST come from a list-tool return.
 - Never invent slugs.
-- If ANY segment lookup returns zero matches, fall back to Pattern 5 (bare `/search_results`) or omit the link entirely.
+- If ANY segment lookup returns zero matches, fall back to Pattern 5 (bare `/search_results`) — at most once per post per METHODOLOGY `Link order` — or omit the link.
 - A `/search_results` link is always safer than a fabricated `/austin/running-coach` URL that 404s.
 
 ### Examples
@@ -607,7 +609,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** (`/search_results`) when anchor text is generic ("our directory," "browse trainers").
+- **Use Pattern 5** (`/search_results`) when no verifiable category or location fits the sentence. Anchor text still names who the reader finds there ("local personal trainers"), never site furniture ("our directory," "browse trainers").
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes
@@ -850,7 +852,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening paragraph (event hook + load-bearing facts) | 1 (category or location filter) |
 | Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| CTA close | 1 (always — the "see more events" closer) |
+| Closing paragraph | 1 (always — a next-step sentence linking related events, anchor names the events, e.g. "other spring races in Austin") |
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
 
