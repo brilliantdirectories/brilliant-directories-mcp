@@ -110,7 +110,7 @@ Resolve the `user_id` that authors the post.
 
 ### Candidate pool discipline (universal pattern)
 
-When brainstorming a pool of candidates (topics, events, jobs, properties, anything the agent picks from for the user) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. The printed list appears in BOTH modes. Interactive: the user picks from it. Autonomous: take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
+When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. The printed list appears in BOTH modes. Interactive: the user picks from it. Autonomous: print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
@@ -120,7 +120,7 @@ Pool size — harvested pools (source pages): every candidate the page exposes, 
 
 Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
 
-Emit the numbered 1-N pool as a visible list per `Candidate pool discipline (universal pattern)`, THEN one `contains` query covers it (CSV = OR):
+With the pool printed per `Candidate pool discipline (universal pattern)`, one `contains` query covers it (CSV = OR):
 
 ```
 listSingleImagePosts property=post_title property_operator=contains property_value=<candidate 1 distinctive phrase>,<candidate 2 distinctive phrase>,... limit=25

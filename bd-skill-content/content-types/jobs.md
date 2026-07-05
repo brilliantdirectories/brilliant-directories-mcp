@@ -107,7 +107,7 @@ Tailor by vertical AND country: pick the country-native association + the countr
 
 **30-day staleness gate.** During candidate harvest, capture each listing's source-page posted-date and reject candidates with posted-date >30 days old.
 
-A single list-page `WebFetch` may return one job or dozens. Capture the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
+A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
 ---
 

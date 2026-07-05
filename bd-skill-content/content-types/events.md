@@ -84,7 +84,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 
 Tailor by vertical: real estate → MLS open-house listings; fitness → race calendars, gym/yoga schedules; medical/dental → CME calendars, association meetings; music → venue calendars + Bandsintown; food → restaurant association events.
 
-A single list-page `WebFetch` may return one event or dozens. Capture the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
+A single list-page `WebFetch` may return one event or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
 ---
 
