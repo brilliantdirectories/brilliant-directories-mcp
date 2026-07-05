@@ -81,11 +81,19 @@ listSubCategories limit=100
 
 **Member-count gate (every Pattern 6 URL):**
 
+Category-only URLs (top alone, or top/sub):
+
 ```
 searchUsers pid=<profession_id> (+ tid=<service_id>) limit=1
 ```
 
-Location-bearing URLs verify with `listUsers` — `searchUsers` cannot filter location. Compound-filter the most specific location field (`city`, `state_code`, or `country_code`) plus `profession_id` per `Rule: Compound filters`, `limit=1`. This proves the top only, so a location URL stops at the top segment. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
+Location-bearing URLs (`searchUsers` cannot filter location):
+
+```
+listUsers property=[<city|state_code|country_code>, profession_id] limit=1
+```
+
+Compound-filter the most specific location segment plus `profession_id` per `Rule: Compound filters`. This proves the top only — a location URL with a sub segment passes via the `URL liveness gate` instead (its fetch status is definitive: 200 = seeded, 404 = not). Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or Pattern. Cache verdicts per run.
 
 **Country:**
 
