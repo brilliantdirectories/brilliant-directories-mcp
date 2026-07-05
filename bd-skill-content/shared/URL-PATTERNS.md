@@ -62,7 +62,7 @@ Valid combinations include (non-exhaustive):
 - `country/state/top`
 - `country/state/city/top`
 - `country/state/city/top/sub`
-- `city` / `state` / `state/city` / `country` / `country/state` / `country/state/city` — location only
+- `state` / `state/city` / `country` / `country/state` / `country/state/city` — location only; city never stands alone (city names collide across states)
 
 Invalid combinations:
 
