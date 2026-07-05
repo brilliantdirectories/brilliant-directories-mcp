@@ -303,7 +303,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
-- Same href twice? Re-derive one under a different Pattern; drop only if none fits.
+- Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -624,7 +624,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page").
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture ("member directory", "full jobs board").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -847,7 +847,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
 
-**Internal links:** weave into body prose per **URL-PATTERNS Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post**, distributed:
+**Internal links:** weave into body prose per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post**, distributed:
 
 | Section | Recommended links |
 |---|---|

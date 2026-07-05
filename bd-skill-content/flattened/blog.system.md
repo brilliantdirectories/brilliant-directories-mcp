@@ -303,7 +303,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
-- Same href twice? Re-derive one under a different Pattern; drop only if none fits.
+- Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -624,7 +624,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page").
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture ("member directory", "full jobs board").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -858,7 +858,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 **Link targets — all valid for blog posts:**
 
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
-- **Member directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — the entire member directory, no filters.
+- **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the reader finds ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — for "more {category} {posts}" style anchors.

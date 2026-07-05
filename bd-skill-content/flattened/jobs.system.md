@@ -303,7 +303,7 @@ Scan the assembled body. Fix anything that fires:
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
-- Same href twice? Re-derive one under a different Pattern; drop only if none fits.
+- Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -624,7 +624,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page").
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture ("member directory", "full jobs board").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -874,7 +874,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
 
-**Internal links:** weave into body prose per **URL-PATTERNS Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post**, distributed:
+**Internal links:** weave into body prose per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post**, distributed:
 
 | Section | Recommended links |
 |---|---|
@@ -909,7 +909,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
 | `post_venue` | **Company name** (per BD helpText). Verbatim from source. Examples: `"Acme Corp"`, `"Austin Independent School District"`, `"Texas General Land Office"`. |
-| `post_start_date` | Role start date in source if listed, else **today's date in the site's timezone — take the date digits from `post_live_date`**, time `000000`. Format `YYYYMMDDHHmmss` (14 digits). Example: `"20260901000000"`. |
+| `post_start_date` | Required. The source's future start date if listed, else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). |
 | `post_promo` | Salary or hourly rate as shown in the source — numeric only, no currency symbol, no commas, decimals optional. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
