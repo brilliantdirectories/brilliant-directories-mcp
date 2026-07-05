@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Stage 7 receipt is data-only** — `summary_html` removed; the Butler Result card now renders server-side from receipt data (`renderReceiptCard` in the worker: fixed template, entity-escaped values, deterministic layout). `posts[]` gains `post_data_type` (feeds the admin-edit URL) and the receipt gains optional `shortfall_reason` (only when count < goal — carries the "why" the blue partial-run card needs). Part 1 stays the plain-Markdown human reply for interactive surfaces. One human summary per surface, zero model-authored card markup. Deploy order: worker with the template rolls BEFORE this corpus change (an old worker would store the data-only receipt's raw JSON as the visible result).
 - **Skill corpus menu harvest — customized menus only, filtered server-side** (owner decision): the one-call `listMenuItems` harvest adds `property=is_default property_value=false property_operator=eq` (per **Rule: Default-merge models**), so platform-default rows never enter the response. Verified live raw + through the wrapper: `property_value` must be the literal `false` — `0` is silently ignored on this boolean field, as are `is_not_null`/`gt` on `menu_item_id`. Zero returned rows → run proceeds without menu links. **Rule: Default-merge models** updated with the literal-value requirement and lean-row flag visibility (`is_default` is filterable always, visible on rows only with `include_extras=1`).
 
 ## [6.57.0] - 2026-07-05
