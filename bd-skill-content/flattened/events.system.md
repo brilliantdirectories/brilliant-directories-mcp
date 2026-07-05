@@ -337,7 +337,7 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 
 ## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
-**Part 1 — the human reply.** An itemized list, one bullet per created post: the title linked to its live URL, the post type, and its publish status (draft or live). If candidates were skipped, one closing line with the count and a plain-language reason. Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
+**Part 1 — the human reply.** An itemized list, one bullet per created post: the title linked to its live URL — then its publish status (published live / saved as draft). If candidates were skipped, one closing line with the count and a plain-language reason. Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
 
