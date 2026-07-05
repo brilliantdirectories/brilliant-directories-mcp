@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Skill corpus menu harvest — customized menus only** (owner decision): the one-call `listMenuItems` harvest now keeps only rows with a non-null `menu_item_id` (the site's own menus) and drops platform-default rows. Server-side filters on `menu_item_id` (`is_not_null`, `gt`) are silently ignored on this endpoint — verified live — so the filter is client-side prose. Zero kept rows → run proceeds without menu links.
+
 ## [6.57.0] - 2026-07-05
 
 ### Added
