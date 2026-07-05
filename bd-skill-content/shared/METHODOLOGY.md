@@ -54,7 +54,7 @@ When brainstorming a pool of candidates (topics, events, jobs, properties, anyth
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
-Pool size: every candidate the source exposes, up to 10, ordered best-fit first. Per-type runbooks specify the brainstorm shape.
+Pool size — harvested pools (source pages): every candidate the page exposes, up to 10. Brainstormed pools (generated topics): the runbook's stated `N`. Both ordered best-fit first.
 
 ## Stage 2: Duplicate detection
 
