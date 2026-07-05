@@ -683,6 +683,28 @@ const USER_LEAN_SEO_BUNDLE = [
   "search_description",
 ];
 
+
+// getSiteInfo gains current_site_datetime — site-local now, YYYYMMDDHHmmss,
+// computed here from the response's own timezone. hourCycle pinned to h23 so
+// midnight is "00", never an ICU-flavored "24". Missing/garbage timezone →
+// field absent; callers fall back per the corpus date rule.
+function applySiteInfoNow(body) {
+  if (!body || body.status !== "success") return body;
+  const row = Array.isArray(body.message) ? body.message[0] : body.message;
+  const tz = row && row.timezone;
+  if (!row || !tz) return body;
+  try {
+    const f = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+    const p = {};
+    for (const x of f.formatToParts(new Date())) p[x.type] = x.value;
+    row.current_site_datetime = `${p.year}${p.month}${p.day}${p.hour}${p.minute}${p.second}`;
+  } catch (_) {}
+  return body;
+}
+
 function applyUserLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const include = {
@@ -6323,6 +6345,7 @@ async function main() {
         else if (isMenuReadTool) result.body = applyMenuLean(result.body, includeFlags);
         else if (isMenuItemReadTool) result.body = applyMenuItemLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
+        else if (name === "getSiteInfo") result.body = applySiteInfoNow(result.body);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
         attachPublicUrl(result.body, name, config.apiUrl);
 

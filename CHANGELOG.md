@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.0] - 2026-07-05
+
+### Added
+
+- **`getSiteInfo` returns `current_site_datetime`** — the site-local datetime at call time (`YYYYMMDDHHmmss`), computed wrapper-side from the response's own `timezone` and the server clock, `hourCycle` pinned to `h23` (midnight is `000000` on the correct day — battery-proven at midnight, both DST edges, and half-hour offsets). Missing/invalid timezone → field absent, response otherwise untouched. Closes the interactive-clock gap: runs without an injected clock previously invented times (noon) for `post_live_date`; the corpus date rule now falls back to this field. Worker-injected clocks keep first priority.
+
 ### Changed
 
 - **Stage 7 receipt is data-only** — `summary_html` removed; the Butler Result card now renders server-side from receipt data (`renderReceiptCard` in the worker: fixed template, entity-escaped values, deterministic layout). `posts[]` gains `post_data_type` (feeds the admin-edit URL) and the receipt gains optional `shortfall_reason` (only when count < goal — carries the "why" the blue partial-run card needs). Part 1 stays the plain-Markdown human reply for interactive surfaces. One human summary per surface, zero model-authored card markup. Deploy order: worker with the template rolls BEFORE this corpus change (an old worker would store the data-only receipt's raw JSON as the visible result).
