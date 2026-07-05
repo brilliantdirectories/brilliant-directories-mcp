@@ -323,7 +323,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
-| `post_live_date` | Required on every create: the current datetime rendered in `getSiteInfo.timezone`, `YYYYMMDDHHmmss` (14 digits). BD's server default is UTC and stamps the wrong day for evening posts. |
+| `post_live_date` | Required on every create: the current UTC datetime converted to `getSiteInfo.timezone`, `YYYYMMDDHHmmss` (14 digits). |
 
 ## Tags
 
