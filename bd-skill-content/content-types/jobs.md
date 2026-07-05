@@ -19,12 +19,12 @@ The user invoked the skill with a request like "create job posts on my site" or 
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Apply the 30-day staleness gate. Capture ~5 candidates and number them per METHODOLOGY `Candidate pool discipline (universal pattern)`.
+5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Apply the 30-day staleness gate. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)`.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for jobs-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. For jobs: `listSingleImagePosts property=original_image_url property_value=<URL1,URL2,URL3> property_operator=in`.
+10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
@@ -107,7 +107,7 @@ Tailor by vertical AND country: pick the country-native association + the countr
 
 **30-day staleness gate.** During candidate harvest, capture each listing's source-page posted-date and reject candidates with posted-date >30 days old.
 
-A single list-page `WebFetch` returns many jobs. Capture ~5 as the candidate pool, number them per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
+A single list-page `WebFetch` may return one job or dozens. Capture the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
 ---
 
