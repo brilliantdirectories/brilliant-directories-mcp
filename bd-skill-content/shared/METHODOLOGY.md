@@ -15,7 +15,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone (IANA identifier, e.g. `America/Los_Angeles`), brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
 3. `listPostTypes` → the content-type file provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. The cached `feature_categories` is the authoritative list for post-category routing.
-4. **Menu link inventory — one call:** `listMenuItems limit=100` (no filter; follow `next_page` while present). This returns every menu's items in one response, including platform-default menus, with empty-link rows already excluded. Cache `{menu_name → menu_link}` as internal-link candidates; skip rows whose `menu_link` is a `%%%token%%%` placeholder.
+4. **Menu link inventory — one call:** `listMenuItems limit=100` (no filter; follow `next_page` while present). This returns every menu's items in one response, including platform-default menus, with empty-link rows already excluded. Cache `{menu_name → menu_link}` as internal-link candidates; skip rows whose `menu_link` contains `%%%`.
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
