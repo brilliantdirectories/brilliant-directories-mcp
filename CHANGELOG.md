@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Skill corpus menu harvest — customized menus only** (owner decision): the one-call `listMenuItems` harvest now keeps only rows with a non-null `menu_item_id` (the site's own menus) and drops platform-default rows. Server-side filters on `menu_item_id` (`is_not_null`, `gt`) are silently ignored on this endpoint — verified live — so the filter is client-side prose. Zero kept rows → run proceeds without menu links.
+- **Skill corpus menu harvest — customized menus only, filtered server-side** (owner decision): the one-call `listMenuItems` harvest adds `property=is_default property_value=false property_operator=eq` (per **Rule: Default-merge models**), so platform-default rows never enter the response. Verified live raw + through the wrapper: `property_value` must be the literal `false` — `0` is silently ignored on this boolean field, as are `is_not_null`/`gt` on `menu_item_id`. Zero returned rows → run proceeds without menu links.
 
 ## [6.57.0] - 2026-07-05
 
