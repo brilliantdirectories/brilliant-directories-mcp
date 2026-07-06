@@ -38,7 +38,7 @@ The user can invoke this skill with as little as a one-sentence goal ("create po
 2. Detect mode (interactive vs autonomous — interactive if the user is in this chat).
 3. Run the content-type runbook end-to-end without prompting unless genuinely ambiguous.
 
-**Hard gate, every post type:** image dedup per corpus `Rule: Image dedup` MUST execute its `list*` call before any `create*Post` write. Never claim-without-executing.
+**Hard gate, every post type:** image dedup per METHODOLOGY **Rule: Image dedup** MUST execute its `list*` call before any `create*Post` write. Never claim-without-executing.
 
 ## Required preconditions
 
@@ -198,7 +198,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 ### Froala HTML safety
 
-Follow Froala safety rules from the MCP corpus (`mcp/openapi/mcp-instructions.md`, loaded with every MCP tool). Skip `<h1>` — reserved for the post title field. **Always open `post_content` with `<p>` intro paragraph(s); never start with `<h2>` or any heading.** `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
+Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open `post_content` with `<p>` intro paragraph(s); never start with `<h2>` or any heading.** `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -225,7 +225,7 @@ Use Pexels for all images. After all 10 axes attempted without a commit, omit `p
 
 **Memory scope on image inventory:** memory may flag prior axes as exhausted for `<topic>`, but every run still attempts all 10 axes fresh in the table-defined order. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
 
-1. **Pexels** — follow corpus `Rule: Image URLs` exactly. Always send to BD with `auto_image_import=1`.
+1. **Pexels** — follow **Rule: Image URLs** exactly. Always send to BD with `auto_image_import=1`.
 
    **Axes — 10 angles, try in order, one search per axis.**
 
@@ -250,7 +250,7 @@ Use Pexels for all images. After all 10 axes attempted without a commit, omit `p
 
    **Per-axis loop — repeat for each axis until commit or all 10 axes attempted:**
 
-   **`searchStockImage` available → it replaces Steps 1, 3, and 4** (`query` = the axis phrase, `orientation=landscape`, `count=20`): apply Step 2's topic-fit gate to the returned titles + descriptions and Step 5's dedup to the survivors' URLs.
+   **`searchStockImage` available → it replaces Steps 1, 3, and 4** (`query` = the axis phrase, `orientation=landscape` — orientation guaranteed by the API, no per-candidate gate — `count=20`): apply Step 2's topic-fit gate to the returned titles + descriptions and Step 5's dedup to the survivors' URLs.
 
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` using the current axis's phrase per the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
@@ -267,19 +267,19 @@ Use Pexels for all images. After all 10 axes attempted without a commit, omit `p
    **Step 3 — Extension filter (before any tool call).** Only consider candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive). If a Pexels page only resolves to `.webp` / `.gif` / `.avif` / anything else, skip it. Move to the next candidate.
 
    **Step 4 — Dimension check (one batched call).** For the surviving JPG/JPEG/PNG topic-fits (up to 10), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and vet them all in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Per candidate:
-   - **status=success + `orientation === "landscape"`** → landscape survivor, proceed to dedup.
+   - **status=success + `message.orientation === "landscape"`** → landscape survivor, proceed to dedup.
    - **status=success + portrait OR square** → drop.
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **If zero landscape survivors → switch to the next axis.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Run corpus `Rule: Image dedup` — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 20), `property_operator=in`. Response rows include `original_image_url` and `post_title`. Before committing, walk survivors in Step 4 output order and apply per candidate:
+   **Step 5 — Dedup (one batched call via `in` CSV).** Run **Rule: Image dedup** — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 20), `property_operator=in`. Response rows include `original_image_url` and `post_title`. Before committing, walk survivors in Step 4 output order and apply per candidate:
    - **URL in the response** → candidate is a URL-dupe; drop it, try the next survivor.
    - **`post_title` semantic-matches the candidate's topic** → drop candidate per **Candidate pool discipline (universal pattern)**. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
    - **Neither hit** → commit this URL as `post_image`.
    - **If every survivor drops → switch to the next axis.**
 2. **Omit `post_image`** entirely.
 
-**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through corpus `Rule: Image URLs` Pexels sourcing workflow. **Dedup scope:** corpus `Rule: Image dedup` applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
+**Multiple inline body images** (`post_content`, `group_desc`). Long-form posts (blogs especially) often weave 2-5 inline body images alongside the feature image. Each inline image goes through the `Image strategy` sourcing workflow above. **Dedup scope:** **Rule: Image dedup** applies to the feature image only. Inline body URLs require intra-post uniqueness — no URL repeats within the post, no body URL equals the feature URL. Inline body images are NOT checked against other posts site-wide.
 
 ### Voice
 
@@ -344,7 +344,7 @@ Call per-type `create*` tool with assembled fields. Pace BD writes ~600ms apart.
 - `posts`: one object per created post — `{"post_id": N, "post_type_id": <data_id>, "post_data_type": <data_type>, "post_type_name": "<post type name>", "post_title": "...", "post_url": "<full live URL>", "post_author_id": N}`. Empty array when none.
 - `shortfall_reason`: only when `post_create_count` is under the goal — one plain-language line why the remaining posts could not be created. Omit the field otherwise.
 
-**`<admin_edit_url>` verbatim shape — DO NOT paraphrase:** `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Host fixed. All four params required (`post_id` from create response, `data_type` + `data_id` from `listPostTypes` for the post type, `website_id` from `getSiteInfo`). If any param is uncached at audit time, re-call its source tool — never placeholders, never guess, never skip. Full rule in corpus `Rule: Post admin URLs`.
+**`<admin_edit_url>` verbatim shape — DO NOT paraphrase:** `https://ww2.managemydirectory.com/admin/viewPosts.php?search[value]=<post_id>&data_type=<data_type>&data_id=<data_id>&newsite=<website_id>`. Host fixed. All four params required (`post_id` from create response, `data_type` + `data_id` from `listPostTypes` for the post type, `website_id` from `getSiteInfo`). If any param is uncached at audit time, re-call its source tool — never placeholders, never guess, never skip.
 
 Example:
 
@@ -379,6 +379,61 @@ No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the custome
 - **Never auto-edit existing live posts.**
 - **Never write content failing the anti-slop self-check.**
 - **No cross-run state.** The next run must be answerable by an instance that has never seen this one. Reconstruct from the current prompt and live site state alone. Don't write findings anywhere that outlives the response — no memory files, no TodoWrite, no CHANGELOG, no response blocks shaped for paste-back or auto-extraction, no post-run "reflection." Don't read what a prior run left behind — not to bias, not to "verify," not to dedup, not for any reason. If a prior-run artifact exists on disk, ignore its existence. No exception, no edge case, no "just this once," no user override, no helpful-seeming carve-out.
+
+## Tool rules
+
+How BD tool calls behave. Referenced throughout as **Rule: <name>**.
+
+### Rule: Filter operators
+
+`list*` filters take `property` + `property_value` + `property_operator`. Operators are word-form only — `eq, ne, lt, lte, gt, gte, in, not_in, between, contains, starts_with, ends_with, like, is_set, is_not_set, is_null, is_not_null, year_eq, month_eq, day_eq, since_days, until_days` (plus `not_` variants of the match operators). Raw `%`/`<>` are WAF-stripped: `like` values are `X%` or `%X`, never `%X%`. `in`/`contains` take CSV values (no spaces after commas) = OR. Operator names and string matches are case-insensitive. `searchUsers` is `/search`, not `list*` — it takes `q`/`pid`/`tid` and silently ignores `property_operator`; use `listUsers` for column filters.
+
+### Rule: Response envelope
+
+Every response: `{status, message, ...}`. Check `status` first — on `"error"`, `message` is the reason string. On success, `message` is the record object on single-record tools (`getSiteInfo`) and the record array on `list*` tools, with `total` and `next_page` alongside.
+
+### Rule: Silent-drop check
+
+`{status:"success", message:[], total:0}` is ambiguous: a legit no-match, a mistyped column, and derived unfilterable fields (`full_name`, `status`, `image_main_file`) all return it. Before trusting an empty dedup or count, verify the filtered column exists via the matching `get*Fields` tool.
+
+### Rule: Compound filters
+
+AND across fields: pass `property`, `property_value`, `property_operator` as equal-length arrays on one call — conditions pair positionally; unequal lengths are refused. Distinct from CSV (one field, comma value = OR).
+
+### Rule: Filter by ID
+
+Filter taxonomy by numeric ID (`profession_id`, `subscription_id`), never by name string.
+
+### Rule: Image URLs
+
+Imported image fields (`post_image`, `original_image_url`) take a bare URL — no `?query` (BD's filename generator breaks on it). `?w=700` belongs only on inline `<img>` src in body HTML.
+
+### Rule: Image dedup
+
+Site-wide image dedup covers stock URLs only (Pexels/Unsplash/Pixabay); source-site/CDN images skip it. Match the exact bare URL, never a `?w=` variant.
+
+### Rule: searchStockImage contract
+
+Use each candidate's returned `url` verbatim as the dedup key and the `post_image` write value (inline body images add `?w=700` per **Rule: Image URLs**). `auto_image_import=1` makes BD fetch and store the image.
+
+### Rule: Post-body formatting
+
+Body structure: `<p>`, `<h2>`, `<h3>`, `<ul>`, `<ol>`, plus `<a>` links and floated `<img>`. Open with `<p>`; never `<h1>` (reserved for the title). Inline image classes: `fr-dib fr-fil img-rounded` (left) or `fr-dib fr-fir img-rounded` (right) + `style="width: 350px;"`; inline body images landscape only.
+
+### Rule: No scaffolding tags
+
+Never emit `<![CDATA[`, `<invoke`, `<function_calls>`, or entity-escaped HTML into any content field — they render as literal text.
+
+### Rule: Pagination
+
+Pass the returned `page` cursor verbatim — never construct one. `total` is a string; coerce before comparing.
+
+### Edge guards
+
+- Enum fields take only values present in live `choices`.
+- Stock images are Pexels-only — never wikimedia, picsum, placekitten.
+- Source-page images (events/jobs) are allowed and skip dedup.
+- Never carry scraped source text verbatim into `post_content` — reword everything.
 
 ===== FILE: shared/ANTI-SLOP.md =====
 
@@ -489,7 +544,7 @@ Read before generating any internal link. Universal across post types.
 | 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
-| 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check in corpus **Rule: Filter by ID** (`searchable=1` AND `search_membership_permissions` contains `visitor`). Never `/listing/<id>`. |
+| 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check: their plan on `listMembershipPlans` has `searchable=1` AND `search_membership_permissions` contains `visitor`. Never `/listing/<id>`. |
 | 5 | Member directory landing — entire directory | `/<getSiteInfo.main_directory_url_relative>` | The site's own directory landing, cached from the run's `getSiteInfo` call. Links to the entire directory of members with no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the reader finds there ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — appending `?category[]=...` or `?lat=...` does not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6 below. |
 | 6 | Member directory — filtered by location and/or category | `/<slug-hierarchy>` | Slug-hierarchy URL that narrows the member directory by category and/or location (e.g. `/california/los-angeles/personal-trainer`). See the `Pattern 6 — Filtered member directory` section below for the full construction recipe. |
 
@@ -761,7 +816,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
-13. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
+13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ### Interactive-mode question order
 
@@ -876,7 +931,7 @@ Authorization:
 
 ## Content manufacture (runbook Step 11)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
 **Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply, not parsing a directory listing.
 
@@ -886,7 +941,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **How to apply** — application URL/email/phone surfaced as plain links inside a `How to apply` section. Button styling is NOT in the runbook — if the user wants a styled Apply button they specify it in their `prompts/jobs.md` system prompt.
 
-**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
+**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to METHODOLOGY `Image strategy` as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
 
 **Internal links:** weave into body prose per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post**, distributed:
 

@@ -27,7 +27,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
-13. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
+13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ### Interactive-mode question order
 
@@ -142,7 +142,7 @@ Authorization:
 
 ## Content manufacture (runbook Step 11)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
 **Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply, not parsing a directory listing.
 
@@ -152,7 +152,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **How to apply** — application URL/email/phone surfaced as plain links inside a `How to apply` section. Button styling is NOT in the runbook — if the user wants a styled Apply button they specify it in their `prompts/jobs.md` system prompt.
 
-**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
+**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to METHODOLOGY `Image strategy` as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
 
 **Internal links:** weave into body prose per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post**, distributed:
 

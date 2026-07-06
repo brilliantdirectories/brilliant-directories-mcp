@@ -27,7 +27,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
-13. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
+13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ### Interactive-mode question order
 
@@ -117,7 +117,7 @@ Authorization:
 
 ## Content manufacture (runbook Step 11)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
 **Voice:** reads like a naturally-written editorial event page, not an SEO link container. Local context, scene details, what to expect — the reader is deciding whether to go, not parsing a directory listing.
 
@@ -125,7 +125,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for events: parking, price tiers, what to bring, schedule blocks, ticket types.
 
-**Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to the corpus `Rule: Image URLs` workflow as the `<topic>` slot.
+**Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to METHODOLOGY `Image strategy` as the `<topic>` slot.
 
 **Internal links:** weave into body prose per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post**, distributed:
 

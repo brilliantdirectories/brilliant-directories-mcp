@@ -27,7 +27,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 11. **Image dedup (FEATURE).** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
 13. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
-14. **Audit summary.** Run METHODOLOGY `Stage 7: Audit summary`.
+14. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ### Interactive-mode question order
 
@@ -150,7 +150,7 @@ Authorization:
 
 ## Content manufacture (runbook Step 12)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML allowlist (from MCP corpus), link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
 
 ### Post format → target length
 
@@ -201,14 +201,14 @@ Pick targets by **contextual relevance to the body sentence**. If the paragraph 
 
 **Opt-in only — do NOT include inline body images by default.** Only apply this section when the user explicitly requests inline images in their prompt (e.g. "with inline images", "include body images", "add photos throughout"). Default blog runs ship with the feature image only — prose carries the post.
 
-When opted in: 1 inline body image per 300-500 words (excluding the feature image). Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Source URLs use the retina variant: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?w=700`. Per corpus `Rule: Post-body formatting`.
+When opted in: 1 inline body image per 300-500 words (excluding the feature image). Image float: `class="fr-dib fr-fil img-rounded"` (left) or `class="fr-dib fr-fir img-rounded"` (right) + inline `style="width: 350px;"` on the `<img>`. Source URLs use the retina variant: `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?w=700`. Per **Rule: Post-body formatting**.
 
 **Inline body image dedup (intra-post only):**
 - No URL repeats within the same `post_content`.
 - No body URL equals the post's own `post_image` (feature) URL.
 - NO site-wide dedup on inline body URLs.
 
-Each inline image is sourced via the Pexels workflow (corpus `Rule: Image URLs`). Vary the search topic per image so candidates differ naturally.
+Each inline image is sourced via METHODOLOGY `Image strategy`. Vary the search topic per image so candidates differ naturally.
 
 ### Title shape
 
