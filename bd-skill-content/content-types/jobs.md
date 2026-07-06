@@ -111,7 +111,7 @@ A single list-page `WebFetch` may return one job or dozens. Capture and print th
 
 Round empty or blocked → ONE month-year recovery query per **Rule: Search discipline**. Only stale (>30 days), blocked, or wrong-location sources after both rounds → stop with the labelled verdict; a clean "no fresh jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
-The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: one reference search, then one `site:` probe on the poster's domain reaches the canonical posting. Unreachable → use the copy's application contact per `How to apply`, or drop per `URL liveness gate`.
+The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: one reference search, then one `site:` probe on the poster's domain reaches the canonical posting. Prefer the candidate whose canonical posting is already verified live. Unreachable → use the copy's application contact per `How to apply` (a generic careers page qualifies only there), or drop per `URL liveness gate`.
 
 ---
 
