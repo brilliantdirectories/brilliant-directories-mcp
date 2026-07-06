@@ -122,6 +122,8 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
+Stage 2 query phrases = employer names (`Loudoun County`, `Equinox`), never bare role titles — roles repeat site-wide and match blog titles. `limit=100`; prolific employers return many rows, and the criteria above decide per row, so multi-location employers dedup per location, not per brand.
+
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
 ---
@@ -192,7 +194,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | Field | Jobs-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
-| `post_venue` | **Company name** (per BD helpText). Verbatim from source. Examples: `"Acme Corp"`, `"Austin Independent School District"`, `"Texas General Land Office"`. |
+| `post_venue` | **The hiring employer's name** (BD helpText calls it "Company name"). Verbatim from source. Examples: `"Acme Corp"`, `"Austin Independent School District"`, `"Texas General Land Office"`, `"Loudoun County Government"`. |
 | `post_start_date` | Required. The source's future start date if listed, else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). |
 | `post_promo` | Salary or hourly rate as shown in the source — numeric only, no currency symbol, no commas, decimals optional. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
