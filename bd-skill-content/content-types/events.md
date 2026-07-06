@@ -166,7 +166,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_start_date` | Event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
-| `post_location` | Full street address only — do NOT prepend the venue name (already in `post_venue`). Example: `"801 Red River St, Austin, TX 78701"`, NOT `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"`. |
+| `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded); lat/lon carry the map pin. Do NOT prepend the venue name (already in `post_venue`). |
 | `post_url` | Only on explicit user request — renders CTA button on post page. All other links go in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |

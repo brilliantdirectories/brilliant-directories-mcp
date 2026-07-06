@@ -59,7 +59,7 @@ Run BEFORE source research — a dupe drops for the cost of the dedup queries, n
 With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (CSV = OR inside `contains`; **Rule: Compound filters**):
 
 ```
-listSingleImagePosts property=[post_title,data_id] property_operator=[contains,eq] property_value=[<distinctive-phrase CSV: candidate 1,candidate 2,...>,<resolved data_id>] limit=25
+listSingleImagePosts property=[post_title,data_id] property_operator=[contains,eq] property_value=[<distinctive-phrase CSV: candidate 1,candidate 2,...>,<resolved data_id>] limit=100
 ```
 
 Substitute the `list*` tool that matches the post-type family. Compare returned titles against each candidate client-side; a row counts when the title semantically matches that candidate.

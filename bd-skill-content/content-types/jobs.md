@@ -122,7 +122,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
-Distinctive phrases = employer names, never bare role titles; `limit=100`. The criteria above decide per row, so multi-location employers dedup per location, not per brand.
+Distinctive phrases = employer names, never bare role titles. The criteria above decide per row, so multi-location employers dedup per location, not per brand.
 
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
@@ -199,7 +199,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_promo` | Salary or hourly rate as shown in the source — numeric only, no currency symbol, no commas, decimals optional. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
-| `post_location` | Full street address only — do NOT prepend the company name (already in `post_venue`). Example: `"500 W 2nd St, Austin, TX 78701"`, NOT `"Acme Corp, 500 W 2nd St, Austin, TX 78701"`. Many remote/hybrid postings have no street; OMIT then. |
+| `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon carry the map pin. Do NOT prepend the company name (already in `post_venue`). Remote with no location: OMIT. |
 | `post_url` | Only on explicit user request — renders CTA button on post page. All other links go in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
