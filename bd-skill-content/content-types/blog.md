@@ -109,7 +109,7 @@ Specificity layers: audience segment + scenario + format. The qualifiers ARE the
 
 **Pick qualifiers that match real search intent** — what readers actually query, not a narrowing that sounds clever to a strategist.
 
-**Never bulk-list existing posts to "understand coverage" before picking a topic.** The per-candidate query in the `Dedup` section catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B above), then let dedup do its job at the per-candidate stage.
+**Never bulk-list existing posts to "understand coverage" before picking a topic.** The per-candidate query in the `Dedup` section catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B), then let dedup do its job at the per-candidate stage.
 
 ---
 
