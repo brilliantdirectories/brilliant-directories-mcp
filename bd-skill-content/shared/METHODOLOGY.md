@@ -50,7 +50,7 @@ When the run holds a pool of candidates — brainstormed or harvested (topics, e
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
-Pool size — harvested pools (source pages): every candidate the page exposes, up to 10. Brainstormed pools (generated topics): the runbook's stated `N`. Both ordered best-fit first.
+Pool size — harvested pools: every qualifying candidate the round's results expose (SERP entries and opened list-pages), up to 10. Brainstormed pools (generated topics): the runbook's stated `N`. Both ordered best-fit first.
 
 ## Stage 2: Duplicate detection
 
