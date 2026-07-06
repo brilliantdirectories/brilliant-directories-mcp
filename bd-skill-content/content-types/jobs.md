@@ -122,7 +122,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
-One compound query per **Rule: Compound filters**: `property=[post_title,data_id] property_operator=[contains,eq] property_value=[<employer CSV>,<resolved data_id>] limit=100`. Phrases = employer names, never bare role titles; the criteria above decide per row, so multi-location employers dedup per location, not per brand.
+Distinctive phrases = employer names, never bare role titles; `limit=100`. The criteria above decide per row, so multi-location employers dedup per location, not per brand.
 
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 

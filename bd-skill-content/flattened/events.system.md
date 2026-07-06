@@ -120,13 +120,13 @@ Pool size — harvested pools (source pages): every candidate the page exposes, 
 
 Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one `contains` query covers it (CSV = OR):
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (CSV = OR inside `contains`; **Rule: Compound filters**):
 
 ```
-listSingleImagePosts property=post_title property_operator=contains property_value=<candidate 1 distinctive phrase>,<candidate 2 distinctive phrase>,... limit=25
+listSingleImagePosts property=[post_title,data_id] property_operator=[contains,eq] property_value=[<distinctive-phrase CSV: candidate 1,candidate 2,...>,<resolved data_id>] limit=25
 ```
 
-Substitute the `list*` tool that matches the post-type family. Compare returned titles against each candidate client-side; a row counts only when `row.data_id === <resolved data_id>` (the query spans all single-image post types) AND the title semantically matches that candidate.
+Substitute the `list*` tool that matches the post-type family. Compare returned titles against each candidate client-side; a row counts when the title semantically matches that candidate.
 
 **Distinctive phrase = the 2-3 words that fingerprint THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive phrase keeps it lean.
 
