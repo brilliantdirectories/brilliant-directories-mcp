@@ -138,9 +138,9 @@ Always SKIP existing records — no auto-edit of live posts.
 
 ## Stage 3: Source research
 
-**2a.** Brainstorm 5-10 candidate sources for vertical+location. The content-type file provides candidate categories. Be specific (real domain names, not "some sites").
+**2a.** Brainstorm 5-10 candidate source types for vertical+location per the content-type file — recognition vocabulary for judging what returns, not a probe list.
 
-**2b.** `WebSearch site:<domain> <keywords> <location>` per candidate. Drop dead/empty/archive pages.
+**2b.** One batched round per **Rule: Search discipline** — broad query + the content-type file's companion shape, fired together. Read every result; `site:`-probe (with `-pdf`) only a domain that appeared. Drop dead/empty/archive pages.
 
 **2c.** `WebFetch` top 3-5 candidates. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
 
@@ -150,7 +150,7 @@ Always SKIP existing records — no auto-edit of live posts.
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
 | Required fields | The content-type file specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
-| Source credibility | Gov/association/university/established trade = high (1 source OK). Random blog/aggregator = low (autonomous needs 2-source confirmation). |
+| Source credibility | Gov/association/university/established trade or broader-vertical publication = high (1 source OK). Verify the URL resolves to the claimed organization; same-owner outlets = one source. SEO farms, lead-gen sites, practitioner blogs, official-sounding names without a verifiable charter = fail. Random blog/aggregator = low (autonomous needs 2-source confirmation). |
 | URL liveness | Every URL the post links to must be verified before publish per `URL liveness gate`. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
@@ -163,7 +163,7 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 - **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead.)
 - **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
-- **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in 2+ Google-indexed results from separate domains before using; otherwise drop.
+- **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in the results of at most ONE search per **Rule: Search discipline**; still unverified → drop.
 
 **Third-party-sourced URLs** (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. Apply the `URL liveness gate` three-outcome decision tree.
 
@@ -183,7 +183,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. The content-type file specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
-3. **External source citations: 1-4 per post, only AFTER the first 1-2 internal links per `Link order`.** Cite static destinations only — a specific article, abstract, or official page, never a search-results/query URL (`?term=`, `?q=`, `search?`, tag/archive indexes). Link authoritative sources (industry publications, official event/venue/registration pages, governing-body sites) naturally in flowing prose with `rel="nofollow" target="_blank"` — no forced "Source: X" footer. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals.
+3. **External source citations: target 2 per post** (1 acceptable; hard cap 3, the 3rd only when it substantially improves accuracy), only AFTER the first 1-2 internal links per `Link order`. Source in order, stopping at target: (a) this run's Stage 3 verified set — zero calls, the default path; (b) one batched round per **Rule: Search discipline**: broad topic query (3-6 plain words, no operators) + a `<topic> guidelines`-or-`standards` companion, judged by the Source credibility gate, then one `site:` probe on a surfaced domain; (c) practice/profession topic → its encyclopedia article's institutional references; (d) ship under-cited. Budget: 2 WebSearch + 2 WebFetch per post. Cite static destinations only — a specific article, abstract, or official page, never a search-results/query URL (`?term=`, `?q=`, `search?`, tag/archive indexes). Link naturally in flowing prose with `rel="nofollow" target="_blank"` — no forced "Source: X" footer. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals.
 4. **Internal links to relevant on-site content** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. If no target exists, omit the link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
@@ -427,6 +427,12 @@ Never emit `<![CDATA[`, `<invoke`, `<function_calls>`, or entity-escaped HTML in
 ### Rule: Pagination
 
 Pass the returned `page` cursor verbatim — never construct one. `total` is a string; coerce before comparing.
+
+### Rule: Search discipline
+
+Batch each round's queries as parallel calls. Read EVERY result before any new query — qualifying sources routinely rank 5-8. `site:` follows only a domain a result list surfaced (`Image strategy` pexels queries exempt). Negatives strip a known noise class — `-pdf` on probes, one megaboard domain on jobs queries; more trip bot-blocks; a blocked or emptied negated query retries once without them. Count a hit only after opening it: live and on-topic; list-pages additionally show current dates and the correct location in the listed entries themselves. Classify an empty round before acting: error/challenge pages = tooling-blocked → one structurally different retry, then stop labelled "blocked"; both shapes clean-but-empty = dry; both converging on the same few real sources = thin. Ending with less than the target is a successful outcome — report it via `shortfall_reason`. Reformulate at most once per need.
+
+**Discovery ladder** (events, jobs, any current inventory): (1) one batched round — broad-faceted temporal (`<niche> <location> <window>`) + list-page vocabulary (`<location> <niche> calendar/board/listings`) → open the best candidate; (2) empty → one `<niche> <location> <month year>` recovery; blocked → one venue/facility-noun retry; (3) stop with the diagnosed verdict.
 
 ### Edge guards
 
@@ -856,14 +862,14 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, point a `WebSearch` at them to find list-pages, then `WebFetch` a list-page to harvest many events in one fetch.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), open the best list-page, and harvest many events in one fetch — after its entries show forward dates in the correct location.
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
 - **Location** — the user's named city/region; else infer from the prompt + `getSiteInfo` `primary_country`/timezone — any locally-relevant city, not only cities where you have members. Use `listCities` **only** when the user explicitly asks for events in member cities ("where I have members," "cities we cover"); never find member cities by listing members. Never bulk-list existing posts to infer geographic focus.
 - **Date-range** — the user's window if given; else default forward window.
 
-**Where to point the faceted `WebSearch`** — brainstorm real domain names, not "some sites":
+**What a qualifying source looks like when it appears in results** — recognition vocabulary, not a probe list:
 
 - City government event calendars, county tourism boards, chamber of commerce sites, library/community-center calendars
 - Trade association event pages, industry trade-publication event sections, CE calendars for licensed professions
@@ -874,6 +880,8 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 Tailor by vertical: real estate → MLS open-house listings; fitness → race calendars, gym/yoga schedules; medical/dental → CME calendars, association meetings; music → venue calendars + Bandsintown; food → restaurant association events.
 
 A single list-page `WebFetch` may return one event or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
+
+Round empty or blocked → the ladder's recovery per **Rule: Search discipline** (month-year query; venue/facility-noun retry only when blocked). Still nothing → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 ---
 
