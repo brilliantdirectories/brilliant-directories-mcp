@@ -928,7 +928,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
 | `post_location` | Full street address only — do NOT prepend the company name (already in `post_venue`). Example: `"500 W 2nd St, Austin, TX 78701"`, NOT `"Acme Corp, 500 W 2nd St, Austin, TX 78701"`. Many remote/hybrid postings have no street; OMIT then. |
-| `post_url` | Only when the user's instructions explicitly request it — renders BD's own CTA button on the post page. Otherwise every link, internal or external, belongs in the post content. |
+| `post_url` | Only on explicit user request — BD's CTA button on the post page. All other links go in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |
