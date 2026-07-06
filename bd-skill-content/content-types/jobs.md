@@ -122,7 +122,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
-Distinctive phrases = employer names, never bare role titles. The criteria above decide per row, so multi-location employers dedup per location, not per brand.
+Distinctive phrases = employer names, never bare role titles. The criteria above decide per row, so multi-location employers dedup per location, not per brand. `total` above the returned rows → re-run once with the candidate's city as the phrase.
 
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
