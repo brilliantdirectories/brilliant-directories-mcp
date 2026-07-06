@@ -899,6 +899,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. |
 | `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
 | `post_location` | Full street address only — do NOT prepend the venue name (already in `post_venue`). Example: `"801 Red River St, Austin, TX 78701"`, NOT `"Stubb's BBQ, 801 Red River St, Austin, TX 78701"`. |
+| `post_url` | Only when the user's instructions explicitly request it — renders BD's own CTA button on the post page. Otherwise every link, internal or external, belongs in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |
