@@ -536,7 +536,7 @@ function buildTools(spec) {
           properties.limit = { type: "integer", description: "Records per page (default 25, max 100)" };
           properties.page = { type: "string", description: "Pagination cursor (use next_page from previous response)" };
           properties.property = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Column key to filter by (present on the response rows; a wrong name silently returns empty). For multi-condition AND, pass parallel arrays here and in `property_value`/`property_operator` — equal length, Nth entries paired. See Rule: Compound filters." };
-          properties.property_value = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Value to filter by; array to pair with a `property` array (same length)." };
+          properties.property_value = { anyOf: [{ type: "string" }, { type: "number" }, { type: "array", items: { anyOf: [{ type: "string" }, { type: "number" }] } }], description: "Value to filter by; array to pair with a `property` array (same length)." };
           properties.property_operator = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Filter operator (word-form; symbol forms WAF-stripped). Single: eq, ne, lt, lte, gt, gte, like, not_like. CSV: in, not_in, between. Substring: contains, starts_with, ends_with (+not_). Date: year_eq, month_eq, day_eq (+not_), since_days, until_days. Length: length_eq, length_lt, length_gt, length_between. Null: is_set, is_not_set, is_null, is_not_null. Array to pair with a `property` array (same length). See Rule: Filter operators for value shapes." };
           properties.order_column = { type: "string", description: "Column to sort by — a column key present on the response rows (a wrong name silently returns empty)" };
           properties.order_type = { type: "string", description: "Sort direction: ASC or DESC" };
@@ -3357,7 +3357,8 @@ const FILTER_TRIPLET_KEYS = new Set(["property", "property_value", "property_ope
 
 // Some MCP clients JSON-stringify array args (a `["a","b"]` array arrives as the
 // literal string). Parse a stringified array back on the filter triplet so the
-// compound-filter path sees a real array. Mutates args in place.
+// compound-filter path sees a real array, and coerce numeric values to strings
+// (ids arrive as numbers; BD's query layer is string-typed). Mutates args in place.
 function coerceStringifiedFilterArrays(args) {
   if (!args || typeof args !== "object") return;
   for (const k of FILTER_TRIPLET_KEYS) {
@@ -3367,6 +3368,10 @@ function coerceStringifiedFilterArrays(args) {
         const parsed = JSON.parse(v);
         if (Array.isArray(parsed)) args[k] = parsed.map((x) => String(x));
       } catch (e) { /* leave as-is; validators handle a genuine string */ }
+    } else if (Array.isArray(v)) {
+      args[k] = v.map((x) => String(x));
+    } else if (typeof v === "number") {
+      args[k] = String(v);
     }
   }
 }

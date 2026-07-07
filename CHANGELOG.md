@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.1] - 2026-07-07
+
+### Fixed
+
+- **`property_value` accepts numbers** — the filter tri-field schema admitted only strings (scalar or array-of-strings), so a numeric id (`property_value: [..., 14]` in a compound filter — the natural way models pass `data_id`) failed validation and cost a recovery turn. The schema now admits numbers in both positions, and the existing filter-triplet self-heal (`coerceStringifiedFilterArrays`) coerces them to strings at handler entry — downstream sees the same canonical all-string form as before, and query serialization was always string-typed on the wire. Booleans and objects stay rejected. Battery-proven: old schema rejects / new accepts the exact failing payload, identity on every previously-valid input, wire-byte equivalence. Same fix applied to the hosted Worker.
+
 ## [6.58.0] - 2026-07-05
 
 ### Added
