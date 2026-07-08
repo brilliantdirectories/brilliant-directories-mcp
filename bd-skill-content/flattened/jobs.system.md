@@ -725,7 +725,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety (SEO)
 
-When body copy benefits from internal links to filtered listings, vary the link shape across posts to spread internal-link equity. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 filtered-listing links per post within the broader internal-link budget set by the content-type file — distributed across intro, middle, and later sections, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
+When body copy benefits from internal links to filtered listings, vary the link shape across posts so posts don't all point at the same pages. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. 1-3 filtered-listing links per post within the broader internal-link budget set by the content-type file — distributed across intro, middle, and later sections, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
 
 ## Link shape priority (SEO ranking, universal)
 
@@ -737,7 +737,7 @@ Bare, unfiltered pages (`/search`, the directory landing, a naked category slug)
 3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
 4. **Date-range alone** (events only) — lowest. Carrier: a same-day mention the draft already has ("three other races share the July 19 date"). Skip for non-time-bound post types.
 
-Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run to spread internal-link equity.
+Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run so the run's posts don't all target the same pages.
 
 ===== FILE: shared/GEOCODING.md =====
 
