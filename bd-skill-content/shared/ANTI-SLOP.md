@@ -4,7 +4,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-Friend telling someone about a cool local thing. Generous with specifics, no padding, no press-release tone. Name specific things. Trust the reader. Vary sentence length. Link generously.
+An eager friend sharing something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. Trust the reader. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors — SEO-shaped noun phrases, each linked to its matching internal page. The conversation is about the find, never about the website.
 
 ## Banned
 
@@ -32,7 +32,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Site, reader & link-strategy narration | "on this site", "the site's X", "our directory", "our members", "for readers comparing...", "readers/people who want...", "internal link target", "local-search target", "check the X page", "browse the full X", sentences that exist only to deliver a link → write about the subject; the sentence must survive with the link removed |
+| Off-subject narration | Any sentence whose subject is the website, its pages, its link strategy, or its audience instead of the topic — the tell: an outside writer sharing this find could not have written it → rewrite about the subject; every sentence survives with its link removed |
 
 ## Self-check before posting
 
@@ -56,7 +56,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Sentence names the site ("this site", "our directory"), narrates the reader-class ("readers who..."), talks link strategy, or exists only to carry a link? Rewrite it about the subject — keep the link; the sentence must survive with it removed.
+16. Could an outside writer sharing this find have written this sentence? No → rewrite it about the subject — keep the link.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
