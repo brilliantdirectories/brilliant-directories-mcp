@@ -118,7 +118,7 @@ The content-type file may specify a fallback category.
 
 ## Stage 5: Content manufacture (universal)
 
-**Goal:** an EEAT-rich landing page that competes for long-tail queries the source's thin listing doesn't target. Better depth, real internal-linking, structured info, honest source-grounded content. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different.
+**Goal:** an EEAT-rich landing page with the depth about the subject that the source's thin listing lacks — the page never mentions, evaluates, or compares itself to that listing. Real internal-linking, structured info, honest source-grounded facts. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different.
 
 ### Required outcomes (any structure achieves these)
 
@@ -137,7 +137,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
    - **Historical / community context** — provenance, longevity, lineage, reputation.
    - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
    - **Industry insight / players** — peers, alternatives, category leaders from the wider market, where this one sits in the landscape.
-   - **Positive comparison** — favorable positioning with a specific honest reason ("best choice for someone who wants Z"). Never puffery.
+   - **Positive comparison** — favorable positioning of the role or event itself against real peers in its market, with a specific honest reason ("best choice for someone who wants Z"). Never puffery, never praise of the listing or the page.
 
 ### Froala HTML safety
 

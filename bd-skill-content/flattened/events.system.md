@@ -172,7 +172,7 @@ The content-type file may specify a fallback category.
 
 ## Stage 5: Content manufacture (universal)
 
-**Goal:** an EEAT-rich landing page that competes for long-tail queries the source's thin listing doesn't target. Better depth, real internal-linking, structured info, honest source-grounded content. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different.
+**Goal:** an EEAT-rich landing page with the depth about the subject that the source's thin listing lacks — the page never mentions, evaluates, or compares itself to that listing. Real internal-linking, structured info, honest source-grounded facts. No prescriptive template — design structure to fit THIS record. A music festival, a CME workshop, an open-house, and a software-engineer job listing all look different.
 
 ### Required outcomes (any structure achieves these)
 
@@ -191,7 +191,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
    - **Historical / community context** — provenance, longevity, lineage, reputation.
    - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
    - **Industry insight / players** — peers, alternatives, category leaders from the wider market, where this one sits in the landscape.
-   - **Positive comparison** — favorable positioning with a specific honest reason ("best choice for someone who wants Z"). Never puffery.
+   - **Positive comparison** — favorable positioning of the role or event itself against real peers in its market, with a specific honest reason ("best choice for someone who wants Z"). Never puffery, never praise of the listing or the page.
 
 ### Froala HTML safety
 
@@ -476,7 +476,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…") instead of the topic — the tell: an outside writer sharing this find could not have written it → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
+| Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a section about reading or interpreting the source document always fails → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
 
 ## Self-check before posting
 
@@ -500,7 +500,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Could an outside writer sharing this find have written this sentence? No → rewrite it about the subject or as direct address ("If you're…") — keep the link.
+16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject or as direct address ("If you're…") — keep the link.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
@@ -899,7 +899,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document ("the organizer's page says", "tickets are listed at"). Local context, scene details, what to expect.
+**Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document or its gaps ("the organizer's page says", "the page does not publish a start time") — an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context, scene details, what to expect.
 
 **Events-specific load-bearing facts**: event date + time, venue + address, ticket price or "free", parking, agenda, how to attend or buy tickets. Surface these in the opening paragraphs.
 
@@ -940,7 +940,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Events-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability + source attribution close. |
+| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability + a close that lands the next step (how to attend or buy tickets). |
 | `post_start_date` | Event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. BD silently truncates other formats. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. Source states no end: equal to `post_start_date`. |
 | `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |

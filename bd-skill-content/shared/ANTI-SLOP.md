@@ -33,7 +33,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…") instead of the topic — the tell: an outside writer sharing this find could not have written it → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
+| Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a section about reading or interpreting the source document always fails → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
 
 ## Self-check before posting
 
@@ -57,7 +57,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Could an outside writer sharing this find have written this sentence? No → rewrite it about the subject or as direct address ("If you're…") — keep the link.
+16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject or as direct address ("If you're…") — keep the link.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
