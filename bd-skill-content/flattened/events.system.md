@@ -696,7 +696,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "certified personal trainers in Boston" → `title="Certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor names the destination's content ("community fitness events", "expos and industry events"), not the page.
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor names the destination's content in the site's vertical ("community fitness events", "Los Angeles fitness expos"), not the raw category label and not the page.
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -718,7 +718,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Trailing slashes (BD doesn't use them).
 - Double-encode `post_filename` (already URL-safe).
 - Mix protocols (use `getSiteInfo.full_url` protocol).
-- Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL granularity: if `location_type=locality` (city-level), say the city in the link text; if `location_type=postal_code` (ZIP-level), say the city + ZIP. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
+- Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text AND filter values must match the URL granularity: `location_type=locality` (city-level) takes the CITY as `location_value` with the city's coordinates — never a venue street address or the post's own venue lat/lon; say the city in the link text. `location_type=postal_code` (ZIP-level): say the city + ZIP. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
 - Build links to WebPage-backed URLs that require `listWebPages` discovery (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) — those are `/bd:seo` territory. **Pattern 6 slug-hierarchy URLs are NOT in this category** — they're constructed from live list-tool lookups, no `listWebPages` call needed.
 - Bulk-list existing posts to "see what's available" for internal linking. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed.
 
