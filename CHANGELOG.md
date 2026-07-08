@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.2] - 2026-07-08
+
+### Fixed
+
+- **`getSiteInfo` URLs align to the connection's scheme on http-only sites** — BD's own site-info builder claims `https://` in `full_url` and `brand_images_absolute` even for sites with no SSL (mixed with an http `main_directory_url_absolute` in the same payload), so agents composed post/site links that fail the certificate handshake. New `alignSiteInfoScheme` post-processor (npm + hosted Worker, beside the existing `current_site_datetime` shaper): when the connection itself is `http://`, same-host `https://` URLs in the payload are rewritten to `http://`; https connections return byte-identical payloads (first-line early-exit), external hosts and lookalike domains untouched (boundary-guarded). Tool description updated to match ("scheme matches your connection"). Battery-proven on the real affected site's payload + live against an https production site (identity + full tool regression).
+
 ## [6.58.1] - 2026-07-07
 
 ### Fixed

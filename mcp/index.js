@@ -705,6 +705,27 @@ function applySiteInfoNow(body) {
   return body;
 }
 
+// getSiteInfo absolute URLs carry the scheme the connection itself uses — BD's
+// own builder claims https on SSL-less sites (mixed with http fields in one
+// payload), and the model mirrors whatever it reads into post links. http
+// connections only; https connections pass through untouched.
+function alignSiteInfoScheme(body, domain) {
+  if (!body || body.status !== "success" || !/^http:\/\//i.test(domain || "")) return body;
+  const host = (domain || "").replace(/^http:\/\//i, "").replace(/\/+$/, "");
+  const wrong = ("https://" + host).toLowerCase();
+  const fix = (v) => {
+    if (typeof v === "string" && v.toLowerCase().startsWith(wrong)) {
+      const rest = v.slice(wrong.length);
+      if (rest === "" || /^[\/?#]/.test(rest)) return "http://" + v.slice(8);
+    }
+    if (v && typeof v === "object") { for (const k of Object.keys(v)) v[k] = fix(v[k]); }
+    return v;
+  };
+  const row = Array.isArray(body.message) ? body.message[0] : body.message;
+  if (row) fix(row);
+  return body;
+}
+
 function applyUserLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const include = {
@@ -6350,7 +6371,7 @@ async function main() {
         else if (isMenuReadTool) result.body = applyMenuLean(result.body, includeFlags);
         else if (isMenuItemReadTool) result.body = applyMenuItemLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
-        else if (name === "getSiteInfo") result.body = applySiteInfoNow(result.body);
+        else if (name === "getSiteInfo") result.body = alignSiteInfoScheme(applySiteInfoNow(result.body), config.apiUrl);
         else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
         attachPublicUrl(result.body, name, config.apiUrl);
 
