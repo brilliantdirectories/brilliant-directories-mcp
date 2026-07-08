@@ -161,7 +161,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts link broadly across BD resources — this is where the SEO compounding lives. Budget **5-10 internal links per 2000 words**, distributed:
+Blog posts link broadly across BD resources — this is where the SEO compounding lives. Budget **5-10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries 3-5)**, distributed:
 
 | Section | Recommended links |
 |---|---|
