@@ -447,7 +447,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory. Listing-type posts (jobs, events) speak as the listing itself per their content-type Voice line — the journalist register governs the specifics and the linking, never the speaker: the page states its facts as the source of truth, never as a report on where they came from.
 
 ## Banned
 
@@ -899,7 +899,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** reads like a naturally-written editorial event page, not an SEO link container. Local context, scene details, what to expect — the article explains what the event is and what attending entails.
+**Voice:** this page IS the event page — the listing itself, the source of truth, not an SEO link container and not a report about a listing found elsewhere. State the event's facts in the page's own voice ("Doors open at 6…", "Tickets run $25…"), never narrating the source document ("the organizer's page says", "tickets are listed at"). Local context, scene details, what to expect.
 
 **Events-specific load-bearing facts**: event date + time, venue + address, ticket price or "free", parking, agenda, how to attend or buy tickets. Surface these in the opening paragraphs.
 

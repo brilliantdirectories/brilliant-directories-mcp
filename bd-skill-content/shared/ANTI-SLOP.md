@@ -4,7 +4,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory. Listing-type posts (jobs, events) speak as the listing itself per their content-type Voice line — the journalist register governs the specifics and the linking, never the speaker: the page states its facts as the source of truth, never as a report on where they came from.
 
 ## Banned
 
