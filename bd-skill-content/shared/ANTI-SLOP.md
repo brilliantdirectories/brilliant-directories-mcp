@@ -32,7 +32,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Site self-reference | "on this site", "the site's X", "our directory", "our members", sentences that exist only to deliver a link → write as a publication about the subject, not about the website; the sentence must survive with the link removed |
+| Site self-reference | "on this site", "the site's X", "our directory", "our members", audience narration ("for readers comparing...", "readers/people who want..."), link-strategy vocabulary ("internal link target", "local-search target", "check the X page", "browse the full X"), sentences that exist only to deliver a link → write about the subject, never about the reader-class, the site, or its link strategy; the sentence must survive with the link removed |
 
 ## Self-check before posting
 
@@ -56,7 +56,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Sentence names the site ("this site", "our directory") or exists only to carry a link? Rewrite about the subject; the sentence must survive with the link removed.
+16. Sentence names the site ("this site", "our directory"), narrates the reader-class ("readers who..."), talks link strategy, or exists only to carry a link? Rewrite it about the subject — keep the link; the sentence must survive with it removed.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 

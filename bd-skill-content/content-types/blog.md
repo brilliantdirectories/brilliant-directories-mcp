@@ -157,7 +157,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link — a next step for the reader.
+8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding the conclusion's advice sentence — never a "go browse X" line.
 
 ### Internal-link strategy
 
@@ -168,7 +168,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 | Direct-answer opening | 0-1 |
 | Body H2 sections | 3-6 spread across sections (1-2 per major section, max) |
 | FAQ block | 1-2 (answer text may include a link) |
-| Conclusion | 1 (always — the CTA-shape closer) |
+| Conclusion | 1 (always — riding the conclusion's advice sentence, never a "go browse X" line) |
 
 **Link targets — all valid for blog posts:**
 
@@ -176,7 +176,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 - **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the reader finds ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
-- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — for "more {category} {posts}" style anchors.
+- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor is a subject noun phrase the sentence already needs ("winter races in Austin"), never "more X" / "browse the full X" navigation phrasing.
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.
 
 Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link to the member search filtered by the site's relevant category + the city named in the paragraph. If the paragraph references a related concept covered by another article on the site, deep-link to that article via Pattern 1 (but only if the agent has confirmed the article exists). Never fabricate URLs.

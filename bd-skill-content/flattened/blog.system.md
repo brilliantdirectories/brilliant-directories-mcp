@@ -474,7 +474,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Site self-reference | "on this site", "the site's X", "our directory", "our members", sentences that exist only to deliver a link → write as a publication about the subject, not about the website; the sentence must survive with the link removed |
+| Site self-reference | "on this site", "the site's X", "our directory", "our members", audience narration ("for readers comparing...", "readers/people who want..."), link-strategy vocabulary ("internal link target", "local-search target", "check the X page", "browse the full X"), sentences that exist only to deliver a link → write about the subject, never about the reader-class, the site, or its link strategy; the sentence must survive with the link removed |
 
 ## Self-check before posting
 
@@ -498,7 +498,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Sentence names the site ("this site", "our directory") or exists only to carry a link? Rewrite about the subject; the sentence must survive with the link removed.
+16. Sentence names the site ("this site", "our directory"), narrates the reader-class ("readers who..."), talks link strategy, or exists only to carry a link? Rewrite it about the subject — keep the link; the sentence must survive with it removed.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
@@ -694,7 +694,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | Internal | `<a href="/..." title="<descriptive>">text</a>` (no rel, no target) |
 | External | `<a href="https://..." title="<descriptive>" rel="nofollow" target="_blank">text</a>` |
 
-**`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text. Example: anchor "certified personal trainers in Boston" → `title="Browse certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
+**`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "certified personal trainers in Boston" → `title="Certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
 **Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture ("member directory", "full jobs board").
 
@@ -898,7 +898,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link — a next step for the reader.
+8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding the conclusion's advice sentence — never a "go browse X" line.
 
 ### Internal-link strategy
 
@@ -909,7 +909,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 | Direct-answer opening | 0-1 |
 | Body H2 sections | 3-6 spread across sections (1-2 per major section, max) |
 | FAQ block | 1-2 (answer text may include a link) |
-| Conclusion | 1 (always — the CTA-shape closer) |
+| Conclusion | 1 (always — riding the conclusion's advice sentence, never a "go browse X" line) |
 
 **Link targets — all valid for blog posts:**
 
@@ -917,7 +917,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 - **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the reader finds ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
-- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — for "more {category} {posts}" style anchors.
+- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor is a subject noun phrase the sentence already needs ("winter races in Austin"), never "more X" / "browse the full X" navigation phrasing.
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.
 
 Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link to the member search filtered by the site's relevant category + the city named in the paragraph. If the paragraph references a related concept covered by another article on the site, deep-link to that article via Pattern 1 (but only if the agent has confirmed the article exists). Never fabricate URLs.
