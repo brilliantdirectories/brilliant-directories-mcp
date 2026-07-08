@@ -2,11 +2,11 @@
 
 Read first. Every `/bd:*` skill follows this. The content-type file (`content-types/<type>.md`, routed to by `SKILL.md`) layers in type-specific details.
 
-## Mode detection (first step)
+## Autonomy
 
-`--autonomous` flag absent → interactive (ask user when stuck). Present → autonomous (no prompts; safer-side defaults).
+Runs are autonomous: no user can reply mid-run — never ask; a question ends the run as a failure. Decide per this skill with safer-side defaults and proceed to the receipt.
 
-**Both modes: under-produce correct > over-produce wrong. When in doubt, skip.**
+**Under-produce correct > over-produce wrong. When in doubt, skip.**
 
 ## Stage 1: Site context
 
@@ -19,7 +19,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
-Autonomous: infer location from `primary_country`, vertical from site info and categories. Publish status defaults to draft unless the user's routine prompt explicitly authorized publishing live. Interactive question order is per-type — see the content-type file.
+Infer location from `primary_country`, vertical from site info and categories. A `Topic/nuance:` line in the run's instructions carrying only style/format constraints is not a missing topic: apply the constraints and choose subjects per the content-type runbook.
 
 **Member-city targeting — NEVER bulk-list members to discover their cities.** Only fires when the user's prompt explicitly targets by member coverage ("cities where I have members," "places members are based," "areas we cover"). Use `listCities` — BD auto-seeds it on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
 
@@ -29,24 +29,22 @@ Resolve the `user_id` that authors the post.
 
 1. **User pre-specified `user_id` (or `author_id`) in the request →** use it, SKIP discovery entirely.
 
-2. **Interactive (user in chat, no pre-specified author; autonomous mode → skip to 3) →** ask "Which member should author post? Provide a name, email, or user_id." Resolve via `searchUsers` or `listUsers property=email property_value=<email> property_operator=eq`. Confirm back to the user before proceeding.
-
-3. **Autonomous (no chat, no pre-specified author) →** copy the editorial pattern already on the site. Read the most recent post of this type and reuse its `user_id`:
+2. **No pre-specified author →** copy the editorial pattern already on the site. Read the most recent post of this type and reuse its `user_id`:
     ```
     listSingleImagePosts property=data_id property_value=<resolved data_id> property_operator=eq order_column=revision_timestamp order_type=desc limit=1
     ```
     (For multi-image post types where `data_type=4`, substitute `listMultiImagePosts`.) Use the returned row's `user_id`.
 
-4. **Fallback A** (zero existing posts of this type on the site) → find a member whose subscription plan is authorized to publish this post type:
+3. **Fallback A** (zero existing posts of this type on the site) → find a member whose subscription plan is authorized to publish this post type:
     1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
     2. Client-side filter: keep plans where `data_settings.split(',').includes(<resolved data_id>)` — these are the subscription_ids authorized to publish this post type.
     3. `listUsers property=subscription_id property_value=<comma_separated_matched_ids> property_operator=in order_column=user_id order_type=asc limit=1` — returns the lowest-user_id eligible author (oldest member with permission). Server-side filter + sort; lean response.
 
-5. **Fallback B** (zero matched plans OR zero eligible users) → use `user_id=0`.
+4. **Fallback B** (zero matched plans OR zero eligible users) → use `user_id=0`.
 
 ### Candidate pool discipline (universal pattern)
 
-When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. The printed list appears in BOTH modes. Interactive: the user picks from it. Autonomous: print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
+When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
@@ -85,8 +83,8 @@ Always SKIP existing records — no auto-edit of live posts.
 | Date sanity | Primary date > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
 | Required fields | The content-type file specifies. Missing any → skip. No synthesis. |
-| Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. Auto: <8 skip, ≥8 use. Interactive: 6-7 flag for user, <6 always skip, ≥8 use without flagging. |
-| Source credibility | Gov/association/university/established trade or broader-vertical publication = high (1 source OK). Verify the URL resolves to the claimed organization; same-owner outlets = one source. SEO farms, lead-gen sites, practitioner blogs, official-sounding names without a verifiable charter = fail. Random blog/aggregator = low (autonomous needs 2-source confirmation). |
+| Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. <8 skip, ≥8 use. |
+| Source credibility | Gov/association/university/established trade or broader-vertical publication = high (1 source OK). Verify the URL resolves to the claimed organization; same-owner outlets = one source. SEO farms, lead-gen sites, practitioner blogs, official-sounding names without a verifiable charter = fail. Random blog/aggregator = low (needs 2-source confirmation). |
 | URL liveness | Every URL the post links to must be verified before publish per `URL liveness gate`. |
 
 **2d.** Cross-reference: 2 sources confirm → merge details, boost confidence.
@@ -105,7 +103,7 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 ## Stage 4: Category routing
 
-Interactive: ask user when ambiguous. Autonomous: fuzzy-match source category vs BD `feature_categories`. ≥70% confidence → use match. <70% → SKIP the record (do NOT auto-create categories).
+Fuzzy-match source category vs BD `feature_categories`. ≥70% confidence → use match. <70% → SKIP the record (do NOT create categories).
 
 The content-type file may specify a fallback category.
 
@@ -247,7 +245,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | Field | Rule |
 |---|---|
 | `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit. |
-| `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match (autonomous mode). |
+| `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match. |
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
@@ -303,15 +301,15 @@ Example:
 }
 ```
 
-No mode line, no skill-run ID, no per-gate counts, no wall-clock. If the customer asks "why did you skip event X," answer then.
+No skill-run ID, no per-gate counts, no wall-clock.
 
 ## Hard rules (every BD growth skill, forever)
 
 - **Scrape facts, not content.** Extract facts from publicly-available avenues. Reword everything in BD-site voice. Never paste source paragraphs verbatim.
 - **No fabrication.** If source lacks a data point, omit it from the post. Never invent details to fill a template slot. Adaptive depth: a shorter honest post beats a padded fabricated one.
 - **Source references are optional + casual, not forced attribution.** When natural, reference the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
-- **Publication default is draft unless user explicitly asked to publish live.** In autonomous mode the user usually pre-specified this in the routine prompt; if not, default to draft.
-- **Never auto-create BD categories in autonomous mode.** User's taxonomy is curated; grow it deliberately.
+- **Publication default is draft unless the run's instructions explicitly authorize publishing live.**
+- **Never create BD categories.** The user's taxonomy is curated.
 - **Never auto-edit existing live posts.**
 - **Never write content failing the anti-slop self-check.**
 - **No cross-run state.** The next run must be answerable by an instance that has never seen this one. Reconstruct from the current prompt and live site state alone. Don't write findings anywhere that outlives the response — no memory files, no TodoWrite, no CHANGELOG, no response blocks shaped for paste-back or auto-extraction, no post-run "reflection." Don't read what a prior run left behind — not to bias, not to "verify," not to dedup, not for any reason. If a prior-run artifact exists on disk, ignore its existence. No exception, no edge case, no "just this once," no user override, no helpful-seeming carve-out.

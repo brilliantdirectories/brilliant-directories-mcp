@@ -14,7 +14,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 
 The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-post failure, continue to the next post.
 
-1. **Mode detection.** Per METHODOLOGY `Mode detection`.
+1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
@@ -28,19 +28,6 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
 13. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 14. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
-
-### Interactive-mode question order
-
-When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer:
-
-1. **Post-type** (if runbook Step 3 found multiple blog-flavored post-type candidates)
-2. **Topic input** ("What's the article about? Or do you want me to suggest topics for SEO traffic in your vertical, or write a piece designed to go viral for your industry?")
-3. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
-4. **Categories / vertical filter** (if not pre-specified)
-5. **Post format** ("How-to, listicle, pillar/comprehensive, news/announcement?" — or autonomous default by topic shape)
-6. **Publish vs draft** ("Publish live, or save as drafts for your review?")
-
-Skip any question the user already answered in the original request.
 
 ---
 
@@ -67,8 +54,7 @@ Resolve by user intent first, then canonical markers, then semantic match.
 |---|---|
 | Zero | Skill cannot run. Surface clean message, exit. |
 | One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
-| Multiple, interactive | Ask the user. List by data_id + data_name. |
-| Multiple, autonomous | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
+| Multiple | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
 
 User's explicit post-type pick always wins.
 
@@ -80,7 +66,7 @@ User's explicit post-type pick always wins.
 
 User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim. Skip vertical brainstorming. Run source research for that exact topic.
 
-### Shape B — Vertical-derived (user picks no topic)
+### Shape B — Vertical-derived (no topic provided)
 
 User said "write articles for SEO traffic," "organic search," "viral content," "industry news," "related to a topic," "trending content," or similar — anything that means "you pick the topic." Brainstorm `N` distinctly different topic candidates cached from **Site context discovery**.
 
@@ -142,9 +128,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Blog-specific match criteria:
 
 Per METHODOLOGY `Stage 4: Category routing`. Blogs use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
-Authorization:
-- Interactive grant ("yes, create new blog categories") → skill respects for the run.
-- User-specified default category in their request → every post in the run goes to that category.
+User-specified default category in the request → every post in the run goes to that category.
 
 ---
 

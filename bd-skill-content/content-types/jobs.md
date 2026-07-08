@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 
 The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-job failure, continue to the next job.
 
-1. **Mode detection.** Per METHODOLOGY `Mode detection`.
+1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
@@ -28,19 +28,6 @@ The user invoked the skill with a request like "create job posts on my site" or 
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
-
-### Interactive-mode question order
-
-When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer:
-
-1. **Post-type** (if runbook Step 3 found multiple "Job"-flavored candidates)
-2. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
-3. **Cities / region** (if the user didn't already specify)
-4. **Occupations / categories** (if not already specified)
-5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
-6. **Category-creation grant** (only ask if runbook Step 8 about to skip a job due to no ≥70% match: "Source category 'X' has no good match. Skip the job, create a new BD category 'X', or pick existing 'Y'?")
-
-Skip any question the user already answered in the original request.
 
 ---
 
@@ -67,11 +54,9 @@ Resolution order (try in order, stop at first match; server-side filter via `lis
 
 | Match count | Action |
 |---|---|
-| Zero, interactive | Ask the user to name their job post type (recovery path). Then re-resolve via tier 1 (user-named). |
-| Zero, autonomous | Skill cannot run. Surface clean audit message, exit. |
+| Zero | Skill cannot run. Surface clean audit message, exit. |
 | One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`, `feature_categories`. |
-| Multiple, interactive | Ask the user. List all candidates by `data_id` + `data_name`. |
-| Multiple, autonomous | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
+| Multiple | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
 
 The user's explicit post-type pick always wins.
 
@@ -140,9 +125,7 @@ For jobs, `post_venue` = company name, so retry-ladder tier 1 (`q="<company>, <c
 
 Per METHODOLOGY `Stage 4: Category routing`. Jobs use the post type's `feature_categories` (cached from `Stage 1: Site context`). For `post_category` specifically, use the cached `getPostTypeCustomFields.post_category.choices` (from Step 3) — pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk.
 
-Authorization:
-- Interactive grant ("yes, create new job categories") → skill respects for the run.
-- User-specified default category in their request → every job in the run goes to that category.
+User-specified default category in the request → every job in the run goes to that category.
 
 ---
 

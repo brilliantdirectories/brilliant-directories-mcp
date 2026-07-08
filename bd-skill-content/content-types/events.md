@@ -15,7 +15,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls each step specifies — no extras.** On per-event failure, continue to the next event.
 
-1. **Mode detection.** Per METHODOLOGY `Mode detection`.
+1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
@@ -28,19 +28,6 @@ The user invoked the skill with a request like "create event posts on my site" o
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
-
-### Interactive-mode question order
-
-When running interactive, ask the user in this canonical order. One question at a time. Wait for each answer:
-
-1. **Post-type** (if runbook Step 3 found multiple `type_of_feature=1` candidates)
-2. **Author** — per METHODOLOGY `Author resolution (universal pattern)`
-3. **Cities / region** (if the user didn't already specify)
-4. **Categories / vertical filter** (if not already specified)
-5. **Publish vs draft** ("Publish live, or save as drafts for your review?")
-6. **Category-creation grant** (only ask if runbook Step 8 about to skip an event due to no ≥70% match: "Source category 'X' has no good match. Skip the event, create a new BD category 'X', or pick existing 'Y'?")
-
-Skip any question the user already answered in the original request.
 
 ---
 
@@ -58,8 +45,7 @@ A BD site does NOT necessarily have a post type named "Events." Site owners rena
 |---|---|
 | Zero | Skill cannot run. Surface clean message, exit. |
 | One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
-| Multiple, interactive | Ask the user. List by data_id + data_name. |
-| Multiple, autonomous | If the user pre-specified a post-type id in their request, use it. Else exit with clear audit message. |
+| Multiple | If the user pre-specified a post-type id in their request, use it. Else exit with clear audit message. |
 
 The user's explicit post-type pick always wins.
 
@@ -111,9 +97,7 @@ For events, `post_venue` (the venue name) is usually known — the 4-tier branch
 
 Per METHODOLOGY `Stage 4: Category routing`. Events use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
-Authorization:
-- Interactive grant ("yes, create new event categories") → skill respects for the run.
-- User-specified default category in their request → every event in the run goes to that category.
+User-specified default category in the request → every event in the run goes to that category.
 
 ---
 
