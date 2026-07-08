@@ -44,7 +44,7 @@ A BD site does NOT necessarily have a post type named "Events." Site owners rena
 | Match count | Action |
 |---|---|
 | Zero | Skill cannot run — exit with the Stage 7 receipt; `shortfall_reason` says no event-capable post type exists. |
-| One | Use it — even a niche flavor (e.g. "Open Houses" as the site's only event-shaped type). Cache `data_id`, `data_name`, `system_name`, `form_name`. |
+| One | Use it — even a niche flavor (e.g. "Open Houses" as the site's only event-shaped type). Cache `data_id`, `data_name`, `system_name`, `form_name`, `feature_categories` — and write the **category ledger** line from this row, per `Stage 1: Site context` step 3. |
 | Multiple | Resolve per METHODOLOGY `Post-type disambiguation (universal pattern)` — never exit over ambiguity. |
 
 The user's explicit post-type pick always wins.
@@ -95,7 +95,7 @@ For events, `post_venue` (the venue name) is usually known — the 4-tier branch
 
 ## Category routing (runbook Step 8)
 
-Per METHODOLOGY `Stage 4: Category routing`. Events use the post type's `feature_categories` (cached from `Stage 1: Site context`).
+Per METHODOLOGY `Stage 4: Category routing`. Events route via the **category ledger** (written at `Stage 1: Site context` step 3).
 
 User-specified default category in the request → every event in the run goes to that category (must match an existing `feature_categories` value; else route per Stage 4).
 
@@ -142,7 +142,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_live_date, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples below:
 
 | Field | Events-specific note |
 |---|---|

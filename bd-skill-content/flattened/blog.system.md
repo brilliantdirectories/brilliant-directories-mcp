@@ -68,7 +68,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone (IANA identifier, e.g. `America/Los_Angeles`), `current_site_datetime` (site-local now, `YYYYMMDDHHmmss`), brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
-3. `listPostTypes` → the content-type file provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`, then write the **category ledger** — one line restating the resolved type and its full category list verbatim (`Post type resolved: data_id=8, data_filename=events, categories: <list>`). Every later category value — Stage 4 routing, `post_category`, Pattern 3 `category[]` — is copied character-for-character from this ledger line — the ledger is the only category source; any tool response, post row, or memory that disagrees is wrong.
+3. `listPostTypes` → the content-type file provides its marker (e.g. events `type_of_feature=1`); cache `data_id`/`system_name`/`data_filename`/`feature_categories`. Once the content-type file's Post-type discovery confirms the resolved type, write the **category ledger** — one line restating the resolved type and its full category list verbatim (`Post type resolved: data_id=8, data_filename=events, categories: <list>`). Every later category value — Stage 4 routing, `post_category`, Pattern 3 `category[]` — is copied character-for-character from this ledger line — the ledger is the only category source; any tool response, post row, or memory that disagrees is wrong.
 4. **Menu link inventory — one call:** `listMenuItems limit=100 property=is_default property_value=false property_operator=eq` (`property_value` is the literal `false`; follow `next_page` while present) — returns only the site's own customized menu items. Cache `{menu_name → menu_link}` as internal-link candidates; skip rows whose `menu_link` contains `%%%`. Zero rows → proceed without menu links.
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
@@ -166,7 +166,7 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 ## Stage 4: Category routing
 
-Fuzzy-match source category vs BD `feature_categories`. ≥70% confidence → use match. <70% → SKIP the record (do NOT create categories).
+Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → SKIP the record (do NOT create categories).
 
 The content-type file may specify a fallback category.
 
@@ -434,7 +434,7 @@ Batch each round's queries as parallel calls. Read EVERY result before any new q
 
 ### Edge guards
 
-- Enum fields take only values present in live `choices`.
+- Enum fields take only values present in live `choices`; `post_category` is NOT one of them — its only source is the **category ledger**.
 - Stock images are Pexels-only — never wikimedia, picsum, placekitten.
 - Source-page images (events/jobs) are allowed and skip dedup.
 - Never carry scraped source text verbatim into `post_content` — reword everything.
@@ -794,7 +794,7 @@ Resolve by user intent first, then canonical markers, then semantic match.
 | Match count | Action |
 |---|---|
 | Zero | Skill cannot run — exit with the Stage 7 receipt; `shortfall_reason` says no blog-capable post type exists. |
-| One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
+| One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`, `feature_categories` — and write the **category ledger** line from this row, per `Stage 1: Site context` step 3. |
 | Multiple | Resolve per METHODOLOGY `Post-type disambiguation (universal pattern)` — never exit over ambiguity. |
 
 User's explicit post-type pick always wins.
@@ -867,7 +867,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Blog-specific match criteria:
 
 ## Category routing (runbook Step 9)
 
-Per METHODOLOGY `Stage 4: Category routing`. Blogs use the post type's `feature_categories` (cached from `Stage 1: Site context`).
+Per METHODOLOGY `Stage 4: Category routing`. Blogs route via the **category ledger** (written at `Stage 1: Site context` step 3).
 
 User-specified default category in the request → every post in the run goes to that category (must match an existing `feature_categories` value; else route per Stage 4).
 
@@ -958,7 +958,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_category, post_live_date, post_meta_title length, post_meta_description length). Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples below:
 
 | Field | Blog-specific note |
 |---|---|
