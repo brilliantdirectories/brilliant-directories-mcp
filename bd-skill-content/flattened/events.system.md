@@ -50,10 +50,6 @@ If `getSiteInfo` errors or returns no site, retry once; still failing → end th
 - Bypassing source ToS, robots.txt, paywalls, or auth walls
 - Any action outside the target post type (no member writes, no site config changes, no theme edits)
 
-## Output guarantees
-
-Every run ends with a brief summary listing what was created — title, `post_id`, admin edit URL per post. Customers can review and delete anything they don't want via the relevant `delete*` tool for the post type. Internal process details (candidates probed, gates failed, retries) stay out of the user-facing summary.
-
 ===== FILE: shared/METHODOLOGY.md =====
 
 # METHODOLOGY: BD growth-skills protocol
