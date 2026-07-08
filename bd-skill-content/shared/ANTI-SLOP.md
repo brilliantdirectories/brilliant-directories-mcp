@@ -22,6 +22,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 | Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
 | Inanimate as actor | "decisions emerge", "data tells us", "markets reward", "culture shifts" → name the human |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
+| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("The day runs on member appointments") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
@@ -32,7 +33,7 @@ The page speaks as the thing it is, never as a report about its source. Article-
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Off-subject narration | Any sentence whose subject is the website, its pages, its link strategy, or its audience in the third person ("for readers who follow…") instead of the topic — the tell: an outside writer sharing this find could not have written it → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
+| Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…") instead of the topic — the tell: an outside writer sharing this find could not have written it → rewrite about the subject, or speak to the reader directly ("If you're looking for wellness events around Costa Mesa…"); every sentence survives with its link removed |
 
 ## Self-check before posting
 
