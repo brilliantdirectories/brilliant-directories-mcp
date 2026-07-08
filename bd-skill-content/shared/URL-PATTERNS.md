@@ -22,7 +22,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 | Param | Format | Notes |
 |---|---|---|
 | `q` | `q=keyword` | How BD renders its own tag links. Skill-built links filter via the params below, never `q=`. |
-| `category[]` | `category[]=Category%20Name` | Value copied character-for-character from the category ledger — any other string filters nothing. Repeat for multi-category. Skill defaults to single-category. |
+| `category[]` | `category[]=Category%20Name` | Value copied character-for-character from the category ledger — any other string filters nothing. One category per link. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
 | `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN+55802&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Use `location_type=locality` for city-level (default for content-skill links). Use `location_type=postal_code` for ZIP-radius filtering on sites where the city is too broad (e.g. dense metros). Use the post's `post_location` string for `location_value` regardless of mode. |
 
@@ -31,8 +31,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 1. Spaces in `category[]`: `%20`, NOT `+` (BD strips `+`).
 2. Slashes in `daterange`: `%2F`. `+` inside `daterange` IS the space-around-hyphen separator.
 3. Ampersands in category names: URL-encode (`Food%20%26%20Beverage`).
-4. Multi-category: repeat `category[]=A&category[]=B`. Default single.
-5. **`&` in `href` attributes of HTML-embedded URLs (e.g. inside `post_content`): escape as `&amp;`** per HTML5 spec. Browsers + Froala both accept raw `&` for non-entity sequences, but `?ref=foo&copy=yes` becomes `?ref=foo©=yes` because the parser interprets `&copy` as the copyright entity. The URL examples in this file show URL syntax (raw `&`); when wrapping any URL in `<a href="...">` for `post_content`, output `&amp;` instead.
+4. **`&` in `href` attributes of HTML-embedded URLs (e.g. inside `post_content`): escape as `&amp;`** per HTML5 spec. Browsers + Froala both accept raw `&` for non-entity sequences, but `?ref=foo&copy=yes` becomes `?ref=foo©=yes` because the parser interprets `&copy` as the copyright entity. The URL examples in this file show URL syntax (raw `&`); when wrapping any URL in `<a href="...">` for `post_content`, output `&amp;` instead.
 
 ## Pattern 6 — Filtered member directory (slug-hierarchy URLs)
 
