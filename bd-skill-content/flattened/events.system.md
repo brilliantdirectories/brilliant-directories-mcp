@@ -728,10 +728,11 @@ When body copy benefits from internal links to filtered listings, vary the link 
 
 ## Link shape priority (SEO ranking, universal)
 
-When picking which filter combination to link, prefer in this order:
+Resolve each internal link to the most specific verifiable target the draft's own nouns support, top-down — drop a tier only when the one above has no target:
 
 1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
-2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence.
+2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence. A specific related post (Pattern 1) counts at this tier when its topic matches the mention.
+Bare, unfiltered pages (`/search`, the directory landing, a naked category slug) are the LAST resort — at most one per post, never both of the first two internal links.
 3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
 4. **Date-range alone** (events only) — lowest. Useful for "other events on this date." Skip for non-time-bound post types.
 
