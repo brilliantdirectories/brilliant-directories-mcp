@@ -107,7 +107,7 @@ Multiple candidates from post-type discovery resolve in order — never exit ove
 
 ### Candidate pool discipline (universal pattern)
 
-When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with the Stage 7 receipt (`shortfall_reason` says why).
+When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs — anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with the Stage 7 receipt (`shortfall_reason` says why).
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
@@ -730,7 +730,7 @@ When body copy benefits from internal links to filtered listings, vary the link 
 
 When picking which filter combination to link, prefer in this order:
 
-1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for properties: same neighborhood + same property type.
+1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: the topic's member category + the post's city (a Pattern 6 member-directory link).
 2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence.
 3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
 4. **Date-range alone** (events only) — lowest. Useful for "other events on this date." Skip for non-time-bound post types.
