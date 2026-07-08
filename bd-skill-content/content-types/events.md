@@ -117,7 +117,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 | Section | Recommended links |
 |---|---|
-| Opening paragraph (event hook + load-bearing facts) | 1 (category or location filter) |
+| Opening section (event hook + load-bearing facts) | 0-1 (category or location filter, riding a noun the opening already has) |
 | Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 1 (always — riding a sentence the close already needs, never a "go browse X" line) |
 

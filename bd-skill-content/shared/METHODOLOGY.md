@@ -239,7 +239,7 @@ Scan the assembled body. Fix anything that fires:
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
 - Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
-- More than one bare unfiltered page linked (`/search`, a naked category slug), or the post opens on one? Re-target per `Link shape priority`.
+- A bare unfiltered page linked (`/search`, a naked category slug) where a higher tier has a target, or the post opens on one? Re-target per `Link shape priority`.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Scroll back and re-read that line now — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.

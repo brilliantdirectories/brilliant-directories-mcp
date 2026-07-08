@@ -293,7 +293,7 @@ Scan the assembled body. Fix anything that fires:
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
 - Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
-- More than one bare unfiltered page linked (`/search`, a naked category slug), or the post opens on one? Re-target per `Link shape priority`.
+- A bare unfiltered page linked (`/search`, a naked category slug) where a higher tier has a target, or the post opens on one? Re-target per `Link shape priority`.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Scroll back and re-read that line now — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
@@ -559,7 +559,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 
 | Param | Format | Notes |
 |---|---|---|
-| `q` | `q=keyword` | Keyword search. Tags filter via `q=` (no dedicated tag param). |
+| `q` | `q=keyword` | How BD renders its own tag links — recognition only. Skill-built links never use `q=`: every filter runs through `category[]`/location/date params below (verifiable against the category ledger and geo data; `q=` is not). |
 | `category[]` | `category[]=Category%20Name` | Repeat for multi-category. Skill defaults to single-category. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
 | `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN+55802&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Use `location_type=locality` for city-level (default for content-skill links). Use `location_type=postal_code` for ZIP-radius filtering on sites where the city is too broad (e.g. dense metros). Use the post's `post_location` string for `location_value` regardless of mode. |
@@ -704,7 +704,6 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ```
 /events
-/events?q=austin
 /events?category[]=Live%20Music
 /events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
 /events?daterange=06%2F15%2F2026+-+06%2F15%2F2026
@@ -734,7 +733,7 @@ Resolve each internal link to the most specific verifiable target the draft's ow
 
 1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
 2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence. A specific related post (Pattern 1) counts at this tier when its topic matches the mention.
-Bare, unfiltered pages (`/search`, the directory landing, a naked category slug) are the LAST resort — at most one per post, never both of the first two internal links.
+Bare, unfiltered pages (`/search`, the directory landing, a naked category slug) qualify only when no higher tier has a target, and never as either of the first two internal links.
 3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
 4. **Date-range alone** (events only) — lowest. Carrier: a same-day mention the draft already has ("three other races share the July 19 date"). Skip for non-time-bound post types.
 
@@ -942,7 +941,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 | Section | Recommended links |
 |---|---|
-| Opening paragraph (role + load-bearing facts) | 1 (category or location filter) |
+| Opening section (role + load-bearing facts) | 0-1 (category or location filter, riding a noun the opening already has) |
 | Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 1 (always — riding a sentence the close already needs, never a "go browse X" line) |
 
