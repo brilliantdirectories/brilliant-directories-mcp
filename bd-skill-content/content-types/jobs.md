@@ -73,7 +73,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 - **Location** — three modes, pick the one matching the user's request:
   1. **User named a city/region** → use that verbatim ("Boston jobs," "jobs in Bangkok").
   2. **User implied geographic scope but no specific city** ("local jobs," "jobs in my country," "near me") → scope to `getSiteInfo.primary_country`; pick locally-relevant cities for the country (not only cities where you have members). Use `listCities` ONLY when the user explicitly asks for jobs in member cities ("where I have members," "cities we cover"); never find member cities by listing members.
-  3. **User asked for a location-agnostic vertical** ("IT jobs," "remote copywriters," "freelance designers") → don't force a city facet at all; let the source returns drive it. The post's own geo fields are set from whatever the source listing says (specific city → fill `post_location`/`lat`/`lon`/`country_sn`/`state_sn`; remote → omit those fields entirely).
+  3. **User asked for a location-agnostic vertical** ("IT jobs," "remote copywriters," "freelance designers") → don't force a city facet at all; let the source returns drive it. The post's own geo fields are set from whatever the source record says (specific city → fill `post_location`/`lat`/`lon`/`country_sn`/`state_sn`; remote → omit those fields entirely).
 - Never bulk-list existing posts to infer geographic focus.
 
 **Source-country routing.** When picking from the source buckets, default to the site's `primary_country` (cached Stage 1) — the AI should prefer that country's national job portals, associations, and chambers. If the user's request names a different country, route there instead. The bucket names are examples — adapt to the active country.
@@ -90,7 +90,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 
 Tailor by vertical AND country: pick the country-native association + the country's national job portal first, then ATS pages of companies operating in that country.
 
-**30-day staleness gate.** During candidate harvest, capture each listing's source-page posted-date and reject candidates with posted-date >30 days old.
+**30-day staleness gate.** During candidate harvest, capture each candidate's source-page posted-date and reject candidates with posted-date >30 days old.
 
 A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
@@ -193,7 +193,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 ### Do NOT pass
 
-- `post_expire_date` — BD job theme doesn't read it for auto-hide. Stale-listing discipline lives at the 30-day source-side gate.
+- `post_expire_date` — BD job theme doesn't read it for auto-hide. Staleness discipline lives at the 30-day source-side gate.
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
 
