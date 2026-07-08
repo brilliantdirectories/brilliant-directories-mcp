@@ -133,7 +133,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply, not comparing this site's other openings; a dedup-returned sibling post is a link carrier riding the role's own nouns, never a sentence's subject.
+**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
 **Jobs-specific load-bearing facts** (the reader needs these up front): role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
 

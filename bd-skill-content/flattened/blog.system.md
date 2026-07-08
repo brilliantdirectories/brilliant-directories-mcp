@@ -187,10 +187,10 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
    - **What to expect** — sensory + situational detail before the reader decides to engage.
    - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
    - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
-   - **Comparable anchors** — neutral orientation against something familiar ("similar to X but Y").
+   - **Comparable anchors** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
    - **Historical / community context** — provenance, longevity, lineage, reputation.
    - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
-   - **Industry insight / players** — peers, alternatives, category leaders, where this one sits in the landscape.
+   - **Industry insight / players** — peers, alternatives, category leaders from the wider market, where this one sits in the landscape.
    - **Positive comparison** — favorable positioning with a specific honest reason ("best choice for someone who wants Z"). Never puffery.
 
 ### Froala HTML safety

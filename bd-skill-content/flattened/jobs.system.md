@@ -187,10 +187,10 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
    - **What to expect** — sensory + situational detail before the reader decides to engage.
    - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
    - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
-   - **Comparable anchors** — neutral orientation against something familiar ("similar to X but Y").
+   - **Comparable anchors** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
    - **Historical / community context** — provenance, longevity, lineage, reputation.
    - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
-   - **Industry insight / players** — peers, alternatives, category leaders, where this one sits in the landscape.
+   - **Industry insight / players** — peers, alternatives, category leaders from the wider market, where this one sits in the landscape.
    - **Positive comparison** — favorable positioning with a specific honest reason ("best choice for someone who wants Z"). Never puffery.
 
 ### Froala HTML safety
@@ -927,7 +927,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply, not comparing this site's other openings; a dedup-returned sibling post is a link carrier riding the role's own nouns, never a sentence's subject.
+**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
 **Jobs-specific load-bearing facts** (the reader needs these up front): role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
 
