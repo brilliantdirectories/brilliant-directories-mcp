@@ -3966,7 +3966,7 @@
                   },
                   "post_promo": {
                     "type": "number",
-                    "description": "Jobs-only twin of post_price. On job posts, BD requires post_promo to populate post_price too — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
+                    "description": "Twin of post_price (job pay, event ticket price, coupon price — live-verified on jobs and events). BD requires post_promo to populate post_price — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
                   },
                   "post_image": {
                     "type": "string",
@@ -4133,7 +4133,7 @@
                   },
                   "post_promo": {
                     "type": "number",
-                    "description": "Jobs-only twin of post_price. On job posts, BD requires post_promo to populate post_price too — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
+                    "description": "Twin of post_price (job pay, event ticket price, coupon price — live-verified on jobs and events). BD requires post_promo to populate post_price — send post_promo (BD back-fills post_price). Sending post_price alone leaves post_promo null."
                   },
                   "post_image": {
                     "type": "string",
