@@ -730,7 +730,7 @@ When body copy benefits from internal links to filtered listings, vary the link 
 
 When picking which filter combination to link, prefer in this order:
 
-1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article on choosing a personal trainer → `/california/los-angeles/personal-trainer`).
+1. **Category + location combo** — highest SEO value. Tightest user intent match. Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
 2. **Single-filter category-only** OR **single-filter location-only** — medium value. Use when only one dimension is naturally relevant in the sentence.
 3. **Location + daterange** (events only) — strong "what's happening near here that weekend" intent match. Combine with category for the tightest anchor.
 4. **Date-range alone** (events only) — lowest. Useful for "other events on this date." Skip for non-time-bound post types.
