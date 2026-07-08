@@ -42,7 +42,7 @@ Resolution order (try in order, stop at first match; server-side filter via `lis
 2. **User didn't specify** — try in order, stop at first match:
    a. `system_name=job_listing` (BD canonical)
    b. `form_name=job_fields` (canonical jobs form)
-   c. `data_type=20` + `data_name` contains "Job" / "Jobs" / "Job Listing" (case-insensitive — catches sites that renamed `system_name`/`form_name` away from canonical but kept "Job" in the display label, which is the most stable across renames)
+   c. `data_type=20` + semantic match on `data_name`/`system_name` against role-listing terms in any language (job, jobs, careers, positions, openings, vacancies, hiring, internships, empleos, trabajos, vacantes, emplois, offres d'emploi, stellenangebote, vagas, lavoro, oferty, etc. — case-insensitive; catches sites that renamed away from canonical)
 
 3. **EXCLUDE from any jobs resolution:**
    - `community_article` / `form_name=member_article_fields` — member-written, not job postings
@@ -54,9 +54,9 @@ Resolution order (try in order, stop at first match; server-side filter via `lis
 
 | Match count | Action |
 |---|---|
-| Zero | Skill cannot run. Surface clean audit message, exit. |
-| One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`, `feature_categories`. |
-| Multiple | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
+| Zero | Skill cannot run — exit with the Stage 7 receipt; `shortfall_reason` says no jobs-capable post type exists. |
+| One | Use it — even a niche flavor (e.g. "Internships" as the site's only jobs-shaped type). Cache `data_id`, `data_name`, `system_name`, `form_name`, `feature_categories`. |
+| Multiple | Resolve per METHODOLOGY `Post-type disambiguation (universal pattern)` — never exit over ambiguity. |
 
 The user's explicit post-type pick always wins.
 
@@ -125,7 +125,7 @@ For jobs, `post_venue` = company name, so retry-ladder tier 1 (`q="<company>, <c
 
 Per METHODOLOGY `Stage 4: Category routing`. Jobs use the post type's `feature_categories` (cached from `Stage 1: Site context`). For `post_category` specifically, use the cached `getPostTypeCustomFields.post_category.choices` (from Step 3) — pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk.
 
-User-specified default category in the request → every job in the run goes to that category.
+User-specified default category in the request → every job in the run goes to that category (must match a cached `post_category` `choices` key; else route per Stage 4).
 
 ---
 

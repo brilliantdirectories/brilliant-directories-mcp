@@ -43,9 +43,9 @@ A BD site does NOT necessarily have a post type named "Events." Site owners rena
 
 | Match count | Action |
 |---|---|
-| Zero | Skill cannot run. Surface clean message, exit. |
-| One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
-| Multiple | If the user pre-specified a post-type id in their request, use it. Else exit with clear audit message. |
+| Zero | Skill cannot run — exit with the Stage 7 receipt; `shortfall_reason` says no event-capable post type exists. |
+| One | Use it — even a niche flavor (e.g. "Open Houses" as the site's only event-shaped type). Cache `data_id`, `data_name`, `system_name`, `form_name`. |
+| Multiple | Resolve per METHODOLOGY `Post-type disambiguation (universal pattern)` — never exit over ambiguity. |
 
 The user's explicit post-type pick always wins.
 
@@ -97,7 +97,7 @@ For events, `post_venue` (the venue name) is usually known — the 4-tier branch
 
 Per METHODOLOGY `Stage 4: Category routing`. Events use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
-User-specified default category in the request → every event in the run goes to that category.
+User-specified default category in the request → every event in the run goes to that category (must match an existing `feature_categories` value; else route per Stage 4).
 
 ---
 

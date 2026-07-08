@@ -40,7 +40,7 @@ Resolve by user intent first, then canonical markers, then semantic match.
 2. **User didn't specify** — try in order, stop at first match. Server-side filter via `listPostTypes` — do NOT `getPostType` per-candidate:
    a. `system_name=website_blog_article` (BD canonical)
    b. `form_name=blog_article_fields` (canonical blog form)
-   c. `data_type=20` + semantic match on `data_name`/`system_name` (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel)
+   c. `data_type=20` + semantic match on `data_name`/`system_name` against article terms in any language (blog, news, journal, insights, resources, articulo, noticia, nachrichten, artikel, etc.)
 
 3. **EXCLUDE from any blog resolution:**
    - `community_article` / `form_name=member_article_fields` — member-written, NOT site-owner blog
@@ -52,9 +52,9 @@ Resolve by user intent first, then canonical markers, then semantic match.
 
 | Match count | Action |
 |---|---|
-| Zero | Skill cannot run. Surface clean message, exit. |
+| Zero | Skill cannot run — exit with the Stage 7 receipt; `shortfall_reason` says no blog-capable post type exists. |
 | One | Use it. Cache `data_id`, `data_name`, `system_name`, `form_name`. |
-| Multiple | If the user pre-specified a post-type id, use it. Else exit with clear audit message. |
+| Multiple | Resolve per METHODOLOGY `Post-type disambiguation (universal pattern)` — never exit over ambiguity. |
 
 User's explicit post-type pick always wins.
 
@@ -128,7 +128,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Blog-specific match criteria:
 
 Per METHODOLOGY `Stage 4: Category routing`. Blogs use the post type's `feature_categories` (cached from `Stage 1: Site context`).
 
-User-specified default category in the request → every post in the run goes to that category.
+User-specified default category in the request → every post in the run goes to that category (must match an existing `feature_categories` value; else route per Stage 4).
 
 ---
 

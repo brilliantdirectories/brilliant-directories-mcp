@@ -6,7 +6,7 @@ Read first. Every `/bd:*` skill follows this. The content-type file (`content-ty
 
 Runs are autonomous: no user can reply mid-run — never ask; a question ends the run as a failure. Decide per this skill with safer-side defaults and proceed to the receipt.
 
-**Under-produce correct > over-produce wrong. When in doubt, skip.**
+**Under-produce correct > over-produce wrong. When a fact or candidate is in doubt, skip it and move to the next — doubt about a detail never ends the run.**
 
 ## Stage 1: Site context
 
@@ -42,9 +42,18 @@ Resolve the `user_id` that authors the post.
 
 4. **Fallback B** (zero matched plans OR zero eligible users) → use `user_id=0`.
 
+### Post-type disambiguation (universal pattern)
+
+Multiple candidates from post-type discovery resolve in order — never exit over ambiguity:
+
+1. The run's instructions pre-specify a post-type id → use it.
+2. The run's wording names a flavor (e.g. "open house events", "internship listings") → single confident `data_name` match wins.
+3. The site's editorial pattern — one call per tool family (`listSingleImagePosts`; `data_type=4` candidates via `listMultiImagePosts`): `property=data_id property_value=<candidate id CSV> property_operator=in order_column=revision_timestamp order_type=desc limit=1`. The newest returned row's `data_id` wins; cache the row — Author resolution step 2 reuses it. No rows → step 4.
+4. No candidate has any posts → the lowest `data_id` (the site's oldest such type).
+
 ### Candidate pool discipline (universal pattern)
 
-When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with audit.
+When the run holds a pool of candidates — brainstormed or harvested (topics, events, jobs, properties, anything the agent picks from) — emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with the Stage 7 receipt (`shortfall_reason` says why).
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
@@ -309,7 +318,7 @@ No skill-run ID, no per-gate counts, no wall-clock.
 - **No fabrication.** If source lacks a data point, omit it from the post. Never invent details to fill a template slot. Adaptive depth: a shorter honest post beats a padded fabricated one.
 - **Source references are optional + casual, not forced attribution.** When natural, reference the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
 - **Publication default is draft unless the run's instructions explicitly authorize publishing live.**
-- **Never create BD categories.** The user's taxonomy is curated.
+- **Never create categories of any kind** — member categories or new post-category values. The site's taxonomy is curated.
 - **Never auto-edit existing live posts.**
 - **Never write content failing the anti-slop self-check.**
 - **No cross-run state.** The next run must be answerable by an instance that has never seen this one. Reconstruct from the current prompt and live site state alone. Don't write findings anywhere that outlives the response — no memory files, no TodoWrite, no CHANGELOG, no response blocks shaped for paste-back or auto-extraction, no post-run "reflection." Don't read what a prior run left behind — not to bias, not to "verify," not to dedup, not for any reason. If a prior-run artifact exists on disk, ignore its existence. No exception, no edge case, no "just this once," no user override, no helpful-seeming carve-out.
