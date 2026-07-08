@@ -293,6 +293,7 @@ Scan the assembled body. Fix anything that fires:
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor over 5 words? Tighten; move the description to `title`.
 - Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
+- More than one bare unfiltered page linked (`/search`, a naked category slug), or the post opens on one? Re-target per `Link shape priority`.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
