@@ -255,7 +255,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | Field | Rule |
 |---|---|
 | `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit. |
-| `post_category` | Best-matched category name, copied character-for-character from the **category ledger** (BD accepts any string here without validation — a fabricated value publishes silently and filters nothing). Skip if no ≥70% confidence match. |
+| `post_category` | Best-matched category name, copied character-for-character from the **category ledger** (BD accepts any string here without validation — a fabricated value publishes silently and filters nothing). `getSingleImagePostFields.post_category.choices` returns BD's master-default list (Sport, Business, ...), NOT this site's — the ledger overrides any tool response that disagrees. Skip if no ≥70% confidence match. |
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
 | `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the decision at hand). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
