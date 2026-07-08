@@ -74,7 +74,7 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 
 **If user signaled viral/trending intent**, also pull `WebSearch` for trending discussions/news in the vertical (last 30-60 days).
 
-**Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
+**Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario anyone outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
 
 **Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper on each candidate:
 
@@ -84,16 +84,16 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 |---|---|---|---|
 | Imperative | Command, verb-first, promises an outcome | Dog Training Basics | Stop a Rescue Dog From Pulling on Walks in Its First Two Weeks Home |
 | How-to | Explicit instruction | Roof Repair Tips | How to Tell If a Hail-Damaged Roof Needs Full Replacement or a Patch |
-| Question | Poses the reader's query | Choosing a Lawyer | Do You Need a Lawyer to File for Custody in a No-Fault State? |
+| Question | Poses the searched question | Choosing a Lawyer | Do You Need a Lawyer to File for Custody in a No-Fault State? |
 | Listicle / number | Counted set | Saving for Retirement | 5 Retirement Accounts a Freelancer Should Open Before Age 40 |
 | Declarative / statement | Asserts a claim or truth | Electric Cars | Heat Pumps Are Quietly Replacing the Gas Furnace in Cold Climates |
 | Noun-phrase / definitional | Names the subject, no verb | Wedding Photography Ideas | The Real Cost of a Second Shooter for a Full-Day Wedding |
 | Comparison / vs | Pits two options against each other | Types of Mattresses | Memory Foam vs Latex for Side Sleepers With Back Pain |
 | Guide / explainer | "The complete/beginner's" framing | Houseplant Care | A Beginner's Guide to Keeping Fiddle-Leaf Figs Alive Through Winter |
 
-Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
+Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
-**Pick qualifiers that match real search intent** — what readers actually query, not a narrowing that sounds clever to a strategist.
+**Pick qualifiers that match real search intent** — what people actually search, not a narrowing that sounds clever to a strategist.
 
 **Never bulk-list existing posts to "understand coverage" before picking a topic.** The per-candidate query in the `Dedup` section catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B), then let dedup do its job at the per-candidate stage.
 
@@ -157,7 +157,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
+8. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
 
@@ -173,7 +173,7 @@ Blog posts weave in related coverage the way a journalist cites other outlets' p
 **Link targets — all valid for blog posts:**
 
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
-- **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the reader finds ("local personal trainers").
+- **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the page lists ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin").
@@ -225,7 +225,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
-| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the reader's decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and which style fits a small apartment."). |
+| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and which style fits a small apartment."). |
 | `post_start_date` | Required. The user's future publish datetime if given, else identical to `post_live_date`. `YYYYMMDDHHmmss`, site timezone. |
 
 ### Do NOT pass

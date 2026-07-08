@@ -133,9 +133,9 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the reader is deciding whether to apply. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
+**Voice:** reads like a naturally-written job posting page, not an SEO link container. Role context, company context, what the work actually is — the article explains what the job is and what the work entails. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
-**Jobs-specific load-bearing facts** (the reader needs these up front): role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
+**Jobs-specific load-bearing facts**: role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
 
 **Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for jobs: responsibilities, required qualifications, preferred qualifications, benefits, perks.
 

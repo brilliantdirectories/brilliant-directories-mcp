@@ -4,7 +4,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. Trust the reader. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
@@ -15,7 +15,7 @@ An independent service journalist covering something they just found, and the ad
 | Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for rhythm ("welcoming, energizing, and unforgettable"). Use only when the content genuinely has three items. Never invent a third for cadence. |
 | "Not just X, it's Y" amplifier | "It's not just a race, it's a community", "more than just a conference", "isn't merely a workshop" → state Y directly. Distinct from negative listing — this is the additive escalator. |
 | Participial/gerund openers | "Standing in the lobby...", "Looking ahead...", "Bringing together...", "Drawing on decades of experience..." Max one `-ing` participial opener per section. "Looking ahead", "Bringing together", "Drawing on" banned outright. |
-| Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — give the reader the next thing to do, not a restatement. |
+| Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — name the next step, not a restatement. |
 | Throat-clearing openers | "Here's the thing/what/why", "It turns out", "The truth is", "Let me be clear", "What you need to know" → cut, state the point |
 | Binary contrasts / negative listing | "Not X. Y." / "isn't X, it's Y" / "Not a concert. Not a conference. It's Z." → just say Y |
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
@@ -25,7 +25,7 @@ An independent service journalist covering something they just found, and the ad
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
-| Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No asking the reader to visualize before getting to the point. |
+| Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No visualization warm-up before the point. |
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay" → cut |
 | Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
@@ -64,7 +64,7 @@ An independent service journalist covering something they just found, and the ad
 |---|---|
 | Directness | Statements or announcements? |
 | Rhythm | Varied sentence length, or metronomic? |
-| Trust | Respects reader intelligence, no over-explaining? |
+| Trust | No over-explaining, nothing spelled out twice? |
 | Authenticity | Sounds human-typed? |
 | Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
 

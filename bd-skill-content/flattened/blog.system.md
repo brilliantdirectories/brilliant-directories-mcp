@@ -176,15 +176,15 @@ The content-type file may specify a fallback category.
 
 ### Required outcomes (any structure achieves these)
 
-Good posts leave the reader genuinely informed: core facts, practical considerations, useful context, honest comparisons, deeper insights on the location/category/focus where the source supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (tighter when the source is thin, expanded when source data + confident knowledge support more).
+A good post covers the full picture: core facts, practical considerations, useful context, honest comparisons, deeper insights on the location/category/focus where the source supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (tighter when the source is thin, expanded when source data + confident knowledge support more).
 
-1. **Load-bearing facts up front.** A reader can answer the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") within the first intro paragraph. The content-type file specifies which facts are load-bearing for the data type.
+1. **Load-bearing facts up front.** The first intro paragraph answers the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it"). The content-type file specifies which facts are load-bearing for the data type.
 2. **Every claim source-supported.** No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because the source is thin is fine; short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is not.
 3. **External source citations: target 2 per post** (1 acceptable; hard cap 3, the 3rd only when it substantially improves accuracy), only AFTER the first 1-2 internal links per `Link order`. Source in order, stopping at target: (a) this run's Stage 3 verified set — zero calls, the default path; (b) one batched round per **Rule: Search discipline**: broad topic query (3-6 plain words, no operators) + a `<topic> guidelines`-or-`standards` companion, judged by the Source credibility gate, then one `site:` probe on a surfaced domain; (c) practice/profession topic → its encyclopedia article's institutional references; (d) ship under-cited. Budget: 2 WebSearch + 2 WebFetch per post. Cite static destinations only — a specific article, abstract, or official page, never a search-results/query URL (`?term=`, `?q=`, `search?`, tag/archive indexes). Link naturally in flowing prose with `rel="nofollow" target="_blank"` — no forced "Source: X" footer. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals.
 4. **Internal links to related coverage** — use URL-PATTERNS.md Pattern 1 (specific post URLs), Pattern 2 (post-type main page `/<data_filename>`), or Pattern 3 (filtered listing URLs by category/location/date). Weave them inline within body prose where they read naturally — not in a dedicated trailing "More X in Y" section. Anchor text reads as part of a sentence (the linked phrase is a noun or noun-phrase that belongs in the surrounding sentence), not as a standalone CTA. Never fabricate URLs. Meet — never exceed — the content-type file's link budget by wrapping noun phrases the draft already contains (the city, the role, the category, the venue) — a link with no natural carrier is re-targeted to a noun the draft does have, never given a manufactured hosting sentence; under-budget is the last resort. A reference with no verifiable target omits that link.
 5. **External links to sources, ticket/registration vendors, official pages** — with `rel="nofollow" target="_blank"`.
 6. **Reach for these depth dimensions where they fit the post type and don't require fabrication** — they separate a republished listing from a destination page. Include each where source data + confident knowledge support it honestly; omit any that would require guessing, padding, or stretching.
-   - **What to expect** — sensory + situational detail before the reader decides to engage.
+   - **What to expect** — sensory + situational detail that sets the scene up front.
    - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
    - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
    - **Comparable anchors** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
@@ -195,7 +195,7 @@ Good posts leave the reader genuinely informed: core facts, practical considerat
 
 ### Froala HTML safety
 
-Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open `post_content` with `<p>` intro paragraph(s); never start with `<h2>` or any heading.** `post_content` is reader-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
+Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open `post_content` with `<p>` intro paragraph(s); never start with `<h2>` or any heading.** `post_content` is public-facing only — never include HTML comments, source notes, machine-readable metadata, or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -210,7 +210,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Link order (universal — internal first, external later)
 
-1. **First 1-2 links the reader hits** — must be internal links only (any internal Pattern per URL-PATTERNS.md).
+1. **The article's first 1-2 links** — must be internal links only (any internal Pattern per URL-PATTERNS.md).
 2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
@@ -299,7 +299,7 @@ Scan the assembled body. Fix anything that fires:
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - Are all headings (H2 and H3) in **title case**, not sentence case? `"Where to Fly a Kite"`, not `"Where to fly a kite"`.
-- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is reader-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
+- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
 - Pexels image picked: does the search-result title name the post's primary subject AND match its defining context (activity vs generic scene, urban vs trail, indoor vs outdoor, season, beginner vs elite, etc.)? Generic title or wrong-context match = re-pick or WebFetch verify.
 
 ## Universal post fields
@@ -311,7 +311,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | `post_image` | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit. |
 | `post_category` | Best-matched category name, verbatim from the resolved post type's `feature_categories`. No fabrication. Skip if no ≥70% confidence match. |
 | `post_meta_title` | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples. |
-| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the reader's situation). |
+| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the decision at hand). |
 | `post_meta_keywords` | Pass the same exact CSV value as `post_tags`. |
 | `post_live_date` | Required on every create: the current site-local datetime, `YYYYMMDDHHmmss` (14 digits). Source priority: the `Current UTC datetime:` line in your prompt converted to `getSiteInfo.timezone`; else `getSiteInfo.current_site_datetime` as-is (already site-local). |
 
@@ -447,7 +447,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. Trust the reader. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
@@ -458,7 +458,7 @@ An independent service journalist covering something they just found, and the ad
 | Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for rhythm ("welcoming, energizing, and unforgettable"). Use only when the content genuinely has three items. Never invent a third for cadence. |
 | "Not just X, it's Y" amplifier | "It's not just a race, it's a community", "more than just a conference", "isn't merely a workshop" → state Y directly. Distinct from negative listing — this is the additive escalator. |
 | Participial/gerund openers | "Standing in the lobby...", "Looking ahead...", "Bringing together...", "Drawing on decades of experience..." Max one `-ing` participial opener per section. "Looking ahead", "Bringing together", "Drawing on" banned outright. |
-| Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — give the reader the next thing to do, not a restatement. |
+| Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — name the next step, not a restatement. |
 | Throat-clearing openers | "Here's the thing/what/why", "It turns out", "The truth is", "Let me be clear", "What you need to know" → cut, state the point |
 | Binary contrasts / negative listing | "Not X. Y." / "isn't X, it's Y" / "Not a concert. Not a conference. It's Z." → just say Y |
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
@@ -468,7 +468,7 @@ An independent service journalist covering something they just found, and the ad
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
-| Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No asking the reader to visualize before getting to the point. |
+| Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No visualization warm-up before the point. |
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay" → cut |
 | Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
@@ -507,7 +507,7 @@ An independent service journalist covering something they just found, and the ad
 |---|---|
 | Directness | Statements or announcements? |
 | Rhythm | Varied sentence length, or metronomic? |
-| Trust | Respects reader intelligence, no over-explaining? |
+| Trust | No over-explaining, nothing spelled out twice? |
 | Authenticity | Sounds human-typed? |
 | Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
 
@@ -549,7 +549,7 @@ Read before generating any internal link. Universal across post types.
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
 | 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check: their plan on `listMembershipPlans` has `searchable=1` AND `search_membership_permissions` contains `visitor`. Never `/listing/<id>`. |
-| 5 | Member directory landing — entire directory | `/<getSiteInfo.main_directory_url_relative>` | The directory landing page, cached from the run's `getSiteInfo` call. Lists every member, no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the reader finds there ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — appending `?category[]=...` or `?lat=...` does not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6. |
+| 5 | Member directory landing — entire directory | `/<getSiteInfo.main_directory_url_relative>` | The directory landing page, cached from the run's `getSiteInfo` call. Lists every member, no location or category filter applied. Use when no category or location qualifier fits the sentence. Anchor text names who the page lists ("certified personal trainers"), never site furniture ("member directory," "browse listings"). **Takes NO query parameters** — appending `?category[]=...` or `?lat=...` does not work; Pattern 3's filter params apply to POST listings only, never to the member directory. For filtered member directory links, use Pattern 6. |
 | 6 | Member directory — filtered by location and/or category | `/<slug-hierarchy>` | Slug-hierarchy URL that narrows the member directory by category and/or location (e.g. `/california/los-angeles/personal-trainer`). See the `Pattern 6 — Filtered member directory` section for the full construction recipe. |
 
 WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) are OUT OF SCOPE for content-creation skills — those require `listWebPages` discovery and belong to the future `/bd:seo` skill. Pattern 6 slug-hierarchy URLs are NOT in this category — BD's dynamic router resolves them natively, no WebPage lookup needed.
@@ -683,7 +683,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the reader finds there ("local personal trainers"), never site furniture ("our directory," "browse trainers").
+- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the page lists ("local personal trainers"), never site furniture ("our directory," "browse trainers").
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes
@@ -817,7 +817,7 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 
 **If user signaled viral/trending intent**, also pull `WebSearch` for trending discussions/news in the vertical (last 30-60 days).
 
-**Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario a reader outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
+**Topic bar (Shape B).** Frame each candidate for a non-expert outside the niche while keeping specific qualifiers (audience segment, geographic context, use case, life stage). Compounded specificity, not one. **Specific ≠ jargon** — the qualifier should be a real audience or scenario anyone outside the niche can picture (marathon runner, ACL recovery, desk worker), not insider terminology or acronym strings (mid-cycle loading, conjugate periodization, eccentric utilization ratio, NASM vs ACE vs NSCA). Pivot examples: "TPO vs EPDM Roof Membranes" → "The Best Roofing Materials for Residential Homeowners in Cold Climates". "IRC §179 vs §168(k) Deductions" → "Which 2026 Tax Deductions Save Sole Proprietors the Most?"
 
 **Topic depth (Shape B) — go specific, not safe.** Default LLM move is the broadest possible framing ("How Much Protein to Build Muscle"). That competes against millions of existing articles and ranks for nothing. Go two or three specificity layers deeper on each candidate:
 
@@ -827,16 +827,16 @@ User said "write articles for SEO traffic," "organic search," "viral content," "
 |---|---|---|---|
 | Imperative | Command, verb-first, promises an outcome | Dog Training Basics | Stop a Rescue Dog From Pulling on Walks in Its First Two Weeks Home |
 | How-to | Explicit instruction | Roof Repair Tips | How to Tell If a Hail-Damaged Roof Needs Full Replacement or a Patch |
-| Question | Poses the reader's query | Choosing a Lawyer | Do You Need a Lawyer to File for Custody in a No-Fault State? |
+| Question | Poses the searched question | Choosing a Lawyer | Do You Need a Lawyer to File for Custody in a No-Fault State? |
 | Listicle / number | Counted set | Saving for Retirement | 5 Retirement Accounts a Freelancer Should Open Before Age 40 |
 | Declarative / statement | Asserts a claim or truth | Electric Cars | Heat Pumps Are Quietly Replacing the Gas Furnace in Cold Climates |
 | Noun-phrase / definitional | Names the subject, no verb | Wedding Photography Ideas | The Real Cost of a Second Shooter for a Full-Day Wedding |
 | Comparison / vs | Pits two options against each other | Types of Mattresses | Memory Foam vs Latex for Side Sleepers With Back Pain |
 | Guide / explainer | "The complete/beginner's" framing | Houseplant Care | A Beginner's Guide to Keeping Fiddle-Leaf Figs Alive Through Winter |
 
-Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad reader-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
+Specificity layers: audience segment + scenario + format. The qualifiers ARE the specificity — broad-appeal framing AND specific qualifiers are not opposites. Each narrows the long-tail query. Broad topics still ship occasionally — but the default is specific.
 
-**Pick qualifiers that match real search intent** — what readers actually query, not a narrowing that sounds clever to a strategist.
+**Pick qualifiers that match real search intent** — what people actually search, not a narrowing that sounds clever to a strategist.
 
 **Never bulk-list existing posts to "understand coverage" before picking a topic.** The per-candidate query in the `Dedup` section catches real overlaps; pre-scanning the feed adds nothing and burns reads on sites with hundreds of posts. Pick topics from vertical/category signals (Shape B), then let dedup do its job at the per-candidate stage.
 
@@ -900,7 +900,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape per ANTI-SLOP `Bullets rule`.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance the reader to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
+8. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
 
@@ -916,7 +916,7 @@ Blog posts weave in related coverage the way a journalist cites other outlets' p
 **Link targets — all valid for blog posts:**
 
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
-- **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the reader finds ("local personal trainers").
+- **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the page lists ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin").
@@ -968,7 +968,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
-| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the reader's decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and which style fits a small apartment."). |
+| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and which style fits a small apartment."). |
 | `post_start_date` | Required. The user's future publish datetime if given, else identical to `post_live_date`. `YYYYMMDDHHmmss`, site timezone. |
 
 ### Do NOT pass
