@@ -22,7 +22,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 | Param | Format | Notes |
 |---|---|---|
 | `q` | `q=keyword` | How BD renders its own tag links. Skill-built links filter via the params below, never `q=`. |
-| `category[]` | `category[]=Category%20Name` | Repeat for multi-category. Skill defaults to single-category. |
+| `category[]` | `category[]=Category%20Name` | Value copied character-for-character from the category ledger — any other string filters nothing. Repeat for multi-category. Skill defaults to single-category. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
 | `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN+55802&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Use `location_type=locality` for city-level (default for content-skill links). Use `location_type=postal_code` for ZIP-radius filtering on sites where the city is too broad (e.g. dense metros). Use the post's `post_location` string for `location_value` regardless of mode. |
 
