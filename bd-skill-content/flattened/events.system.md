@@ -92,7 +92,7 @@ Resolve the `user_id` that authors the post.
     ```
     listSingleImagePosts property=data_id property_value=<resolved data_id> property_operator=eq order_column=revision_timestamp order_type=desc limit=1
     ```
-    (For multi-image post types where `data_type=4`, substitute `listMultiImagePosts`.) Use the returned row's `user_id`.
+    Use the returned row's `user_id`.
 
 3. **Fallback A** (zero existing posts of this type on the site) → find a member whose subscription plan is authorized to publish this post type:
     1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
@@ -107,7 +107,7 @@ Multiple candidates from post-type discovery resolve in order — never exit ove
 
 1. The run's instructions pre-specify a post-type id → use it.
 2. The run's wording names a flavor (e.g. "open house events", "internship listings") → single confident `data_name` match wins.
-3. The site's editorial pattern — one call per tool family (`listSingleImagePosts`; `data_type=4` candidates via `listMultiImagePosts`): `property=data_id property_value=<candidate id CSV> property_operator=in order_column=revision_timestamp order_type=desc limit=1`. The newest returned row's `data_id` wins; cache the row — Author resolution step 2 reuses it. No rows → step 4.
+3. The site's editorial pattern — one batched call: `listSingleImagePosts property=data_id property_value=<candidate id CSV> property_operator=in order_column=revision_timestamp order_type=desc limit=1`. The newest returned row's `data_id` wins; cache the row — Author resolution step 2 reuses it. No rows → step 4.
 4. No candidate has any posts → the lowest `data_id` (the site's oldest such type).
 
 ### Candidate pool discipline (universal pattern)
@@ -832,7 +832,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 
 A BD site does NOT necessarily have a post type named "Events." Site owners rename, translate, or run multiple event-flavored post types ("Open Houses" + "Property Auctions" + "Community Events").
 
-**Primary marker:** event-flavored post types have `type_of_feature=1`. Call `listPostTypes property=type_of_feature property_value=1 property_operator=eq` — server-side filter returns just the event post-type row(s). Do NOT `getPostType` per-candidate.
+**Primary marker:** event-flavored post types have `type_of_feature=1`. Call `listPostTypes property=type_of_feature property_value=1 property_operator=eq` — server-side filter returns just the event post-type row(s). Do NOT `getPostType` per-candidate. Keep only rows with `data_type=20` — single-image is the only family this skill creates.
 
 **Fallback:** if zero `type_of_feature=1` matches, semantic-match `data_name`/`system_name` against event terms in any language (event, calendar, agenda, open-house, auction, show, schedule, happening, eventos, calendario, événements, veranstaltungen, etc.). Confirm `data_type=20` (single-image classification).
 
