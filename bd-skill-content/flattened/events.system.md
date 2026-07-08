@@ -294,6 +294,7 @@ Scan the assembled body. Fix anything that fires:
 - Anchor over 5 words? Tighten; move the description to `title`.
 - Same href twice? Re-derive one under a different Pattern, or cite a different static source for an external; drop only if none fits.
 - More than one bare unfiltered page linked (`/search`, a naked category slug), or the post opens on one? Re-target per `Link shape priority`.
+- `post_category` and every Pattern 3 `category[]` value verbatim in the cached category list (`feature_categories`, or `post_category.choices` where the content-type file routes through it)? A value not on that list filters nothing — fix to the matching category or drop the param.
 - Section present without source data to support it? Remove.
 - Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
@@ -447,7 +448,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-A blog post speaks as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. A job or event page speaks as the listing itself — the source of truth, stating its facts in its own authority. Every voice: generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+The page speaks as the thing it is, never as a report about its source. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak as the listing itself — the source of truth, stating facts in its own authority. Every voice: generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
