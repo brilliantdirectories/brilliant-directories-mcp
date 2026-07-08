@@ -8,7 +8,7 @@ Create exactly:
 - PUBLISH STATUS: `post_status=1`
 - AUTHOR: `user_id=1`
 
-Pick job listings that match my site's focus and niche, strengthen local-SEO and topical authority, and whose subject matter naturally connects to related members, categories, and locations already on the site.
+Pick job listings that fit the niche, carry strong local search value, and whose subject matter naturally connects to related pros, categories, and locations a sentence can link to.
 
 Prefer listings with strong local search intent, public application info available, and posted within the last 30 days.
 

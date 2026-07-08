@@ -161,7 +161,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts link broadly across BD resources — this is where the SEO compounding lives. Budget **5-10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries 3-5)**, distributed:
+Blog posts weave in related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives, and none of it is visible in the prose. Budget **5-10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries 3-5)**, distributed:
 
 | Section | Recommended links |
 |---|---|
@@ -179,7 +179,7 @@ Blog posts link broadly across BD resources — this is where the SEO compoundin
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin").
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.
 
-Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link to the member search filtered by the site's relevant category + the city named in the paragraph. If the paragraph references a related concept covered by another article on the site, deep-link to that article via Pattern 1 (but only if the agent has confirmed the article exists). Never fabricate URLs.
+Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept a related guide covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never an ownership tag ("the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists. Never fabricate URLs.
 
 ### Inline body images
 
