@@ -447,7 +447,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-An independent service journalist covering something they just found, and the adjacent things it naturally connects to. Generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory. Listing-type posts (jobs, events) speak as the listing itself per their content-type Voice line — the journalist register governs the specifics and the linking, never the speaker: the page states its facts as the source of truth, never as a report on where they came from.
+A blog post speaks as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. A job or event page speaks as the listing itself — the source of truth, stating its facts in its own authority. Every voice: generous with specifics, no padding, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
@@ -927,7 +927,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** this page IS the job posting — the listing itself, the source of truth, not an SEO link container and not a report about a posting found elsewhere. State the role's facts in the listing's own voice ("The role requires…", "Sessions are one-on-one…"), never narrating the source document ("the posting says", "compensation is listed as"). Role context, company context, what the work actually is. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
+**Voice:** this page IS the job posting. State the role's facts as your own: "The role requires STOTT certification", "Sessions are one-on-one." Never narrate a source document ("the posting says", "compensation is listed as"). Role context, company context, what the work actually is. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
 **Jobs-specific load-bearing facts**: role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
 

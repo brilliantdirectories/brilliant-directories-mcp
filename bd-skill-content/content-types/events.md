@@ -105,7 +105,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
 
-**Voice:** this page IS the event page — the listing itself, the source of truth, not an SEO link container and not a report about a listing found elsewhere. State the event's facts in the page's own voice ("Doors open at 6…", "Tickets run $25…"), never narrating the source document ("the organizer's page says", "tickets are listed at"). Local context, scene details, what to expect.
+**Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document ("the organizer's page says", "tickets are listed at"). Local context, scene details, what to expect.
 
 **Events-specific load-bearing facts**: event date + time, venue + address, ticket price or "free", parking, agenda, how to attend or buy tickets. Surface these in the opening paragraphs.
 
