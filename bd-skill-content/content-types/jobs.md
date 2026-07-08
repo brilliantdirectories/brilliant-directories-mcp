@@ -149,7 +149,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening paragraph (role + load-bearing facts) | 1 (category or location filter) |
 | Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 1 (always — riding the closing advice sentence, never a "go browse X" line) |
+| Closing paragraph | 1 (always — riding a sentence the close already needs, never a "go browse X" line) |
 
 Jobs get category, location (`lat`+`lng`+`location_value`+`location_type=locality`) filter dimensions. No date filter for jobs.
 

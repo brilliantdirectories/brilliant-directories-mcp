@@ -17,5 +17,3 @@ If a registration or official information URL is known, include this CTA immedia
 class="btn btn-secondary btn-lg vmargin"
 
 Run fully autonomous: no clarification, no approval gates, no confirmation pauses. Analyze, pick the best opportunity, publish.
-
-Final output: event title, location, category, internal link count, published URL.

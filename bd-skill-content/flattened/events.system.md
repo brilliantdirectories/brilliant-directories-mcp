@@ -474,7 +474,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Site self-reference | "on this site", "the site's X", "our directory", "our members", audience narration ("for readers comparing...", "readers/people who want..."), link-strategy vocabulary ("internal link target", "local-search target", "check the X page", "browse the full X"), sentences that exist only to deliver a link → write about the subject, never about the reader-class, the site, or its link strategy; the sentence must survive with the link removed |
+| Site, reader & link-strategy narration | "on this site", "the site's X", "our directory", "our members", "for readers comparing...", "readers/people who want...", "internal link target", "local-search target", "check the X page", "browse the full X", sentences that exist only to deliver a link → write about the subject; the sentence must survive with the link removed |
 
 ## Self-check before posting
 
@@ -911,7 +911,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening paragraph (event hook + load-bearing facts) | 1 (category or location filter) |
 | Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 1 (always — riding the closing advice sentence, never a "go browse X" line) |
+| Closing paragraph | 1 (always — riding a sentence the close already needs, never a "go browse X" line) |
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
 

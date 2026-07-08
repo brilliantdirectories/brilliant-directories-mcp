@@ -17,5 +17,3 @@ If an application URL is known, include this CTA immediately after the intro par
 class="btn btn-secondary btn-lg vmargin"
 
 Run fully autonomous: no clarification, no approval gates, no confirmation pauses. Analyze, pick the best opportunity, publish.
-
-Final output: job title, company, location, category, internal link count, published URL.

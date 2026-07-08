@@ -32,7 +32,7 @@ Friend telling someone about a cool local thing. Generous with specifics, no pad
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
 | Formulaic attribution | "[Org] says/notes/describes...", "According to [Org]..." sentence openers → state the fact in your own sentence with the source linked mid- or end-sentence |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
-| Site self-reference | "on this site", "the site's X", "our directory", "our members", audience narration ("for readers comparing...", "readers/people who want..."), link-strategy vocabulary ("internal link target", "local-search target", "check the X page", "browse the full X"), sentences that exist only to deliver a link → write about the subject, never about the reader-class, the site, or its link strategy; the sentence must survive with the link removed |
+| Site, reader & link-strategy narration | "on this site", "the site's X", "our directory", "our members", "for readers comparing...", "readers/people who want...", "internal link target", "local-search target", "check the X page", "browse the full X", sentences that exist only to deliver a link → write about the subject; the sentence must survive with the link removed |
 
 ## Self-check before posting
 
