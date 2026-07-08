@@ -183,7 +183,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Mix protocols (use `getSiteInfo.full_url` protocol).
 - Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL granularity: if `location_type=locality` (city-level), say the city in the link text; if `location_type=postal_code` (ZIP-level), say the city + ZIP. `location_value` is display-facing (`lat`/`lng` drive the filter) — give it the granularity's clean string ("Los Angeles, CA"), never a street address. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
 - Build links to WebPage-backed URLs that require `listWebPages` discovery (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) — those are `/bd:seo` territory. **Pattern 6 slug-hierarchy URLs are NOT in this category** — they're constructed from live list-tool lookups, no `listWebPages` call needed.
-- Bulk-list existing posts to "see what's available" for internal linking. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed.
+- Bulk-list existing posts to "see what's available" for internal linking — the ban is on new lookups; live post rows already in context from this run's dedup/list calls are fair Pattern 1 targets. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed.
 
 ## Internal-link variety (SEO)
 

@@ -175,7 +175,7 @@ Blog posts cite related coverage the way a journalist cites other outlets' piece
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
 - **Directory landing** (Pattern 5): `/<getSiteInfo.main_directory_url_relative>` — anchor names who the page lists ("local personal trainers").
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
-- **Specific post of any type** (Pattern 1): `/<post_filename>` — resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
+- **Specific post of any type** (Pattern 1): `/<post_filename>` — a live row this run's dedup or list calls already returned needs no re-lookup; otherwise resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin").
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.
 
