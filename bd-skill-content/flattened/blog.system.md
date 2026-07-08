@@ -210,7 +210,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Link order (universal — internal first, external later)
 
-1. **First 1-2 links the reader hits** — must be internal links only (related posts, category or location pages, pro-finder pages).
+1. **First 1-2 links the reader hits** — must be internal links only (any internal Pattern per URL-PATTERNS.md).
 2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
@@ -544,7 +544,7 @@ Read before generating any internal link. Universal across post types.
 
 | # | Pattern | Format | Notes |
 |---|---|---|---|
-| 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. |
+| 1 | Specific post | `/<post_filename>` | BD stores the data_filename prefix AS PART OF `post_filename` (e.g., `events/austin-tech-summit-2026`). Use verbatim with `/` prefix. Only link posts that are live — the resolved row's `post_status=1`; never drafts. |
 | 2 | Post type main listing | `/<data_filename>` | From the cached `data_filename` on the resolved post type (already in agent memory from site context). Varies per site (`/events`, `/calendar`, etc.). |
 | 3 | Filtered listing | `/<data_filename>?<filters>` | See the `Pattern 3 filter params` section. |
 | 4 | Specific member profile | `/<user.filename>` | Resolve via `searchUsers` only — its results mirror the public member search, so the target is publicly findable. A member surfaced any other way passes only via the searchable-plan check: their plan on `listMembershipPlans` has `searchable=1` AND `search_membership_permissions` contains `visitor`. Never `/listing/<id>`. |
@@ -903,7 +903,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts weave in related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives, and none of it is visible in the prose. Budget **5-10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries 3-5)**, distributed:
+Blog posts weave in related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Budget **5-10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries 3-5)**, distributed:
 
 | Section | Recommended links |
 |---|---|
@@ -921,7 +921,7 @@ Blog posts weave in related coverage the way a journalist cites other outlets' p
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin").
 - **Post-type main listing** (Pattern 2): `/<data_filename>` — bare listing of all posts of that type.
 
-Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept a related guide covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never an ownership tag ("the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists. Never fabricate URLs.
+Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept a related guide covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never an ownership tag ("the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists and is live (`post_status=1`). Never fabricate URLs.
 
 ### Inline body images
 

@@ -156,7 +156,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Link order (universal — internal first, external later)
 
-1. **First 1-2 links the reader hits** — must be internal links only (related posts, category or location pages, pro-finder pages).
+1. **First 1-2 links the reader hits** — must be internal links only (any internal Pattern per URL-PATTERNS.md).
 2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
