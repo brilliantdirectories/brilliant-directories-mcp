@@ -1,13 +1,13 @@
 ---
 name: bd-skill-content
-description: Create SEO-rich content posts on a Brilliant Directories (BD) website. Use when the user wants to populate or grow their BD site with event posts, job listings, property listings, or blog articles. The skill researches publicly-available sources, applies quality gates, manufactures EEAT-rich post content, deduplicates against existing posts, and prints an audit summary. Works on any BD-powered site via the public hosted MCP at brilliantmcp.com or the npm-installed MCP wrapper. Requires a BD API key and site URL configured in the user's MCP connection. Designed so the user can invoke with a one-sentence goal and get a complete, correct run.
+description: Create SEO-rich content posts on a Brilliant Directories (BD) website. Use when the user wants to populate or grow their BD site with event posts, job listings, or blog articles. The skill researches publicly-available sources, applies quality gates, manufactures EEAT-rich post content, deduplicates against existing posts, and prints an audit summary. Works on any BD-powered site via the public hosted MCP at brilliantmcp.com or the npm-installed MCP wrapper. Requires a BD API key and site URL configured in the user's MCP connection. Designed so the user can invoke with a one-sentence goal and get a complete, correct run.
 ---
 
 # BD Content Skill: Multi-type content creation for Brilliant Directories sites
 
 ## What this skill does
 
-Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, properties, blog articles.
+Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, blog articles.
 
 ## Required reading (in this order)
 
@@ -48,7 +48,6 @@ If `getSiteInfo` errors or returns no site, retry once; still failing → end th
 
 ## What this skill does NOT do
 
-- Property content type (coming in a future release)
 - Editing existing posts (only creates new ones)
 - Calling paid third-party services
 - Bypassing source ToS, robots.txt, paywalls, or auth walls

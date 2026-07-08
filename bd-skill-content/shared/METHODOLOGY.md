@@ -166,7 +166,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 Use Pexels for all images. After all 10 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
 
-**Memory scope on image inventory:** memory may flag prior axes as exhausted for `<topic>`, but every run still attempts all 10 axes fresh in the table-defined order. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
+Every run attempts all 10 axes fresh in the table-defined order — stock-photo inventories change daily.
 
 1. **Pexels** — follow **Rule: Image URLs** exactly. Always send to BD with `auto_image_import=1`.
 

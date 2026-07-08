@@ -4,7 +4,7 @@
 
 ## What this skill does
 
-Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, properties, blog articles.
+Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, blog articles.
 
 ## Required reading (in this order)
 
@@ -45,7 +45,6 @@ If `getSiteInfo` errors or returns no site, retry once; still failing → end th
 
 ## What this skill does NOT do
 
-- Property content type (coming in a future release)
 - Editing existing posts (only creates new ones)
 - Calling paid third-party services
 - Bypassing source ToS, robots.txt, paywalls, or auth walls
@@ -225,7 +224,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 Use Pexels for all images. After all 10 axes attempted without a commit, omit `post_image`. Omitting is the last resort.
 
-**Memory scope on image inventory:** memory may flag prior axes as exhausted for `<topic>`, but every run still attempts all 10 axes fresh in the table-defined order. Stock-photo inventories change daily, so a saturation verdict from a prior run is treated as a hint, not a verdict.
+Every run attempts all 10 axes fresh in the table-defined order — stock-photo inventories change daily.
 
 1. **Pexels** — follow **Rule: Image URLs** exactly. Always send to BD with `auto_image_import=1`.
 
