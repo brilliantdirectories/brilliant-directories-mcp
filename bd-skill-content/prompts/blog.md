@@ -9,5 +9,3 @@ Create exactly:
 - AUTHOR: `user_id=1`
 
 Pick topics that fit my niche and intersect with my categories; balance long-tail evergreen SEO value with deeper niche perspectives and high-search-intent topical authority.
-
-Run fully autonomous: no clarification, no approval gates, no confirmation pauses. Analyze, pick the best topic, publish.

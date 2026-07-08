@@ -15,5 +15,3 @@ Prefer listings with strong local search intent, public application info availab
 If an application URL is known, include this CTA immediately after the intro paragraphs:
 
 class="btn btn-secondary btn-lg vmargin"
-
-Run fully autonomous: no clarification, no approval gates, no confirmation pauses. Analyze, pick the best opportunity, publish.
