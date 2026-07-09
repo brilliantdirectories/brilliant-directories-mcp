@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.25] - 2026-07-09
+
+### Changed
+
+- **Image strategy cleanup — purged orphans left by the 7→3 step collapse (Butler worker).** Deleted the obsolete "an axis returning `/search/` URLs contributes zero topic-fits to the pool" bullet — "topic-fits/pool" was the deleted Step 2.5's vocabulary, and Step 2 now builds canonical URLs from `/photo/<id>/` IDs so a `/search/` result has no ID to enter anyway. Trimmed the cross-axis duplicate guard to its load-bearing core (removed redundant "pool the batch's results" and the spatial "carried into the next step"). Section now aligns flawlessly: every Step reference resolves, zero stale vocab, no spatial refs.
+
 ## [6.58.24] - 2026-07-09
 
 ### Changed
