@@ -245,33 +245,20 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **One search per axis.** Each axis gets exactly one search phrase — do not retry an axis with reworded phrasing (that drift, "let me try axis 2 with one more phrase," is the most common axis-discipline failure).
 
-   **Batched-axes loop.** A batch runs Step 1 through Step 5 in order: fire its five Step 1 searches in ONE turn as parallel calls, then run Steps 2, 2.5, 3, 3.5, 4, 5 once over all five searches' combined results, every result from all five, not one per search. Batch empty of a commit → next batch. Both batches exhausted → omit.
+   **Batched-axes loop.** A batch runs Step 1 through Step 3 in order: fire its five Step 1 searches in ONE turn as parallel calls, then run Steps 2 and 3 once over all five searches' combined results, every result from all five, not one per search. Batch empty of a commit → next batch. Both batches exhausted → omit.
 
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` per axis, using each axis's phrase from the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
    - **Cross-axis duplicate guard.** Pool the batch's results and keep each `/photo/<id>/` once — a duplicate that another axis already surfaced collapses to a single pool entry, carried into the next step just once.
 
-   **Step 2 — List every raw result.** Each WebSearch returns its own `/photo/<slug>-<id>/` results. List EVERY `/photo/` result from ALL WebSearches as one continuously-numbered list — `<n>. <id> — <title>` — one row per result, one list. Emit the complete list.
-
-   **Step 2.5 — Topic-fit keep/drop.** Walk the Step 2 list row by row and mark each `keep` or `drop`: `drop` only an off-topic row; every other row is `keep`. The pool is every `keep` row. Judge topic-fit on title + `/photo/<slug>` words:
-   - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
-   - **Broad-aesthetic topics** (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work.
-   - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
-   - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
-   - **If zero keep rows → next batch.**
-
-   **Step 3 — Extension filter (before any tool call).** Keep only candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive); a Pexels page that resolves to `.webp` / `.gif` / `.avif` / anything else drops from the pool.
-
-   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, turn every `keep` row into its canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and emit them as a numbered list — `1. <url>`, `2. <url>`, … through all of them. Steps 4 and 5 each take this whole list in ONE call.
-
-   **Step 4 — Dimension check (one batched call).** Take the whole Step 3.5 list and vet every URL in it in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Read each row of that one response:
+   **Step 2 — Dimension-check the whole pool.** Take every `/photo/<slug>-<id>/` result from all searches, build each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`, and pass them ALL into ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call (up to 50). Omit only clearly off-topic results (wrong vertical — karate for a judo post); every plausibly on-topic result goes in. Read each row of that one response:
    - **status=success + `message.orientation === "landscape"`** → landscape survivor, carry to dedup.
    - **status=success + portrait OR square** → drop.
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **Zero landscape survivors → next batch.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Take every Step 4 landscape survivor as one list and run **Rule: Image dedup** — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 50), `property_operator=in`. Response rows include `original_image_url` and `post_title`. From that one response, read the survivors in entry order and commit the first that clears both checks:
+   **Step 3 — Dedup (one batched call via `in` CSV).** Take every Step 2 landscape survivor as one list and run **Rule: Image dedup** — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 50), `property_operator=in`. Response rows include `original_image_url` and `post_title`. From that one response, read the survivors in entry order and commit the first that clears both checks:
    - **URL in the response** → that survivor is a URL-dupe; skip it.
    - **`post_title` semantic-matches the survivor's topic** → skip it (the **Candidate pool discipline** stance: never bulk-list or probe existing posts to find a gap, never ask the user for a replacement topic).
    - **Neither hit** → commit this URL as `post_image`.

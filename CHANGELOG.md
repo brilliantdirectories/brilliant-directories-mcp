@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.24] - 2026-07-09
+
+### Changed
+
+- **Image pool — collapsed 7 steps to 3, pool the URLs on the tool call itself (Butler worker).** Every prior version tried to force an intermediate "list/transcribe/keep-drop" step; 5.4-mini leapfrogged all of them and hand-picked ~5 URLs straight into `getImageDimensions`. Root cause: the intermediate steps competed with the tool call in the same turn and the tool call won. Fix: deleted Steps 2/2.5/3/3.5, and Step 2 now instructs "pass ALL search-result URLs into ONE `getImageDimensions` call (up to 50); omit only clearly off-topic ones" — the pooling lands on the call the model already makes, framed subtractively (omit junk) so it can't collapse to 5. Image strategy is now 3 steps: search → dimension-check the whole pool → dedup. Minion-verified against the live run's actual search outputs: 29 URLs into the dims call, not 5.
+
 ## [6.58.23] - 2026-07-09
 
 ### Changed
