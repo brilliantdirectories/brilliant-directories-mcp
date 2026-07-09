@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.15] - 2026-07-09
+
+### Changed
+- **Restored the original Stage-1 reads sentence verbatim.** 6.58.13/14 had needlessly reworded "fire them in ONE batched round" (churn while fixing the `mcp_call` slip). The original 4-reads phrasing is back untouched; the only net change on this line vs. pre-6.58.13 is the appended create-schema pre-fetch sentence (`getToolSchema createSingleImagePost` in the opening round).
+
 ## [6.58.14] - 2026-07-09
 
 ### Changed
