@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Stage 1 turn-1 anchor (Butler worker).** Named the opening batched round as an explicit "start exactly here" — the run's first 5 calls are the 4 site-context calls + `getToolSchema createSingleImagePost`, and that create schema is the only `getToolSchema` turn 1 fires. Kills the startup drift where the worker speculatively fetched `createMultiImagePost` on turn 1 and re-loaded on turn 2. All three skills create single-image posts exclusively, so the hardcoded schema is correct for each.
+
 ## [6.58.19] - 2026-07-09
 
 ### Changed
