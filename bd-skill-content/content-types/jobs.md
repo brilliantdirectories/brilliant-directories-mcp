@@ -66,7 +66,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), open the best list-page, and harvest many job postings in one fetch — after its entries show posted-dates within 30 days in the correct location, judged from the listed entries themselves.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), open the best list-page, and harvest many job postings in one fetch — on-topic and in the correct location, judged from the listed entries themselves; a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
 
 **Facets to derive:**
 - **Occupation/industry** — from the user's named occupations + audience/vertical from `getSiteInfo` + the resolved post type's `feature_categories` (cached).
@@ -90,11 +90,11 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 
 Tailor by vertical AND country: pick the country-native association + the country's national job portal first, then ATS pages of companies operating in that country.
 
-**30-day staleness gate.** During candidate harvest, capture each candidate's source-page posted-date and reject candidates with posted-date >30 days old.
+**30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate.
 
 A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
 
-Round empty or blocked → ONE month-year recovery query per **Rule: Search discipline**. Only stale (>30 days), blocked, or wrong-location sources after both rounds → stop with the labelled verdict; a clean "no fresh jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
+A usable candidate in hand → select it and proceed. Round empty or blocked → ONE month-year recovery query per **Rule: Search discipline**. Only when every source is stale (>30 days), blocked, or wrong-location after both rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: one reference search, then one `site:` probe on the poster's domain reaches the canonical posting. Prefer the candidate whose canonical posting is already verified live. Unreachable → use the copy's application contact per `How to apply` (a generic careers page qualifies only there), or drop per `URL liveness gate`.
 

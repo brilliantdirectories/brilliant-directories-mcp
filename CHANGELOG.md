@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.6] - 2026-07-08
+
+### Changed
+- **Content-skill image strategy (`searchStockImage` path):** the override now states the pooled batched flow explicitly — 5 axes in one turn → topic-fit on the returned `title`+`description` → one batched Step 5 dedup, and never calls `getImageDimensions` (the API already returns landscape-only). Fixes a regression where the path fell back to serial single-URL `getImageDimensions` probing. The Cross-axis duplicate guard and Step 5 ordering were made path-neutral so the WebSearch-Pexels path (which does use `getImageDimensions` at Step 4) is unchanged.
+- **Discovery-spiral fix (jobs, shared with events/blog):** a discovery round that returns usable candidates now explicitly succeeds → select and proceed, closing the case where a weak model kept re-searching with real candidates in hand. Defined "usable candidate" as one that clears the content-type's gates (on-topic, correct location, any date/recency rule the type sets), so events still require forward dates while jobs accept a real listing with no discoverable posted-date; bound reformulation to the round rather than an undefined "need"; removed the "thin" mislabel that flagged a few good recurring sources as a shortfall. Jobs staleness gate + prompt now treat an undated real listing as valid (date orders the pool, never blocks). Net-neutral prose; the undated-valid carve-out is quarantined to the jobs content-type.
+
 ## [6.58.5] - 2026-07-08
 
 ### Changed
