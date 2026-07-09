@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.12] - 2026-07-09
+
+### Changed
+- **Image pool no longer anchors to 5 candidates (wording-only, no logic change).** The batched-axes loop repeated "5" (batch of 5, 5 axes, 5 parallel calls, 5-axis pool), which primed the worker model to keep one candidate per axis (~5 total) instead of the real "up to 50" cap. The loop header is de-primed ("fire all the batch's axis searches in ONE turn as parallel calls" — also removes a "one call per axis" phrasing that read as serial), and Step 2 now states the arithmetic — each axis returns ~10 results, so a batch hands ~50 candidates; judge every one and keep every strong topic-fit, up to 50. Same flow, same 50 cap; the model now uses the whole pool.
+- **Tightened the 5-call turn rule** — removed the last soft concession ("rarely needs all 5") and normalized the digit ("Five" → "5"); the rule is now a flat invariant.
+
 ## [6.58.11] - 2026-07-09
 
 ### Changed
