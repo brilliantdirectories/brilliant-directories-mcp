@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.18] - 2026-07-09
+
+### Changed
+- **Image topic-fit gate reframed around the whole batch pool, not per-axis** (targets the observed "keep exactly one candidate per axis → pool of 5" collapse on the worker model). Removed the per-axis loop-priming from the keep step: deleted "in axis order", reworded Step 2 to "The batch's 5 WebSearches return ~50 results. Keep every topic-fit from every WebSearch, up to 50" (the keep decision now operates on the merged batch, not axis-by-axis), and dropped the descriptive self-check ("a list of exactly 5 means you kept one per axis…") that the model ignored. The Axes header clarifies one WebSearch per axis returns ~10 results. Every keep/pool step (Step 2/3.5/4/5 + the batched-axes loop) is now uniformly batch-focused; the remaining "per axis" language is confined to the search step (one query per axis), which is correct. Wording-only.
+
 ## [6.58.17] - 2026-07-09
 
 ### Changed
