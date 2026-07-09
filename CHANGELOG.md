@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.3] - 2026-07-08
+
+### Fixed
+- Filter `property_value` now accepts a JSON boolean and coerces it to the string BD expects (e.g. `is_default` filtering with `false`). Widened the `anyOf`→Zod converter and the filter-value coercion in both the npm package and the hosted Worker so a boolean self-heals instead of hitting a validator union error and wasting a retry.
+
 ## [6.58.2] - 2026-07-08
 
 ### Fixed
