@@ -89,7 +89,7 @@ Always SKIP existing records — no auto-edit of live posts.
 
 | Gate | Rule |
 |---|---|
-| Date sanity | Primary date > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Past/year-only/quarter-only fails. |
+| Date sanity | Primary date must be present AND > today AND < today+window. Window defaults to 90 days unless the user specifies otherwise (via `--window=<N>` or in their request). Absent/past/year-only/quarter-only fails — drop the candidate, never synthesize a date to pass this gate. |
 | SPA / empty | <500 chars of meaningful text OR script-shell page → skip. |
 | Required fields | The content-type file specifies. Missing any → skip. No synthesis. |
 | Confidence | Self-rate 1-10. Score = degree to which required fields are unambiguous and source-grounded. <8 skip, ≥8 use. |
