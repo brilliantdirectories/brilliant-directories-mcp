@@ -412,7 +412,7 @@ Site-wide image dedup covers stock URLs only (Pexels/Unsplash/Pixabay); source-s
 
 ### Rule: searchStockImage contract
 
-Use each candidate's returned `url` verbatim as the dedup key and the `post_image` write value (inline body images add `?w=700` per **Rule: Image URLs**). `auto_image_import=1` makes BD fetch and store the image.
+Always request `count=20` — the max pool in one call, same cost as fewer, more candidates to survive topic-fit and dedup. Use each candidate's returned `url` verbatim as the dedup key and the `post_image` write value (inline body images add `?w=700` per **Rule: Image URLs**). `auto_image_import=1` makes BD fetch and store the image.
 
 ### Rule: Post-body formatting
 
