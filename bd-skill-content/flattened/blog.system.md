@@ -252,7 +252,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
    - **Cross-axis duplicate guard.** Pool the batch's results and keep each `/photo/<id>/` once — a duplicate that another axis already surfaced collapses to a single pool entry, carried into the next step just once.
 
-   **Step 2 — List every raw result.** Each of the 5 searches returns its own `/photo/<slug>-<id>/` results (~6-10 each). List EVERY `/photo/` result from ALL five searches as one continuously-numbered list — `<n>. <id> — <title>` — one row per result, across all 5 searches, one list. This list runs to the full count the searches returned (typically 25-40 rows), never a hand-picked few. Emit the complete list before any judging.
+   **Step 2 — List every raw result.** Each WebSearch returns its own `/photo/<slug>-<id>/` results (~10 each). List EVERY `/photo/` result from ALL WebSearches as one continuously-numbered list — `<n>. <id> — <title>` — one row per result, one list. Emit the complete list.
 
    **Step 2.5 — Topic-fit keep/drop.** Walk the Step 2 list row by row and mark each `keep` or `drop`: `drop` only an off-topic row; every other row is `keep`. The pool is every `keep` row. Judge topic-fit on title + `/photo/<slug>` words:
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.

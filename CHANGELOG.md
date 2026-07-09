@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.22] - 2026-07-09
+
+### Changed
+
+- **Image pool Step 2 — leaner, all-positive wording (Butler worker).** Tightened the "list every raw result" instruction: de-numbered ("Each WebSearch" not "the 5 searches"), dropped the guessed row-count range, and removed the negations — the positive imperative "List EVERY `/photo/` result from ALL WebSearches... Emit the complete list" carries the forcing alone. Verified against the live run's actual 5 search outputs: still produces the full ~28-row list, no collapse to 5.
+
 ## [6.58.21] - 2026-07-09
 
 ### Changed
