@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.20] - 2026-07-09
+
 ### Changed
 
+- **Image pool sizing — forced breadth against the one-per-axis collapse (Butler worker).** The axis header now reads "Batch 1 = WebSearch each of axes 1-5 (five searches, one turn)" instead of "batched 5 at a time," and the batched-axes loop forces "every result from all five, not one per search." The old wording let gpt-5.4-mini return one result per axis (a rigid pool of 5); the explicit five-searches + pool-all-results framing forces the full raw pool.
+- **Split the image topic-fit step into transcribe + judge.** `Image strategy` Step 2 was one crammed step (transcribe ~50 then keep/drop); the model skipped the transcription and jumped to a short keep-list. Now Step 2 (Transcribe) must write the full numbered list before Step 2.5 (Topic-fit keep/drop) judges it — the materialization can't be leapfrogged.
+- **De-duplicated the image sequence across skill runbooks.** Jobs/events/blog each recited the full `Image strategy` step sequence inline; it now lives only in METHODOLOGY, with the runbooks deferring to it. Removes the drift vector (a sequence change touched 4 files) and a stale step-title reference. Blog keeps its feature-only / inline-body-images carve-out.
 - **Stage 1 turn-1 anchor (Butler worker).** Named the opening batched round as an explicit "start exactly here" — the run's first 5 calls are the 4 site-context calls + `getToolSchema createSingleImagePost`, and that create schema is the only `getToolSchema` turn 1 fires. Kills the startup drift where the worker speculatively fetched `createMultiImagePost` on turn 1 and re-loaded on turn 2. All three skills create single-image posts exclusively, so the hardcoded schema is correct for each.
 
 ## [6.58.19] - 2026-07-09

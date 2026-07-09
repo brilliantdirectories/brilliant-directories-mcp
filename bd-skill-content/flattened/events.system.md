@@ -224,7 +224,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
 1. **Pexels** — follow **Rule: Image URLs** exactly. Always send to BD with `auto_image_import=1`.
 
-   **Axes — 10 in order, one WebSearch per axis (each returns ~10 results), batched 5 at a time.**
+   **Axes — 10 in order. Batch 1 = WebSearch each of axes 1-5 (five searches, one turn); batch 2 = axes 6-10 if batch 1 yields no commit. Each search returns that axis's raw results.**
 
    Each search phrase must carry a topical anchor — a vertical-specific word that ties the photo to the topic.
 
@@ -245,19 +245,21 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **One search per axis.** Each axis gets exactly one search phrase — do not retry an axis with reworded phrasing (that drift, "let me try axis 2 with one more phrase," is the most common axis-discipline failure).
 
-   **Batched-axes loop — axes 1-5 are the first batch, axes 6-10 the second if the first yields no commit:** fire all the batch's axis searches in ONE turn as parallel calls, then run Steps 2-5 once across the merged pool — carried as one list, moved through each step in groups, never one at a time. Batch empty of a commit → next batch. Both batches exhausted → omit.
+   **Batched-axes loop.** A batch runs Step 1 through Step 5 in order: fire its five Step 1 searches in ONE turn as parallel calls, then run Steps 2, 2.5, 3, 3.5, 4, 5 once over all five searches' combined results, every result from all five, not one per search. Batch empty of a commit → next batch. Both batches exhausted → omit.
 
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` per axis, using each axis's phrase from the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
    - **Cross-axis duplicate guard.** Pool the batch's results and keep each `/photo/<id>/` once — a duplicate that another axis already surfaced collapses to a single pool entry, carried into the next step just once.
 
-   **Step 2 — Topic-fit gate (transcribe, then keep/drop).** The batch's 5 WebSearches return ~50 results. First transcribe every result as one continuously-numbered list — `<n>. <id> — <title>` — across all 5 searches, not restarted per search. Then mark each row `keep` or `drop`: `drop` only an off-topic row; every other row is `keep`. The pool is every `keep` row. Judge topic-fit on title + `/photo/<slug>` words:
+   **Step 2 — Transcribe.** The batch's 5 WebSearches return ~50 results. Write every result as one continuously-numbered list — `<n>. <id> — <title>` — across all 5 searches, one list, not restarted per search. Transcribe all of them before any judging.
+
+   **Step 2.5 — Topic-fit keep/drop.** Walk the Step 2 list row by row and mark each `keep` or `drop`: `drop` only an off-topic row; every other row is `keep`. The pool is every `keep` row. Judge topic-fit on title + `/photo/<slug>` words:
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
    - **Broad-aesthetic topics** (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
    - Title keyword salads (4+ unrelated nouns, e.g. `"People Rope Sport Rustic"`) are inherently ambiguous — WebFetch verify or skip; never commit on the assumption the title describes the image.
-   - **If zero strong topic-fits in the pool → next batch.**
+   - **If zero keep rows → next batch.**
 
    **Step 3 — Extension filter (before any tool call).** Keep only candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive); a Pexels page that resolves to `.webp` / `.gif` / `.avif` / anything else drops from the pool.
 
@@ -811,7 +813,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
-9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
+9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique in the same turn as the FIRST image dedup — one added `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` alongside the image-dedup call, never `like` or word-order variants. This title check is settled here and holds through create — run it exactly once for the run; a later image batch repeats only the image dedup.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
