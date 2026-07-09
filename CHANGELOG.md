@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.21] - 2026-07-09
+
+### Changed
+
+- **Image pool — floor the emitted list, not an upstream step (Butler worker).** v6.58.20's transcribe/judge split failed live: gpt-5.4-mini skipped the transcription entirely and emitted a hardwired 5-item "Candidate pool," even though the 5 searches returned ~30 results. Reworked `Image strategy` Step 2 to make listing every raw result the deliverable itself — "List EVERY `/photo/` result from ALL five searches... runs to the full count (typically 25-40 rows), never a hand-picked few." Fixed the stale "~50 results" count to "~6-10 each". The forcing now lands on the artifact the model actually emits; an intermediate step it can leapfrog cannot.
+
 ## [6.58.20] - 2026-07-09
 
 ### Changed
