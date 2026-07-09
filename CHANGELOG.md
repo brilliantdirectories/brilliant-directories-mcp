@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.28] - 2026-07-09
+
+### Changed
+
+- **poolImages fork line: removed spatial references.** "follow the numbered steps below" / "the numbered steps below" → "run Steps 1-3" / "`poolImages` replaces Steps 1-3 — do not also run them" (name-based, grep-able, never positional). Full image-strategy section swept: zero spatial refs.
+
 ## [6.58.27] - 2026-07-09
 
 ### Changed
