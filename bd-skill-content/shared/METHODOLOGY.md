@@ -193,8 +193,6 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **Batched-axes loop — process axes in one batch of 5 (axes 1-5), then if no commit a second batch (axes 6-10):** fire all 5 axes' searches in ONE turn (5 parallel calls), then run Steps 2-5 once across the merged 5-axis pool. Batch empty of a commit → next batch. Both batches exhausted → omit.
 
-   **`searchStockImage` available → it replaces Steps 1, 3, and 4** (`query` = each axis phrase, `orientation=landscape` — orientation guaranteed by the API, no per-candidate gate — `count=20`): per batch, fire all 5 axes in one turn, judge Step 2's topic-fit from each candidate's returned `title` + `description`, then carry the survivors in axis order straight into one batched Step 5 dedup on their URLs. Skip `getImageDimensions` — the API already returned landscape-only.
-
    **Step 1 — Search construction.** `WebSearch query="site:pexels.com/photo <axis phrase>"` per axis, using each axis's phrase from the **Axes** table. NOT `site:pexels.com/search` (403 on agent runtime). NOT `wide`/`landscape`/`horizontal` (Pexels indexes those as title/tag terms, not orientation). **2-3 words. Every word must carry topic information** — no filler ("the", "a"), no redundant adjectives, no contradictions. 2 words when the noun is already specific (`"pilates reformer"` — "reformer" disambiguates); 3 words when the noun is ambiguous (`"pasta plate restaurant"` — bare "pasta plate" returns dishware). 1 word is banned (pure noise pool).
    - Cross-vertical examples: ✓ `"fitness race competition"` (3, events/sport), ✓ `"professional conference audience"` (3, events/corporate), ✓ `"pilates reformer"` (2, blog/fitness — already specific), ✗ `"beautiful red pasta"` ("beautiful" is filler), ✗ `"plate"` (banned).
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
@@ -355,10 +353,6 @@ Imported image fields (`post_image`, `original_image_url`) take a bare URL — n
 ### Rule: Image dedup
 
 Site-wide image dedup covers stock URLs only (Pexels/Unsplash/Pixabay); source-site/CDN images skip it. Match the exact bare URL, never a `?w=` variant.
-
-### Rule: searchStockImage contract
-
-Always request `count=20` — the max pool in one call, same cost as fewer, more candidates to survive topic-fit and dedup. Use each candidate's returned `url` verbatim as the dedup key and the `post_image` write value (inline body images add `?w=700` per **Rule: Image URLs**). `auto_image_import=1` makes BD fetch and store the image.
 
 ### Rule: Post-body formatting
 

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.7] - 2026-07-09
+
+### Changed
+- **Content-skill image strategy is now a single path** — the `searchStockImage` (Pexels-API) override and its contract rule are removed from the corpus; every image run uses the WebSearch-Pexels path (`WebSearch site:pexels.com/photo` → construct the canonical URL → `getImageDimensions` → dedup), the same path the interactive Claude surface uses. Reaching Pexels through Google's index keeps automated skills (which fire five image searches per batch across all customers) clear of the Pexels API's shared 200/hr quota, which is reserved for the lower-traffic interactive surfaces. Corpus-side dead-prose removal; the paired AWS Butler-worker change ports `getImageDimensions` as a worker-local tool and drops the `searchStockImage` tool.
+
 ## [6.58.6] - 2026-07-08
 
 ### Changed
