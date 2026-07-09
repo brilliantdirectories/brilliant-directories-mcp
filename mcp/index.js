@@ -277,9 +277,9 @@ async function fetchImageDimensionsForUrl(url) {
   }
 }
 
-// Batch variant: up to 10 URLs probed in parallel, each resolving
-// independently — a 404/timeout/parse failure becomes that URL's own error
-// entry and never breaks the batch envelope.
+// Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
+// each resolving independently — a 404/timeout/parse failure is isolated as that
+// URL's own error entry, the rest of the batch unaffected.
 async function fetchImageDimensionsBatch(urlsArg) {
   const list = Array.isArray(urlsArg)
     ? urlsArg.map((u) => String(u).trim())
@@ -290,8 +290,8 @@ async function fetchImageDimensionsBatch(urlsArg) {
   if (!urls.length) {
     return { status: "error", message: "urls parameter requires at least one URL" };
   }
-  if (urls.length > 10) {
-    return { status: "error", message: `urls accepts at most 10 URLs (got ${urls.length})` };
+  if (urls.length > 50) {
+    return { status: "error", message: `urls accepts at most 50 URLs (got ${urls.length})` };
   }
   const results = await Promise.all(urls.map(async (u) => {
     const one = await fetchImageDimensionsForUrl(u);

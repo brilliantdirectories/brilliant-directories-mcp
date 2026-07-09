@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.4] - 2026-07-08
+
+### Changed
+- `getImageDimensions` batch now accepts up to 50 URLs (was 10) so the image-strategy loop can vet a 5-axis pooled candidate set in one call. Raised in both the npm package and the hosted Worker.
+
 ## [6.58.3] - 2026-07-08
 
 ### Fixed
