@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.8] - 2026-07-09
+
+### Changed
+- **Image strategy now reads as batch-first throughout** — Steps 4 and 5 tie their per-item logic to reading the rows of the one batched call ("Read each row of that one response" / "From that one response, read the survivors...") instead of per-candidate phrasing that a literal model turned into one tool call per URL. The batched-axes loop states the pool is carried as one list, moved through each step in groups, never one at a time. Removes the serial-processing wording (`Per candidate:`, `try the next survivor`, `Move to the next candidate`) that caused per-URL `getImageDimensions` probing and per-URL `eq` dedup on the worker path. Step 2 now judges every pooled result on its title and `/photo/<slug>` words (no phantom `description` field on the WebSearch path) and keeps strong topic-fits up to 50, dropping the "first 50" positional shortcut. Terminology aligned (image flow uses "step", not "stage"). Net-neutral prose.
+
 ## [6.58.7] - 2026-07-09
 
 ### Changed
