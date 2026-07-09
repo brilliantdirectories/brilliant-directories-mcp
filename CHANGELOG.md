@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.23] - 2026-07-09
+
+### Changed
+
+- **Image pool Step 2 — dropped the guessed per-search count (Butler worker).** Removed "(~10 each)" — a guessed number that could read as a target or a false low-signal when a search returns fewer. The URL-shape `/photo/<slug>-<id>/` is kept (the model reads `<id>` from it); the count added nothing. Minion-verified against the live run's 5 search outputs: still the full ~28-row list.
+
 ## [6.58.22] - 2026-07-09
 
 ### Changed
