@@ -1012,7 +1012,7 @@ Applies to all image fields, all contexts.
 
 ### Rule: Image dimensions
 
-**Wrapper-native tool: `getImageDimensions`.** One candidate: `url=<image URL>`. Two or more: ONE call with `urls=<comma-separated, up to 10>` — all probed in parallel, one response with per-URL results in input order; a 404/timeout/parse failure is that URL's own error entry and never breaks the batch. Range-GETs the first 64KB of each JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Per-URL `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format means drop that candidate.
+**Wrapper-native tool: `getImageDimensions`.** One candidate: `url=<image URL>`. Two or more: ONE call with `urls=<comma-separated, up to 50>` — all probed in parallel, one response with per-URL results in input order; a 404/timeout/parse failure is that URL's own error entry and never breaks the batch. Range-GETs the first 64KB of each JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Per-URL `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format means drop that candidate.
 
 **Two-step usage for Pexels-sourced feature image slots** (`post_image`, `hero_image`, multi-image album photos via `createMultiImagePost.post_image` CSV + `createMultiImagePostPhoto.original_image_url`):
 
