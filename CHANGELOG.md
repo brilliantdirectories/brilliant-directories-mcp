@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.16] - 2026-07-09
+
+### Fixed
+- **`post_venue` (hiring employer) was dropped inconsistently on job posts** — its field-reference row read descriptively while its neighbors `post_start_date`/`post_job` are marked required, so the worker model set it on some posts and left it null on others (e.g. an "Equinox" listing created with `post_venue=null` despite "Equinox" in the title/tags/SEO). Reworded to the same forcing pattern as `post_job` ("Always pass the hiring employer's name; never OMIT... the same employer named in the title"). Jobs content-type only.
+
 ## [6.58.15] - 2026-07-09
 
 ### Changed
