@@ -207,13 +207,15 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **Step 3 — Extension filter (before any tool call).** Keep only candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive); a Pexels page that resolves to `.webp` / `.gif` / `.avif` / anything else drops from the pool.
 
-   **Step 4 — Dimension check (one batched call).** For the surviving JPG/JPEG/PNG topic-fits (up to 50), construct each canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and vet them all in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Read each row of that one response:
+   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, emit every surviving candidate's canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` as a numbered list — `1. <url>`, `2. <url>`, … through all of them. Steps 4 and 5 each take this whole list in ONE call.
+
+   **Step 4 — Dimension check (one batched call).** Take the whole Step 3.5 list and vet every URL in it in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Read each row of that one response:
    - **status=success + `message.orientation === "landscape"`** → landscape survivor, carry to dedup.
    - **status=success + portrait OR square** → drop.
    - **status=error** (404, timeout, parse fail, "unsupported image format") → drop.
    - **Zero landscape survivors → next batch.**
 
-   **Step 5 — Dedup (one batched call via `in` CSV).** Run **Rule: Image dedup** — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 50), `property_operator=in`. Response rows include `original_image_url` and `post_title`. From that one response, read the survivors in entry order and commit the first that clears both checks:
+   **Step 5 — Dedup (one batched call via `in` CSV).** Take every Step 4 landscape survivor as one list and run **Rule: Image dedup** — one `list*` call (matching the write tool) with `property=original_image_url`, `property_value=<URL1,URL2,...,URLN>` (up to 50), `property_operator=in`. Response rows include `original_image_url` and `post_title`. From that one response, read the survivors in entry order and commit the first that clears both checks:
    - **URL in the response** → that survivor is a URL-dupe; skip it.
    - **`post_title` semantic-matches the survivor's topic** → skip it (the **Candidate pool discipline** stance: never bulk-list or probe existing posts to find a gap, never ask the user for a replacement topic).
    - **Neither hit** → commit this URL as `post_image`.

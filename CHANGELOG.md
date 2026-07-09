@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.9] - 2026-07-09
+
+### Changed
+- **Image strategy adds an explicit pool-materialization step (Step 3.5)** — before any dimension call, the run now writes every surviving candidate URL as a visible numbered list, and Steps 4/5 each take that whole written list in ONE call. This copies the discovery `Candidate pool discipline` pattern ("emit the full numbered pool as a visible list") that a weaker model already follows: materializing the batch as output is what makes it send all URLs in one `getImageDimensions` call and dedup all survivors in one `in` call, rather than probing/deduping one URL per turn. The prior batch-voice wording alone did not hold on the weaker worker model because nothing forced the list to exist before processing.
+
 ## [6.58.8] - 2026-07-09
 
 ### Changed
