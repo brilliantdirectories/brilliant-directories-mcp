@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.10] - 2026-07-09
+
+### Changed
+- **`Rule: Search discipline` now mandates a full 5-call turn.** The vague "batch every query… however many" opener is replaced with an explicit rule: fill every turn to 5 parallel calls (WebSearches, WebFetches, or a mix); when the immediate work needs fewer, fill the remaining slots with insurance — speculatively preload backup candidates and extra query angles, keeping fallbacks ready even while narrowing on one candidate. One fat turn beats a chain of try-one-fail-retry turns. Targets the observed under-fill on the worker model (single-search / single-fetch turns, same-URL re-fetches) where a full speculative turn would have carried the next step's inputs already in hand.
+
 ## [6.58.9] - 2026-07-09
 
 ### Changed
