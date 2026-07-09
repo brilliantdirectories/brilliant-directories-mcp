@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.14] - 2026-07-09
+
+### Changed
+- **Stage 1 create-schema pre-load reworded to be path-neutral and non-contradictory.** The 6.58.13 wording said "drop straight into their `mcp_call`s" — but `mcp_call` is the Butler worker's tool-invocation wrapper, absent on the interactive Claude/MCP path, so it instructed Claude to use a tool it does not have. Reworded to "call them directly (no `getToolSchema` needed)" (path-neutral) and kept the create-schema pre-fetch (`getToolSchema createSingleImagePost`) as a separate clause — Claude harmlessly ignores the `getToolSchema` hint as it does elsewhere on this line; the worker uses it.
+
 ## [6.58.13] - 2026-07-09
 
 ### Changed
