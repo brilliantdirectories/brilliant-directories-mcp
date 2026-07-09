@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.17] - 2026-07-09
+
+### Changed
+- **Codified three turn-saving call folds the worker model was doing only intermittently** (formalizing emergent batching → reliable, ~2-3 fewer rounds/run):
+  - **Jobs:** `getPostTypeCustomFields` fires in the same turn as the opening source-discovery searches (its output is only needed at create time, so it parallelizes safely).
+  - **Jobs + events:** the survivor dedup (Step 6) and geocode (Step 7) fire in one turn — they are independent (title vs. address).
+  - **Jobs + events:** the final-title uniqueness check (`post_title` `eq`) rides the FIRST image-dedup turn instead of a lone pre-create turn; it runs exactly once and holds through create (no re-check before the create call, no repeat when a later image batch re-dedups). Also switches this check to the reliable `eq` operator.
+  - Blog is intentionally excluded — it neither geocodes nor calls `getPostTypeCustomFields`, and its clickbait titles are already covered by topic-level dedup, so the folds don't apply. All wording-only, no logic change, positive framing.
+
 ## [6.58.16] - 2026-07-09
 
 ### Fixed

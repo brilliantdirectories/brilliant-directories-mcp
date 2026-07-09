@@ -809,10 +809,10 @@ The user invoked the skill with a request like "create job posts on my site" or 
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Apply the 30-day staleness gate. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for jobs-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
-7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure.
+7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
+10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique in the same turn as the FIRST image dedup — one added `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` alongside the image-dedup call. This title check is settled here and holds through create — run it exactly once for the run; a later image batch repeats only the image dedup.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
@@ -848,7 +848,7 @@ Resolution order (try in order, stop at first match; server-side filter via `lis
 
 The user's explicit post-type pick always wins.
 
-**After resolution, call `getPostTypeCustomFields data_id=<resolved>`** (or `system_name=<resolved>`). Cache the response — it carries the live `post_category.choices` AND `post_job.choices` for this site (admin may have customized either). `getSingleImagePostFields` returns a stale fallback list for jobs — do NOT use it for `post_category` or `post_job` enums.
+**After resolution, call `getPostTypeCustomFields data_id=<resolved>`** (or `system_name=<resolved>`). Cache the response — it carries the live `post_category.choices` AND `post_job.choices` for this site (admin may have customized either). `getSingleImagePostFields` returns a stale fallback list for jobs — do NOT use it for `post_category` or `post_job` enums. Its output is used at create time, so fire this call in the same turn as the Step 5 opening source-discovery searches.
 
 ---
 
