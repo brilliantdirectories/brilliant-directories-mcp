@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.29] - 2026-07-09
+## [6.58.30] - 2026-07-09
+
+### Fixed
+
+- **`poolImages` result: model was re-deduping the already-deduped shortlist (live).** poolImages returned a perfect 22-candidate shortlist, but the model then fired a `listSingleImagePosts` dedup call per URL, 10+ times — the fork said the candidates were "not-yet-used" but never told the model the shortlist is FINAL, so it fell back to the runbook's habitual pre-commit dedup step. Reworded: the shortlist "is already orientation-filtered AND deduped against the site — every entry is ready to commit. Your only action: pick... Do NOT dimension-check, dedup, or verify the URLs — poolImages did all of that; running any `getImageDimensions` or `listSingleImagePosts` dedup call after it is a mistake." Minion-verified against the real 22-result output: model picks a number, sends it into `createSingleImagePost`, fires no dedup. Corpus-only (the tool was working correctly).
 
 ### Changed
 
