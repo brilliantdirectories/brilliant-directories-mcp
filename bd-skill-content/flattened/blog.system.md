@@ -321,6 +321,8 @@ Call per-type `create*` tool with assembled fields. Assemble against the per-typ
 
 ## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
+After the last create, the run is not finished until you emit this — never stop on the create tool call. A run that created posts but sends no receipt still owes one.
+
 **Part 1 — the human reply, plain Markdown.** `-` bullets, links as `[text](url)`, zero HTML tags. One parent bullet per created post — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "View in Admin". Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
