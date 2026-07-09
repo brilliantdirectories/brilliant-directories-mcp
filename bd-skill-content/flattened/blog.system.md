@@ -222,6 +222,8 @@ Use Pexels for all images. After both axis batches yield no commit, omit `post_i
 
 Every run works the axes fresh in the table-defined order, batch by batch until a commit — stock-photo inventories change daily.
 
+**When the `poolImages` tool is available, use it and skip the steps below:** call `poolImages` with the batch's axis phrases (`axis_terms`) and `shape="landscape"`; it returns a numbered shortlist `{n, title, url}` of landscape, not-yet-used candidates. Pick the `n` whose title best fits the post, send that `url` to BD per **Rule: Image URLs** with `auto_image_import=1`. Empty result → next batch of axes; both batches empty → omit `post_image`. Runtimes without the tool follow the steps below verbatim.
+
 1. **Pexels** — follow **Rule: Image URLs** exactly. Always send to BD with `auto_image_import=1`.
 
    **Axes — 10 in order. Batch 1 = WebSearch each of axes 1-5 (five searches, one turn); batch 2 = axes 6-10 if batch 1 yields no commit. Each search returns that axis's raw results.**

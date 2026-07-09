@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.25] - 2026-07-09
+## [6.58.26] - 2026-07-09
+
+### Added
+
+- **`poolImages` — image sourcing in one tool call (Butler worker).** A worker-local tool that takes the batch's axis phrases, runs the Pexels searches, filters to the requested orientation, dedups against the site, and returns a numbered shortlist `{n, title, url}` of usable candidates. The model's whole image job becomes "pick the n whose title fits" — no per-result URL rebuild, no ~40-result context load, no collapse to one-per-axis (the failure prose could not fix). Uses the same OpenAI web_search + local `getImageDimensions` + `bd.tool` dedup the worker already runs; no external quota.
+
+### Changed
+
+- **Image strategy is capability-conditional on `poolImages`.** One line at the top of the image loop: when the runtime exposes `poolImages`, call it and pick a number; runtimes without it (interactive Claude) follow the existing WebSearch steps verbatim — unchanged. Same fork pattern as the retired `searchStockImage` conditional, now pointed at a quota-free tool that also dedups and returns a shortlist.
 
 ### Changed
 
