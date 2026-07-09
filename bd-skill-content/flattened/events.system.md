@@ -64,7 +64,7 @@ Runs are autonomous: no user can reply mid-run — never ask; a question ends th
 
 ## Stage 1: Site context
 
-Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation — for vertical alignment. The 4 site-context tool calls (`getSiteInfo`, `listTopCategories`, `listPostTypes`, `listMenuItems`) are independent — fire them in ONE batched round, then process results. Numbering is read order, not turn order.
+Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation — for vertical alignment. The 4 site-context tool calls (`getSiteInfo`, `listTopCategories`, `listPostTypes`, `listMenuItems`) are independent and fully specified here — fire them in ONE batched round (no `getToolSchema` needed), then process results. Numbering is read order, not turn order.
 
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone (IANA identifier, e.g. `America/Los_Angeles`), `current_site_datetime` (site-local now, `YYYYMMDDHHmmss`), brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
