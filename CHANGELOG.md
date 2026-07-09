@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.28] - 2026-07-09
+## [6.58.29] - 2026-07-09
+
+### Changed
+
+- **`poolImages` shortlist now carries the real title + description, not the URL slug.** The WebSearch result lines already hold a proper capitalized title and a one-line description; the tool was throwing both away and reconstructing a mangled title from the URL slug. It now parses `[Title · Free Stock Photo](url) — description`, strips the "Free Stock Photo" suffix, and returns `{n, title, desc, url}`. The model picks topic-fit on real context ("Fitness Trainer Assisting Client with Dumbbell Workout" + "guides a client in weight training, emphasizing proper technique") instead of a slug — better final image choice, same single call. Slug stays the fallback for bare-URL results. Fork line + tool schema updated to "pick the n whose title and desc best fit."
 
 ### Changed
 
