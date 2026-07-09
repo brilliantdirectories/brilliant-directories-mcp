@@ -23,9 +23,9 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 7. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for blog-specific match criteria.
 8. **Source research per topic.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
 9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
-10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images are opt-in only — see the `Inline body images` section.
+10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images: see the `Inline body images` section.
 11. **Image dedup (FEATURE).** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
-12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density). Inline body images are NOT default; only apply per the `Inline body images` section when the user explicitly requests them.
+12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density).
 13. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 14. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
@@ -208,7 +208,7 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
+| `post_type` | `"Account"` (literal — legacy classification field, always pass) |
 | `data_type` | `20` (single-image classification, always for blogs) |
 | `data_id` | resolved blog post-type id from runbook Step 3 |
 | `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~70 char target |
@@ -217,7 +217,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples:
 
 | Field | Blog-specific note |
 |---|---|

@@ -24,7 +24,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique in the same turn as the FIRST image dedup — one added `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` alongside the image-dedup call, never `like` or word-order variants. This title check is settled here and holds through create — run it exactly once for the run; a later image batch repeats only the image dedup.
+10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batch it with the Step 3 image-dedup when that path runs; standalone on the `poolImages` path), never `like` or word-order variants. Run it exactly once for the run.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
@@ -107,7 +107,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
-Distinctive phrases = employer names, never bare role titles. The criteria above decide per row, so multi-location employers dedup per location, not per brand. `total` above the returned rows → re-run once with the candidate's city as the phrase.
+Distinctive phrases = employer names, never bare role titles. Title + company + location together decide each row, so multi-location employers dedup per location, not per brand. `total` exceeds the returned row count → re-run once with the candidate's city as the phrase.
 
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
@@ -163,7 +163,7 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, kept as insurance; BD doesn't strictly require it but harmless to pass) |
+| `post_type` | `"Account"` (literal — legacy classification field, always pass) |
 | `data_type` | `20` (single-image classification, always for jobs) |
 | `data_id` | resolved jobs post-type id from runbook Step 3 |
 | `post_title` | **Graceful-degradation ladder, ~54 char cap.** Use a colon `:` as the primary separator (BD's slugifier handles colons cleanly — em dashes produce ugly `%E2%80%94` URL encoding). Never two colons in a single title — if the role name itself contains a colon, switch to "at"/"in" prose. Title+Company+City → Title+Company → Title+City → Title (+ employment type as fallback parenthetical). Adjust to fit the cap: drop city first, then company, then fall back to title-only. Examples: `"Marketing Manager: Acme Corp in Austin"` (full), `"Marketing Manager: Acme Corp"` (no city fits), `"Marketing Manager in Austin"` (no company source), `"Marketing Manager (Full-Time)"` (title-only fallback). Plain text, no HTML. |
@@ -172,7 +172,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples below:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 
 | Field | Jobs-specific note |
 |---|---|

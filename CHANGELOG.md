@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.31] - 2026-07-09
+## [6.58.32] - 2026-07-09
+
+### Fixed
+
+- **Pristine-file pass — 12 fixes across METHODOLOGY + jobs/events/blog, net −98 words (4-minion audit + verification).** Behavioral: (1) the Self-check "Pexels image picked → re-pick or WebFetch verify" contradicted the poolImages fork's "do NOT re-check" — scoped it to `(Steps 1-3 path only)`; (2) jobs+events Step-10 final-title uniqueness check piggybacked on "the FIRST image dedup" call that doesn't exist on the poolImages path (would silently skip) — reworded to fire once regardless of path (batched with Step 3 dedup when that path runs, standalone on poolImages). Spatial refs purged: "Scroll back" (METHODOLOGY), "examples below" (jobs/events/blog — the audit found 2, a 4th surfaced in jobs), "total above the returned rows" → "exceeds the returned row count" (jobs), "criteria above" → "Title + company + location together" (jobs). Bloat cut: outer `1.`/`2.` image-list de-numbered (clashed with inner Step 1/2/3); post_type "Account" triple-hedge → "always pass" (×3); blog inline-images opt-in stated 4× → single-source; a verbatim Candidate-pool-discipline restatement → the backticked cross-ref. Cross-file references verified clean (all resolve, correct names). Net FEWER negations, zero new defects.
 
 ### Fixed
 
