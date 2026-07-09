@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.18] - 2026-07-09
+## [6.58.19] - 2026-07-09
+
+### Changed
+
+- **Image pool sizing — replaced description with a forcing mechanic (Butler worker).** The topic-fit gate now makes the model transcribe every batch result as one continuously-numbered list (bare Pexels ID + title, across all searches, not restarted per search), then mark each row keep/drop. Three prior description-based attempts left the pool rigidly at 5 (one per search) on gpt-5.4-mini; forcing the transcription artifact fattens the pool proportional to real topic-fit. IDs (not full URLs) are transcribed so the model copies verbatim tokens instead of reconstructing long URL strings; the canonical URL is minted once downstream.
+- **Author resolution — anti-sweep guard.** Named the four-step ladder as the whole resolution and forbade sweeping members by profession/category. On empty demo sites the model was improvising a profession-ID brute-force instead of falling through the ladder.
+- **Final-title check — collapsed to one exact `eq` (jobs + events).** Forbade `like`/word-order-variant title probing; the composed title is a known exact string checked once with `eq`.
 
 ### Changed
 - **Image topic-fit gate reframed around the whole batch pool, not per-axis** (targets the observed "keep exactly one candidate per axis → pool of 5" collapse on the worker model). Removed the per-axis loop-priming from the keep step: deleted "in axis order", reworded Step 2 to "The batch's 5 WebSearches return ~50 results. Keep every topic-fit from every WebSearch, up to 50" (the keep decision now operates on the merged batch, not axis-by-axis), and dropped the descriptive self-check ("a list of exactly 5 means you kept one per axis…") that the model ignored. The Axes header clarifies one WebSearch per axis returns ~10 results. Every keep/pool step (Step 2/3.5/4/5 + the batched-axes loop) is now uniformly batch-focused; the remaining "per axis" language is confined to the search step (one query per axis), which is correct. Wording-only.

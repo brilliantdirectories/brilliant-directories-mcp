@@ -79,7 +79,7 @@ Infer location from `primary_country`, vertical from site info and categories. A
 
 ### Author resolution (universal pattern)
 
-Resolve the `user_id` that authors the post.
+Resolve the `user_id` that authors the post. This ladder is the whole resolution — an empty step falls to the next; never sweep members by profession or category to find an author.
 
 1. **User pre-specified `user_id` (or `author_id`) in the request →** use it, SKIP discovery entirely.
 
@@ -252,7 +252,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
    - **Cross-axis duplicate guard.** Pool the batch's results and keep each `/photo/<id>/` once — a duplicate that another axis already surfaced collapses to a single pool entry, carried into the next step just once.
 
-   **Step 2 — Topic-fit gate.** The batch's 5 WebSearches return ~50 results. Keep every topic-fit from every WebSearch (judge on title + `/photo/<slug>` words), up to 50:
+   **Step 2 — Topic-fit gate (transcribe, then keep/drop).** The batch's 5 WebSearches return ~50 results. First transcribe every result as one continuously-numbered list — `<n>. <id> — <title>` — across all 5 searches, not restarted per search. Then mark each row `keep` or `drop`: `drop` only an off-topic row; every other row is `keep`. The pool is every `keep` row. Judge topic-fit on title + `/photo/<slug>` words:
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
    - **Broad-aesthetic topics** (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
@@ -261,7 +261,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **Step 3 — Extension filter (before any tool call).** Keep only candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive); a Pexels page that resolves to `.webp` / `.gif` / `.avif` / anything else drops from the pool.
 
-   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, emit every Step 2 survivor's canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` as a numbered list — `1. <url>`, `2. <url>`, … through all of them. Steps 4 and 5 each take this whole list in ONE call.
+   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, turn every `keep` row into its canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` and emit them as a numbered list — `1. <url>`, `2. <url>`, … through all of them. Steps 4 and 5 each take this whole list in ONE call.
 
    **Step 4 — Dimension check (one batched call).** Take the whole Step 3.5 list and vet every URL in it in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Read each row of that one response:
    - **status=success + `message.orientation === "landscape"`** → landscape survivor, carry to dedup.
@@ -812,7 +812,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end: Topic-fit gate → extension filter → `getImageDimensions` orientation gate (landscape only) → dedup. The sequencing rules + retry behavior are defined there; follow them exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique in the same turn as the FIRST image dedup — one added `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` alongside the image-dedup call. This title check is settled here and holds through create — run it exactly once for the run; a later image batch repeats only the image dedup.
+10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique in the same turn as the FIRST image dedup — one added `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` alongside the image-dedup call, never `like` or word-order variants. This title check is settled here and holds through create — run it exactly once for the run; a later image batch repeats only the image dedup.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
