@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.13] - 2026-07-09
+
+### Changed
+- **Compound-filter title-dedup example is now concrete (fixes a bad example, like the earlier `"false"` case).** The old placeholder `property_value=[<CSV: candidate 1,candidate 2,...>,<data_id>]` mashed two comma meanings into one bracket with no element boundaries, so the worker model jammed both into a single string (`["Campbell River,9"]`) then wasted a turn retrying with correct syntax. Replaced with a worked example (`property_value=["Campbell River,Studio Three","9"]`) — two clear elements. Verified live against the API (returns the expected matching rows).
+- **Image pool no longer collapses to one-per-axis.** Step 2 now states each axis returns ~10 results → a full batch is ~50 candidates; keep every topic-fit (strong axis many, weak axis few), up to 50. Step 3.5 adds a self-check: a written list of exactly 5 means one-per-axis was kept — revisit each axis and add its other topic-fits (re-reading results already in context, no extra calls). A fat pool avoids the wasted second-batch escalation when the first pool's few candidates all dedup out.
+- **Create-tool schema pre-loads in the opening round.** Since every run ends in a create, Stage 1 now also fetches the post-type's `create*` tool schema in its first batched round, so it is in hand at post-creation instead of a lone `getToolSchema` turn later.
+
 ## [6.58.12] - 2026-07-09
 
 ### Changed

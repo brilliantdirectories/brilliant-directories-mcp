@@ -10,7 +10,7 @@ Runs are autonomous: no user can reply mid-run — never ask; a question ends th
 
 ## Stage 1: Site context
 
-Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation — for vertical alignment. The 4 site-context tool calls (`getSiteInfo`, `listTopCategories`, `listPostTypes`, `listMenuItems`) are independent and fully specified here — fire them in ONE batched round (no `getToolSchema` needed), then process results. Numbering is read order, not turn order.
+Build the agent's mental model of the site — what it's about, who it serves, its taxonomy, its main navigation — for vertical alignment. The 4 site-context tool calls (`getSiteInfo`, `listTopCategories`, `listPostTypes`, `listMenuItems`) are independent and fully specified here — fire them in ONE batched round (no `getToolSchema` needed), then process results. This same round also runs `getToolSchema createSingleImagePost` — the create call every run ends in, its schema ready in hand by post creation. Numbering is read order, not turn order.
 
 1. `getSiteInfo` → industry, profession, primary_country, language, timezone (IANA identifier, e.g. `America/Los_Angeles`), `current_site_datetime` (site-local now, `YYYYMMDDHHmmss`), brand.
 2. `listTopCategories limit=25` → **sample only, for site-flavor signal.** These are the categories actual site members are assigned to (e.g. "Personal Training", "Group Fitness") — NOT post-type categories. Real sites can have 100s of rows; 25 is enough to read the vertical. Do NOT use these for post category routing — post categories come from the resolved post type's `feature_categories` field (step 3).
@@ -63,13 +63,13 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run BEFORE source research — a dupe drops for the cost of the dedup queries, not a wasted research cycle. Per-candidate scoped query — never bulk-list a site's existing posts (token-budget blowup).
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (CSV = OR inside `contains`; **Rule: Compound filters**):
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is TWO elements — the candidate phrases comma-joined into one string, then the data_id as its own element:
 
 ```
-listSingleImagePosts property=[post_title,data_id] property_operator=[contains,eq] property_value=[<distinctive-phrase CSV: candidate 1,candidate 2,...>,<resolved data_id>] limit=25
+listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,Studio Three","9"] limit=25
 ```
 
-Substitute the `list*` tool that matches the post-type family. Compare returned titles against each candidate client-side; a row counts when the title semantically matches that candidate.
+Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
 
 **Distinctive phrase = the 2-3 words that fingerprint THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive phrase keeps it lean.
 
@@ -198,7 +198,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
    - An axis returning mostly `/search/` URLs instead of `/photo/<slug>-<id>/` contributes zero topic-fits to the pool.
    - **Cross-axis duplicate guard.** Pool the batch's results and keep each `/photo/<id>/` once — a duplicate that another axis already surfaced collapses to a single pool entry, carried into the next step just once.
 
-   **Step 2 — Topic-fit gate.** Each axis's search returns ~10 results, so a batch hands you up to ~50 candidates — judge every one on its title and `/photo/<slug>` words and keep every strong topic-fit, in axis order, up to 50:
+   **Step 2 — Topic-fit gate.** Each axis's search returns ~10 results, so a full batch hands you ~50 candidates. Keep every topic-fit from every axis (judge on title + `/photo/<slug>` words), in axis order, up to 50 — a strong axis contributes many, a weak axis few:
    - Title must align with the spirit of the post's primary topic. Sharing one keyword is not enough. Wrong vertical (karate for a judo post) always fails.
    - **Broad-aesthetic topics** (fitness, food, real estate, design, etc.) — any photo within the category aesthetic counts as topic-fit. Don't demand niche-specific props (sled, kettlebell) when category-aesthetic shots (athlete running, athlete lifting) work.
    - Generic titles or wrong-context matches fail. `WebFetch` the `/photo/<slug>-<id>/` detail page when the title is ambiguous, or skip the candidate.
@@ -207,7 +207,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
    **Step 3 — Extension filter (before any tool call).** Keep only candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive); a Pexels page that resolves to `.webp` / `.gif` / `.avif` / anything else drops from the pool.
 
-   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, emit every surviving candidate's canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` as a numbered list — `1. <url>`, `2. <url>`, … through all of them. Steps 4 and 5 each take this whole list in ONE call.
+   **Step 3.5 — Write the pool as a numbered list.** Before any tool call, emit every Step 2 survivor's canonical URL `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg` as a numbered list — `1. <url>`, `2. <url>`, … through all of them. This list runs well past 5 across the axes; a list of exactly 5 means you kept one per axis — revisit each axis and add its other topic-fits. Steps 4 and 5 each take this whole list in ONE call.
 
    **Step 4 — Dimension check (one batched call).** Take the whole Step 3.5 list and vet every URL in it in ONE `getImageDimensions urls=<URL1,URL2,...,URLN>` call. Read each row of that one response:
    - **status=success + `message.orientation === "landscape"`** → landscape survivor, carry to dedup.
