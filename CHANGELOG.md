@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.5] - 2026-07-08
+
+### Changed
+- `getImageDimensions` description now states the batch limit as 50 URLs, matching the 50-URL cap raised in the code in 6.58.4. The prior text still said 10, which held the AI to a 10-URL batch even though the tool accepted 50 — leaving the 5-axis pooled-candidate vet unable to run in one call as intended. Description-only; the spec is the single source both the npm package and the hosted Worker read.
+
 ## [6.58.4] - 2026-07-08
 
 ### Changed
