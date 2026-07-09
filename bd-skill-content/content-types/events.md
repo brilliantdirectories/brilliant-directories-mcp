@@ -148,7 +148,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | Field | Events-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability + a close that lands the next step (how to attend or buy tickets). |
-| `post_promo` | Ticket price as shown at the source — numeric only, no currency symbol. Free event → `0`. On ticket tiers or a range, midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT when no price is published — never fabricate. |
+| `post_promo` | A published ticket price — numeric only, no currency symbol. On ticket tiers or a range, midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT it unless the source states a real dollar amount — no price published, or a free event → omit (the template renders a passed `0` as a literal `$0.00` price tag; "free" belongs in `post_content`, never this field). Never fabricate a price. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). For a single-day event, set to the same date as `post_start_date` with the actual end time. Source states no end: equal to `post_start_date`. |
 | `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
 | `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon carry the map pin. Do NOT prepend the venue name (already in `post_venue`). |
