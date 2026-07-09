@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.26] - 2026-07-09
+## [6.58.27] - 2026-07-09
+
+### Changed
+
+- **`poolImages` fork line reworded guard-first (two-minion audit).** A cold read on both surfaces found the fork was instruction-first, guard-last — the "use it and skip the steps below" imperative led, and the "runtimes without it follow verbatim" rescue trailed, briefly pitting "skip" against "follow" for the no-tool surface. Reordered to guard-first ("If `poolImages` is not in your tool list, ignore this paragraph and follow the numbered steps below"), so the no-tool surface routes out before any skip language. Also made the fork self-contained (names batch 1 = axes 1-5, batch 2 = axes 6-10 inline, since it says to skip the steps that defined them) and defined the no-commit case ("No title fits, or an empty result → next batch"). Re-quizzed: both surfaces route cleanly, no residual ambiguity.
 
 ### Added
 
