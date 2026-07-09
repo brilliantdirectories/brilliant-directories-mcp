@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.11] - 2026-07-09
+
+### Changed
+- **Tightened the 5-call turn rule to remove soft language.** The prior wording ("fill every turn to 5… when the work needs fewer…") conceded that fewer calls was a valid state, which a literal model can read as permission to under-fill. Reworded as an invariant: "Every turn fires 5 parallel calls… the immediate work rarely needs all 5; fill every leftover slot with insurance… Five every turn." Declarative bookends, no "up to", no "when you need fewer".
+
 ## [6.58.10] - 2026-07-09
 
 ### Changed
