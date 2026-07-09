@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.30] - 2026-07-09
+## [6.58.31] - 2026-07-09
+
+### Fixed
+
+- **poolImages fork: over-broad post-image ban corrected + de-bloated.** v6.58.30's re-dedup fix said "the only call after `poolImages` is the create (or another `poolImages` batch)" — which wrongly forbade the legitimate pre-create WebSearch/WebFetch employer-grounding the model does before writing the body. Rescoped to image re-verification only: "The image is then settled — do NOT re-check it: no `getImageDimensions` and no `listSingleImagePosts` dedup on a `poolImages` url." Named-tool + named-object prohibition: blocks the two image calls, leaves content-grounding web lookups free. Also trimmed the accumulated fork bloat (150→128 words) and cut a redundant clause. Adversarial minion verified: (A) image re-dedup blocked even for a safety-seeking model that hunts for a loophole; (B) employer WebSearch/WebFetch clearly allowed. Two load-bearing negations only (routing guard + the tool-named anti-dedup force), no spatial refs. Claude fallback (Steps 1-3) untouched.
 
 ### Fixed
 
