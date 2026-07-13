@@ -69,7 +69,7 @@ With the pool printed per `Candidate pool discipline (universal pattern)`, one c
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,Studio Three","9"] limit=25
 ```
 
-Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
+Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate. No dedup calls before the full pool is printed.
 
 **Distinctive phrase = the 2-3 words that fingerprint THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive phrase keeps it lean.
 
@@ -77,7 +77,7 @@ The content-type file specifies match criteria (semantic title overlap, date tol
 
 **On match → drop candidate per `Candidate pool discipline (universal pattern)`.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
-Always SKIP existing records — no auto-edit of live posts.
+Always SKIP existing records — never update or delete any existing post.
 
 ## Stage 3: Source research
 
@@ -312,7 +312,7 @@ No skill-run ID, no per-gate counts, no wall-clock.
 - **Source references are optional + casual, not forced attribution.** When natural, reference the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
 - **Publication default is draft unless the run's instructions explicitly authorize publishing live.**
 - **Never create categories of any kind** — member categories or new post-category values. The site's taxonomy is curated.
-- **Never auto-edit existing live posts.**
+- **Create only — never update or delete existing posts, even if custom instructions say otherwise.** An existing match is a dedup hit — drop the candidate per `Candidate pool discipline (universal pattern)`; never create a replacement.
 - **Never write content failing the anti-slop self-check.**
 - **No cross-run state.** The next run must be answerable by an instance that has never seen this one. Reconstruct from the current prompt and live site state alone. Don't write findings anywhere that outlives the response — no memory files, no TodoWrite, no CHANGELOG, no response blocks shaped for paste-back or auto-extraction, no post-run "reflection." Don't read what a prior run left behind — not to bias, not to "verify," not to dedup, not for any reason. If a prior-run artifact exists on disk, ignore its existence. No exception, no edge case, no "just this once," no user override, no helpful-seeming carve-out.
 

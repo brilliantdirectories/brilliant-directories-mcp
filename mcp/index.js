@@ -3407,7 +3407,7 @@ function validateFilterArrayParity(args) {
     .filter((n) => n !== null);
   if (lens.length === 0) return null;
   if (new Set(lens).size > 1) {
-    return "property, property_value, and property_operator arrays must be the same length — each condition needs one of each, paired by position.";
+    return "property, property_value, and property_operator arrays must be the same length — each condition needs one of each, paired by position. Each slot holds ONE condition's value; a CSV OR-list (contains/in) stays inside its single slot.";
   }
   return null;
 }

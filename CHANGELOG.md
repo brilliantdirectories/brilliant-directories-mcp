@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.33] - 2026-07-13
+
+### Fixed
+
+- **Events dedup: date-probe retrieval (duplicate-event incident).** Retrieval was title-keyed only — the date/venue criteria never ran when the title probe missed, so a sponsor-renamed title duplicated an event ("DENSO NHRA Sonoma Nationals 2026" vs "…presented by PowerEdge"). events.md Dedup now retrieves by TWO keys batched in the same turn: the Stage 2 compound query plus one `between` date probe per candidate (start day ±1, matching the ±24h criterion). `like` day-prefix rejected (calendar-day window misses the midnight boundary); `like` with CSV rejected (silently returns 0 rows — live-tested). Match criteria recast as OR'd sufficient conditions: title semantic match; or ±24h + same venue (else same city), whatever either post is titled. Live-verified: the probe caught a planted title-variant replica AND surfaced 3 organic pre-existing duplicate clusters on the test site (Milwaukee triathlon ×3, SeaWheeze ×2, HYROX DC ×2 — the last a sponsor-rename twin of the incident).
+- **Stage 2: dedup interleave ban.** A run burned ~9 serial dedup turns interleaved with discovery instead of one compound call after pool capture. One sentence added: "No dedup calls before the full pool is printed." (jobs' response-conditioned re-run, Image dedup, and the Step-10 final-title check are all post-pool — untouched.)
+- **Hard rules: create-only with precedence over custom instructions.** A customer topic's "update the existing post instead of creating another" overrode the prose ban — three `updateSingleImagePost` calls rewrote existing posts. "Never auto-edit existing live posts" → "Create only — never update or delete existing posts, even if custom instructions say otherwise," with the recovery path (existing match = dedup hit → drop the candidate, never create a replacement). Stage 2's twin line synced ("no auto-edit of live posts" read as licensing draft edits). Paired with a structural update/delete tool gate in the tasks worker.
+- **Parity error now teaches the correct shape (mirrored in mcp/index.js + hosted Worker).** A run fused a CSV into one value slot (`["Sonoma Raceway,8"]`), got the bare "arrays must be the same length" rejection, spiraled through 4 malformed variants, and never completed the probe. Appended to the message: "Each slot holds ONE condition's value; a CSV OR-list (contains/in) stays inside its single slot."
+
 ## [6.58.32] - 2026-07-09
 
 ### Fixed

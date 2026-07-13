@@ -78,10 +78,12 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`. Events-specific match criteria:
-- Title: semantic match.
-- Date: `post_start_date` within ±24 hours.
-- Location: same `post_venue` if known, else same city.
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys batched in the same turn: the Stage 2 compound query (titles), plus one date probe per candidate — start day ±1:
+`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`.
+
+A returned row is a dupe when EITHER:
+- Title: semantic match; or
+- Date + place: `post_start_date` within ±24 hours AND same `post_venue` (else same city) — whatever either post is titled. Sponsor renames, abbreviations, and year suffixes never make it new.
 
 ---
 
