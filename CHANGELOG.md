@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.73] - 2026-07-14
+
+### Fixed
+
+- **Step-size anchored turn-size: the fill obligation was the corpus's only load-bearing abstract instruction with no worked example** — concrete step quantities ("top 3-5", "five Step 1 searches", a 2-call dedup) beat "10 every turn" wherever they competed; the sole 10-wide turn of a live run was the one with no concrete competitor. The insurance sentence now carries the bridging arithmetic: "a turn whose step needs 2 calls still fires 10: the step's 2, plus 8 insurance."
+
 ## [6.58.72] - 2026-07-14
 
 ### Fixed
