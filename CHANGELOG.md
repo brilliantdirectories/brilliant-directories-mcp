@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.53] - 2026-07-13
+
+### Fixed
+
+- **Dropped the multi-day parenthetical** — "exactly 3 days" already forbids spans arithmetically and "start = first day" is definitional; nine redundant words removed.
+
 ## [6.58.52] - 2026-07-13
 
 ### Fixed
