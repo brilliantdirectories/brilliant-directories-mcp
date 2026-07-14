@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.69] - 2026-07-14
+
+### Fixed
+
+- **Turn 1 schema-batch opens (2 of 3 runs after the packing edits)** — Stage 1's "— the only `getToolSchema` turn 1 fires" inverts under a literal read into "turn 1 fires only getToolSchema(s)", and the new slot-filling emphasis made schema calls (inputs always ready) the filler of choice: one run opened with five copies of the create schema, another with schemas for all five Stage 1 tools their spec says need none. Clause now states turn 1's composition positively: "fired once, alongside the 4 site-context calls; turn 1's five slots are exactly these."
+
 ## [6.58.68] - 2026-07-14
 
 ### Fixed
