@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.93] - 2026-07-14
+
+### Fixed
+
+- **"standalone after poolImages" → "after poolImages it rides any turn" (events + jobs Step 10)** — "standalone" meant "not batched with the Step-3 image-dedup" but reads as "gets its own turn," producing the solo title-check turns observed in runs 11-15; the packing rule now governs placement. Last "alone"-family word outside the create step.
+
 ## [6.58.92] - 2026-07-14
 
 ### Fixed
