@@ -21,7 +21,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Apply the 30-day staleness gate. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for jobs-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
-7. **Geocode survivors only.** Nominatim every non-duplicate candidate's address in one turn, their retry-ladder tiers batched together as backups. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
+7. **Geocode survivors only.** Nominatim every non-duplicate candidate's address in one turn, their retry-ladder tiers batched together as backups; the geocode turn carries as many calls as the survivors need. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never word-order variants. Run it exactly once.
@@ -92,7 +92,7 @@ Tailor by vertical AND country: pick the country-native association + the countr
 
 **30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate.
 
-A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take #1, and drop-and-advance through the captured list on failure — no re-fetch.
+A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
 A usable candidate in hand → select it and proceed. Round empty or blocked → ONE month-year recovery query per **Rule: Search discipline**. Only when every source is stale (>30 days), blocked, or wrong-location after both rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 

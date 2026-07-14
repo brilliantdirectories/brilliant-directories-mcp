@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.76] - 2026-07-14
+
+### Fixed
+
+- **Adversarial two-hunter sweep: nine residual serial teachers removed.** Dedup: "Take #1... take the next un-tried" + "Failure = dedup hit" defined per-candidate trials with dedup inside the trial — trials now begin after the verdicts, on survivors (pool discipline + both harvest sentences); 6.58.74's promoted-fallback clause deleted (redundant with the sweep, contradicted it in the singular); blog's "per-candidate query / per-candidate stage" (the oldest surviving serial artifact) → "the pool's compound query / the dedup stage". Geocode: GEOCODING.md never got the batch edit — its ladder heading now commands "fire the branch's tiers together in one turn"; ToS pacing "between Nominatim rounds" → "between Nominatim turns" (the serial-forcing reading); both Step 7s gain "the geocode turn carries as many calls as the survivors need" (the 5-slot exception dedup already had); jobs Step 7's self-contradiction ("survivors only" yet "same turn as that dedup") deleted.
+
 ## [6.58.75] - 2026-07-14
 
 ### Fixed
