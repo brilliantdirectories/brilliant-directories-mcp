@@ -88,7 +88,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 **2b.** One batched round per **Rule: Search discipline** — broad query + the content-type file's companion shape, fired together. Read every result; `site:`-probe (with `-pdf`) only a domain that appeared. Drop dead/empty/archive pages.
 
-**2c.** Survivors only — after Stage 2's verdicts: `WebFetch` the top 3-5 survivors. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
+**2c.** Survivors only — after Stage 2's verdicts: `WebFetch` the top 5 survivors. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
 
 
 | Gate               | Rule                                                                                                                                                                                                                                                                                                                                                             |

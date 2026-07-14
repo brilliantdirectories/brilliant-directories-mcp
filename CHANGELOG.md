@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.89] - 2026-07-14
+
+### Fixed
+
+- **2c's inherited range flattened** — "top 3-5 survivors" invited the lazy floor; now "top 5 survivors" (flat law, fills one turn, self-caps when fewer survive).
+
 ## [6.58.88] - 2026-07-14
 
 ### Fixed
