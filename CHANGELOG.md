@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.78] - 2026-07-14
+
+### Fixed
+
+- **Pool-print weld loses its forward reference** — "Print the pool in the same message as your next tool call" defined timing by pointing at a future event; now direct: "The pool prints and its calls fire in one message: Stage 2 dedup for every date-known entry, plus the WebFetches that pin each date-incomplete entry's start date." Same guarantee (a text-only pool print is textually impossible), four words shorter.
+
 ## [6.58.77] - 2026-07-14
 
 ### Fixed
