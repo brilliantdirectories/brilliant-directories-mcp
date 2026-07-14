@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.101] - 2026-07-14
+
+### Fixed
+
+- **6.58.100's window formula REVERTED** — the pseudo-arithmetic notation ("+" ambiguous between concat and addition; "value element 1 = X,Y" ambiguous between one string and two array slots) made the probe value un-constructible and run 20 skipped date probes entirely (run 19 on the old text probed flawlessly); the proven wording returns with an enriched caption (full 14-digit span, "the start day in the middle").
+- **Verdict lines cite the keys probed** — run 20 created a post whose date probe never fired: a title-only verdict passed as complete. Shared Stage 2 format gains "each verdict citing the keys probed (the content-type file names them)" — type-agnostic (jobs/blog cite title); events' Dedup section carries the worked instance: "no match (title + 20260716-20260718) — survives". A probe-less verdict is now unwritable.
+- **Checked title = created title, verbatim** (events + jobs Step 10) — runs 19 and 20 both created a different title than they checked (run 20 via comma-thrash). Blog unaffected (no title check).
+
 ## [6.58.100] - 2026-07-14
 
 ### Fixed
