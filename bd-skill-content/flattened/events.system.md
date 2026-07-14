@@ -117,7 +117,7 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run once per pool, in ONE turn — the same turn the pool prints, before any survivor's deep research. Reached any later point undeduped → run Stage 2 now, before the next candidate call. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers the titles; the content-type file adds any further retrieval keys (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words — trim official names to their distinctive core) comma-joined into one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query (**Rule: Compound filters**) covers the titles; the content-type file adds any further retrieval keys as their own separate calls, batched in this same turn. `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words — trim official names to their distinctive core) comma-joined into one string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
@@ -801,8 +801,8 @@ The user invoked the skill with a request like "create event posts on my site" o
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.** Run the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list — Step 6 fires in that same message.
-6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
+5. **Source discovery.** Run the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b, then one batched turn of `WebFetch` on the best list-page(s) — the pool harvests from the opened pages, each entry carrying its title and start date. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list — Step 6 fires in that same message.
+6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section — it specifies this step's calls (both retrieval keys: the title compound plus one date probe per candidate) and the events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
 7. **Geocode.** Nominatim each survivor once verification confirms its address — in the next turn's spare slots; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup; the lowest-numbered hit wins. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.

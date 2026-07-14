@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.59] - 2026-07-13
+
+### Fixed
+
+- **Date probes were textually forbidden, not just skipped** — events Step 6 filed the `Dedup` section as "events-specific match criteria," so under "Only make the tool calls each step specifies — no extras" the per-candidate `post_start_date between` probes were banned extras; Step 6 now states the section specifies the step's calls (both retrieval keys). METHODOLOGY Stage 2's hand-off compounded it: "adds any further retrieval keys (**Rule: Compound filters**)" read as fold-into-the-one-call; now "as their own separate calls, batched in this same turn," with the cross-ref moved onto the compound query it describes.
+- **Pool built from SERP snippets left dates unknown at dedup** — events Step 5's "steps 2a-2b" scope banned the list-page harvest fetch, contradicting the Discovery ladder and making date probes unconstructible; Step 5 now includes one batched `WebFetch` turn on the best list-page(s), each pooled entry carrying its title and start date. Survivors-only 2c-2e verification unchanged.
+
 ## [6.58.58] - 2026-07-13
 
 ### Fixed
