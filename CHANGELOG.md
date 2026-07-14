@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.77] - 2026-07-14
+
+### Fixed
+
+- **The pool-print turn's composition was defined only for all-dated pools** — for a mixed pool (some entries date-known, some viable-but-undated) the clause "Stage 2 dedup's calls are that message's calls" went silent, and a live run poured five extra searches into the gap instead of probing the ready entry and fetching the unready ones. The clause now states the hybrid: "that message's calls are Stage 2 dedup for every date-known entry plus the WebFetches that pin each date-incomplete entry's start date." Newly-dated entries then dedup in bulk via the sweep gate (owner design: probe the known, hunt the unknown, together).
+
 ## [6.58.76] - 2026-07-14
 
 ### Fixed
