@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.57] - 2026-07-13
+
+### Fixed
+
+- **Two in-place explicitness repairs after a run created with its date probe never fired and its create batched alongside poolImages (imageless post, image result arrived after the create executed).** (1) The Dedup line's "(undated finds join the pool once dated)" said JOIN but not PROBE — the 6.58.55 wording swap had dropped the old "(a date confirmed later probes that turn)" obligation; now: "a candidate dated after the pool print probes the moment its date lands, before any of its verification." (2) events Step 12 never stated the create's execution shape; now: "the run's final tool call before the receipt: it fires ALONE in its own turn, after Steps 6-11 are complete." (Within one message the model cannot see one call's result while writing another — a create sharing a turn with the image call it depends on is structurally imageless.)
+
 ## [6.58.56] - 2026-07-13
 
 ### Fixed
