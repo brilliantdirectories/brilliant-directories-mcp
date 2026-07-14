@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.99] - 2026-07-14
+
+### Fixed
+
+- **Adversarial audit of the 5a/5b/5c structure: nine fixes from sixteen findings.** (F1) jobs Step 6 never routed survivors to 2c-2e — with 2c gated, jobs would have created from snippets; now mirrors events' routing tail. (F7) both Step 6s re-commanded dedup after 5b already fired it — now "calls fired with 5b's message — compare rows and write verdicts." (F2) jobs' singular first-hit leftover "A usable candidate in hand → select it and proceed" → "Usable candidates pool per Step 5b." (F3) the empty round's three conflicting prescriptions sequenced: 5c's searches first, then ONE ladder recovery ("still under five pooled after 5c"), then stop — events, jobs, and the ladder aligned. (F6) Source candidates' unconditional "open the best list-page(s)" gated "on 5c shortfall" (both files). (F4) 5c's searches declared "the round's one reformulation." (F11) "the 5b+5c message carries as many calls as it needs" (the established exemption); "remaining slots" removed. (F13/F14) 5b gains "(best-fit, up to 10)" and "none pooled → straight to 5c." (F8/F9) jobs 5b names its actual key (a job title) and points the staleness gate at its Source-candidates definition with the no-date rescue inline. Deferred to watch-list: insurance leak in rich jobs rounds (F5), arrival-trigger stacking (F10 — sweep's record stands), vocabulary nits (F15), jobs 5a six-call turn (F16).
+
 ## [6.58.98] - 2026-07-14
 
 ### Fixed

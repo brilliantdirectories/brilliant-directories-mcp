@@ -21,9 +21,9 @@ The user invoked the skill with a request like "create event posts on my site" o
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.**
     - **5a. Search round** — one turn of five queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
-    - **5b. Pool** — every WebSearch result already showing a title and a future, in-window start date pools as-is. Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message. Once title and start date are known, that candidate's source research stops until it survives Step 6.
-    - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` for the remaining slots — no viable entries to open → every shortfall slot is a new-angle `WebSearch`. Newly-keyed and newly-found entries pool and dedup on arrival.
-6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section — it specifies this step's calls (both retrieval keys: the title compound plus one date probe per candidate) and the events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
+    - **5b. Pool** — every WebSearch result already showing a title and a future, in-window start date pools as-is (best-fit, up to 10). Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message; none pooled → straight to 5c. Once title and start date are known, that candidate's source research stops until it survives Step 6.
+    - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` to fill the message — these searches are the round's one reformulation; no viable entries to open → every shortfall call is a new-angle `WebSearch`. The 5b+5c message carries as many calls as it needs. Newly-keyed and newly-found entries pool and dedup on arrival.
+6. **Duplicate detection.** Stage 2's calls (both retrieval keys: the title compound plus one date probe per candidate, per the `Dedup` section) fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
 7. **Geocode.** Nominatim every address-confirmed survivor in one turn — each survivor's GEOCODING.md retry-ladder tiers batched together as backups; the geocode turn carries as many calls as the survivors need; the lowest-numbered hit wins per survivor. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
@@ -56,7 +56,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), open the best list-page(s), and harvest many events per fetch — after their entries show forward dates in the correct location.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), on 5c shortfall, open the best list-page(s) and harvest many events per fetch — after their entries show forward dates in the correct location.
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
@@ -75,7 +75,7 @@ Tailor by vertical: real estate → MLS open-house listings; fitness → race ca
 
 A single list-page `WebFetch` may return one event or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
-Round empty or blocked → the ladder's recovery per **Rule: Search discipline** (month-year query; venue/facility-noun retry only when blocked). Still nothing → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
+Still under five pooled after 5c's searches → the ladder's recovery per **Rule: Search discipline** (one month-year query; venue/facility-noun retry only when blocked). Still nothing → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 ---
 
