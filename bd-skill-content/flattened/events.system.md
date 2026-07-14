@@ -969,13 +969,12 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `state_sn` | State code from Nominatim. |
 | `post_meta_title` | Type-specific example: `"Austin Tech Summit 2026 in Downtown Austin, Enterprise Software and AI Conference June 13"` — venue + city + date + category modifiers expanded from the shorter `post_title`. |
 | `post_meta_description` | Events-specific flavor: distill the event's value proposition + date + city (e.g. "Three-day enterprise software conference in downtown Austin, June 13-15, 2026. Speakers from Microsoft, AWS, and Salesforce."). |
+| `post_meta_keywords` | Same exact CSV as `post_tags`. |
 
 ### Do NOT pass
 
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
-
-`createSingleImagePost` accepts the `post_meta_title` and `post_meta_description` fields; the wrapper passes them through.
 
 ### Date/time formats
 

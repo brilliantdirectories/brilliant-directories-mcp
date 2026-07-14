@@ -193,11 +193,10 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `state_sn` | State code from Nominatim. |
 | `post_meta_title` | Type-specific example: `"Senior Marketing Manager Full-Time Position at Acme Corp in Downtown Austin, Texas"` — occupation + employment type + company + city expanded from the shorter `post_title`. |
 | `post_meta_description` | Descriptive prose: role + key responsibility + location + employment type, one sentence (e.g. "Acme Corp is hiring a Senior Marketing Manager in Austin, TX to lead B2B SaaS brand strategy. Full-time, hybrid."). Apply URL/email/phone stays in the body's `How to apply` section, NOT in the meta description — Google strips URLs from SERP snippets and meta descriptions should read as natural prose. |
+| `post_meta_keywords` | Same exact CSV as `post_tags`. |
 
 ### Do NOT pass
 
 - `post_expire_date` — BD job theme doesn't read it for auto-hide. Staleness discipline lives at the 30-day source-side gate.
 - `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes via Nominatim.
 - `revision_timestamp` — BD-managed.
-
-`createSingleImagePost` accepts `post_meta_title` and `post_meta_description`; the wrapper passes them through.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.102] - 2026-07-14
+
+### Fixed
+
+- **`post_meta_keywords` omission gun (skill corpus)** — run 21's create passed every meta field except `post_meta_keywords`, the only field whose pass-command lived solely in METHODOLOGY while the local field reference excluded it three ways: no table row, a constraints-footnote mention, and a closing sentence enumerating only `post_meta_title` + `post_meta_description` (enumeration-outlaws-the-unlisted). Deleted that sentence (events + jobs — redundant since the turn-1 `getToolSchema` already proves the wrapper accepts all three) and added a `post_meta_keywords` row beside its siblings in the Recommended table (events + jobs + blog). Wrapper verified innocent: post SEO meta are not `data_posts` columns — BD stores them in `users_meta`, inverse routing handles them correctly on create and update.
+
 ## [6.58.101] - 2026-07-14
 
 ### Fixed
