@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.87] - 2026-07-14
+
+### Fixed
+
+- **Twin fetch clause matched** — pool discipline's "plus the WebFetches that pin..." gets the same "new" as 6.58.86's ladder clause; identical phrasing, identical concept, no backward reference at either site.
+- **"The date probe stands alone" → "The date probe needs no title match"** — "stands alone" shared a phrase-family with Step 12's "fires ALONE in its own turn" and could read as a batching instruction contradicting "batched in the same turn" (hunter finding E2); the replacement states the intended meaning (evidentiary independence) directly.
+
 ## [6.58.86] - 2026-07-14
 
 ### Fixed
