@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.52] - 2026-07-13
+
+### Fixed
+
+- **Window day-list fully anchored** — "day before, start day, day after" → "the day before the start, the start day, the day after the start"; the elliptical form left before/after unanchored for a literal reader.
+
 ## [6.58.51] - 2026-07-13
 
 ### Fixed
