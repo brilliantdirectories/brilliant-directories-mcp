@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.54] - 2026-07-13
+
+### Fixed
+
+- **A goal=1 live run created an ACTUAL duplicate (4th copy of an event already on the site 3×) with Stage 2 never firing — root: two broken sentences, both repaired in place.** (1) events Step 5 commanded full `Stage 3: Source research` (deep verification included) BEFORE Step 6, so the model tunneled into candidate research and never returned; Step 5 now scopes to Stage 3 steps 2a-2b (discovery) and ends "Step 6 fires in that same message." (2) Stage 2's "the same turn the pool prints" became an EXPIRED precondition once Step 5's research pushed past that turn — the model treats an unsatisfiable timing as unbound and skips rather than runs late (third observed instance of the expired-precondition failure class). With Step 5 no longer delaying, the window is always satisfiable. Consequences re-pointed: Step 6's survivors advance to 2c-2e verification (deep research demoted behind dedup, where Stage 2's cost rationale always claimed it); Step 7 geocodes each survivor's confirmed address in the verification turns' spare slots ("drop geocodes for dupes" obsolete — dupes are already gone); GEOCODING.md header returns to "Run on survivors"; the date probe covers late-confirmed dates ("a date confirmed later probes that turn"). Live proof: the never-fired dedup turn, replayed against the failed run's actual 5-candidate pool, exposed 4 of 5 as dupes (3-copy CrossFit cluster, Lee Haney, 8-copy FitExpo cluster, same-day WA expo) in one turn. Parked with a name: jobs.md Step 5 carries the same research-first sentence.
+
 ## [6.58.53] - 2026-07-13
 
 ### Fixed
