@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.36] - 2026-07-13
+
+### Fixed
+
+- **Dedup phrases shortened to 1-2 word combos (owner directive: recall over precision).** `contains` is substring match — shorter combos match more retitlings; 3+ word phrases only match themselves. Fingerprint rule now "a 1-2 word combo"; leader-strip example shows the variant pair (`Austin Tech,Tech Summit`); exemplar CSV all 2-word combos; variant prose states the recall reason ("shorter substrings match more retitlings"). Dropped the "(token-budget blowup)" rationale parenthetical from the bulk-list ban.
+
 ## [6.58.35] - 2026-07-13
 
 ### Fixed
