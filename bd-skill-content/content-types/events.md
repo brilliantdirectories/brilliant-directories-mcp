@@ -20,8 +20,8 @@ The user invoked the skill with a request like "create event posts on my site" o
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
-6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
-7. **Geocode survivors only.** Nominatim each non-duplicate candidate's address. Skip lat/lon on failure. Independent of Step 6 — fire this geocode in the same turn as that dedup.
+6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. Dupes drop from the pool; survivors advance — no re-fetch.
+7. **Geocode.** Nominatim every pooled candidate's address in the same turn as Step 6's dedup; drop geocodes for dupes. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Image dedup + final-title check.** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batch it with the Step 3 image-dedup when that path runs; standalone on the `poolImages` path), never `like` or word-order variants. Run it exactly once for the run.
@@ -89,7 +89,7 @@ A returned row is a dupe when EITHER:
 
 ## Geocoding (runbook Step 7)
 
-Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
+Use results for survivors only — discard geocodes of candidates Step 6 dropped. Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
 
 For events, `post_venue` (the venue name) is usually known — the 4-tier branch of the retry ladder is the common path.
 

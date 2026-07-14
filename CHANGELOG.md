@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.34] - 2026-07-13
+
+### Fixed
+
+- **Stage 2: removed the buried permissions behind per-candidate mid-discovery dedup (first post-6.58.33 live run still deviated).** The stage opener "Run BEFORE source research… Per-candidate scoped query" literally commanded the deviation — a literal model dedups each candidate before deep-researching it, and 6.58.33's appended ban lost to the opener. Rewritten in place: "Run once per pool, in ONE turn, right after the pool prints… Pool-scoped — one round covers the whole pool"; the now-redundant appended sentence deleted (one home). `Rule: Search discipline`'s "Even while narrowing on a single candidate" gained the pool precondition. events.md Steps 6-7 recast from per-candidate-loop phrasing ("drop to the NEXT candidate", "EACH candidate… THAT dedup") to pool-level; Geocoding section synced.
+- **Single-phrase compound fusion, root-caused and structurally removed.** Both malformed calls across two runs (`["Sonoma Raceway,8"]`, `["Wellness Expo Grapevine,8"]`) were single-phrase cases — the exemplar teaches "comma-joined" with 2+ phrases and the one-phrase case was never demonstrated, so the join swept in the data_id. Fix: dedup now probes 2-3 title VARIANTS per candidate in the same CSV (core phrase, sponsor-stripped form, series/venue fragment — retitled dupes only match a variant), so element 1 always carries commas and the degenerate case no longer exists; exemplar updated to show variants; "never fused into the phrase string" added to the two-element rule.
+
 ## [6.58.33] - 2026-07-13
 
 ### Fixed
