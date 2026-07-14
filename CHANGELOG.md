@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.50] - 2026-07-13
+
+### Fixed
+
+- **Stated-timing parenthetical trimmed to its one clean example** (Stage 2 dedup) — geocode's timing is conditional and lives fully in its runbook step; compressing it here made a second, lossier home.
+
 ## [6.58.49] - 2026-07-13
 
 ### Fixed
