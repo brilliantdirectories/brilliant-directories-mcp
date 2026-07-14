@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.37] - 2026-07-13
+
+### Fixed
+
+- **Dedup exemplar shows 3 variant shapes per candidate** (was 2) — two candidates × three 1-2 word combos each, matching the "2-3 variants" rule at full strength.
+
 ## [6.58.36] - 2026-07-13
 
 ### Fixed
