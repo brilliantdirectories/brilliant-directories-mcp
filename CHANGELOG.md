@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.56] - 2026-07-13
+
+### Fixed
+
+- **The two guns behind the dedup-skip tunnels, per full order-integrity audit (15 findings, 2 load-bearing).** (1) The Discovery ladder's terminal — "usable candidates in hand → they are the pool, select and proceed" — mandated fetch-everything pre-pool and routed straight past the print/dedup message; now "they are the pool: print it and fire Stage 2 dedup in that same message, then proceed." (2) Stage 2's trigger was bound four times to one expirable instant with no late-fire clause (expired precondition → step unbinds — the known killer class); appended: "Reached any later point undeduped → run Stage 2 now, before the next candidate call."
+- **Imageless creates were textually legal** — post_image lives under "Recommended", with "or omit", and the state-based out "No image commits → omit" is vacuously true for a run that never attempted images; now process-bound: "Both Image strategy batches ran and nothing committed → omit `post_image`." Remaining 12 audit findings parked.
+
 ## [6.58.55] - 2026-07-13
 
 ### Fixed
