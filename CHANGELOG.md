@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.88] - 2026-07-14
+
+### Fixed
+
+- **Stage 3's 2c was the last unconditional pre-verdict fetch command — and the reason turn 3 is always five fetches** — "WebFetch top 3-5 candidates" sat as the next numbered line after the search round, gate-free, so the model rolled 2b→2c on sequence momentum regardless of every routing fix around it (live: on July 14 it fetched three events dated July 4/11/12 plus two already-keyed candidates). Now the gate lives on the line itself: "**2c.** Survivors only — after Stage 2's verdicts: WebFetch the top 3-5 survivors." Side effects, verified by full-corpus sweep: jobs' latent full-Stage-3 tunnel dies (its unscoped Step 5 now funnels through the gate), blog Shape A's pre-dedup research (hunter B4) dies, and every legal fetch class keeps its own license (list-page harvest, key-pinning per the ladder/hybrid/.80, Stage 5 citations, URL liveness, Nominatim).
+
 ## [6.58.87] - 2026-07-14
 
 ### Fixed
