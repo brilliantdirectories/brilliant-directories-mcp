@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.42] - 2026-07-13
+
+### Fixed
+
+- **6.58.41's web-only fence traded turn efficiency for tidiness — reverted to specified-vs-improvised as the boundary (owner audit).** Spare slots in any turn may again prefetch a later step's SPECIFIED calls whose inputs are ready (member-count probes riding a web turn = a free round at the linking pass); "runbook-step BD calls" joins the 5-call mix; steps with stated timing (Stage 2 dedup at the pool print) fire at their stated time, so prefetch cannot pull dedup forward. Member-count gate timing anchor reverted (verification-before-linking is the gate's own body; probe timing is free).
+
 ## [6.58.41] - 2026-07-13
 
 ### Fixed
