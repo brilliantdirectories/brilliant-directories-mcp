@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.64] - 2026-07-13
+
+### Fixed
+
+- **Solo-turn epidemic: post-discovery, "no extras" banned turn-packing** — the 5-call invariant lives in Rule: Search discipline (scoped by name and body to discovery), so after discovery the preamble's "Only make the tool calls each step specifies — no extras" made cross-step packing illegal: solo poolImages, solo title checks, solo geocodes, dribbled gate probes (~6 wasted turns/run). Preamble now (all three runbooks): "no extras; a later step's specified calls fire in the current turn once their inputs are ready" — readiness defined by each step's own precondition text.
+- **Slot-filler repeats** — duplicate probes (same date window twice in one turn, re-fired member gates) passed as insurance; now "fill with insurance — new calls only".
+- **Title churn root: `eq` rejects comma values** — live-verified: the comma-title check errors ("Operator = does not accept CSV values"), the model recomposes the title and re-checks, "once per final title" licensing each round (2-3 checks/run in runs 2-3). Step 10 now: compose once to the field reference's title spec; a comma title probes `like` on the pre-comma prefix; run it exactly once.
+- **Geocode ladder preloaded one backup only** — Step 7's "retry ladder's next tier" (singular) capped insurance at one; now "next tiers" — remaining tiers batch into the same turn, lowest-numbered hit wins.
+
 ## [6.58.63] - 2026-07-13
 
 ### Fixed
