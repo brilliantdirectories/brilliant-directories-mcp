@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.83] - 2026-07-14
+
+### Fixed
+
+- **Compound-example caption scales upward** — it generalized the 2-candidate example only downward ("a one-candidate pool..."); on a model that treats worked examples as THE shape, the many-candidate direction was untaught. Now: "a five-candidate pool runs the same call with fifteen variants in element 1; a one-candidate pool, its three alone."
+
 ## [6.58.82] - 2026-07-14
 
 ### Fixed
