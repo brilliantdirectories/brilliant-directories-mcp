@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.91] - 2026-07-14
+
+### Fixed
+
+- **Step 5's last turn-shaped phrase aligned to the ladder** — "one batched turn of WebFetch opens..." could lawfully read as a dedicated fetch turn between the round and the pool, contradicting the ladder's "batched alongside"; now "WebFetch opens the best list-page(s) and the entries still missing keys in that same message." Watch-listed (not fixed, no occurrence on current text): 2b's untimed site:-probe permission.
+
 ## [6.58.90] - 2026-07-14
 
 ### Fixed
