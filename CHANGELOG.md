@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.45] - 2026-07-13
+
+### Fixed
+
+- **Step 7: "retry ladder" qualified as the GEOCODING.md retry ladder** — unqualified, the term forced a cross-file inference.
+
 ## [6.58.44] - 2026-07-13
 
 ### Fixed
