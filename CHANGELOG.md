@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.100] - 2026-07-14
+
+### Fixed
+
+- **The 3-day window stated as construction arithmetic** — runs copied the example's format (`000000`/`235959`) while anchoring both bounds to the candidate's date: the day±1 offset was a described result, not a transform, and this model executes formulas, not implications (single-day probes in three runs, perfect suffixes, zero offset). Now: "value element 1 = (start date minus one day)+`000000`,(start date plus one day)+`235959`; the start day sits in the middle, both bounds are its neighbors" + the example captioned with its explicit span.
+
 ## [6.58.99] - 2026-07-14
 
 ### Fixed

@@ -886,8 +886,8 @@ Still under five pooled after 5c's searches → the ladder's recovery per **Rule
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys, batched in the same turn: ONE compound query covering every pooled candidate's titles, plus one date-only probe per candidate — a five-candidate pool fires six calls — a find enters the pool once both its title and start date are known, so every pooled candidate probes here; a date that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start:
-`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys, batched in the same turn: ONE compound query covering every pooled candidate's titles, plus one date-only probe per candidate — a five-candidate pool fires six calls — a find enters the pool once both its title and start date are known, so every pooled candidate probes here; a date that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days, built by arithmetic — value element 1 = (start date minus one day)+`000000`,(start date plus one day)+`235959`; the start day sits in the middle, both bounds are its neighbors:
+`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate → the probe spans 20260716 through 20260718; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:
 - Title: semantic match; or
