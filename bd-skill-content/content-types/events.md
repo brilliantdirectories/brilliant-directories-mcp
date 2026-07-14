@@ -21,7 +21,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. Dupes drop from the pool; survivors advance — no re-fetch.
-7. **Geocode.** Nominatim every pooled candidate's address — in the dedup turn's spare slots, else the next turn; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup. Drop geocodes for dupes. Skip lat/lon on failure.
+7. **Geocode.** Nominatim every pooled candidate's address — in the dedup turn's spare slots, else the next turn; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup; the lowest-numbered hit wins. Drop geocodes for dupes. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never `like` or word-order variants. Run it exactly once for the run.
@@ -79,11 +79,11 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 ## Dedup (runbook Step 6)
 
 Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, window = day before through day after the event's start date:
-`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date.
+`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:
 - Title: semantic match; or
-- Date + place: `post_start_date` within ±24 hours AND same `post_venue` (else same city) — whatever either post is titled. Sponsor renames, abbreviations, and year suffixes never make it new.
+- Date + place: `post_start_date` within ±24 hours AND same `post_venue`; when either row lacks a venue, same city — whatever either post is titled. Sponsor renames, abbreviations, and year suffixes never make it new.
 
 ---
 

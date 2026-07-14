@@ -115,9 +115,9 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 ## Stage 2: Duplicate detection
 
-Run once per pool, in ONE turn — right after the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
+Run once per pool, in ONE turn — the same turn the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers the titles; the content-type file adds any further retrieval keys (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
@@ -127,7 +127,7 @@ Two candidates, three variants each. A one-candidate pool runs the same call —
 
 Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
 
-**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Variant shapes — sponsor-stripped form, series or venue fragment; shorter substrings match more retitlings. Variants are free; a retitled dupe only matches a variant.
+**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit,Austin Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Variant shapes — sponsor-stripped form, series or venue fragment; shorter substrings match more retitlings. Variants are free; a retitled dupe only matches a variant.
 
 The content-type file specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 
@@ -418,7 +418,7 @@ Pass the returned `page` cursor verbatim — never construct one. `total` is a s
 
 ### Rule: Search discipline
 
-Every turn fires 5 parallel calls — WebSearches, WebFetches, runbook-step BD calls, or a mix. Whatever the immediate work leaves unused, fill with insurance: speculatively preload backup candidates, extra query angles, or a later step's specified calls whose inputs are ready. Steps with stated timing (Stage 2 dedup at the pool print) fire at their stated time. After the pool is printed, even while narrowing on its #1 candidate, the spare slots keep loading backups — the candidate you are chasing might fail, and that is exactly when you want ready fallbacks already in hand next turn. 5 every turn — one fat turn beats a chain of try-one-fail-retry turns, it is faster and cheaper. Read EVERY result before any new query — qualifying sources routinely rank 5-8. `site:` follows only a domain a result list surfaced (`Image strategy` pexels queries exempt). Negatives strip a known noise class — `-pdf` on probes, one megaboard domain on jobs queries; more trip bot-blocks; a blocked or emptied negated query retries once without them. Count a hit only after opening it: live and on-topic; list-pages additionally show current dates and the correct location in the listed entries themselves. A usable candidate is one that clears your type's gates — on-topic, correct location, and any date/recency rule the content-type sets. A round that returns usable candidates has succeeded; even a few, surfaced by the same sources repeating across queries, are your pool; select from them and proceed. Classify only a round that surfaced no usable candidate: error/challenge pages = tooling-blocked → one structurally different retry, then stop labelled "blocked"; clean-but-empty = dry. Ending with less than the target is a successful outcome — report it via `shortfall_reason`. Reformulate at most once per round, and only to recover a round that surfaced no usable candidate.
+Every turn fires 5 parallel calls — WebSearches, WebFetches, runbook-step BD calls, or a mix. Whatever the immediate work leaves unused, fill with insurance: speculatively preload backup candidates, extra query angles, or a later step's specified calls whose inputs are ready. Steps with stated timing (Stage 2 dedup in the pool-print turn; geocode per its runbook step) fire at their stated time. After the pool is printed, even while narrowing on its #1 candidate, the spare slots keep loading backups — the candidate you are chasing might fail, and that is exactly when you want ready fallbacks already in hand next turn. 5 every turn — one fat turn beats a chain of try-one-fail-retry turns, it is faster and cheaper. Read EVERY result before any new query — qualifying sources routinely rank 5-8. `site:` follows only a domain a result list surfaced (`Image strategy` pexels queries exempt). Negatives strip a known noise class — `-pdf` on probes, one megaboard domain on jobs queries; more trip bot-blocks; a blocked or emptied negated query retries once without them. Count a hit only after opening it: live and on-topic; list-pages additionally show current dates and the correct location in the listed entries themselves. A usable candidate is one that clears your type's gates — on-topic, correct location, and any date/recency rule the content-type sets. A round that returns usable candidates has succeeded; even a few, surfaced by the same sources repeating across queries, are your pool; select from them and proceed. Classify only a round that surfaced no usable candidate: error/challenge pages = tooling-blocked → one structurally different retry, then stop labelled "blocked"; clean-but-empty = dry. Ending with less than the target is a successful outcome — report it via `shortfall_reason`. Reformulate at most once per round, and only to recover a round that surfaced no usable candidate.
 
 **Discovery ladder** (events, jobs, any current inventory): (1) one batched round — fire ALL your opening queries together in a single turn: the broad-faceted temporal (`<niche> <location> <window>`) + list-page vocabulary (`<location> <niche> calendar/board/listings`) shapes, plus any extra query variants you'd run for coverage → read every result, then batch the WebFetches of every candidate worth opening into ONE follow-up turn; usable candidates in hand → they are the pool, select and proceed; (2) only a round that surfaced no usable candidate earns recovery: empty → one `<niche> <location> <month year>` recovery, blocked → one venue/facility-noun retry; (3) stop with the diagnosed verdict.
 
@@ -731,7 +731,7 @@ Combine across posts — every post doesn't need a combo link. Mix (1) and (2) s
 
 # GEOCODING: Nominatim protocol for post types with a place anchor
 
-Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors only (candidates that passed the runbook's dedup step) — don't waste Nominatim calls on dupes.
+Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Use results for survivors only — runbooks may fire calls speculatively alongside dedup; dupes' results are discarded.
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -765,7 +765,7 @@ For each `WebFetch` tier call: `"Extract from this Nominatim JSON response: (1) 
 
 ## Rules
 
-- ≥1 second between every Nominatim call (Nominatim ToS — tier retries count as calls).
+- ≥1 second between Nominatim rounds (Nominatim ToS).
 - Cache within run: two posts at same venue → geocode once.
 - Never fabricate coords. Never use LLM-knowledge coordinates.
 
@@ -803,7 +803,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. Dupes drop from the pool; survivors advance — no re-fetch.
-7. **Geocode.** Nominatim every pooled candidate's address — in the dedup turn's spare slots, else the next turn; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup. Drop geocodes for dupes. Skip lat/lon on failure.
+7. **Geocode.** Nominatim every pooled candidate's address — in the dedup turn's spare slots, else the next turn; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup; the lowest-numbered hit wins. Drop geocodes for dupes. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never `like` or word-order variants. Run it exactly once for the run.
@@ -861,11 +861,11 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 ## Dedup (runbook Step 6)
 
 Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, window = day before through day after the event's start date:
-`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date.
+`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:
 - Title: semantic match; or
-- Date + place: `post_start_date` within ±24 hours AND same `post_venue` (else same city) — whatever either post is titled. Sponsor renames, abbreviations, and year suffixes never make it new.
+- Date + place: `post_start_date` within ±24 hours AND same `post_venue`; when either row lacks a venue, same city — whatever either post is titled. Sponsor renames, abbreviations, and year suffixes never make it new.
 
 ---
 

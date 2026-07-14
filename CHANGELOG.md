@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.48] - 2026-07-13
+
+### Fixed
+
+- **Nine one-clause debts of this week's dedup changes, surfaced by a fresh-eyes adversarial sweep of the assembled blob (owner-scoped to our own edits' fallout).** (1) Dupe criterion "(else same city)" disambiguated — venue-MISSING fallback, not venue-mismatch (as written, two different same-city events within ±24h read as mutual dupes). (2) Stage 2 "one compound query covers it" → "covers the titles; the content-type file adds any further retrieval keys" (a METHODOLOGY-only reading shipped title-only dedup). (3) GEOCODING.md "Run on survivors only — don't waste calls" → "Use results for survivors only — runbooks may fire calls speculatively alongside dedup" (aligns to the shipped spare-slot design; deletes a negation). (4) ToS spacing per-call → per-round (per-call was unsatisfiable in batched turns). (5) Tier backup gains its resolution: "the lowest-numbered hit wins." (6) "Stated timing" class enumerated (Stage 2 at pool print; geocode per its step). (7) "right after the pool prints" → "the same turn the pool prints." (8) Austin exemplar shows 3 variants matching the flat-3 rule. (9) "The dedup turn carries as many calls as the pool needs" (5-call norm vs 1+N dedup arithmetic at N≥5). Twelve pre-existing findings deliberately parked for a post-gauntlet pass.
+
 ## [6.58.47] - 2026-07-13
 
 ### Fixed

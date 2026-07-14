@@ -1,6 +1,6 @@
 # GEOCODING: Nominatim protocol for post types with a place anchor
 
-Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors only (candidates that passed the runbook's dedup step) — don't waste Nominatim calls on dupes.
+Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Use results for survivors only — runbooks may fire calls speculatively alongside dedup; dupes' results are discarded.
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -34,7 +34,7 @@ For each `WebFetch` tier call: `"Extract from this Nominatim JSON response: (1) 
 
 ## Rules
 
-- ≥1 second between every Nominatim call (Nominatim ToS — tier retries count as calls).
+- ≥1 second between Nominatim rounds (Nominatim ToS).
 - Cache within run: two posts at same venue → geocode once.
 - Never fabricate coords. Never use LLM-knowledge coordinates.
 
