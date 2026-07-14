@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.51] - 2026-07-13
+
+### Fixed
+
+- **Date-probe window forced by count: "exactly 3 days — day before, start day, day after (a multi-day event's start day = its first day)."** A live run windowed two multi-month training programs by their full span (79 and 112 days) — wider than `limit 50` can guarantee, so truncation could hide a real dupe. Prose about "the start date" lost twice; a day count can't be reinterpreted. Window now equals the ±24h compare criterion exactly.
+- **Phrase assembly: "(each 1-3 words — trim official names to their distinctive core)."** The same run gave a candidate zero cap-compliant phrases ("200-Hour Yoga Teacher Training") — fidelity-to-official-name beat the cap; naming the trim action resolves the conflict in the cap's favor.
+
 ## [6.58.50] - 2026-07-13
 
 ### Fixed

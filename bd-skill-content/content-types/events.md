@@ -78,7 +78,7 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, window = day before through day after the event's start date:
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, window = exactly 3 days — day before, start day, day after (a multi-day event's start day = its first day):
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:
