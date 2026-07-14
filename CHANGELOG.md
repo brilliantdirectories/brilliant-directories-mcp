@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.43] - 2026-07-13
+
+### Fixed
+
+- **events Step 7 same-turn geocode collision resolved.** "In the same turn as Step 6's dedup" is unsatisfiable when a 4-candidate dedup fills all 5 slots (observed: geocode deferred to a solo single-call turn). Now: "in the dedup turn's spare slots, else the next turn, with spare slots carrying the retry ladder's next tier as backup" — deferral has a stated home and a tier-1 Nominatim miss costs zero extra turns.
+
 ## [6.58.42] - 2026-07-13
 
 ### Fixed
