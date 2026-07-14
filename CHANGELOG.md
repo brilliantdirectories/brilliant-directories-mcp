@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.49] - 2026-07-13
+
+### Fixed
+
+- **"geocode per its runbook step" → "geocode riding that turn's spare slots"** — inside a sentence about steps firing at their own times, the pointer form read as geocode-gets-its-own-turn; the inline form states the tandem timing.
+
 ## [6.58.48] - 2026-07-13
 
 ### Fixed
