@@ -115,12 +115,12 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 ## Stage 2: Duplicate detection
 
-Run once per pool, in ONE turn, right after the pool prints and before any survivor's deep research — a dupe drops for the cost of one dedup round, not a wasted research cycle. Pool-scoped — one round covers the whole pool; never bulk-list a site's existing posts (token-budget blowup).
+Run once per pool, in ONE turn — right after the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts (token-budget blowup).
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — the phrases comma-joined into one string, then the data_id as its own element, never fused into the phrase string:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every phrase comma-joined into one string; element 2: the data_id alone:
 
 ```
-listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River Marathon,River Marathon,Studio Three Pilates,Studio Three","9"] limit=25
+listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Acme Campbell River Marathon,Campbell River Marathon,River Marathon,Studio Three Pilates,Studio Three","9"] limit=25
 ```
 
 Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
@@ -869,7 +869,7 @@ A returned row is a dupe when EITHER:
 
 ## Geocoding (runbook Step 7)
 
-Use results for survivors only — discard geocodes of candidates Step 6 dropped. Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
+Use results for survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
 
 For events, `post_venue` (the venue name) is usually known — the 4-tier branch of the retry ladder is the common path.
 

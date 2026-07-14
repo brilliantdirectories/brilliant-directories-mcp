@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.35] - 2026-07-13
+
+### Fixed
+
+- **6.58.34 wording pass (owner audit).** Stage 2 opener: duplicated "once per pool / one round covers the whole pool" collapsed to one statement. Two-element rule recast positive ("element 1: every phrase comma-joined into one string; element 2: the data_id alone" — replaces the "never fused" negation). Exemplar upgraded to teach the full variant ladder: candidate 1 shows full title → sponsor-stripped → shortened (the observed sponsor-rename failure mode), candidate 2 shows a proper name standing alone as its own CSV entry. events.md Geocoding line de-duplicated.
+
 ## [6.58.34] - 2026-07-13
 
 ### Fixed
