@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.65] - 2026-07-13
+
+### Fixed
+
+- **Comma-title recovery taught by worked example** — Step 10's recovery was stated as a description; now it carries the mechanical shape inline: `"LA Stretch Class, Jul 19"` probes `property_operator=like property_value=LA Stretch Class%`. Examples force this model where descriptions bend.
+
 ## [6.58.64] - 2026-07-13
 
 ### Fixed
