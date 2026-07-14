@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.61] - 2026-07-13
+
+### Fixed
+
+- **Pre-dedup depth research had no stop-line** — a harvested events candidate with title and start date in hand kept absorbing verification-depth fetches (FAQ, schedule, parking) before the pool printed and Step 6 ran; events Step 5 now carries the boundary as a per-candidate state: "once title and start date are known, that candidate's source research stops until it survives Step 6." Adversarially verified by two independent reviews: conjunctive trigger preserves date-hunting, per-candidate scoping preserves multi-candidate harvest, "source research" (Stage 3's term) excludes the candidate's own dedup probes, "survives Step 6" hands off exactly where survivors→2c-2e picks up. Known residual: the Search-discipline insurance clause can still smuggle 2c-2e preloads into dedup-turn spare slots (shared-file fix deferred — it would contradict jobs' by-design Step 5).
+
 ## [6.58.60] - 2026-07-13
 
 ### Fixed
