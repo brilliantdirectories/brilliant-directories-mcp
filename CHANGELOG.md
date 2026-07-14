@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.95] - 2026-07-14
+
+### Fixed
+
+- **Step 5's singular article taught the single-candidate pool** — "**a** WebSearch result already showing title and start date pools as-is" is satisfied by pooling one, while the ladder says "every entry pools NOW"; the runbook singular beat the shared universal at the execution surface (run 15 obeyed the ladder ×3, run 16 chased one — the stochastic split). One word: "a" → "every".
+
 ## [6.58.94] - 2026-07-14
 
 ### Fixed
