@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.80] - 2026-07-14
+
+### Fixed
+
+- **The last vague-boundary sentence replaced with a checkable purpose** — "deep per-candidate research before the full pool exists is not [fine]" was the proven-unenforceable wording the run-1 tunnel happened under ("deep" undefined); now "pre-verdict research on a single candidate reaches only its missing dedup keys." Date-hunting stays legal by purpose; FAQ/parking-style pre-dedup research is banned by purpose; survivor research (post-verdict) unrestricted.
+
 ## [6.58.79] - 2026-07-14
 
 ### Fixed
