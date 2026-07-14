@@ -172,7 +172,7 @@ What `createSingleImagePost` receives.
 
 ### Recommended (include when source data supports)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 
 | Field | Jobs-specific note |
 |---|---|

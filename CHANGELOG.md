@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.60] - 2026-07-13
+
+### Fixed
+
+- **`post_meta_keywords` never shipped on creates** — the field-reference pointer in all three type files enumerated the universal fields "(post_image, post_live_date, post_meta_title length, post_meta_description length)" and the enumeration acted as the spec, silently excluding `post_meta_keywords` despite METHODOLOGY stating it twice; `post_meta_keywords` added to the parenthetical in events, jobs, and blog. Same pointer-summary-excludes pattern as 6.58.59's Step 6 fix.
+
 ## [6.58.59] - 2026-07-13
 
 ### Fixed
