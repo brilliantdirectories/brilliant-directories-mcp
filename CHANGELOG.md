@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.66] - 2026-07-14
+
+### Fixed
+
+- **Comma titles banned at composition (events + jobs)** — the events title spec itself recommended commas ("use a different separator (e.g. comma, hyphen)") — the buried permission behind runs 2-3's comma titles; now "(e.g. a hyphen)" and both specs read "Plain text, no HTML, no commas." Ban = source, Step 10 like-prefix recovery stays as the non-compliance net.
+- **Jobs Step 10 mirrored to the fixed events sentence** — jobs ran the old "already composed... never like... once per final title" against titles that carry commas constantly ("Yoga Instructor, Part-Time"); deterministic validator primitive (eq rejects comma values), not speculative behavior-patching. Compose-once + comma recovery with a jobs-flavored worked example. Blog untouched: it has no final-title check.
+
 ## [6.58.65] - 2026-07-13
 
 ### Fixed
