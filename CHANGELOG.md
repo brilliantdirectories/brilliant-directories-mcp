@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.94] - 2026-07-14
+
+### Fixed
+
+- **6.58.93's "after poolImages" was still a temporal anchor** — calls in one message are simultaneous, so a check that must come "after" can ride any later turn but never poolImages' own (the exact turn that saves one); no data dependency justifies the ordering. Now: "on the poolImages path it rides any turn — poolImages' own turn included" (events + jobs).
+
 ## [6.58.93] - 2026-07-14
 
 ### Fixed
