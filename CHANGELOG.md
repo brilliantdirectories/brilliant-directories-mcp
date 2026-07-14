@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.79] - 2026-07-14
+
+### Fixed
+
+- **6.58.77's hybrid clause leaked an events-only key into universal prose** — "date-known entry / start date" in shared pool discipline would send blog/jobs hunting start dates for dateless candidates; now type-agnostic: "Stage 2 dedup for every entry whose dedup keys are known — the content-type file names them — plus the WebFetches that pin each remaining entry's missing keys." Events keeps the title+date hybrid via its own Dedup section; jobs/blog degenerate to all-keys-known → bulk dedup, no fetches.
+
 ## [6.58.78] - 2026-07-14
 
 ### Fixed
