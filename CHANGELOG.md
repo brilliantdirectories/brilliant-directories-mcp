@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.74] - 2026-07-14
+
+### Fixed
+
+- **LIVE TRIPLE-DUPE (post 1363 duplicating 326/383): promoted insurance fallbacks had no dedup toll** — Search discipline's "ready fallbacks already in hand" manufactured a candidate class the pool machinery never claims: SCW Atlanta was preloaded as backup, promoted when the pooled candidate died, and reached create with zero Stage 2 (no pool entry → no probes → no verdicts owed — every dedup rule was pool-scoped). Two welds make dedup a per-candidate gate: Stage 2's late-fire gains a subject ("A candidate at any later point without its verdict line → run Stage 2 for it now, before its next call") and the fallback sentence gains the toll ("a promoted fallback passes Stage 2 before any other call for it").
+
+### Changed
+
+- **Turn width reverted 10 → 5** (A/B result: width changed nothing — fill discipline and candidate flow are the levers). The .73 bridging arithmetic retained at 5-scale ("the step's 2, plus 3 insurance").
+
 ## [6.58.73] - 2026-07-14
 
 ### Fixed
