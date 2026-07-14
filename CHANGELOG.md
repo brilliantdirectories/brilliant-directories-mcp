@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.46] - 2026-07-13
+
+### Fixed
+
+- **GEOCODING.md ladder heading aligned with Step 7's parallel-tier backup.** "run sequentially…, accept first hit" contradicted the new preload instruction; the invariant that matters is acceptance priority, not serial firing — now "accept the highest tier that hits." (Worker executes same-turn calls serially, so Nominatim spacing is unchanged.)
+
 ## [6.58.45] - 2026-07-13
 
 ### Fixed
