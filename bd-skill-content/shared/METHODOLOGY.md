@@ -63,7 +63,7 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run once per pool, in ONE turn — right after the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 2-3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25

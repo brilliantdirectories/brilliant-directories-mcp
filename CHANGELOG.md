@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.40] - 2026-07-13
+
+### Fixed
+
+- **Variant count flattened to 3** (was "2-3" — a range lets the model pick the lazy end; flat invariant per the small-model doctrine). **Date-probe window reverted to pure start** ("day before through day after the event's start date") — the 6.58.39 span-padded window retrieved rows that the ±24h start-date compare criterion rejects anyway; retrieval wider than the criterion is dead weight.
+
 ## [6.58.39] - 2026-07-13
 
 ### Fixed
