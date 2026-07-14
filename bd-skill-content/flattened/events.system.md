@@ -107,7 +107,7 @@ Multiple candidates from post-type discovery resolve in order — never exit ove
 
 ### Candidate pool discipline (universal pattern)
 
-When the run holds one or more candidates — brainstormed or harvested (topics, events, jobs) — they ARE the pool; one candidate prints as `1.` and runs every pool stage, Stage 2 dedup included. Emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call; take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations. If pool 2 also fully fails, exit with the Stage 7 receipt (`shortfall_reason` says why).
+When the run holds one or more candidates — brainstormed or harvested (topics, events, jobs) — they ARE the pool; one candidate prints as `1.` and runs every pool stage, Stage 2 dedup included. Emit the full numbered 1-N pool as a visible list before researching any single candidate in depth. Research to discover candidates is fine; deep per-candidate research before the full pool exists is not. Print the pool in the same message as your next tool call — Stage 2 dedup's calls are that message's calls. Take #1, on failure drop it and take the next un-tried. Do NOT regenerate until all are tried. If all fail, generate pool 2 — distinctly different from pool 1, no variations; a new pool re-enters the runbook at its `Duplicate detection` step. If pool 2 also fully fails, exit with the Stage 7 receipt (`shortfall_reason` says why).
 
 **Failure** = dedup hit, source-research can't substantiate, required-field gate misses, or any other condition that blocks the candidate from progressing to post creation.
 
@@ -731,7 +731,7 @@ Combine across posts — every post doesn't need a combo link. Mix (1) and (2) s
 
 # GEOCODING: Nominatim protocol for post types with a place anchor
 
-Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors (candidates that passed the runbook's dedup step).
+Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors (candidates that passed the runbook's `Duplicate detection` step).
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
@@ -803,10 +803,10 @@ The user invoked the skill with a request like "create event posts on my site" o
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.** Run the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list — Step 6 fires in that same message.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
-7. **Geocode.** Nominatim each survivor's confirmed address, batched in the verification turns' spare slots; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup; the lowest-numbered hit wins. Skip lat/lon on failure.
+7. **Geocode.** Nominatim each survivor once verification confirms its address — in the next turn's spare slots; fill leftover slots with the GEOCODING.md retry ladder's next tier as backup; the lowest-numbered hit wins. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
-10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never `like` or word-order variants. Run it exactly once for the run.
+10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never `like` or word-order variants. Run it exactly once per final title.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
 12. **Create the post** via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
@@ -860,7 +860,7 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate with a confirmed start date (a date confirmed later probes that turn) — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start:
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — every pooled event carries a start date (undated finds join the pool once dated) — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start:
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:

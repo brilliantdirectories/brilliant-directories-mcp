@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.55] - 2026-07-13
+
+### Fixed
+
+- **Goal=1 adversarial simulation of the 6.58.54 text: closed the four residual create-without-dedup paths.** (C) A pool printed one turn early (in a discovery-fetch message) escaped Step 5's binding and expired Stage 2's timing — the weld now lives at the print's definition: "Print the pool in the same message as your next tool call — Stage 2 dedup's calls are that message's calls." (F) A pool-2 candidate resumed at the current runbook step, skipping dedup, and Step 10's "exactly once for the run" was already spent — pool discipline now states "a new pool re-enters the runbook at its `Duplicate detection` step" and the title check is "exactly once per final title" (events + jobs). (D) "confirmed start date" was undefined and let a strict reader skip ALL date probes — replaced with the domain truth: "every pooled event carries a start date (undated finds join the pool once dated)." (E) Same-turn geocode was circular with a single verification turn — now "once verification confirms its address — in the next turn's spare slots." GEOCODING.md survivor reference now names the step (`Duplicate detection`) instead of assuming a number.
+
 ## [6.58.54] - 2026-07-13
 
 ### Fixed
