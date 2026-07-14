@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.97] - 2026-07-14
+
+### Fixed
+
+- **Key-pinning WebFetch becomes the explicit shortfall branch (owner design)** — run 17 on verified-fresh text still fetched five keyed/dead candidates pre-pool (it obeyed 2c's flat "top 5" while skipping the gate on the same line — flat numbers are this model's best-obeyed construct, naked triggers its worst). The fetch clause at all THREE twin sites (events Step 5, the ladder, pool discipline's hybrid) now carries the flat-number condition: "fewer than five pooled → WebFetch...". Fetching now requires counting the pool first (the implicit triage), a rich round makes pre-dedup fetching a flat-number violation, and the happy path fires zero pre-dedup fetches. Triage-roster artifact remains the shelved escalation.
+
 ## [6.58.96] - 2026-07-14
 
 ### Fixed
