@@ -117,15 +117,17 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run once per pool, in ONE turn — right after the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every phrase comma-joined into one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 2-3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
 ```
 
+Two candidates, three variants each.
+
 Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
 
-**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Probe 2-3 variants per candidate in the same CSV, each 1-3 words — shorter substrings match more retitlings (sponsor-stripped form, series or venue fragment). Variants are free; a retitled dupe only matches a variant.
+**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Variant shapes — sponsor-stripped form, series or venue fragment; shorter substrings match more retitlings. Variants are free; a retitled dupe only matches a variant.
 
 The content-type file specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 
@@ -858,7 +860,7 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, start day ±1:
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — `post_start_date` + `data_id` alone, window = day before the event's start through day after its end:
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date.
 
 A returned row is a dupe when EITHER:

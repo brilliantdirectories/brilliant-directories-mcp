@@ -63,15 +63,17 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run once per pool, in ONE turn — right after the pool prints, before any survivor's deep research. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every phrase comma-joined into one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query covers it (**Rule: Compound filters**). `property_value` is exactly TWO elements — element 1: every candidate's 2-3 variants (each 1-3 words) comma-joined into one string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
 ```
 
+Two candidates, three variants each.
+
 Substitute the `list*` tool matching the post-type family. Compare returned titles client-side; a row counts when the title semantically matches a candidate.
 
-**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Probe 2-3 variants per candidate in the same CSV, each 1-3 words — shorter substrings match more retitlings (sponsor-stripped form, series or venue fragment). Variants are free; a retitled dupe only matches a variant.
+**Distinctive phrase = a 1-3 word combo that fingerprints THIS candidate.** Skip throwaway leaders — articles (`The`), years (`2026`), ordinals (`5th`, `Annual`, `Inaugural`): `"The 5th Annual Austin Tech Summit"` → `Austin Tech,Tech Summit`. A generic single word (`Trainer`) floods the result set; a distinctive combo keeps it lean. Variant shapes — sponsor-stripped form, series or venue fragment; shorter substrings match more retitlings. Variants are free; a retitled dupe only matches a variant.
 
 The content-type file specifies match criteria (semantic title overlap, date tolerance if applicable, location if applicable).
 

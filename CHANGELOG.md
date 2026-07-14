@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.39] - 2026-07-13
+
+### Fixed
+
+- **Pool-scale run on 6.58.38 achieved the full dedup architecture (pool print → ONE turn: 4-candidate title compound + 4 separate date-only between probes) with two phrasing misses, both fixed at their source.** (1) Variants collapsed to one phrase per candidate: the exemplar parses as 6-candidates-×-1-phrase equally well as 2-×-3 — labeled it ("Two candidates, three variants each.") and moved the counts into the assembly sentence ("every candidate's 2-3 variants (each 1-3 words) comma-joined"); the phrase-selection sentence keeps only the variant shapes + recall rationale (numbers live once). (2) Date windows came out as bare event spans (one candidate got a zero-tolerance single day): "start day ±1" notation replaced with words — "window = day before the event's start through day after its end."
+
 ## [6.58.38] - 2026-07-13
 
 ### Fixed
