@@ -808,7 +808,7 @@ The user invoked the skill with a request like "create event posts on my site" o
 9. **Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image first — re-doing content when an image fails dedup is the expensive path.
 10. **Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. The final `post_title` is already composed, so confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs; standalone after `poolImages`), never `like` or word-order variants. Run it exactly once per final title.
 11. **Content manufacture.** Proceed straight from runbook Step 10 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
-12. **Create the post** — the run's final tool call before the receipt: it fires ALONE in its own turn, after Steps 6-11 are complete, via `createSingleImagePost` with the field set in the `BD Events field reference` section.
+12. **Create the post** — fires ALONE in its own turn, after Steps 6-11 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` with the field set in the `BD Events field reference` section.
 13. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ---
@@ -860,7 +860,7 @@ Round empty or blocked → the ladder's recovery per **Rule: Search discipline**
 
 ## Dedup (runbook Step 6)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — every pooled event carries a start date; a candidate dated after the pool print probes the moment its date lands, before any of its verification — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start:
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys as TWO separate calls, batched in the same turn: the Stage 2 compound query (titles), plus one date-only probe per candidate — a find enters the pool once both its title and start date are known, so every pooled candidate probes here; a date that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start:
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["between","eq"] property_value=["20260716000000,20260718235959","8"] limit=50` (July 17 candidate shown; substitute the site's event data_id). Rows include `post_venue` and `post_location`. The date probe stands alone — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:

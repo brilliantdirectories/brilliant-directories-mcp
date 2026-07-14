@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.58] - 2026-07-13
+
+### Fixed
+
+- **Pool-entry bar (owner design): a find enters the events pool once both its title AND start date are known** — so every pooled candidate probes both keys at the pool dedup turn, complete, once; the late-probe timeline (and its forgettable trailing obligation) ceases to exist. Residual clause: a date that changes at verification re-probes.
+- **Create-step wording made multi-post-accurate across all three runbooks** — 6.58.57's "the run's final tool call before the receipt" read as one-create-per-run on goal=3; now "fires ALONE in its own turn, after the prior steps are complete for the candidate; nothing batches with a create" (events + jobs Steps 6-11, blog Steps 7-12).
+
 ## [6.58.57] - 2026-07-13
 
 ### Fixed
