@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.82] - 2026-07-14
+
+### Fixed
+
+- **"before any survivor's deep research" deleted from Stage 2's opener** — its ordering job is held by checkable rules (6.58.80's missing-keys boundary + the events stop-line), and "any survivor" invited a cross-pool misread: a pool-2 print halting pool-1's survivor mid-verification. The cost rationale sentence stays.
+
 ## [6.58.81] - 2026-07-14
 
 ### Fixed
