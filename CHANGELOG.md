@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.84] - 2026-07-14
+
+### Fixed
+
+- **Two final serial guns (fingerprint: six consecutive dedup turns fired exactly two calls).** Step 5 mandated an unconditional fetch turn and defined the pool's source as "the opened pages" — disqualifying SERP entries that already showed dates (and contradicting pool-size's "SERP entries... expose"); now "the pool harvests from the round's results: a SERP entry already showing title and start date pools as-is; one batched turn of WebFetch opens the best list-page(s) and the entries still missing keys." The Dedup section's "TWO keys as TWO separate calls" stated an arithmetic only a one-candidate pool can satisfy — the per-candidate pair WAS the serial shape; now "ONE compound query covering every pooled candidate's titles, plus one date-only probe per candidate — a five-candidate pool fires six calls." Stale-snippet risk covered by the existing "a date that changes at verification re-probes" clause.
+
 ## [6.58.83] - 2026-07-14
 
 ### Fixed
