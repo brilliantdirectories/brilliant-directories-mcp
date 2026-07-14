@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.85] - 2026-07-14
+
+### Fixed
+
+- **The Discovery ladder still commanded fetch-before-pool** — "then batch the WebFetches of every candidate worth opening into ONE follow-up turn; usable candidates in hand → they are the pool" sequenced a mandatory fetch turn ahead of the pool moment and gated pooling on taste ("worth opening", "usable... in hand"); run 12's turn-3 fetches were verbatim compliance, and a snippet-keyed candidate aged 9 turns unpooled (10 vs 20 turns on identical text, runs 11-12). Same class as the GEOCODING.md miss: runbook fixed (.84), delegated-to shared text not. The ladder now triggers the pool at the results-reading moment: "every entry showing the content-type's dedup keys pools NOW: print the pool and fire Stage 2 dedup in bulk in that same message, the WebFetches that pin remaining viable entries' missing keys batched alongside; newly-keyed entries pool and dedup on arrival." All edge handling (all-fail → pool 2, all-unkeyed → fetch-then-sweep, all-keyed → pure frame, 20 keyed → best-10 cap) runs on existing sentences.
+
 ## [6.58.84] - 2026-07-14
 
 ### Fixed
