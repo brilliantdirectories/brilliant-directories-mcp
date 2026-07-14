@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.63] - 2026-07-13
+
+### Fixed
+
+- **Verdict outcomes made symmetric** — 6.58.62's match verdict named the post_ids but its consequence lived two paragraphs away in "On match → drop candidate"; now the verdict line carries it: "the matched post_ids `— dropped`, or `no match — survives`." Writing a match writes the drop.
+
 ## [6.58.62] - 2026-07-13
 
 ### Fixed
