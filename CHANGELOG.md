@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.62] - 2026-07-13
+
+### Fixed
+
+- **Dedup comparison was title-only and its verdict was silent** — live dupe (post 1358 duplicating 1345): both retrieval keys returned the existing post, but Stage 2's "Compare returned titles... title semantically matches" scoped the comparison to titles (a generic candidate title matched four real non-dupes equally — camouflage), the venue/date criteria table was never forced row-by-row, and a skipped scan produced output identical to a clean one. Now: "Compare returned rows client-side against the content-type file's match criteria; the message after the dedup calls opens with one verdict line per candidate — the matched post_ids, or `no match — survives`." The forced per-candidate verdict also implies pool-wide probes (a candidate without probes can't receive its verdict line).
+
 ## [6.58.61] - 2026-07-13
 
 ### Fixed
