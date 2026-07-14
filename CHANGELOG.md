@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.44] - 2026-07-13
+
+### Fixed
+
+- **Step 7 polish:** "spare slots" appeared twice meaning two different turns' slots — second occurrence now "fill leftover slots with the retry ladder's next tier as backup."
+
 ## [6.58.43] - 2026-07-13
 
 ### Fixed
