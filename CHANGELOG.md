@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.92] - 2026-07-14
+
+### Fixed
+
+- **"SERP" → "WebSearch result" at both execution-path sites** (events Step 5, pool-size) — tool-anchored vocabulary names the exact object the model holds; jobs.md's one remaining "SERP" is genuine SEO context (Google's pages) and stays.
+
 ## [6.58.91] - 2026-07-14
 
 ### Fixed
