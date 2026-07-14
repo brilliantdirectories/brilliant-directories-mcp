@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.71] - 2026-07-14
+
+### Fixed
+
+- **Turn-1 pin made width-proof** — 6.58.69's "turn 1's five slots are exactly these" numerically contradicted the new ten-slot invariant, inviting the schema-pad loop back at the exact spot it was caged; now "turn 1's slots are exactly these" (count carried by the enumeration, valid at any width).
+
 ## [6.58.70] - 2026-07-14
 
 ### Changed
