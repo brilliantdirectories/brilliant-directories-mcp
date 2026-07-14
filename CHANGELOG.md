@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.81] - 2026-07-14
+
+### Fixed
+
+- **Stage 2's opener stated frequency, not membership** — "Run once per pool, in ONE turn" was satisfiable by a pool-of-one solo dedup (hunter finding M6) and sat in tension with the sweep's lawful re-runs; now "Run all pool candidates together, in ONE turn." The anti-re-run guard lives in the sweep's own scoping (verdict-less only).
+
 ## [6.58.80] - 2026-07-14
 
 ### Fixed
