@@ -13,7 +13,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls the runbook steps specify — no extras; every turn fills its five slots per Rule: Search discipline.** On per-event failure, continue to the next event.
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls the runbook steps specify — no extras; every turn fills its ten slots per Rule: Search discipline.** On per-event failure, continue to the next event.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.

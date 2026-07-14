@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.70] - 2026-07-14
+
+### Changed
+
+- **Turn width raised 5 → 10 (owner A/B test)** — the per-turn parallel-call invariant in Rule: Search discipline (both statements) and the three runbook preambles. Turns are the cost unit (each re-sends the full conversation); 18-turn runs target ~9-10. Unchanged by design: turn 1's fixed 4+1 (pinned "exactly these"), Image strategy's 5-axis batches, content quantities ("top 3-5", "5-10 source types"). Revert = flip the same five numbers back.
+
 ## [6.58.69] - 2026-07-14
 
 ### Fixed
