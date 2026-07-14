@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.47] - 2026-07-13
+
+### Fixed
+
+- **Ladder acceptance disambiguated: "highest tier" → "lowest-numbered tier".** Tiers are numbered 1-4 with 1 = venue-level best; "highest" read literally selects the city-center fallback over a venue hit.
+
 ## [6.58.46] - 2026-07-13
 
 ### Fixed
