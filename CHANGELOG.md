@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.86] - 2026-07-14
+
+### Fixed
+
+- **Ladder's fetch clause loses a backward-reference trap** — "the WebFetches that pin..." invited looking for prior fetches that don't exist at the results-reading moment; now "new WebFetches that pin..." (rhymes with the "new calls only" vocabulary).
+
 ## [6.58.85] - 2026-07-14
 
 ### Fixed
