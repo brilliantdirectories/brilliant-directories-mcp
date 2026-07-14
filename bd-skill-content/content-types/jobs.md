@@ -19,7 +19,10 @@ The user invoked the skill with a request like "create job posts on my site" or 
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source candidates` section. Apply the 30-day staleness gate. Capture the candidate pool per METHODOLOGY `Candidate pool discipline (universal pattern)` and print the numbered list.
+5. **Source discovery.**
+    - **5a. Search round** — one turn of five queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
+    - **5b. Pool** — every WebSearch result already showing its dedup keys pools as-is (the `Dedup` section names them; apply the 30-day staleness gate). Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message.
+    - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` for the remaining slots — no viable entries to open → every shortfall slot is a new-angle `WebSearch`. Newly-keyed and newly-found entries pool and dedup on arrival.
 6. **Duplicate detection.** Run METHODOLOGY `Stage 2: Duplicate detection`. Run the `Dedup` section for jobs-specific match criteria. On a dupe, drop to the next captured candidate — no re-fetch.
 7. **Geocode survivors only.** Nominatim every non-duplicate candidate's address in one turn, their retry-ladder tiers batched together as backups; the geocode turn carries as many calls as the survivors need. Skip lat/lon on failure.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.

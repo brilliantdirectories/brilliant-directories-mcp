@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.98] - 2026-07-14
+
+### Fixed
+
+- **Step 5 split into lettered sub-steps (owner design: separated stages beat mixed clauses)** — run 18 violated .97's buried condition (11 keyed candidates exposed, 8 fetches fired anyway); the model's strongest behavior is walking lettered sequences, so the sequence now IS the design: **5a** search round (one turn, five queries) → **5b** pool (every result with a title and a future, in-window start date pools as-is; print + Step 6 same message) → **5c** shortfall only, fewer than five pooled (WebFetch viable key-missing entries + list-pages, new-angle WebSearch for remaining slots; none to open → all slots search). Events + jobs. Alignment: Search discipline's reformulation clause and the ladder's recovery both keyed to the same flat five ("pooled fewer than five candidates") — one threshold everywhere.
+
 ## [6.58.97] - 2026-07-14
 
 ### Fixed
