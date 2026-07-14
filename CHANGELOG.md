@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.67] - 2026-07-14
+
+### Fixed
+
+- **Comma-recovery clause removed (events + jobs Step 10)** — vestigial since 6.58.66's composition ban, and a recovery procedure for a banned state is a standing implicit permission that the state occurs. A non-compliant comma slip hits the validator error and self-recovers in one turn (observed). Step 10 reads: "never word-order variants. Run it exactly once."
+
 ## [6.58.66] - 2026-07-14
 
 ### Fixed
