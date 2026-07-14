@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.72] - 2026-07-14
+
+### Fixed
+
+- **Serial pools-of-one: the anti-skip clause doubled as a per-candidate-pool permission** — "one candidate prints as `1.` and runs every pool stage" let each arriving candidate be its own pool (five consecutive single-candidate dedup turns in one live run, including same-round candidates split across turns), bypassing "every qualifying candidate the round's results expose." Pool membership now welds to the round at the definition site: "they ARE the pool, together: every candidate the round exposed enters the same printed list; a lone find still prints as `1.`" — the lone-find protection survives verbatim.
+
 ## [6.58.71] - 2026-07-14
 
 ### Fixed
