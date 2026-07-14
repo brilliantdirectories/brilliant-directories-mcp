@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.90] - 2026-07-14
+
+### Fixed
+
+- **The opening round had no size, so it never ended** — "fire ALL your opening queries together in a single turn" is unsatisfiable when the model's opening set exceeds the turn width; it split the round across turns and "pools NOW" (anchored to reading the round's results) waited for a round that wasn't over (live: run 14 turn 3 = five more searches with 12 keyed candidates in hand — the .88 gate correctly blocked the old fetch path, and the stall rerouted into more round). The round is now definitionally one turn: "a single turn of five queries... filled out with extra variants for coverage." Later searching exists only via the existing recovery clause.
+
 ## [6.58.89] - 2026-07-14
 
 ### Fixed
