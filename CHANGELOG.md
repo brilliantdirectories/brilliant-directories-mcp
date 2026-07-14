@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.38] - 2026-07-13
+
+### Fixed
+
+- **Live-run graded against v6.58.37 (candidate probe merged both dedup keys into one AND call and used a 5-word phrase).** Two flat invariants: phrase cap "each 1-3 words" (fingerprint rule harmonized 1-2→1-3; a 4+ word phrase only matches its own wording); events Dedup now "TWO keys as TWO separate calls" with the date probe named date-only (`post_start_date` + `data_id` alone) + "The date probe stands alone — a retitled dupe surfaces by date." An AND-merged call retrieves only title matches, chaining the date leg behind the title leg — the retitled-dupe class the date key exists to catch.
+
 ## [6.58.37] - 2026-07-13
 
 ### Fixed
