@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.68] - 2026-07-14
+
+### Fixed
+
+- **6.58.64's preamble clause regressed discovery packing** — enumerating one legal add-on class ("a later step's specified calls...") next to "no extras" implicitly outlawed the others: speculative backups and extra query angles stopped filling slots, producing solo fetch turns even in discovery (live run 5). Preamble now delegates instead of enumerating: "every turn fills its five slots per **Rule: Search discipline**" — the Rule holds the full filler list, new-calls-only, and stated timings; the cross-ref also extends the Rule's reach past discovery (the original solo-turn gun) without a separate quota clause.
+
 ## [6.58.67] - 2026-07-14
 
 ### Fixed

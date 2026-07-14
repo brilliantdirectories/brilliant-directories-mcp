@@ -13,7 +13,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls the runbook steps specify — no extras; a later step's specified calls fire in the current turn once their inputs are ready.** On per-job failure, continue to the next job.
+The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Only make the tool calls the runbook steps specify — no extras; every turn fills its five slots per Rule: Search discipline.** On per-job failure, continue to the next job.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
