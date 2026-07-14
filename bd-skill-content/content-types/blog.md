@@ -24,7 +24,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 8. **Source research per topic.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting.
 9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for blog-specific authorization.
 10. **Image selection — FEATURE image only at this step.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the feature image first — re-doing body content when an image fails dedup is the expensive path. Inline body images: see the `Inline body images` section.
-11. **Image dedup (FEATURE).** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
+11. **Image dedup (FEATURE — Steps 1-3 path; `poolImages` settled the image).** Per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step.
 12. **Content manufacture.** Proceed straight from runbook Step 11 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds blog-specific shape (post-format templates, answer-first H2s, FAQ block, internal-link density).
 13. **Create the post** via `createSingleImagePost` with the field set in the `BD Blog field reference` section.
 14. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.

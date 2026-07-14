@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.41] - 2026-07-13
+
+### Fixed
+
+- **Single-candidate runs skipped Stage 2 entirely (goal=1 live run created with zero dedup — luck, not doctrine).** Root: the pool trigger "When the run holds a pool of candidates… anything the agent picks from" excludes N=1 by its own wording, and every dedup trigger keys off the pool print. Trigger rewritten: "one or more candidates — they ARE the pool; one candidate prints as `1.` and runs every pool stage, Stage 2 dedup included"; exemplar caption gains the one-candidate case. Closes the same latent bug in jobs ("one job or dozens").
+- **Settled-image rule violated via Step 10's local authorizations.** The step was NAMED "Image dedup", its opener commanded the Image-strategy dedup step unconditionally, and the parenthetical primed a partner call — three permissions beating the flat METHODOLOGY ban one file away. Step 10 retitled "Final-title check (+ image dedup on the Steps 1-3 path)" with the poolImages path stated as settled/title-only (events.md + jobs.md, identical); blog.md Step 11 heading gains the same path scoping.
+- **5-call invariant fenced to web tools** ("a BD tool turn fires exactly the calls its runbook step specifies") — it was shipped as a web-round cost fix but generalized into filler BD-tool turns (five searchUsers link-prep probes before candidate validation). Pattern 6 member-count gate gains its timing anchor (inside Stage 5's linking pass, after the body is written).
+
 ## [6.58.40] - 2026-07-13
 
 ### Fixed
