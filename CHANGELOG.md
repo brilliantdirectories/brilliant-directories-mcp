@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.96] - 2026-07-14
+
+### Fixed
+
+- **Source candidates' pre-.84 singular aligned (events + jobs)** — "open the best list-page, and harvest many ... in one fetch" carried the one-page/one-fetch frame from before snippet-pooling; now "the best list-page(s)... per fetch", matching Step 5. Completes the pool-path singular sweep: no singular-subject action remains anywhere between a WebSearch round and Stage 2.
+
 ## [6.58.95] - 2026-07-14
 
 ### Fixed

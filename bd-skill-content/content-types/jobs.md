@@ -66,7 +66,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), open the best list-page, and harvest many job postings in one fetch — on-topic and in the correct location, judged from the listed entries themselves; a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), open the best list-page(s), and harvest many job postings per fetch — on-topic and in the correct location, judged from the listed entries themselves; a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
 
 **Facets to derive:**
 - **Occupation/industry** — from the user's named occupations + audience/vertical from `getSiteInfo` + the resolved post type's `feature_categories` (cached).

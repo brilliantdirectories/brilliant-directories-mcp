@@ -53,7 +53,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), open the best list-page, and harvest many events in one fetch — after its entries show forward dates in the correct location.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), open the best list-page(s), and harvest many events per fetch — after their entries show forward dates in the correct location.
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
