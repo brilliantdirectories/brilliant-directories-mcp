@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.75] - 2026-07-14
+
+### Fixed
+
+- **One-by-one was commanded by 6.58.74's own gate** — "run Stage 2 **for it now**" made each candidate's pool-entry moment spawn a private dedup turn (staggered date-confirmations → serial dedups, live-observed 3× in one run). The gate now sweeps: "run Stage 2 now for **every verdict-less candidate**, before their next call" — every firing hoovers all pending candidates into one dedup turn; bulk becomes a property of the enforcement mechanism, not a separate (bent) weld. Same safety: no candidate class escapes.
+- **Geocode described only as a batch** — events Step 7: "Nominatim every address-confirmed survivor in one turn — each survivor's retry-ladder tiers batched together as backups; the lowest-numbered hit wins per survivor" (replaces the staggered "each survivor… next turn's spare slots" framing that serialized ladder tiers across solo turns); jobs Step 7 mirrored. One-by-one is no longer a described shape anywhere in dedup or geocode.
+
 ## [6.58.74] - 2026-07-14
 
 ### Fixed
