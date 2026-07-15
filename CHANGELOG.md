@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.106] - 2026-07-15
+
+### Fixed
+
+- **Geocode ladder serialization gun (GEOCODING.md, two deletions)** — the ladder heading commands "fire the branch's tiers together in one turn," but the Rules bullet "≥1 second between Nominatim turns (Nominatim ToS)" forbade exactly that, and tier 1's "Highest specificity AND highest hit rate" pitch licensed firing it alone; runs coin-flipped between batched (run 21: 4 tiers, one turn) and serial (run 23: solo tier 1 — which then MISSED live: Nominatim indexes "Travis County Exposition Center", not "Expo Center"; the street-address tier had the hit sitting one batch-slot away). Both lines deleted. Five parallel Nominatim calls in one message live-verified clean — no rate-limit, no block; the per-venue cache rule keeps total volume trivial.
+
 ## [6.58.105] - 2026-07-15
 
 ### Fixed

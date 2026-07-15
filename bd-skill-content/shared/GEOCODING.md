@@ -16,7 +16,7 @@ Nominatim is uneven — over-scoped queries (venue + street + city + region + zi
 
 **When `post_venue` is known — 4 tiers:**
 
-1. `q="<venue>, <city>, <state-name>"` (US/CA) OR `q="<venue>, <city>, <country>"` (intl). Highest specificity AND highest hit rate — Nominatim has named venues indexed.
+1. `q="<venue>, <city>, <state-name>"` (US/CA) OR `q="<venue>, <city>, <country>"` (intl).
 2. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`. Catches venues that aren't named in Nominatim but have indexed street addresses.
 3. `q="<venue>, <state-name>"` (US/CA) OR `q="<venue>, <country>"` (intl). Looser — landmark-level match.
 4. `q="<city>, <state-name>"` OR `q="<city>, <country>"`. City-center fallback. Always resolves for any recognized city (venue-level accuracy lost).
@@ -34,7 +34,6 @@ For each `WebFetch` tier call: `"Extract from this Nominatim JSON response: (1) 
 
 ## Rules
 
-- ≥1 second between Nominatim turns (Nominatim ToS).
 - Cache within run: two posts at same venue → geocode once.
 - Never fabricate coords. Never use LLM-knowledge coordinates.
 
