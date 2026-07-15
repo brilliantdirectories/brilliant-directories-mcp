@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.104] - 2026-07-15
+
+### Fixed
+
+- **Two explanatory clauses stripped from 6.58.103's events edits** — "the 8-digit days match rows stored with or without a time-of-day" (legitimized 8-digit as a writable format; the probe shape is already pinned by the instruction line and example) and "the time-of-day saves as N/A" (described automatic wrapper behavior the agent has no decision over, inviting N/A into the date string). Both truths live in the 6.58.103 changelog entry; the corpus keeps only the shapes.
+- **`000000` sentinel now stated for `post_expire_date` too** — the missing-time rule was written on the `post_start_date` row only; an event with an unpublished end time required inference (flagged independently by a strict-prose reading test). One clause on the Date/time formats expire bullet closes it.
+
 ## [6.58.103] - 2026-07-15
 
 ### Fixed
