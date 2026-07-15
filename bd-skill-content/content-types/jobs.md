@@ -7,7 +7,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 1. `../shared/METHODOLOGY.md`: universal protocol.
 2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
 3. `../shared/URL-PATTERNS.md`: internal URL construction.
-4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, retry ladder, normalization).
+4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, geocode ladder, normalization).
 
 ---
 
@@ -118,7 +118,7 @@ Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
 ## Geocoding (runbook Step 7)
 
-Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
+Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
 
 For jobs, `post_venue` = company name, so retry-ladder tier 1 (`q="<company>, <city>, <state-name>"`) only hits if Nominatim has the company's headquarters indexed; tiers 2-4 (street → city-only fallback) carry the load more often.
 

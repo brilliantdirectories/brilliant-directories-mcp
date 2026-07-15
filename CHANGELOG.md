@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.107] - 2026-07-15
+
+### Changed
+
+- **"Adaptive retry ladder" renamed "Geocode ladder"** (heading + all 6 cross-references, events/jobs/GEOCODING) — "retry" frames the tiers as sequential-reactive, the last remaining serialization cue after 6.58.106 deleted the pacing and hit-rate lines. Shape battery re-verified live before the rename: 10 parallel Nominatim calls, all promoted tier shapes hit across US/CA/UK/stateless-Belgium/Australia, the US-vs-intl fork is cost-free preference (US venue + country also resolves), and the Qatar tier-1 miss is rescued by tier 3 in the same batch.
+
 ## [6.58.106] - 2026-07-15
 
 ### Fixed

@@ -7,7 +7,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 1. `../shared/METHODOLOGY.md`: universal protocol.
 2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
 3. `../shared/URL-PATTERNS.md`: internal URL construction.
-4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, retry ladder, normalization).
+4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, geocode ladder, normalization).
 
 ---
 
@@ -92,9 +92,9 @@ A returned row is a dupe when EITHER:
 
 ## Geocoding (runbook Step 7)
 
-Use results for survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
+Use results for survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
 
-For events, `post_venue` (the venue name) is usually known — the 4-tier branch of the retry ladder is the common path.
+For events, `post_venue` (the venue name) is usually known — the 4-tier branch of the geocode ladder is the common path.
 
 ---
 

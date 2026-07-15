@@ -762,9 +762,9 @@ BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack
 
 Nominatim returns **wrong-country ghost matches** on native non-Latin scripts — confirmed live: `"Ακρόπολη, Αθήνα"` (Acropolis in Greek) returns Helsinki, Finland coords; `"台北101, 台北"` (Taipei 101) returns Iceland; `"故宫, 北京"` returns empty. The English transliteration of the same address resolves correctly every time.
 
-Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before running the retry ladder.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this post entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
+Scan the address string first. If it contains characters outside the Latin alphabet + extended Latin (Greek, Cyrillic, CJK Chinese/Japanese/Korean, Arabic, Hebrew, Devanagari, Thai, etc.), **convert to English/transliterated form before running the geocode ladder.** Use the source page's English version if available, or LLM judgment for well-known landmark names ("Acropolis, Athens, Greece"; "Forbidden City, Beijing, China"; "Taipei 101, Taipei, Taiwan"). If neither source nor confident LLM judgment yields an English form, skip `lat`/`lon` for this post entirely. Never pass native script to Nominatim. Never fabricate a transliteration.
 
-## Adaptive retry ladder (fire the branch's tiers together in one turn, on the transliterated address; the lowest-numbered hit wins)
+## Geocode ladder (fire the branch's tiers together in one turn, on the transliterated address; the lowest-numbered hit wins)
 
 Nominatim is uneven — over-scoped queries (venue + street + city + region + zip + country) miss; medium-scoped queries (venue + city + region OR street + city + region) hit. Spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). For international without state-equivalents, use country in place of state. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` using the prompt in the `Extraction prompt` section.
 
@@ -811,7 +811,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 1. `../shared/METHODOLOGY.md`: universal protocol.
 2. `../shared/ANTI-SLOP.md`: voice + pattern bans + self-check.
 3. `../shared/URL-PATTERNS.md`: internal URL construction.
-4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, retry ladder, normalization).
+4. `../shared/GEOCODING.md`: Nominatim protocol (transliteration, geocode ladder, normalization).
 
 ---
 
@@ -922,7 +922,7 @@ Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
 ## Geocoding (runbook Step 7)
 
-Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, retry ladder, `Extraction prompt`, `Rules`, normalization.
+Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
 
 For jobs, `post_venue` = company name, so retry-ladder tier 1 (`q="<company>, <city>, <state-name>"`) only hits if Nominatim has the company's headquarters indexed; tiers 2-4 (street → city-only fallback) carry the load more often.
 
