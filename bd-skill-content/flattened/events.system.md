@@ -773,7 +773,7 @@ Nominatim is uneven — over-scoped queries (venue + street + city + region + zi
 1. `q="<venue>, <city>, <state-name>"` (US/CA) OR `q="<venue>, <city>, <country>"` (intl).
 2. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`. Catches venues that aren't named in Nominatim but have indexed street addresses.
 3. `q="<venue>, <state-name>"` (US/CA) OR `q="<venue>, <country>"` (intl). Looser — landmark-level match.
-4. `q="<city>, <state-name>"` OR `q="<city>, <country>"`. City-center fallback. Always resolves for any recognized city (venue-level accuracy lost).
+4. `q="<city>, <state-name>"` OR `q="<city>, <country>"`. City-center match. Always resolves for any recognized city (venue-level accuracy lost).
 
 **When `post_venue` is empty (source page only gave a street address) — 2 tiers:**
 

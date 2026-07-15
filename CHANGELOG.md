@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.108] - 2026-07-15
+
+### Changed
+
+- **Tier 4 "City-center fallback" → "City-center match"** — "fallback" was the last timing-role label on the geocode ladder (same word-family as the deleted "retry"); rank already lives in the tier numbering + "lowest-numbered hit wins", so the label now describes match granularity like tiers 2-3 do.
+
 ## [6.58.107] - 2026-07-15
 
 ### Changed
