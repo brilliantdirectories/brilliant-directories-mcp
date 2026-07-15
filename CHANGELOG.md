@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.103] - 2026-07-15
+
+### Fixed
+
+- **Events date probe blind to 8-digit dates (production dupe, dragsterace)** — sites with the recurring-events plugin store `post_start_date`/`post_expire_date` as 8-digit date-only values (times live in users_meta `start_time`/`end_time`); `between` numeric-compares, so every 14-digit window probe silently missed those rows forever (live-proven: the July 17–19 window missed test-site post 168 `"20260717"` all along; the customer's July 15 run probed a correct window and got honest-empty while dupe 155 sat inside it). The events Dedup probe is now `contains` with the three days comma-joined as 8-digit values (`"20260716,20260717,20260718"`) — OR semantics, matches rows stored with or without a time-of-day, strictly superset of the old window (39 vs 37 rows on the same range, live-verified). Prose got simpler: no `000000`/`235959` suffix construction.
+- **Unknown event time now saves as N/A, not a fabricated clock reading** — `derivePostEventTime` (Worker `3.9.4` + npm mirror) maps a `000000` time-of-day to `"N/A"`, the BD event form's own default option; events.md's missing-time rule now says pass `000000` (was `120000` noon, which painted "12:00 PM" into the admin form for times no source ever published).
+
 ## [6.58.102] - 2026-07-14
 
 ### Fixed

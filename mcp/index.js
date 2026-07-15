@@ -2147,8 +2147,11 @@ const EAV_ROUTES = {
 // 14-digit YYYYMMDDHHmmss string. Used to auto-synthesize start_time and
 // end_time on event-post create/update so the agent never has to think
 // about the dual-storage of date+time. Returns null on malformed input.
+// A 000000 time-of-day (the no-official-time sentinel) derives "N/A" —
+// the BD event form's own default option — instead of a fabricated 12:00 AM.
 function derivePostEventTime(date14) {
   if (typeof date14 !== "string" || !/^\d{14}$/.test(date14)) return null;
+  if (date14.substring(8) === "000000") return "N/A";
   const hh = parseInt(date14.substring(8, 10), 10);
   const mm = date14.substring(10, 12);
   if (isNaN(hh) || hh < 0 || hh > 23) return null;
