@@ -887,7 +887,7 @@ Still under five pooled after 5c's searches → the ladder's recovery per **Rule
 ## Dedup (runbook Step 6)
 
 Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval uses TWO keys, batched in the same turn: ONE compound query covering every pooled candidate's titles, plus one date-only probe per candidate — a five-candidate pool fires six calls — a find enters the pool once both its title and start date are known, so every pooled candidate probes here; a date that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start, comma-joined as 8-digit days:
-`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["contains","eq"] property_value=["20260716,20260717,20260718","8"] limit=50` (July 17 candidate → the probe carries 20260716, 20260717, 20260718 — the start day in the middle; substitute the site's event data_id). Its verdict line cites the window: `no match (title + 20260716-20260718) — survives`. Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
+`listSingleImagePosts property=["post_start_date","data_id"] property_operator=["contains","eq"] property_value=["20260716,20260717,20260718","8"] limit=50` (July 17 candidate → the probe carries 20260716,20260717,20260718 — the start day in the middle; substitute the site's event data_id). Its verdict line cites the window: `no match (title + 20260716,20260717,20260718) — survives`. Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date. The dedup turn carries as many calls as the pool needs.
 
 A returned row is a dupe when EITHER:
 - Title: semantic match; or
@@ -978,7 +978,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 ### Date/time formats
 
-Both fields use `YYYYMMDDHHmmss` (14 digits). BD silently truncates other formats, corrupting the value.
+Both fields use `YYYYMMDDHHmmss` (14 digits) in the create call. BD silently truncates other formats, corrupting the value.
 
 - `post_start_date`: event start (date AND time). **Event-local wall-clock — the time as a visitor in the event's city would read it. Do NOT convert to the site's own timezone.** A 7 PM Brooklyn event on a Los Angeles-timezoned site stores as `20260616190000`, not `20260616160000`.
-- `post_expire_date`: event end (date AND time). Same event-local wall-clock as `post_start_date`; no published end clock time → the same `000000`.
+- `post_expire_date`: event end (date AND time). Same event-local wall-clock as `post_start_date`; an end date published without a clock time → that date + `000000`.

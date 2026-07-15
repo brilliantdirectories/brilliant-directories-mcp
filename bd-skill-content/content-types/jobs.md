@@ -69,7 +69,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), on 5c shortfall, open the best list-page(s) and harvest many job postings per fetch — on-topic and in the correct location, judged from the listed entries themselves; a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a), with one adjustment: the **Date sanity gate does NOT apply** to jobs — the **30-day staleness gate** is jobs' only date rule. Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`), on 5c shortfall, open the best list-page(s) and harvest many job postings per fetch — on-topic and in the correct location, judged from the listed entries themselves; a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
 
 **Facets to derive:**
 - **Occupation/industry** — from the user's named occupations + audience/vertical from `getSiteInfo` + the resolved post type's `feature_categories` (cached).
@@ -181,7 +181,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
 | `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Acme Corp"`, `"Loudoun County Government"`, `"Equinox"`. |
-| `post_start_date` | Required. The source's future start date if listed, else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). |
+| `post_start_date` | Required. The source's future start date if listed, else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). A start date listed without a clock time → `000000`. |
 | `post_promo` | Salary or hourly rate as shown in the source — numeric only, no currency symbol, no commas, decimals optional. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |

@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.104] - 2026-07-15
+## [6.58.105] - 2026-07-15
+
+### Fixed
+
+Dual adversarial audit of all date prose (events deep-read + cross-skill drift), seven findings fixed:
+
+- **Events: expire no-end conflict (introduced in 6.58.104)** — the field-table row ("Source states no end: equal to `post_start_date`") and the new Date/time formats clause ("no published end clock time → `000000`") both fired on a source stating no end at all, prescribing different values — the clause's answer could expire an evening event at midnight before it starts. Rescoped to "an end date published without a clock time → that date + `000000`"; the three end-cases are now disjoint (no end at all → table row; end date only → sentinel; end datetime → verbatim).
+- **Events: one surface form for the 3-day window** — the Dedup paragraph carried three shapes (code-block CSV, spaced CSV in the caption, hyphen range in the verdict instance); a late re-probe copying its nearest exemplar (its own verdict line) would build a hyphen `contains` value that silently matches nothing. Caption de-spaced; verdict instance now cites the CSV days.
+- **Events: 14-digit warning scoped to the create call** — "Both fields use `YYYYMMDDHHmmss` (14 digits)" was unqualified; an executor could "correct" the probe's 8-digit days to 14-digit midnights (silent dedup miss).
+- **Jobs: Date-sanity gate carve-out** — the shared gate ("Absent/past... fails") bound jobs with no exemption while jobs' own tail declares no-posted-date candidates valid (blog always had an explicit carve-out; jobs never did). Mirrored blog's proven shape: gate does not apply; the 30-day staleness gate is jobs' only date rule.
+- **Jobs + blog: missing-clock-time sentinel** — both field references demand 14-digit `post_start_date` but had no rule for a date-only source/instruction (unpoliced per-run invention); both rows now carry the events-aligned `000000` clause.
 
 ### Fixed
 
