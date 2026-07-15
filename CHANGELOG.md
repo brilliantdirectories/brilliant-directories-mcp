@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.109] - 2026-07-15
+
+### Changed
+
+- **Events + jobs runbook tail restructured into the lettered-parent pattern (the 5a/5b/5c mechanism)** — old Steps 7 (geocode), 9 (image), 10 (final-title check) are now sub-steps 7a/7b/7c under one parent command: "Pre-create batch — every call in ONE turn." The three tasks are mutually independent and all feed the create, but the numbered-step walk plus Step 10's "rides any turn" permission let runs serialize them (run 23: solo geocode turn, solo poolImages turn — 1-2 wasted turns per run). Every load-bearing sentence survives verbatim, re-homed; the rider permission is deleted (the parent command replaces it); the Steps 1-3 legacy image path keeps its own sequencing via a scoped branch. Tail renumbered: content 11→9, create 12→10 (still fires ALONE, "after Steps 6-9"), audit 13→11; section headings and cross-refs updated in lockstep. Blog untouched (no geocode, no title check — different numbering, verified disjoint). Also swept: two hyphenated "retry-ladder" stragglers the 6.58.107 rename missed (events/jobs Step 7a) plus jobs' geocode note ("city-only fallback" → "city-only").
+
 ## [6.58.108] - 2026-07-15
 
 ### Changed
