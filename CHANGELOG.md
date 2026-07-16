@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.178] - 2026-07-16
+
+### Fixed
+
+- **Step 6's fusion ban had lost its preposition and read as turn separation (live-observed: date probes trailing the title compound into their own turn)** — the compression's echo said "the `post_start_date` leg never rides the title call," but "rides" is the corpus's turn-sharing verb everywhere else, so without "in" the fusion ban (a leg inside a call) reads as "the date probes must not accompany the title call's message" — and the run obeyed verbatim: compound in the pool-print turn, probes the turn after. The Dedup section always held the true form ("never rides in the title call"); the executing line held the corrupt one, and local wins. Restored "in", and welded the count invariant to the message so it can't be satisfied across two turns: "N pooled = N+1 calls in this one message; fewer is an incomplete turn."
+
 ## [6.58.177] - 2026-07-16
 
 ### Removed
