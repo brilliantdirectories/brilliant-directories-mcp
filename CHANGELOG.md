@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.132] - 2026-07-16
+
+### Changed
+
+- **Turn width is now phase-scoped (owner design): fill-to-ten runs through Stage 2's verdicts; after the verdicts a turn carries its steps' specified calls only** — post-convergence improvised research was OBEDIENCE: the unconditional "Every turn fires 10" forced invented calls on 6-call batch turns, "spare slots keep loading backups" (the last chase-vocabulary sentence, pre-verdict-architecture relic) commanded them, and "Research to discover candidates is fine" (timing-unqualified) licensed them. All width/fill echoes scoped in one pass (opener, fill sentence, floor clause, drumbeat, pool-discipline permission, 3 preambles); backup-preloading sentence deleted. Verification/citation/liveness research the steps command is named as still-firing. Net ~+6 words against a 44-word deletion.
+
 ## [6.58.131] - 2026-07-16
 
 ### Fixed
