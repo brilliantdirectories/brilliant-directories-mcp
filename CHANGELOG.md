@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.187] - 2026-07-16
+
+### Fixed
+
+- **Events "pooled" vocabulary aligned to the de-listed Step 6 (completes the .186 translation)** — with no pool built, "every pooled candidate" (Step 7 + Dedup section) risked reading as an empty set and "a find enters the pool" had no pool to enter — the unpooled-escape mechanism re-arming one step downstream. Three word-swaps: "every pooled candidate" → "every candidate" (both homes), "a find enters the pool once both its title and start date are known" → "a find is a candidate once…". The arithmetic instance ("a five-candidate pool six") keeps its proven bytes.
+
 ## [6.58.186] - 2026-07-16
 
 ### Changed
