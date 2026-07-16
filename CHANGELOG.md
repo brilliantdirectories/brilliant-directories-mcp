@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.152] - 2026-07-16
+
+### Fixed
+
+- **5b/5c merged: dedup has ONE home (owner catch — "keying" was a fake step and dedup lived in two houses)** — the keying test is the dedup step's entry criterion, not its own action: "5b. Dedup the round — this turn's only job. Every result showing a title and a future, in-window start date gets dedup-tested: print the pool and fire Step 6's calls in this same message." Fill → 5c, cycle → 5d; Step 6 stays the judge (compare rows, write verdicts). Full ordinal sweep: Step 6 "fired with 5b's message", "at 5c, open the best list-page(s)", recovery "after 5c's searches", ladder "(2) after 5c", jobs "pool per Step 5b".
+
 ## [6.58.151] - 2026-07-16
 
 ### Fixed
