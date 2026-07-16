@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.131] - 2026-07-16
+
+### Fixed
+
+- **6.58.128's ban chilled post-verdict batching** — "never more calls on — or because of — a candidate whose dedup keys are already known" also described every SURVIVOR, so the run fired each later step's specified calls alone in minimal turns (4 geocode tiers solo, poolImages solo, title check solo — the Step 7 one-message batch shattered) and deferred Stage 3 verification past Step 7. Scoped: "never more **pre-verdict** calls…". Survivor work packs again; the pre-verdict chase stays dead.
+- **Need-sized turn ceilings deleted (×3)** — "The dedup turn carries as many calls as the pool needs" (events) and "The 5b+5c message carries as many calls as it needs" (events + jobs): the convicted "as many as they need" phrase-class (see 6.58.114) sizing turns to the step's minimum, which vetoed insurance fill on exactly those turns (observed: a 2-call dedup turn). Their original job — breaking the old width cap — is done globally by "ten is the floor, never a cap". Pure deletions.
+- **Spec description falsely banned colons from `eq` title checks (createSingleImagePost)** — "commas/colons/special chars trip the CSV validator" is wrong: live-tested, only commas trip it. Every colon-bearing event title was being shunted to the weak `like <prefix>%` check, breaking the checked-title-equals-created-title weld (observed: "NPC Los Angeles Championships: Anaheim Pro Finals" created against a prefix-only check). Now: "contains a comma … commas only - colons and other characters are safe".
+
 ## [6.58.130] - 2026-07-15
 
 ### Fixed
