@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.158] - 2026-07-16
+
+### Fixed
+
+- **6.58.157's "together" leaked from turn scope into call scope (owner caught it live)** — first run on the collective wording fused the probe into a 3-leg AND call ("dedup-tested TOGETHER" read as combine-the-tests) and "fire Step 6's calls with it" had dropped the message anchor. Repaired: collectivity binds the POOL ("All WebSearch results… enter ONE pool"), the message anchor is back ("this same message fires Step 6's calls for the whole pool"), the call shapes are named in place ("ONE title compound covering every pooled candidate, plus one separate date probe per candidate"), and the proven .127 pin rides the line ("the `post_start_date` leg never rides in the title call"). "WebSearch results" also restores the definitional qualifier the .149 restructure dropped.
+
 ## [6.58.157] - 2026-07-16
 
 ### Fixed
