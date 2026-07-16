@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.213] - 2026-07-16
+
+### Changed
+
+- **Date probe narrowed to the start day alone (owner call — 66% less probe noise)** — the day±1 window's surviving unique catch was multi-day events whose posts pick different start days, a class the title net has caught every time it had short variants; every same-day kill on the window's record survives the change. `contains` kept (never `eq`) so 8-digit stored dates still match. Worked example, caption, and verdict instance updated in lockstep; fewer returned rows also lightens the census context.
+
 ## [6.58.212] - 2026-07-16
 
 ### Changed
