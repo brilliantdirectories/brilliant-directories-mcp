@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.223] - 2026-07-16
+## [6.58.224] - 2026-07-16
+
+### Fixed
+
+- **2c's "nothing else" no longer reaches Step 8's slot.** The verification follow-up clause had no boundary, making the pre-create batch's Nominatim fetches illegal in any post-verification message (none of the three permitted classes) — a legal force exiling geocode to its own turn. Now "nothing else until verification completes" — the boundary token welds to Step 8's "right after verification completes" pin.
+- **jobs 8a counter-forces removed to mirror proven events bytes:** "one call settles the image" (solo-framing, deleted from events in .179) and the "Lock the image before content manufacture" urgency rationale (deleted from events in .191 — the desertion force correlated with 8a leaving the batch).
 
 ### Changed
 
