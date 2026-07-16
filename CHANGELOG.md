@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.193] - 2026-07-16
+
+### Fixed
+
+- **Location gets a per-query law (the month-year law's proven shape)** — a live round fired ten placeless "official-template" queries, returning a global scatter with almost nothing market-qualified (census honestly counted ~1). Location's facet existed only as derivation guidance, never a per-query command. Events 5a now: "…and a location: from the user's requested market when named, else any city or region in the site's primary country; a placeless query returns global noise."
+- **The timezone-city anchor removed from the location facet** — "primary_country/timezone — any locally-relevant city" elected the site's timezone city every round (the single-metro tunnel observed across runs was obedience, not preference). Now "primary_country — any city in that market"; user's named market still wins first.
+- **"official" made extinct in agent-facing prose (4 swaps)** — the token survived the class ban, the row-text ban, and the imperative defusing by concentrating into its remaining homes; queries kept mutating around each fix ("official page/registration/website/schedule" templates, 10/10 on the latest round). Now: "the organization's own page", "organizers' own pages", "trim full names", "authoritative-sounding names". If official-hunting persists with the token absent from context, it is model prior by proof.
+
 ## [6.58.192] - 2026-07-16
 
 ### Fixed
