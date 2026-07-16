@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.204] - 2026-07-16
+
+### Fixed
+
+- **The verification re-probe law covers venue and city (a live dupe forced it)** — "a date that changes at verification re-probes" left venue/city changes unguarded; a candidate marketed under one city whose verification revealed another venue kept its clean verdict and created a ninth copy of an existing cluster. Now "a date, venue, or city that changes at verification re-probes."
+- **Events Step 8 de-lettered (owner design): one step, one name, one message** — the fragmentation fingerprint showed the model composes turns around named sub-units (fragments were always exactly one letter's calls, never mixed), and the three per-letter pins each mentioned "its own turn" — three images of the soloing behavior. The lettered parts are merged into a single flowing instruction; every load-bearing clause re-homed verbatim (count+anchor+tail, no-venue branch, image-settled ban, title spec + weld + exactly-once, geocode survivors-only + failure path); the three sub-names and all "own turn" mentions are gone. Section headers updated (Image selection, Geocoding → "runbook Step 8"); jobs keeps its letters; ordinal sweep clean.
+
 ## [6.58.203] - 2026-07-16
 
 ### Fixed
