@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.126] - 2026-07-15
+
+### Fixed
+
+- **"Count a hit only after opening it" was the probe-deferral smoking gun (Rule: Search discipline)** — the sentence's hit→usable-candidate→pool lattice made pool membership require a WebFetch, so keyed snippets were legally non-candidates and the worker fetched instead of probing (the invariant across every graded run: probes never fired from snippet keys alone). Rescoped in place: a snippet already showing the dedup keys is a hit unopened — pools and probes as-is, opening waits until it survives; the opening requirement now binds only keyless results.
+- **jobs.md canonical-reach recipe fired pre-dedup** — the Step-5 harvest paragraph scripted per-candidate research (reference search + `site:` probe) before Step 6, same incident class. Timing pinned: the recipe fires only after the candidate's `no match — survives` verdict.
+
 ## [6.58.125] - 2026-07-15
 
 ### Fixed
