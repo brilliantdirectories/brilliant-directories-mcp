@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.206] - 2026-07-16
+
+### Changed
+
+- **Search round 10 → 7 queries (owner A/B)** — all seven query-count anchors swept in lockstep (events + jobs Step 5 and their recovery lines, Stage 3 2b, Rule: Search discipline, both discovery-ladder rounds). Deliberately untouched: the more-than-ten-CALLS ceiling clause (an eleven-call census turn still needs it) and the "ten candidates beat one" score lines (candidates, not queries — aligned with the pool cap).
+
 ## [6.58.205] - 2026-07-16
 
 ### Fixed
