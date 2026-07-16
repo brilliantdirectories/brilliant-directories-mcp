@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.142] - 2026-07-16
+
+### Fixed
+
+- **Pool-line format was events-shaped in the universal pattern (owner catch, same class as the 6.58.79 leak)** — `N. <title> — <start date> — <city or venue>` sits in Candidate pool discipline, which blog (no dates/venues) and jobs (no start date) also run. Now type-agnostic: "each line `N.` + its title and dedup keys (the content-type file names them)" — the same delegation the paragraph already uses.
+
 ## [6.58.141] - 2026-07-16
 
 ### Fixed
