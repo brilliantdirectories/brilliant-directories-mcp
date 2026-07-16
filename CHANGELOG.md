@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.165] - 2026-07-16
+
+### Fixed
+
+- **Step 6 gets a tool lock (owner design, surface-safe form)** — "The pool-print turn's only legal tool is `listSingleImagePosts` — these two call shapes, nothing else" (jobs: one shape). A WebFetch in the pool turn is now an illegal TOOL by name, not just an illegal shape. (`mcp_call` itself stays out of the corpus per the three-surfaces rule — `listSingleImagePosts` is the name all surfaces share.)
+
 ## [6.58.164] - 2026-07-16
 
 ### Fixed
