@@ -64,7 +64,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted a
 - **Location** — the user's named city/region; else infer from the prompt + `getSiteInfo` `primary_country`/timezone — any locally-relevant city, not only cities where you have members. Use `listCities` **only** when the user explicitly asks for events in member cities ("where I have members," "cities we cover"); never find member cities by listing members. Never bulk-list existing posts to infer geographic focus.
 - **Date-range** — the user's window if given; else default forward window.
 
-**What a qualifying source looks like when it appears in results** — recognition vocabulary, not a probe list:
+**What a qualifying source looks like when it appears in results** — vocabulary for judging results, never for composing queries; nothing named here becomes a `site:` target or a query term:
 
 - City government event calendars, county tourism boards, chamber of commerce sites, library/community-center calendars
 - Trade association event pages, industry trade-publication event sections, CE calendars for licensed professions

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.137] - 2026-07-16
+
+### Fixed
+
+- **The recognition-vocabulary list was the junk-`site:` gun (6 sightings)** — every unearned opener `site:` maps to a list item converted to a filter (`site:gov` ← "City government calendars", `site:eventbrite/meetup/conferenceindex` ← the aggregator line, race-calendar domains ← the fitness vertical line); the disclaimer "not a probe list" is a naked negation, and enumerations beat negations (4th confirmed instance of the class). Usage law now rides the list's own header: "vocabulary for judging results, never for composing queries; nothing named here becomes a `site:` target or a query term" (events) / "query shapes come only from the discovery ladder and the content-type file's commanded searches" (shared 2a — the carve keeps jobs' commanded portal searches legal). Jobs' list untouched by design (it embeds commanded shapes; no jobs sightings).
+
 ## [6.58.136] - 2026-07-16
 
 ### Fixed

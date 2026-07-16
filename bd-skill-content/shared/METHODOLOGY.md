@@ -84,7 +84,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 ## Stage 3: Source research
 
-**2a.** Brainstorm 5-10 candidate source types for vertical+location per the content-type file — recognition vocabulary for judging what returns, not a probe list.
+**2a.** Brainstorm 5-10 candidate source types for vertical+location per the content-type file — vocabulary for judging what returns, never for composing queries; query shapes come only from the discovery ladder and the content-type file's commanded searches.
 
 **2b.** One batched round per **Rule: Search discipline** — broad query + the content-type file's companion shape, fired together. Read every result; `site:`-probe (with `-pdf`) only a domain that appeared. Drop dead/empty/archive pages.
 
