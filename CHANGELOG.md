@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.150] - 2026-07-16
+
+### Fixed
+
+- **6.58.149 restructure audit (owner-ordered): two losses restored, two drift seams sealed** — (1) the list-page harvest license (old 5c's "the best list-page(s)") hadn't moved into 5d though Source candidates points at it there — restored; (2) "these searches are the round's one reformulation" imported the dead shortfall-era gate into unconditional 5d (rich-round fill would read illegal against the <5-keyed reformulation rule) — dropped; (3) shared pool-discipline and ladder still gated pin-fetches on "fewer than five keyed" while 5d fills unconditionally — aligned ("plus new WebFetches…", "open slots carry new WebFetches…"); (4) 5e's spatial "the `Source candidates` tail" → "per `Source candidates`".
+
 ## [6.58.149] - 2026-07-16
 
 ### Changed
