@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.208] - 2026-07-16
+
+### Fixed
+
+- **The linking-pass gate law gains its failure tail** — a live pass split its gate checks 3+1 across two turns; the plan is fully knowable when the pass starts (the finished draft's target list is commanded first), so incremental gating is pure turn tax. Appended: "a gate check in a later message is an incomplete pass." Equation + computable violation, the proven pair.
+
 ## [6.58.207] - 2026-07-16
 
 ### Fixed
