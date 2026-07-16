@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.210] - 2026-07-16
+
+### Fixed
+
+- **One pool-print turn per round (live: the census leaked across four single-candidate turns — positioned right per the slot-claim, sized wrong)** — no law bounded how many dedup turns a round's results could spawn; the serial drip was turn-count-legal. Now a round-scoped count invariant with the failure tail: "A round has ONE pool-print turn: every candidate's calls fire here — a second dedup turn on the same round's results is an incomplete first turn." Computable before firing; events only.
+
 ## [6.58.209] - 2026-07-16
 
 ### Changed
