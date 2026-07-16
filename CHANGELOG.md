@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.217] - 2026-07-16
+
+### Changed
+
+- **The verdict/verification seam fused** — as positioned, verdicts got a text-only message and the survivor fetches waited for the next one, spending a call-less message every cycle. Now 2c reads "the verdicts' own message carries these calls" — verdict lines (text) then survivor fetches (calls) in one message, the census's proven text-then-calls pattern applied at the next seam. Saves one message per cycle.
+
 ## [6.58.216] - 2026-07-16
 
 ### Changed
