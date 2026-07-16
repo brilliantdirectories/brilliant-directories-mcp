@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.222] - 2026-07-16
+## [6.58.223] - 2026-07-16
+
+### Changed
+
+- **Mixed-tool batching named as truth.** Every observed batch success was single-tool; Step 8 fragmented exactly along tool-type lines (poolImages / listSingleImagePosts / WebFetch each solo). No text anywhere authorized different tools' calls sharing one message. Now it does: events + jobs Step 8 add "The six are three tools' calls — poolImages, listSingleImagePosts, WebFetch — born to fire together"; METHODOLOGY Image strategy adds the conditional ride clause ("In a runbook step that batches calls, poolImages is born to fire alongside the other tools' calls — it rides that step's batch message") — conditional so blog's standalone image step stays legal. Companion worker change (separate repo): the poolImages tool description gains the same ride clause, replacing its solo call-inspect-decide framing as the last word the model reads.
 
 ### Changed
 
