@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.119] - 2026-07-15
+
+### Fixed
+
+- **REGRESSION (introduced 6.58.117, caused one live dupe — test-site post 1398, fifth CrossFit Games copy): the fill-priority clause bypassed the verdict gate.** "A later step's specified calls whose inputs are ready first" carries no survivor condition — a dupe's own title+address make its Step-7 calls "ready", and promoting the clause to first priority pulled the full pre-create batch (which fired structurally perfect — poolImages + title check + 4 tiers, one message) straight past Stage 2's verdicts for a candidate both nets had returned as a quadruple dupe. Fix: the clause is now verdict-gated — "(a candidate has later-step calls only after its `no match — survives` verdict)". The old ordering had the same hole but buried third, where it never expressed.
+
 ## [6.58.118] - 2026-07-15
 
 ### Fixed
