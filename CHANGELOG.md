@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.221] - 2026-07-16
+## [6.58.222] - 2026-07-16
+
+### Changed
+
+- **Internal-link gate is now a single terminal turn of exactly ten checks.** METHODOLOGY outcome #4: the gate message runs ten checks (planned links first, spares filled with the draft's other linkable nouns and close siblings; fewer only when nouns run out), and it is the run's only gate message. Replaces the "K planned = K checks / a later gate check is an incomplete pass / up to 10" wording, whose "incomplete pass" clause licensed the 3–5 straggler gate turns. A cleared check ships its link; a failed or unchecked one re-targets to a cleared spare, a run-verified post URL, or Pattern 5, or drops — no ungated Pattern 6 URL ever ships (BD serves unseeded directory pages as HTTP 404 by design), and no later gate turn exists.
+- **Pool-discipline replacement now names when its fetches ride.** When the top survivor fails and the next un-tried is taken, its verification fetches "ride the very next message, all together" — closes the F4 replacement-fetch fragmentation (survivor's fetches landing in separate turns).
+- **2c verification carries an economy score.** "Its score: how many of verification's calls share the one message — every extra turn spends tokens and time." Rewards the single-message survivor-fetch batch.
 
 ### Fixed
 
