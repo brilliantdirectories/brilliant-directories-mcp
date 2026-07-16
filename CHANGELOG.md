@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.183] - 2026-07-16
+
+### Fixed
+
+- **Dedup opener restored byte-for-byte to its last proven form** — "retrieval fires TWO separate calls, batched in the same turn". The audit-batch rewording ("is two call shapes, batched in the pool-print message") had deleted the load-bearing word "separate"; with it gone, "batched" bound to the nearest unit — the call — and the next fresh run fused the title compound and every date window into ONE malformed 3-property mega-call (5 value elements against 3 properties, refused on parity). The rewording's two protections were theoretical and already covered (flat-2 neutralized by "a five-candidate pool six" + "N pooled = N+1 calls in this one message"; no Step-7 re-fire ever observed under "fires"); its costs were observed. Owner ruling: proven bytes over reasoned rewordings for this sentence class.
+
 ## [6.58.182] - 2026-07-16
 
 ### Fixed
