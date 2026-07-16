@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.214] - 2026-07-16
+
+### Fixed
+
+- **The verification follow-up loses its escape verb** — the 2c carve read "a follow-up message fetches only URLs the first surfaced": the restriction's verb was "fetches", so follow-up SEARCHES were un-adjudicated, and a live run fired two independent second-source searches solo-solo through that gap. Now "carries only fetches of URLs the first surfaced and the `URL liveness gate`'s one confirm search when a fetch blocked — nothing else" — any verification search belongs to message 1 or doesn't exist; the liveness gate keeps its single commanded late search, named by rule so it can't generalize.
+
 ## [6.58.213] - 2026-07-16
 
 ### Changed
