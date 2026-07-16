@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.111] - 2026-07-15
+
+### Changed
+
+- **Content follow-list "self-check" → "self-check before posting"** (events + jobs) — the shorthand read as possible post-create editing (the AI gets exactly one create; the gate is a pre-create draft review); the full form is the referenced section's exact heading.
+
 ## [6.58.110] - 2026-07-15
 
 ### Fixed
