@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.121] - 2026-07-15
+
+### Changed
+
+- **Batch parent enumerated + poolImages pinned to the batch message (events + jobs)** — the range form ("Steps 7a-7c… fire together") kept slipping for one sub-step: poolImages fired solo in runs 24, 25, 26, and 28 through five prior mechanisms. Owner's enumeration upgrade ("7a, 7b, and 7c… all three fire together in one single message, never in separate turns") plus a command on the deserter's own line ("The `poolImages` call fires in this batch message, never its own turn") — named enumeration binds where ranges slip, and gates live on the line they gate.
+
 ## [6.58.120] - 2026-07-15
 
 ### Changed
