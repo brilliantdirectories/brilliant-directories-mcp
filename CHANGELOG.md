@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.120] - 2026-07-15
+
+### Changed
+
+- **Discovery round widened: five queries → ten** (events 5a, jobs 5a, shared discovery ladder — three sites, owner design) — the opener is where pool width pays: an under-filled round-one pool is the direct cause of 5c top-up rounds and the serial candidate chase. Scoped to discovery only: the five-call turn floor, the fewer-than-five-pooled shortfall threshold, 2c's top-5 fetches, and the five-per-batch image axes are all untouched. Watch item: ten forced queries invites filler shapes — if junk-TLD padding returns, drop to seven or add a shape guard.
+
 ## [6.58.119] - 2026-07-15
 
 ### Fixed
