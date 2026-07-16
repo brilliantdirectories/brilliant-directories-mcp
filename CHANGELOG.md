@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.184] - 2026-07-16
+
+### Fixed
+
+- **Pool size re-anchored to an observable (pool-of-one on a clean 20-candidate round, twice)** — the compression had folded away the forced-membership clause, leaving "N pooled = N+1 calls" as the only size law; N pooled is the model's own act, so a one-candidate pool satisfies the equation with two calls and certifies the turn complete — under-pooling is undetectable by construction. Restored the observable-count design at the cut site: "Count the results that qualify — every one enters the pool, best-fit 10 when more." Presence/absence of this clause tracks pool width across every graded run (widest-ever ~9-candidate pool with it; ≤5 and twice 1 without it). Cap now stated once (moved out of the print parenthetical into the count sentence).
+
 ## [6.58.183] - 2026-07-16
 
 ### Fixed
