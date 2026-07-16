@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.207] - 2026-07-16
+
+### Fixed
+
+- **The pool-print turn gets a stated position (seven words)** — every anti-fetch mechanism banned call classes, but no sentence ever claimed the turn slot after the search round, so pre-census fetch turns kept appearing in unclaimed space; the timing-enforcement hook ("Steps with stated timing fire at their stated time") had nothing to enforce for this step. Now the heading states it: "Pool-print turn — the message right after the search round's results arrive." Positional deixis, not a ban; events only.
+
 ## [6.58.206] - 2026-07-16
 
 ### Changed
