@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.161] - 2026-07-16
+
+### Fixed
+
+- **Step 6 takes METHODOLOGY's exact term: "Pool-print turn" (owner continuity rule — one thing, one name)** — 6.58.160 left three variants (Pool the round / the pool turn / the pool-print turn); unified on the shared file's established term at all four runbook sites.
+
 ## [6.58.160] - 2026-07-16
 
 ### Fixed
