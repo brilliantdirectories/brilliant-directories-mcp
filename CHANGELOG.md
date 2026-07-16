@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.224] - 2026-07-16
+## [6.58.225] - 2026-07-16
+
+### Fixed
+
+- **Compound variant arithmetic moved onto the firing line.** Events Step 6 said "covering all candidates' titles" — one title each literally satisfies it, and the 3-variant command lived 50 lines away in Dedup prose (live run: 7 tokens vs the commanded 21; the date probe with its fenced shape fired perfect 7/7 — shapes bind, descriptions don't). Firing line now "carrying every candidate's 3 title variants — 3 × N in element 1". Dedup section adds the anti-thrift score: "The compound's score: how many variants ride element 1 — 3 × N is full marks; a trimmed variant saves a token and ships a dupe" — counterweights the turn-economy carrots that reward token thrift.
 
 ### Fixed
 
