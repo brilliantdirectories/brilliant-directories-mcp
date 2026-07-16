@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.116] - 2026-07-15
+
+### Fixed
+
+- **`start_time`/`end_time` derivation now matches BD's real dropdowns (Worker `3.9.5` + npm mirror)** — the dropdowns only offer quarter-hour options and their VALUES are site-format-dependent (`"7:30 AM"` on 12-hour sites, zero-padded `"07:30"` when `calendar_24hour_format` is `"24h"`); the old derivation emitted un-rounded 12-hour values unconditionally, so an off-grid or off-format value silently reset the form's dropdown to default on every admin edit (find-fitness-pros is itself `"24h"` — every derived value to date was off-format there). `derivePostEventTime` now rounds minutes to the nearest 15 (23:53+ clamps to 23:45) and formats per the site flag, resolved through the existing 10-minute-cached site-info lookup (zero extra calls in steady state). Live-verified on the 24-hour test site: tail `104700` → `"10:45"`, tail `175300` → `"18:00"`, exact times preserved in the date columns. Cosmetic follow-up parked: the spec's four `("H:MM AM/PM")` description parentheticals still name only the 12-hour shape.
+
 ## [6.58.115] - 2026-07-15
 
 ### Fixed

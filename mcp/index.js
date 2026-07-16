@@ -2143,21 +2143,31 @@ const EAV_ROUTES = {
   },
 };
 
-// Derive "H:MM AM/PM" (no leading zero on hour, 2-digit minutes) from a
-// 14-digit YYYYMMDDHHmmss string. Used to auto-synthesize start_time and
-// end_time on event-post create/update so the agent never has to think
-// about the dual-storage of date+time. Returns null on malformed input.
+// Derive the BD time-of-day dropdown value from a 14-digit YYYYMMDDHHmmss
+// string. Used to auto-synthesize start_time and end_time on event-post
+// create/update so the agent never has to think about the dual-storage of
+// date+time. Returns null on malformed input.
 // A 000000 time-of-day (the no-official-time sentinel) derives "N/A" —
 // the BD event form's own default option — instead of a fabricated 12:00 AM.
-function derivePostEventTime(date14) {
+// BD's dropdown only offers quarter-hour options, so minutes round to the
+// nearest 15 (23:53+ clamps to 23:45); option values are "H:MM AM/PM" on
+// 12-hour sites and zero-padded "HH:MM" when the site's
+// calendar_24hour_format is "24h" — an off-format value silently resets the
+// form's dropdown to default on every admin edit.
+function derivePostEventTime(date14, is24h) {
   if (typeof date14 !== "string" || !/^\d{14}$/.test(date14)) return null;
   if (date14.substring(8) === "000000") return "N/A";
-  const hh = parseInt(date14.substring(8, 10), 10);
-  const mm = date14.substring(10, 12);
-  if (isNaN(hh) || hh < 0 || hh > 23) return null;
+  let hh = parseInt(date14.substring(8, 10), 10);
+  const rawMm = parseInt(date14.substring(10, 12), 10);
+  if (isNaN(hh) || hh < 0 || hh > 23 || isNaN(rawMm) || rawMm > 59) return null;
+  let mm = Math.round(rawMm / 15) * 15;
+  if (mm === 60) { mm = 0; hh += 1; }
+  if (hh === 24) { hh = 23; mm = 45; }
+  const mmStr = String(mm).padStart(2, "0");
+  if (is24h) return `${String(hh).padStart(2, "0")}:${mmStr}`;
   const period = hh >= 12 ? "PM" : "AM";
   const h12 = hh === 0 ? 12 : hh > 12 ? hh - 12 : hh;
-  return `${h12}:${mm} ${period}`;
+  return `${h12}:${mmStr} ${period}`;
 }
 
 // Fields refused on `_clear_fields`. Three categories:
@@ -3866,15 +3876,16 @@ const SYSTEM_TIMESTAMP_FIELDS = (() => {
 // Fallback to "UTC" only on `getSiteInfo` fetch failure (warn logged).
 const _siteTzCache = new Map();
 const _SITE_TZ_TTL_MS = 10 * 60 * 1000;
-async function getSiteTimezoneCached(baseUrl, apiKey) {
+async function _getSiteMetaCached(baseUrl, apiKey) {
   const cacheKey = baseUrl;
   const cached = _siteTzCache.get(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < _SITE_TZ_TTL_MS) return cached.tz;
+  if (cached && Date.now() - cached.fetchedAt < _SITE_TZ_TTL_MS) return cached;
   // Normalize: ensure base ends without trailing slash, has protocol.
   let normalized = baseUrl;
   if (!/^https?:\/\//i.test(normalized)) normalized = `https://${normalized}`;
   normalized = normalized.replace(/\/+$/, "");
   let tz = "UTC";
+  let is24h = false;
   try {
     const resp = await fetch(`${normalized}/api/v2/site_info/get`, {
       method: "GET",
@@ -3885,14 +3896,22 @@ async function getSiteTimezoneCached(baseUrl, apiKey) {
       const fetched = body?.message?.timezone;
       if (typeof fetched === "string" && fetched.length > 0) tz = fetched;
       else console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo returned no timezone, falling back to UTC`);
+      is24h = body?.message?.calendar_24hour_format === "24h";
     } else {
       console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo HTTP ${resp.status}, falling back to UTC`);
     }
   } catch (err) {
     console.warn(`[getSiteTimezoneCached] ${cacheKey}: getSiteInfo failed (${err?.message || err}), falling back to UTC`);
   }
-  _siteTzCache.set(cacheKey, { tz, fetchedAt: Date.now() });
-  return tz;
+  const entry = { tz, is24h, fetchedAt: Date.now() };
+  _siteTzCache.set(cacheKey, entry);
+  return entry;
+}
+async function getSiteTimezoneCached(baseUrl, apiKey) {
+  return (await _getSiteMetaCached(baseUrl, apiKey)).tz;
+}
+async function getSite24hCached(baseUrl, apiKey) {
+  return (await _getSiteMetaCached(baseUrl, apiKey)).is24h;
 }
 
 // Format current time as 14-char `YYYYMMDDHHmmss` in the given IANA timezone.
@@ -6189,13 +6208,16 @@ async function main() {
       // on every edit. Agent never has to think about it. Skip if the agent
       // already supplied an explicit time value.
       if ((name === "createSingleImagePost" || name === "updateSingleImagePost") && args) {
-        if (args.post_start_date && !args.start_time) {
-          const derived = derivePostEventTime(String(args.post_start_date));
-          if (derived) args.start_time = derived;
-        }
-        if (args.post_expire_date && !args.end_time) {
-          const derived = derivePostEventTime(String(args.post_expire_date));
-          if (derived) args.end_time = derived;
+        if ((args.post_start_date && !args.start_time) || (args.post_expire_date && !args.end_time)) {
+          const is24h = await getSite24hCached(config.apiUrl, config.apiKey);
+          if (args.post_start_date && !args.start_time) {
+            const derived = derivePostEventTime(String(args.post_start_date), is24h);
+            if (derived) args.start_time = derived;
+          }
+          if (args.post_expire_date && !args.end_time) {
+            const derived = derivePostEventTime(String(args.post_expire_date), is24h);
+            if (derived) args.end_time = derived;
+          }
         }
       }
 
