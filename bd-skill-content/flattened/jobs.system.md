@@ -931,7 +931,7 @@ For jobs, `post_venue` = company name, so `Geocode ladder` tier 1 (`q="<company>
 
 ## Image selection (runbook Step 7b)
 
-**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
+**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting.
 
 ## Category routing (runbook Step 8)
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.112] - 2026-07-15
+
+### Fixed
+
+- **Jobs company-logo exception deleted** — "if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate" was a buried permission licensing non-Pexels image sourcing from arbitrary company sites, bypassing the Pexels-shaped Image URL/dimension/dedup pipeline. The flat ban stands alone: never Pexels-a-logo; feature image is generic occupation/setting.
+
 ## [6.58.111] - 2026-07-15
 
 ### Changed
