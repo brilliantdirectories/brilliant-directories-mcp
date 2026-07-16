@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.122] - 2026-07-15
+
+### Changed
+
+- **"are independent" → "need nothing from each other's results"** (batch parent, events + jobs) — the abstract word left "independent what?" open; the operational form names and kills the one rationale a model has for serializing independent calls (waiting on a sibling's output before firing).
+
 ## [6.58.121] - 2026-07-15
 
 ### Changed
