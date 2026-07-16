@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.114] - 2026-07-15
+
+### Changed
+
+- **Pre-create batch capacity restated as the derived count invariant** — "as many calls as they need" let the model judge need (run 24 judged it as 1) and "up to 10" was the five-slot ceiling bug relocated (two survivors = exactly 10; three = 14 → forced split). Both replaced with the mechanism that has never failed: "one survivor = six calls — the `poolImages` call, the title check, and the survivor's four `Geocode ladder` tiers; each additional survivor adds its four tiers to the same message" (the "five-candidate pool fires six calls" shape). 7c's "filling the turn's remaining calls" capacity-talk dropped as redundant.
+
 ## [6.58.113] - 2026-07-15
 
 ### Changed
