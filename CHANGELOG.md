@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.147] - 2026-07-16
+
+### Changed
+
+- **6.58.144/145's post-verdict clause reverted to the 6.58.141 wording (owner call — live falsification)** — "grouped exactly as the steps command… and nothing else" serialized the run: five consecutive single-call turns. Mechanism: with no written verdicts the "after the verdicts" boundary is unlocatable, the restrictive clause bled run-wide, and research steps command no explicit grouping — so grouping-by-command collapsed to one call at a time. Restored: "after the verdicts a turn carries its steps' specified calls and nothing else — the verification, citation, and liveness research those steps command still fires; improvised WebSearch or WebFetch does not." Known tradeoff accepted: the "steps'" token can fragment the pre-create batch (2-3 extra turns) — far cheaper than run-wide serialization. Step 7's own one-message law remains the batch authority.
+
 ## [6.58.146] - 2026-07-16
 
 ### Fixed
