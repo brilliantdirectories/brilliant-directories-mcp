@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.118] - 2026-07-15
+
+### Fixed
+
+- **`poolImages` added to the turn-fillable call-type enumeration (Rule: Search discipline)** — run 26 on 6.58.117 batched the title check + all four geocode tiers in one message the very first time it was legal, but `poolImages` still fired alone: the rule's opening list ("WebSearches, WebFetches, runbook-step BD calls, or a mix") excluded it, so it was never counted into a turn's slots — the enumeration-outlaws-the-unlisted class, third instance (keywords, the five-cap, now this). One word.
+
 ## [6.58.117] - 2026-07-15
 
 ### Fixed
