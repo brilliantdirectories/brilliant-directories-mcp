@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.156] - 2026-07-16
+
+### Fixed
+
+- **The sequencing importer survived in the Step 7 parenthetical — killed, and the parent rewritten to the owner's tighter form** — 6.58.154 removed "follow its sequencing exactly" from 7a's body but the parent still carried "(…7a-7b calls follow that sequencing instead…)", and a log-verified .155 run still fired geocode solo. The parenthetical was redundant (the Steps 1-3 fallback routing lives inside 7a/7b's own conditioned lines) and pure hazard on the poolImages path. New parent: "Pre-create batch — this turn's only job: call 7a, 7b, and 7c in this ONE message. One survivor = six calls — its poolImages call, its title check, and its four Geocode ladder tiers; each additional survivor adds its own six calls to this same message. No other calls ride this turn." Also fixes the latent multi-survivor under-spec ("adds its four tiers" → "its own six calls").
+
 ## [6.58.155] - 2026-07-16
 
 ### Fixed
