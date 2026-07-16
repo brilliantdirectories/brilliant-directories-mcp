@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.127] - 2026-07-15
+
+### Fixed
+
+- **"TWO keys, batched" commanded the fused probe (events Dedup opener)** — "batched" attached to the keys, so one 3-leg AND call (title + data_id + start_date) WAS compliance; AND semantics break the title-OR-date dupe law (a retitled dupe or a date-drifted dupe escapes the fused call — 4/4 probes fused in the run that surfaced this). Now: "retrieval fires TWO separate calls … the `post_start_date` leg never rides in the title call", plus the missing single-candidate instance "one candidate fires two calls" (the only worked arithmetic was five→six; observed pools are size 1).
+
 ## [6.58.126] - 2026-07-15
 
 ### Fixed
