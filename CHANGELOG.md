@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.155] - 2026-07-16
+
+### Fixed
+
+- **"in one single message" → "in THIS one single message" (owner word)** — deictic anchor: the batch's referent is the message being composed now, not an eventual one; matches 7a's proven pin vocabulary ("this batch message").
+
 ## [6.58.154] - 2026-07-16
 
 ### Fixed
