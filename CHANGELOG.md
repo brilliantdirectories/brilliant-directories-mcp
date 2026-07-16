@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.203] - 2026-07-16
+
+### Fixed
+
+- **The linking pass gets a turn shape** — its gate lookups (member-count and taxonomy checks for planned filtered links) had no composition law and trickled out as 1-2-call turns (four turns observed for one batch of independent checks). Now on the linking-pass sentence: "The planned targets' gate checks (member-count and taxonomy lookups) share ONE message — K planned filtered links = K checks." Census-proven anatomy: observable count, flat equation, message anchor, "share" not "together."
+
 ## [6.58.202] - 2026-07-16
 
 ### Fixed
