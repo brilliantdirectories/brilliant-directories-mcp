@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.186] - 2026-07-16
+
+### Changed
+
+- **Events Step 6 de-listed (owner design): read → count → fire, no pool print** — the printed numbered pool has never once been emitted on the worker (its text channel is silent), and a step whose opening command is unperformable unbinds (the expired-precondition class); the best dedup turn ever recorded also carried no printed list. The step now anchors entirely on acts the model performs: "Read the WebSearch results and count the candidates — every result showing a title and a future in-window start date is a candidate, read as `Title — YYYYMMDD` … N candidates = N+1 calls in this one message." The identification transformation survives print-free (trimmed to the two dedup keys — City dropped from the shape; it isn't a key and a cityless snippet must still qualify); entry test, tool lock, shapes pointer, separate-legs law, count equation, and the Step 5 loop all verbatim. Events only.
+
 ## [6.58.185] - 2026-07-16
 
 ### Fixed
