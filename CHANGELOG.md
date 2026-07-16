@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.190] - 2026-07-16
+
+### Fixed
+
+- **Step 8's count could be satisfied across turns (live: the 1+5 split — poolImages alone, then title check + four tiers — totals exactly six calls, letter-perfect against "One survivor = six calls")** — the equation carried no message anchor (the paragraph's only "this same message" binds *additional* survivors) and no failure-state tail, the same cumulative-satisfaction fingerprint the dedup turn had before its fix. Structural parity with the working law: "One survivor = six calls **in this one message** — … four calls; **fewer is an incomplete turn.**"
+
 ## [6.58.189] - 2026-07-16
 
 ### Fixed
