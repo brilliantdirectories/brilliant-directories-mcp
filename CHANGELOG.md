@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.134] - 2026-07-16
+
+### Fixed
+
+- **Skipping the pool satisfied the search-more gates** — every re-search license was predicated on pool COUNT ("only when the round pooled fewer than five", 5c "fewer than five pooled"), and pooling is the model's own action: skip it → count 0 → more searching licensed. Observed on a verified-fresh blob: ~9 future keyed candidates in the round's snippets, turn 3 fired 10 fresh searches, zero pools, zero probes. Fixed with the forced-artifact mechanism (verdict-line class, zero-violation record): the numbered pool is the FIRST output of the message that reads a round's results, before any new call — zero keyed prints `pool: none` (an unfalsifiable-skip is now a falsifiable lie); and the reformulation predicate now binds to what the results LEFT keyed, not what got pooled. 5b/5c/ladder inherit both.
+
 ## [6.58.133] - 2026-07-16
 
 ### Fixed
