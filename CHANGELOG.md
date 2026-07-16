@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.171] - 2026-07-16
+
+### Changed
+
+- **Prose round cap removed (owner call)** — the worker's own bounds (75 rounds / 30-minute deadline) are the cap; the loop reads "No survivor → return to Step 5 and repeat until survivors meet the post goal." The loop's actual engine fix (the defined window at Step 6's entry, 6.58.168) stands.
+
 ## [6.58.170] - 2026-07-16
 
 ### Changed
