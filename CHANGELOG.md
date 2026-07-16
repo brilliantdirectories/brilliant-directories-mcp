@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.225] - 2026-07-16
+## [6.58.226] - 2026-07-16
+
+### Changed
+
+- **Web calls travel in packs — at least five per message, owner directive.** Search discipline gains the pack law: a message carrying WebSearch or WebFetch carries at least five (searches, fetches, or a mix), commanded calls first, spares preloaded from the step's own upcoming calls (next survivor's page, second source, citation ladder's next rung); fewer than five only when the step's classes run out; Geocode ladder tiers exempt by name (they ride their step's mixed batch message). Skill-level echoes at the events/jobs verification handoff. Five solo-web-call levers killed at their sites: 2c verification message packed, follow-ups packed, the site: probe rides the citations' fetch pack, a negated-query retry rides the next pack, blocked-round retry is five-query. Companion worker change (separate repo): WebSearch + WebFetch tool descriptions carry the pack clause.
 
 ### Fixed
 
