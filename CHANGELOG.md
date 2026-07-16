@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.129] - 2026-07-15
+
+### Fixed
+
+- **.128's trigger clause re-ordered for mini-literal parsing** — the em-dash list ("— its domain, its venue, its pages —") sat directly after "a pooled candidate" and could parse as describing the candidate, not the call's target; and the motive test ("chosen because of") led, which the model can't self-check. Now mechanical-first: "a call aimed at a pooled candidate's domain, venue, or pages — or chosen because of the candidate — is research on that candidate, not discovery". Same word count, same law.
+
 ## [6.58.128] - 2026-07-15
 
 ### Fixed
