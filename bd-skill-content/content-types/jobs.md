@@ -13,14 +13,14 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Each turn writes its due text first — pool print, verdict lines — then makes only the tool calls the runbook steps specify and, through the dedup verdicts, fills the remaining slots to ten per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-job failure, continue to the next job.
+The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Each turn writes its due text first — pool print, verdict lines — then makes only the tool calls the runbook steps specify and, through the dedup verdicts, fills the remaining slots to five per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-job failure, continue to the next job.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.**
-    - **5a. Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
+    - **5a. Search round** — one turn of five queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
     - **5b. Pool** — every WebSearch result already showing a job title pools as-is (best-fit, up to 10; the 30-day staleness gate applies per `Source candidates` — a result showing no posted-date is never blocked by it). Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message; none pooled → straight to 5c.
     - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` to fill the message — these searches are the round's one reformulation; no viable entries to open → every shortfall call is a new-angle `WebSearch`. Newly-keyed and newly-found entries pool and dedup on arrival.
 6. **Duplicate detection.** Stage 2's calls fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's jobs-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.

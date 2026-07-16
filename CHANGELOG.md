@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.139] - 2026-07-16
+
+### Changed
+
+- **Turn width reverted 10 → 5 at every anchor (owner's call, and the evidence backs him)** — narration (pool prints, verdict lines — the run's only state) lived through fifteen 5-wide runs and died the run width went to 10, surviving every prose fix since: at 10 parallel calls the model's output budget goes to call JSON and text loses, regardless of what the corpus commands. Reverted: Rule: Search discipline opener/arithmetic/floor/drumbeat, discovery ladder + 5a rounds (ten → five queries), 3 preambles (slots to five). Every 6.58.126-138 gun kill kept — those defects were latent at width 5 too. Golden-era configuration (runs 15-29, 9-10 turns / 15¢) restored with twelve fewer contradictions than it ever had.
+
 ## [6.58.138] - 2026-07-16
 
 ### Fixed

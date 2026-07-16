@@ -12,7 +12,7 @@ The router (`SKILL.md`) routed you here because the user wants to create blog po
 
 ## End-to-end runbook
 
-The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Each turn writes its due text first — pool print, verdict lines — then makes only the tool calls the runbook steps specify and, through the dedup verdicts, fills the remaining slots to ten per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-post failure, continue to the next post.
+The user invoked the skill with a goal like "write blog articles for SEO," "write a viral piece for my industry," or "write an article about XYZ." Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Each turn writes its due text first — pool print, verdict lines — then makes only the tool calls the runbook steps specify and, through the dedup verdicts, fills the remaining slots to five per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-post failure, continue to the next post.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
