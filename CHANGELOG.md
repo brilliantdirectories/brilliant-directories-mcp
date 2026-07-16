@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.167] - 2026-07-16
+
+### Fixed
+
+- **Step 6's window aligned to the canonical Date-sanity definition (owner catch on 6.58.166)** — the definition always existed (METHODOLOGY's gate: "> today AND < today+window, default 90 days, user-overridable") but lived 300 lines from the entry line that used the term — the undefined-reference fed the doubt loop, and 6.58.166's patch ("any future date") contradicted the 90-day gate. Now stated canonically on the entry line: "the window is the next 90 days unless the user set one, and the shown date pools as shown, never re-verified first."
+
 ## [6.58.166] - 2026-07-16
 
 ### Fixed
