@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.220] - 2026-07-16
+
+### Changed
+
+- **The census gets its score line (owner design, the proven reward form)** — the search round's score measures surfacing, and every under-pooled run passed it (surfaced plenty, pooled one); no score watched the pooling act itself. Now: "Its score: how many candidates enter the pool — an omitted candidate costs a later round." The two scores bracket the surfaced-but-not-pooled gap; the economy consequence is true and absolutizes toward inclusion.
+
 ## [6.58.219] - 2026-07-16
 
 ### Fixed
