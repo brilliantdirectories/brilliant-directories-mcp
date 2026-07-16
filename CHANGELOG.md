@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.188] - 2026-07-16
+
+### Fixed
+
+The candidate census was being filtered by confidence, not width (fingerprint: every one-candidate run's survivor was the maximally-confident, previously-seen, dead-center event while ~20 qualifying results sat skipped):
+
+- **The doubt-skip law reached the census** — "When a fact or candidate is in doubt, skip it" is written for content facts and verification, but unscoped it fires at the counting moment, where any vertical-fit ambiguity = doubt = skip. Appended the boundary: "Doubt about a candidate is settled by its gates and verdicts, never by leaving it uncounted — every qualifying result probes." Dedup is the cheap doubt-resolver; the law no longer fires before the mechanism that answers it.
+- **"best-fit" was an undefined judgment token at the events gate** — fit-to-what is defined nowhere; it invited ranking (and doubting) all qualifiers. Now "cap 10 when more" — pure arithmetic, no judgment surface.
+
 ## [6.58.187] - 2026-07-16
 
 ### Fixed
