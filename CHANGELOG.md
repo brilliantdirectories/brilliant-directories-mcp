@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.211] - 2026-07-16
+
+### Changed
+
+- **Turn 1 grows a sixth slot: the dedup tool's schema** — runs kept improvising a `getToolSchema listSingleImagePosts` at open (the schema of the tool every dedup call uses); codified per the formalize-emergent-batching doctrine, same as the create-schema preload before it. "Turn 1's slots are exactly these" now fences six: four site-context calls plus the two schemas the run lives on.
+
 ## [6.58.210] - 2026-07-16
 
 ### Fixed
