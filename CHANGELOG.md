@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.115] - 2026-07-15
+
+### Fixed
+
+- **Events clock-time primary path commanded (was exception-only)** — run 24's create passed `000000` sentinels on both date fields while its own fetched source published "7:30 AM race begins / 10:00 AM event concludes": the field rows' only imperative about clock time was the no-time fallback ("→ use `000000`"), with the use-the-published-time path merely implied by descriptive text — the command-the-exception-describe-the-rule gun. Both rows now command the primary with worked micro-instances ("7:30 AM start → `073000`"; "10 AM conclusion → `100000`") ahead of the sentinel tail; expire's no-end branch scoped to "no end at all". (start_time/end_time remain wrapper-derived — agents never pass them; their absence from the create was correct.)
+
 ## [6.58.114] - 2026-07-15
 
 ### Changed
