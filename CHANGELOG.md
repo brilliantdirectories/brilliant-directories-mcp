@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.128] - 2026-07-15
+
+### Fixed
+
+- **Object-scoped bans let the entourage launder itself as discovery** — every pre-verdict ban bound calls ON a candidate (its pages, its keys), so candidate-orbit calls with non-candidate objects (`site:` its organizer's domain, its venue's site, its city page) passed every ban predicate while "Research to discover candidates is fine" (timing-unqualified) plus the 10-slot floor supplied the license: ~9 orbit calls rode each candidate's own dedup probe. Bans now trigger-scoped: a call chosen BECAUSE OF a pooled candidate is research on it, not discovery (`Candidate pool discipline`), and the fill stop-line reads "never more calls on — or because of — a candidate whose dedup keys are already known" (Rule: Search discipline). Key-pinning (missing keys) and post-verdict later-step licenses untouched.
+
 ## [6.58.127] - 2026-07-15
 
 ### Fixed
