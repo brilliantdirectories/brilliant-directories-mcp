@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.170] - 2026-07-16
+
+### Changed
+
+- **Round cap 3 → 5 (owner call)** — dupe-heavy markets deserve more rounds before an honest shortfall, and a killed dupe now costs only its two probes.
+
 ## [6.58.169] - 2026-07-16
 
 ### Fixed
