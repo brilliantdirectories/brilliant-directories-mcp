@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.173] - 2026-07-16
+
+### Changed
+
+- **Jobs 5a recency line reverted (owner call — jobs isn't the problem; don't touch what's working)** — the 6.58.172 query-recency pin stays events-only.
+
 ## [6.58.172] - 2026-07-16
 
 ### Fixed
