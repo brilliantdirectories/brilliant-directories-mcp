@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.141] - 2026-07-16
+
+### Fixed
+
+- **The text-first welds killed the probes (my 6.58.132/.134/.136 regression — owner isolated it)** — probes were textbook on the .130/.131 blobs and died on every run after: those three ships made written text (pool print, verdict lines) a PRECONDITION for the calls ("before any new call", "writes its due text first — then makes the tool calls", "writes its due artifacts, then fires"), and this model has never once produced the pool artifact — so the probes became illegal behind text that never comes, a deadlock the model escaped via harmless fetches. All three welds reverted: pool sentence back to "before researching any single candidate in depth", opener back to "every turn fires 10 parallel calls", preambles to "Make only the tool calls… and fill…". Text stays commanded (Stage 2 verdict lines, pool list) but never again prerequisite. Worker prompt line also reverted to its original (v102) — the v101 text demand was the same weld in a higher surface.
+
 ## [6.58.140] - 2026-07-16
 
 ### Changed
