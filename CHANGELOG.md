@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.163] - 2026-07-16
+
+### Fixed
+
+- **Step 7's parenthetical parsed as per-candidate PAIRS (owner catch)** — "the title compound plus one date probe per candidate" scopes ambiguously ("per candidate: compound + probe"), and the serial runs' shape matches that misparse exactly (each turn = one candidate's compound + its probe). Now byte-consistent with Step 6: "ONE title compound covering every pooled candidate, plus one separate date probe per candidate."
+
 ## [6.58.162] - 2026-07-16
 
 ### Changed
