@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.177] - 2026-07-16
+
+### Removed
+
+- **Events preamble insurance-fill relic deleted (owner call)** — the runbook preamble still commanded "through the dedup verdicts, fill the remaining slots to ten per Rule: Search discipline — insurance fill is not an extra…", but the fill machinery was removed from `Rule: Search discipline` in the simplification pass, leaving a dangling pointer that doubled as a standing permission for non-dedup calls on the pool-print turn — contradicting Step 6's tool lock and the N+1 equation. The preamble now reads "Make only the tool calls the runbook steps specify." Events only; the jobs/blog preamble twins are untouched pending their own call.
+
 ## [6.58.176] - 2026-07-16
 
 ### Fixed
