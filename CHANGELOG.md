@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.212] - 2026-07-16
+
+### Changed
+
+- **Search round 7 → 5 queries (owner call — the golden-era width)** — the cleanest recorded stretch ran at five, and intake size correlates with census fidelity (this model degrades under result-volume load; five queries ≈ 40 results to read instead of ~56). All eight anchors swept in lockstep (events + jobs Step 5 and recovery lines, Stage 3 2b, Rule: Search discipline, both ladder rounds); the more-than-ten-calls ceiling and candidate score lines untouched.
+
 ## [6.58.211] - 2026-07-16
 
 ### Changed
