@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.151] - 2026-07-16
+
+### Fixed
+
+- **5d re-welded to 5c's message + searches made the default fill (owner audit round 2)** — old 5c's "the same message also carries" binding was lost in the restructure, and a lettered step is exactly what the model treats as its own turn (the 7a-c class): 5d's heading now carries the weld ("Insurance fill — same message as 5c"). The three-way OR became one decision rule: fill = new-angle WebSearches; a WebFetch takes a slot only to pin a missing key or open the best list-page.
+
 ## [6.58.150] - 2026-07-16
 
 ### Fixed
