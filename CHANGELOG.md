@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.199] - 2026-07-16
+
+### Fixed
+
+Two census-width suppressors at the selection moment (fingerprint: every one-candidate census picked the single most-branded, most-verifiable event in the yield):
+
+- **The "gates" name-collision** — "A usable candidate is one that clears your type's gates" resolved, by name, to the Stage-3 extraction gate table (Confidence ≥8, Required fields, Source credibility) — importing post-verdict gates into the census, which only the most famous event with the richest snippet could clear from a search result. The definition is folded into the success sentence with inline, type-agnostic criteria: "A round that returns usable results — on-topic, in-market, showing the content-type's dedup keys — has succeeded; every one of them pools, few or many." (Reuses the ladder's established keys phrase; jobs' date-free key and blog's brainstormed pools verified unaffected.)
+- **The last judgment token in pool ordering** — "Both ordered best-fit first" (the shared twin of the events-side token already removed) → "Both in the order found." Zero judgment surface; survivor selection keeps first-found order.
+
 ## [6.58.198] - 2026-07-16
 
 ### Fixed
