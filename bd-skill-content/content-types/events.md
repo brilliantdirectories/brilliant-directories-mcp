@@ -19,19 +19,17 @@ The user invoked the skill with a request like "create event posts on my site" o
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.**
-    - **5a. Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
-    - **5b. Dedup the round — this turn's only job.** All WebSearch results showing a title and a future, in-window start date (later than today) enter ONE pool: print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)`, and this same message fires Step 6's calls for the whole pool — ONE title compound covering every pooled candidate, plus one separate date probe per candidate; the `post_start_date` leg never rides in the title call. The dedup turn carries dedup calls only — no `WebSearch`, no `WebFetch`. Once a result shows its title and start date, its research stops until it survives Step 6. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → 5c.
-    - **5c. No survivor → next round.** Every tested candidate failed, or nothing qualified to test → fire another ten-query round (new angles, one turn, like 5a) and run 5b on its results. Repeat until survivors meet the post goal; a sweep-proven-dry market ends the run per `Source candidates`.
-6. **Duplicate detection.** Stage 2's calls (both retrieval keys: the title compound plus one date probe per candidate, per the `Dedup` section) fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
-7. **Pre-create batch — this turn's only job: call 7a, 7b, and 7c in this ONE message.** One survivor = six calls — its `poolImages` call, its title check, and its four `Geocode ladder` tiers; each additional survivor adds its own six calls to this same message. No other calls ride this turn.
-    - **7a. Image selection.** The `poolImages` call fires in this batch message, never its own turn — one call settles the image per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy`. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
-    - **7b. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
-    - **7c. Geocode.** Nominatim every address-confirmed survivor — each survivor's GEOCODING.md `Geocode ladder` tiers batched together as backups; the lowest-numbered hit wins per survivor. Skip lat/lon on failure.
-8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
-9. **Content manufacture.** Proceed straight from runbook Step 8 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
-10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Events field reference` section.
-11. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
+5. **Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b. Its score: how many results it surfaces showing a title and a future, in-window start date — ten candidates beat one.
+6. **Dedup the round — this turn's only job.** All WebSearch results showing a title and a future, in-window start date (later than today) enter ONE pool: print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)`, and this same message fires Step 7's calls for the whole pool — ONE title compound covering every pooled candidate, plus one separate date probe per candidate; the `post_start_date` leg never rides in the title call. The dedup turn carries these two call shapes only. Once a result shows its title and start date, its research stops until it survives Step 7. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → return to Step 5.
+7. **Duplicate detection.** Stage 2's calls (both retrieval keys: the title compound plus one date probe per candidate, per the `Dedup` section) fired with Step 6's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification. No survivor → return to Step 5; repeat until survivors meet the post goal; a sweep-proven-dry market ends the run per `Source candidates`.
+8. **Pre-create batch — this turn's only job: call 8a, 8b, and 8c in this ONE message.** One survivor = six calls — its `poolImages` call, its title check, and its four `Geocode ladder` tiers; each additional survivor adds its own six calls to this same message. No other calls ride this turn.
+    - **8a. Image selection.** The `poolImages` call fires in this batch message, never its own turn — one call settles the image per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy`. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
+    - **8b. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the METHODOLOGY `Image strategy` Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
+    - **8c. Geocode.** Nominatim every address-confirmed survivor — each survivor's GEOCODING.md `Geocode ladder` tiers batched together as backups; the lowest-numbered hit wins per survivor. Skip lat/lon on failure.
+9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
+10. **Content manufacture.** Proceed straight from runbook Step 9 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
+11. **Create the post** — fires ALONE in its own turn, after Steps 7-10 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Events field reference` section.
+12. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ---
 
@@ -76,11 +74,11 @@ Tailor by vertical: real estate → MLS open-house listings; fitness → race ca
 
 A single list-page `WebFetch` may return one event or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
-No survivor after a round → the next ten-query round per 5c, new angles each time. A swept-dry market → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
+No survivor after a round → return to Step 5 for the next ten-query round, new angles each time. A swept-dry market → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 ---
 
-## Dedup (runbook Step 6)
+## Dedup (runbook Step 7)
 
 Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval fires TWO separate calls, batched in the same turn — the `post_start_date` leg never rides in the title call: ONE compound query covering every pooled candidate's 3 title variants, each 1-3 words, plus one date-only probe per candidate — one candidate fires two calls, a five-candidate pool six — a find enters the pool once both its title and start date are known, so every pooled candidate probes here; a date that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start, comma-joined as 8-digit days — the window is `property_value` element 1, the `data_id` alone is element 2:
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["contains","eq"] property_value=["20260716,20260717,20260718","8"] limit=50` (July 17 candidate → the probe carries 20260716,20260717,20260718 — the start day in the middle; substitute the site's event data_id). Its verdict line cites the window: `no match (title + 20260716,20260717,20260718) — survives`. Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date.
@@ -91,19 +89,19 @@ A returned row is a dupe when EITHER:
 
 ---
 
-## Geocoding (runbook Step 7c)
+## Geocoding (runbook Step 8c)
 
-Use results for survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
+Use results for survivors only (candidates that passed runbook Step 7 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
 
 For events, `post_venue` (the venue name) is usually known — the 4-tier branch of the geocode ladder is the common path.
 
 ---
 
-## Image selection (runbook Step 7a)
+## Image selection (runbook Step 8a)
 
 **Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases.
 
-## Category routing (runbook Step 8)
+## Category routing (runbook Step 9)
 
 Per METHODOLOGY `Stage 4: Category routing`. Events route via the **category ledger** (written at `Stage 1: Site context` step 3).
 
@@ -111,7 +109,7 @@ User-specified default category in the request → every event in the run goes t
 
 ---
 
-## Content manufacture (runbook Step 9)
+## Content manufacture (runbook Step 10)
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
@@ -133,7 +131,7 @@ Events get the full set of filter dimensions available — category, location (`
 
 ---
 
-## BD Events field reference (runbook Step 10)
+## BD Events field reference (runbook Step 11)
 
 What `createSingleImagePost` receives.
 

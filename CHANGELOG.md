@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.159] - 2026-07-16
+
+### Changed
+
+- **Runbook restructure (owner design): numbers = turns, letters = same-message groups** — Step 5 Search round (now scored: "how many results it surfaces showing a title and a future, in-window start date — ten candidates beat one"), Step 6 Dedup the round (pure positive: "carries these two call shapes only" — the negation "no WebSearch, no WebFetch" dropped, and the shapes bound by count+deixis per the owner's could-a-fetch-count-as-dedup check; jobs: "this one call shape"), Step 7 Duplicate detection (verdicts; "No survivor → return to Step 5" — loop by reference, the 5c paraphrase step deleted), Step 8 Pre-create batch (8a/8b/8c), 9-12 routing/content/create/audit. Full ordinal sweep: 16 heading/pointer updates (events+jobs), 8b's "Step 3 image-dedup" namespaced to METHODOLOGY `Image strategy` (digit-collision fix), METHODOLOGY verified number-safe (ladder/pool-discipline reference by name).
+
 ## [6.58.158] - 2026-07-16
 
 ### Fixed

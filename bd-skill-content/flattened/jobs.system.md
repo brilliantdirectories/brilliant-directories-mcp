@@ -823,19 +823,17 @@ The user invoked the skill with a request like "create job posts on my site" or 
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Source discovery.**
-    - **5a. Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
-    - **5b. Dedup the round — this turn's only job.** All WebSearch results showing a job title enter ONE pool (the 30-day staleness gate applies per `Source candidates` — a result showing no posted-date is never blocked by it): print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)`, and this same message fires Step 6's calls for the whole pool — ONE title compound covering every pooled candidate. The dedup turn carries dedup calls only — no `WebSearch`, no `WebFetch`. Once a result shows its title, its research stops until it survives Step 6. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → 5c.
-    - **5c. No survivor → next round.** Every tested candidate failed, or nothing qualified to test → fire another ten-query round (new angles, one turn, like 5a) and run 5b on its results. Repeat until survivors meet the post goal; a sweep-proven-dry market ends the run per `Source candidates`.
-6. **Duplicate detection.** Stage 2's calls fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's jobs-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
-7. **Pre-create batch — this turn's only job: call 7a, 7b, and 7c in this ONE message.** One survivor = six calls — its `poolImages` call, its title check, and its four `Geocode ladder` tiers; each additional survivor adds its own six calls to this same message. No other calls ride this turn.
-    - **7a. Image selection.** The `poolImages` call fires in this batch message, never its own turn — one call settles the image per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy`. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
-    - **7b. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
-    - **7c. Geocode survivors only.** Nominatim every non-duplicate candidate's address — their `Geocode ladder` tiers batched together as backups. Skip lat/lon on failure.
-8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
-9. **Content manufacture.** Proceed straight from runbook Step 8 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
-10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Jobs field reference` section.
-11. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
+5. **Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b. Its score: how many results it surfaces showing a job title — ten candidates beat one.
+6. **Dedup the round — this turn's only job.** All WebSearch results showing a job title enter ONE pool (the 30-day staleness gate applies per `Source candidates` — a result showing no posted-date is never blocked by it): print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)`, and this same message fires Step 7's calls for the whole pool — ONE title compound covering every pooled candidate. The dedup turn carries this one call shape only. Once a result shows its title, its research stops until it survives Step 7. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → return to Step 5.
+7. **Duplicate detection.** Stage 2's calls fired with Step 6's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's jobs-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification. No survivor → return to Step 5; repeat until survivors meet the post goal; a sweep-proven-dry market ends the run per `Source candidates`.
+8. **Pre-create batch — this turn's only job: call 8a, 8b, and 8c in this ONE message.** One survivor = six calls — its `poolImages` call, its title check, and its four `Geocode ladder` tiers; each additional survivor adds its own six calls to this same message. No other calls ride this turn.
+    - **8a. Image selection.** The `poolImages` call fires in this batch message, never its own turn — one call settles the image per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy`. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
+    - **8b. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the METHODOLOGY `Image strategy` Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
+    - **8c. Geocode survivors only.** Nominatim every non-duplicate candidate's address — their `Geocode ladder` tiers batched together as backups. Skip lat/lon on failure.
+9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
+10. **Content manufacture.** Proceed straight from runbook Step 9 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
+11. **Create the post** — fires ALONE in its own turn, after Steps 7-10 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Jobs field reference` section.
+12. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ---
 
@@ -902,13 +900,13 @@ Tailor by vertical AND country: pick the country-native association + the countr
 
 A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
-Usable candidates pool per Step 5b. No survivor after a round → the next ten-query round per 5c, new angles each time. Only when every source is stale (>30 days), blocked, or wrong-location after the rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
+Usable candidates pool per Step 6. No survivor after a round → return to Step 5 for the next ten-query round, new angles each time. Only when every source is stale (>30 days), blocked, or wrong-location after the rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: after its `no match — survives` verdict, one reference search, then one `site:` probe on the poster's domain reaches the canonical posting. Prefer the candidate whose canonical posting is already verified live. Unreachable → use the copy's application contact per `How to apply` (a generic careers page qualifies only there), or drop per `URL liveness gate`.
 
 ---
 
-## Dedup (runbook Step 6)
+## Dedup (runbook Step 7)
 
 Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Title: semantic match (the role, e.g. "Senior Marketing Manager").
@@ -921,19 +919,19 @@ Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
 ---
 
-## Geocoding (runbook Step 7c)
+## Geocoding (runbook Step 8c)
 
-Run on survivors only (candidates that passed runbook Step 6 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
+Run on survivors only (candidates that passed runbook Step 7 dedup). Follow `../shared/GEOCODING.md` end-to-end: transliteration, geocode ladder, `Extraction prompt`, `Rules`, normalization.
 
 For jobs, `post_venue` = company name, so `Geocode ladder` tier 1 (`q="<company>, <city>, <state-name>"`) only hits if Nominatim has the company's headquarters indexed; tiers 2-4 (street → city-only) carry the load more often.
 
 ---
 
-## Image selection (runbook Step 7a)
+## Image selection (runbook Step 8a)
 
 **Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting.
 
-## Category routing (runbook Step 8)
+## Category routing (runbook Step 9)
 
 Per METHODOLOGY `Stage 4: Category routing`. Jobs route via the **category ledger** (written at `Stage 1: Site context` step 3). For `post_category` specifically, use the cached `getPostTypeCustomFields.post_category.choices` (from Step 3) — pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. Append the choices keys to the **category ledger** as a second labeled line (`post_category choices: <keys>`); `post_category` copies from that line only — Pattern 3 `category[]` copies from the `categories:` line only.
 
@@ -941,7 +939,7 @@ User-specified default category in the request → every job in the run goes to 
 
 ---
 
-## Content manufacture (runbook Step 9)
+## Content manufacture (runbook Step 10)
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
@@ -965,7 +963,7 @@ Jobs get category, location (`lat`+`lng`+`location_value`+`location_type=localit
 
 ---
 
-## BD Jobs field reference (runbook Step 10)
+## BD Jobs field reference (runbook Step 11)
 
 What `createSingleImagePost` receives.
 
