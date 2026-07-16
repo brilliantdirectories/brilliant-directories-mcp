@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.185] - 2026-07-16
+
+### Fixed
+
+Two residual permissions in the Source-credibility row, convicted by compensatory obedience on the next run:
+
+- **The class ban's object missed the row's other vocabulary** — "its classes never become query terms" was obeyed exactly (gov/association/university/TLD targeting went to zero) while "official", which lives in the row's fail clause and is not a class, concentrated from 5/10 queries to 10/10. Now the .137-proven shape: "nothing in it becomes a query term or `site:` target" — bans the text, not a taxonomy.
+- **A literal imperative in a criteria table** — "Verify the URL resolves to the claimed organization" is a command verb; the run executed it verbatim as pre-verdict verification WebFetches ("extract whether the page clearly confirms this is the official … schedule page") on an unpooled candidate while ~12 qualifying results sat unprocessed. Now a criterion with no verb to execute: "High only if its URL resolves to the claimed organization."
+
 ## [6.58.184] - 2026-07-16
 
 ### Fixed
