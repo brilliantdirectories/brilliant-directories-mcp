@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.219] - 2026-07-16
+
+### Fixed
+
+Adversarial relay audit (1 hunter, 12 findings, all self-verified): four patched, six pre-registered watches, two rejected as working-as-designed.
+
+- **The fetch-first ritual's last standing license deleted** — "Count every other hit only after opening it" commanded pre-census fetches for keyless hits, in direct contradiction with the census position-pin; a fossil of the removed open-and-harvest design (keyless results are no longer candidates, and round success is already defined without opening).
+- **The pre-create batch's cohort reading pinned + capacity and economy stated (owner design)** — "the message right after verification completes for all survivors; the turn holds every survivor's calls at once — twelve or eighteen fire as one message as easily as six, and one single turn saves the tokens and time separate turns spend." Capacity phrased as scaling instances, deliberately not a numeric cap (a stated maximum would license splitting above it).
+- **The commanded re-probe gets its named slot** — the fetch-only follow-up clause banned the date/venue/city re-probe it coexists with; now excepted by name alongside the liveness confirm search.
+- **Citation budget arithmetic corrected** — path (b) specifies three searches (broad + companion + `site:` probe) against a stated budget of two; budget is now 3 WebSearch + 2 WebFetch.
+
 ## [6.58.218] - 2026-07-16
 
 ### Fixed
