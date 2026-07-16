@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.196] - 2026-07-16
+
+### Fixed
+
+- **The pre-create batch's last standing license: "step" granularity in the phase law** — "after the verdicts a turn carries its steps' specified calls" let "step" resolve at letter level, making every per-letter turn (poolImages alone, four tiers alone) letter-compliant while Step 8's local one-message laws lost; the fragmentation's signature confirmed the reading (batches perfectly WITHIN a letter, splits perfectly BETWEEN letters, never a mix). The architecture law is now written where turns are governed: "a runbook step's lettered parts are ONE step, all their calls in that step's one message" — scoped to runbook steps so Stage 3's lettered sub-sequence (2a-2e, which spans phases and cannot share a message) stays untouched, collectivized so no per-letter reading survives.
+- **The verification phase gets a shape** — 2c had no turn-composition law at all, so serial one-call research turns were legal (observed: fetch alone, search alone, fetch alone). Now: "every survivor's page fetch and any second-source search fire together in ONE message; a follow-up message fetches only URLs the first surfaced" — maximum honest batching with the dependency case preserved.
+
 ## [6.58.195] - 2026-07-16
 
 ### Fixed
