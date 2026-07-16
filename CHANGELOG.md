@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.175] - 2026-07-16
+
+### Changed
+
+- **Step 6 compressed ~200 → 88 words (owner-ordered 2-minion convergence; every survivor word load-bearing)** — the loop broke on the .174 run (month-year queries + bulk title compound over ~9 candidates), leaving two defects the compression fixes: the worked instance's hardcoded date was a staleness drift-bomb (killed — the date-free pool-line shape `N. Title — YYYYMMDD — City` carries the identification), and the date probes lagged the compound (the equation now leads: "N pooled = N+1 calls; fewer is an incomplete turn"). Cuts per the minions' joint list: only-job suffix, METHODOLOGY citation (shared law binds regardless), stop-line (covered by the shared pre-verdict ban), two-shapes sentence (folded into "on `listSingleImagePosts` only"), forced-membership clause (folded into "Every… pools" + the equation). Minion errors corrected in convergence: "within 90 days of today" reads backwards (kept "later than today"); "exactly two calls" self-contradicted the 1+N arithmetic.
+
 ## [6.58.174] - 2026-07-16
 
 ### Fixed
