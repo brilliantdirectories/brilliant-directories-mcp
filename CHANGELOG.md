@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.218] - 2026-07-16
+
+### Fixed
+
+- **Step 8's composition inputs get their provenance (seven words)** — the handoff audit found one dark seam: the batch's fillers were unsourced (the title composed from nothing named; the geocode ran on "a known street or city" — known from where?). Per the filler-readiness law, naming each filler's source as a past artifact marks it already ripe at batch time. Now "compose the final `post_title` once **from the verified record**" and "Nominatim every survivor **with the street or city verification returned**." Every seam in the pipeline now names what it consumes and its source.
+
 ## [6.58.217] - 2026-07-16
 
 ### Changed
