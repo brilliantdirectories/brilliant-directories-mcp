@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.149] - 2026-07-16
+
+### Changed
+
+- **Step 5 restructured into granular lettered steps (owner design — the 5a/7a pattern that never regressed)** — the stuffed 5b/5c prose becomes single-job steps: 5b key the candidates, 5c pool + dedup ("this turn's only job", with the scoring line "how many keyed candidates it probes in this one message — ten beats one"), 5d unconditional insurance fill (searches or key-pinning fetches — the fewer-than-five fetch gate dies, removing the last judgment surface), 5e cycle-until-survivor. Events + jobs; blog untouched. Full ordinal-pointer sweep: Step 6 "fired with 5c's message", recovery lines "after 5d's searches", ladder "(2) after 5d", jobs "pool per Step 5c", both Source-candidates "at 5d, open the best list-page(s)".
+
 ## [6.58.148] - 2026-07-16
 
 ### Fixed
