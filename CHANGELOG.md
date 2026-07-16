@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.179] - 2026-07-16
+
+### Fixed
+
+Semantic-audit batch (2-hunter convergence + verification): eight literal-reading defects that contradicted the intended turn shapes.
+
+- **Dedup opener's flat-false count** — "retrieval fires TWO separate calls" stated a call count (true only for a one-candidate pool; real arithmetic is N+1) in the one prose form this model obeys ~100%; also a present-tense firing verb in a section the verdict step re-reads. Now "retrieval is two call shapes, batched in the pool-print message" — count→shapes, command→description, and "the same turn" gains its antecedent.
+- **Pre-create batch count unsatisfiable on the venue-less branch** — "six calls…four Geocode ladder tiers" while the ladder defines a 2-tier branch when `post_venue` is empty; an unsatisfiable flat count splits or stalls the batch. Now dual flat counts: "a survivor with no venue fires the ladder's two-tier branch instead — four calls…adds its own six (or four)."
+- **"one call settles the image" vs the commanded batch-2 retry** — the local flat-1 foreclosed Image strategy's legal second axis batch, forcing premature image omission. Clause deleted; the shared Image strategy owns retry-then-omit and already carries the do-not-re-check settling rule.
+- **Pool-2 re-entry pointed at the judge-only step** — "re-enters the runbook at its `Duplicate detection` step" predated the pool-print/verdict split, landing pool 2 at a step whose calls fired one step earlier. Now mechanism-anchored: "re-enters at the pool print: it prints and fires Stage 2's calls in that same message."
+- **"probes" vocabulary hole in Rule: Search discipline** — the pool-print composition law said "carries its probes in one message," and the title compound is never called a probe; the compound was literally outside the law. Now "carries its calls."
+- **Undefined geocode gate** — "every address-confirmed survivor" defined nowhere + the doubt-skip law = city-only survivors silently losing lat/lon. Now observable: "every survivor with a known street or city."
+- **Unqualified local lookup ban** — content-manufacture's "no extra lookups" literally covered the commanded citation round and URL-liveness fetches (their protection lived remotely). Now "no extra BD lookups."
+- **Redundant second `listPostTypes` command** — post-type discovery imperatively commanded a filtered re-fetch of rows turn 1 already returned (lean keep-list verified to include `type_of_feature`). Now filters the cached rows: "keep the `type_of_feature=1` row(s). No second `listPostTypes`."
+
 ## [6.58.178] - 2026-07-16
 
 ### Fixed
