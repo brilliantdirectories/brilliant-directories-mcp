@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.191] - 2026-07-16
+
+### Fixed
+
+White-glove batch — four one-line fixes, each a permission removal or missing local guard:
+
+- **8a's urgency rationale deleted** — "Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path" was the only sub-step carrying a hurry-up reason, and the only sub-step that deserted the batch every run; reasoned commands absolutize over the unreasoned pin beside them. Obsolete on the poolImages path anyway (the tool returns pre-deduped images — the warned failure can't occur).
+- **`getImageDimensions` named in 8b's local ban** — an earlier cleanup removed the local settling clause, leaving only the remote shared ban; the dimension-check habit (taught by the in-context Steps 1-3 fallback) resurfaced on a poolImages URL. Now local: "the image is settled — no `getImageDimensions`, no image dedup; title check only."
+- **Source-narration's permission re-keyed (one word)** — the voice ban ("never narrate a source document") was violated across 7+ runs because the Hard rules licensed the behavior: "reference the source inline" invites prose about the page ("the Grand Park page says…"). Now "link the source inline" — an anchor, not a report.
+- **Self-check gains a strategy-talk scan** — a live post shipped a "Why This Event Has Local Search Value" section narrating its own SEO reasoning; nothing banned relaying agent-facing rationale to the public page. New bullet: any sentence or heading about search value, SEO, or link strategy is cut.
+
 ## [6.58.190] - 2026-07-16
 
 ### Fixed
