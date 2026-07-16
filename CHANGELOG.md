@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.221] - 2026-07-16
+
+### Fixed
+
+- **The batch capacity clause's terminal instance was the smallest (owner's cold-read catch)** — "twelve or eighteen fire as one message as easily as six" ended on six, the exact terminal-instance defect fixed in the compound caption earlier; the double-"as" chain also parsed poorly. Now ascending with the largest instance terminal: "One single turn holds every survivor's calls — six, twelve, or eighteen together — and saves the tokens and time separate turns spend." Shorter, clean parse, all three functions retained.
+
 ## [6.58.220] - 2026-07-16
 
 ### Changed
