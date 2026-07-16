@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.113] - 2026-07-15
+
+### Changed
+
+- **Pre-create batch reordered (image → title → geocode) + explicit 10-call capacity** — run 24 split the batch exactly 1+5 (poolImages solo, then 4 geo tiers + title check in a five-call turn): the model reads "5 every turn" as a ceiling, so a six-call batch felt illegal, and it fired the image first against the letter order. Letters now match its observed instinct (7a image, 7b title, 7c geocode last — the variable-size work filling remaining capacity), and the parent states "up to 10 in one turn" so a full batch is explicitly legal. Owner's design. Heading suffixes and the 7b dedup cross-ref updated in lockstep (events + jobs).
+
 ## [6.58.112] - 2026-07-15
 
 ### Fixed
