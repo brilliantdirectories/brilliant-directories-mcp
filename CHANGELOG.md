@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.130] - 2026-07-15
+
+### Fixed
+
+- **events Dedup line drifted from the compound law (my 6.58.127 paraphrase)** — "covering every pooled candidate's titles" reads as one title each, so the run's title net carried 1 four-word variant per candidate (law: 3 variants, each 1-3 words — the line now states the numbers). And the only packing verb the model had ("comma-joined into one string", locally echoed as "comma-joined as 8-digit days") produced the date-probe malformation verbatim (`"20260821,...,8"` — data_id fused into element 1); the element split now rides the same line: "the window is `property_value` element 1, the `data_id` alone is element 2". Law-on-the-executing-line; METHODOLOGY unchanged (already canonical).
+
 ## [6.58.129] - 2026-07-15
 
 ### Fixed
