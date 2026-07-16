@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.195] - 2026-07-16
+
+### Fixed
+
+- **The under-fill license in Search discipline** — "even a few, surfaced by the same sources repeating across queries, are your pool" was written as an anti-give-up clause but literally defines a few candidates as a complete pool; every under-cap census (5 pooled of ~18 qualifying, repeatedly) was compliant with it. Rewritten in place, purpose preserved, license removed: "A round that returns usable candidates has succeeded — every one of them pools, few or many; select from the pool and proceed." Floor language replaces cap language; jobs/blog inherit the same cure.
+
 ## [6.58.194] - 2026-07-16
 
 ### Fixed
