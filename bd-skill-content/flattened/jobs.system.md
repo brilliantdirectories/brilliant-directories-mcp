@@ -140,7 +140,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 **2a.** Brainstorm 5-10 candidate source types for vertical+location per the content-type file — vocabulary for judging what returns, never for composing queries; query shapes come only from the discovery ladder and the content-type file's commanded searches.
 
-**2b.** One batched round per **Rule: Search discipline** — broad query + the content-type file's companion shape, fired together. Read every result; `site:`-probe (with `-pdf`) only a domain that appeared. Drop dead/empty/archive pages.
+**2b.** One batched round per **Rule: Search discipline** — the discovery ladder's single turn of ten queries. Read every result — reading triggers the pool print, not new queries; a `site:` query (with `-pdf`) may target only a domain that appeared, and only inside the round's one reformulation. Drop dead/empty/archive pages.
 
 **2c.** Survivors only — after Stage 2's verdicts: `WebFetch` the top 5 survivors. WebFetch returns LLM-summarized markdown, NOT raw HTML — if you need specific `<head>` content (OG meta tags, JSON-LD), name them in your prompt explicitly ("extract og:title, JSON-LD schema.org Event"). Every extracted record must pass all 6 gates:
 

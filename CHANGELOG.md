@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.138] - 2026-07-16
+
+### Fixed
+
+- **2b's `site:`-probe restriction was written as a command — it scripted the turn-3 search floods** — "Read every result; `site:`-probe only a domain that appeared" reads as a two-beat procedure (read, then probe), and it sits in the exact step 5a routes to: every post-round `site:` query across the recent runs targeted a domain that appeared, zero that didn't — 100% predicate match = obedience, not improvisation. Rebuilt as a pure restriction bound to the shortfall path: "reading triggers the pool print, not new queries; a `site:` query may target only a domain that appeared, and only inside the round's one reformulation" (which 6.58.134 gates on <5 keyed). Also killed 2b's fossil "broad query + companion shape" two-query round — the round is the ladder's ten. Fix-class precedent: restriction-phrased-as-command → pure restriction (6.58.106, 6.58.67).
+
 ## [6.58.137] - 2026-07-16
 
 ### Fixed
