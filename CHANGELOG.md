@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.172] - 2026-07-16
+
+### Fixed
+
+- **Every 5a query must carry a month-year inside the window** — 7 of 10 observed queries were year-only, and a bare year returns the year's most-linked (= mostly past) events: the round's yield was May/June graveyard with only the one "August 2026" query producing in-window candidates. Query recency pinned on the step line (events: month-year; jobs: `hiring now`/`<month year>`).
+
 ## [6.58.171] - 2026-07-16
 
 ### Changed
