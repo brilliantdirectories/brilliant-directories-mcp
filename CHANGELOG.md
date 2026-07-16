@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.198] - 2026-07-16
+
+### Fixed
+
+- **The letters-law relocated out of the turn-composition sentence** — inserting it mid-clause raised that sentence's ONE-density ("one turn … one message … ONE step … one message"), and the two runs since produced two never-before-seen one-shaped collapses (a single fused dedup call, then a single-query search round). The phase clause is restored to its pre-insertion bytes; the letters-law survives verbatim as the rule's closing sentence, maximally distant from "ten queries in one turn." If a one-shaped collapse recurs even at the new address, the sentence itself is convicted and comes out.
+
 ## [6.58.197] - 2026-07-16
 
 ### Fixed
