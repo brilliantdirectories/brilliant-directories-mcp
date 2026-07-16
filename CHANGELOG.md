@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.174] - 2026-07-16
+
+### Fixed
+
+- **Pool identification gets its worked instance (owner diagnosis: it had valid candidates and didn't know how to identify what to pull)** — the entry test was a description, and this model copies transformations, never executes descriptions (the .100 law; verdict lines and probes obey because they have exact shapes — identification never did). Step 6 now shows one real result → one pool line: `[Elevate Legacy Festival — Los Angeles](…) — MG Studio…; August 8, 2026` → `3. Elevate Legacy Festival — 20260808 — Los Angeles`, "identify every such result the same way."
+
 ## [6.58.173] - 2026-07-16
 
 ### Changed
