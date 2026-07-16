@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.133] - 2026-07-16
+
+### Fixed
+
+- **`poolImages` removed from the pre-verdict call-type enumeration (owner catch on 6.58.132)** — the 6.58.118 addition predates the phase split; in the now-pre-verdict-scoped list it licensed speculative image pooling for unverdicted candidates. poolImages has no legal pre-verdict use — post-verdict it is a step-specified call (7a), covered by the second clause.
+
 ## [6.58.132] - 2026-07-16
 
 ### Changed
