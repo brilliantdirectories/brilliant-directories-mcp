@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.160] - 2026-07-16
+
+### Fixed
+
+- **Step 6 renamed "Pool the round" (owner catch — 6.58.159 had reintroduced the two-houses disease .152 cured)** — Step 6's job is pooling (procure the round's candidates, print, fire the checks); Step 7 "Duplicate detection" keeps sole dedup identity. "The dedup turn carries…" → "The pool turn carries…" (events+jobs); Search discipline's "the dedup turn carries its probes" aligned to the file's own existing term "the pool-print turn". One action, one home, one name.
+
 ## [6.58.159] - 2026-07-16
 
 ### Changed
