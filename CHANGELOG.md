@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.164] - 2026-07-16
+
+### Fixed
+
+- **Owner-ordered 6↔7 triple-check: one fight found and settled** — the 6.58.162 invariant counted KEYED results while the pool caps at 10 best-fit, so at N>10 (observed rounds have keyed 12-28) the two laws disagreed. Now: "Count the keyed results — every one enters the pool, best-fit 10 when more: N pooled = exactly 1 compound + N date probes" — membership stays skip-proof (every keyed result must enter; N remains observable-anchored), the cap is honored, and the invariant binds to what actually probes. All other 6↔7 clauses verified cooperating (call ownership handshake, byte-identical shapes, arithmetic, verdict timing, complementary loops).
+
 ## [6.58.163] - 2026-07-16
 
 ### Fixed
