@@ -13,7 +13,7 @@ The router (`SKILL.md`) routed you here because the user wants to create job pos
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Make only the tool calls the runbook steps specify and, through the dedup verdicts, fill the remaining slots to ten per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-job failure, continue to the next job.
+The user invoked the skill with a request like "create job posts on my site" or similar. They may have specified cities, occupations, categories, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Make only the tool calls the runbook steps specify and fill each web message's pack per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-job failure, continue to the next job.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
@@ -98,7 +98,7 @@ A single list-page `WebFetch` may return one job or dozens. Capture and print th
 
 Usable candidates pool per Step 6. No survivor after a round → return to Step 5 for the next five-query round, new angles each time. Only when every source is stale (>30 days), blocked, or wrong-location after the rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
-The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: after its `no match — survives` verdict, one reference search, then one `site:` probe on the poster's domain reaches the canonical posting. Prefer the candidate whose canonical posting is already verified live. Unreachable → use the copy's application contact per `How to apply` (a generic careers page qualifies only there), or drop per `URL liveness gate`.
+The post's outbound link is the canonical posting; an aggregator copy is harvest-only. The copy carries the probe keys — job reference, poster name: after its `no match — survives` verdict, one reference search, then one `site:` probe on the poster's domain — each riding its message's pack — reaches the canonical posting. Prefer the candidate whose canonical posting is already verified live. Unreachable → use the copy's application contact per `How to apply` (a generic careers page qualifies only there), or drop per `URL liveness gate`.
 
 ---
 

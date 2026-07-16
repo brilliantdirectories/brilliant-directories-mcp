@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.226] - 2026-07-16
+## [6.58.227] - 2026-07-16
+
+### Fixed
+
+- **Pack-law contradiction sweep (adversarial-audit verified).** The jobs/blog preamble commanded "fill the remaining slots to ten per Rule: Search discipline" — a stale ten-query-era number now contradicting the rule's at-least-five; the count now lives only in the Rule ("fill each web message's pack per Rule: Search discipline"), and events gains the same harmonized preamble sentence (it had neither the fill nor the insurance-fill-is-not-an-extra carve, leaving preloaded spares readable as improvised calls). Three confirmed solo levers packed: the URL liveness gate's confirm search rides its message's pack; the jobs canonical-posting reference search and site: probe each ride their message's pack; blog's viral/trending pull is a five-query round. Audit findings rejected on verification: the citation site: probe sequencing (probe precedes the fetches it rides with) and the commanded re-probe (an mcp date probe, outside the web pack law's scope).
 
 ### Changed
 

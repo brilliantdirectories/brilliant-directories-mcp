@@ -165,7 +165,7 @@ Every URL the post will link to must be verified live before publish. Three outc
 
 - **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead.)
 - **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
-- **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in the results of at most ONE search per **Rule: Search discipline**; still unverified → drop.
+- **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in the results of at most ONE search — riding its message's pack per **Rule: Search discipline**; still unverified → drop.
 
 **Third-party-sourced URLs** (aggregator, secondary listing) always require independent verification — never trust the third party's link as-is. Apply the `URL liveness gate` three-outcome decision tree.
 
@@ -818,7 +818,7 @@ The router (`SKILL.md`) routed you here because the user wants to create event p
 
 ## End-to-end runbook
 
-The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Make only the tool calls the runbook steps specify.** On per-event failure, continue to the next event.
+The user invoked the skill with a request like "create event posts on my site" or similar. They may have specified cities, categories, window, or limit. Execute the runbook steps in order. Once a step is resolved, move immediately to the next step. **Make only the tool calls the runbook steps specify and fill each web message's pack per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are.** On per-event failure, continue to the next event.
 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
