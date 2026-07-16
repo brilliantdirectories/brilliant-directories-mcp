@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.123] - 2026-07-15
+
+### Changed
+
+- **Turn template raised 5 → 10 (owner design)** — run 29 capped every turn at five including the ten-query opener: the number 5 was drilled at four anchors in Rule: Search discipline (the opener, the fill arithmetic "still fires 5: the step's 2, plus 3 insurance", the floor clause, the "5 every turn" slogan) plus the three runbook preambles ("fills its five slots"), and the drilled rule out-ranks step text every collision. All seven sites now say ten; with the 6.58.119 verdict gate blocking the dangerous insurance class, spare slots are discovery searches/fetches — wider convergence per turn. Pool-size thresholds ("fewer than five pooled", N=5, top-5 fetches, five-per-batch axes) untouched — different semantics.
+
 ## [6.58.122] - 2026-07-15
 
 ### Changed
