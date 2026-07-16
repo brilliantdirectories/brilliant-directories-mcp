@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.144] - 2026-07-16
+
+### Fixed
+
+- **"its steps' specified calls" fragmented post-verdict turns (owner diagnosis: the model defines "step" as each sub-step individually)** — 6.58.132 removed post-verdict fill, which had been the force packing 7a-c together; the remaining word "steps'" let every sub-step's call arrive as its own minimal turn (poolImages solo, geocode solo, title check solo, link checks solo — every post-.132 run). Rewritten in place with the fill law's own drilled predicate: "after the verdicts a turn fires every specified call whose inputs are ready — together in one message, never one at a time — and nothing else". Inputs-ready self-handles all dependencies across all three skills (7a-c mutually independent → batch; blog image-dedup waits for its pick; create's ALONE law stands as the explicit exception). Type-agnostic, no step numbers.
+
 ## [6.58.143] - 2026-07-16
 
 ### Fixed
