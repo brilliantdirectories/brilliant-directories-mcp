@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.181] - 2026-07-16
+
+### Fixed
+
+- **Pool-of-one serialization returned on verified-fresh text (1 pooled of 15+ keyed)** — the Step 6 compression had flattened the proven collective subject back to distributive grammar ("Every WebSearch result … pools as", satisfiable pooling one; the audit had flagged this class and deferred it). Restored the proven collective form: "All WebSearch results … enter ONE pool, each as `N. Title — YYYYMMDD — City`". The same run's degraded probe shapes (single-property compound, `data_id` as a top-level argument) are read as downstream of the one-candidate pool — a lone candidate gave the model no multi-candidate compound to copy; shapes stay on watch under the restored collective entry.
+
 ## [6.58.180] - 2026-07-16
 
 ### Fixed
