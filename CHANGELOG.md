@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.148] - 2026-07-16
+
+### Fixed
+
+- **Skip-the-pool loophole closed at every gate (9 predicate swaps, "pooled" → "keyed")** — 6.58.141's weld revert also discarded 6.58.134's loophole closure, and gauntlet run 1 (log-verified on fresh 6.58.147 text) took the reopened ramp verbatim: skip pooling → "none pooled → straight to 5c" → fetch license unlocked → three candidate fetches over ~15 keyed results, zero probes. All fetch/search license gates now bind to what the round's results SHOW (keyed = title + future date visible), not what got pooled: 5b's "none pooled" exits (events+jobs), 5c's shortfall gates (events+jobs), the recovery lines (events+jobs), the pool-discipline pin-fetch license, and the ladder's two thresholds. A gate condition, not a weld — no output demanded, no call sequenced.
+
 ## [6.58.147] - 2026-07-16
 
 ### Changed
