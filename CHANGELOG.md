@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.169] - 2026-07-16
+
+### Fixed
+
+- **The unbounded search loop capped at three rounds (owner-ordered full-path map found the hole)** — 6.58.153 deleted the reformulation cap and the loop became "repeat until survivors" with "swept-dry market" undefined: an infinite goose chase, consistent with the observed infinite ten-search rounds. Flat cap (the binding form): "three search rounds total is the cap — no survivor after round three → stop with the labelled verdict (shortfall_reason)." Map otherwise verified: every entry term defined and gate-aligned, out-of-window rejection saves probes, dated snippets land candidates (proven in every run), shortfall stop is a valid outcome.
+
 ## [6.58.168] - 2026-07-16
 
 ### Fixed
