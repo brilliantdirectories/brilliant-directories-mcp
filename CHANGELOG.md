@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.124] - 2026-07-15
+
+### Fixed
+
+- **"no extras" was vetoing the insurance fill (all three runbook preambles)** — the preamble fused a ban and a command into one line ("no extras; every turn fills its ten slots"), and the ban won every turn: run 30 fired exactly what each step specified (ten on the search round, five on the fetch harvest, three on the dedup turn — zero fill anywhere). Mixing was always legal in the Rule ("or a mix"); "no extras" banned the only mechanism that creates a mix. Rewritten to keep the anti-junk ban while legalizing the fill explicitly: "Only make the tool calls the runbook steps specify, then fill the turn's remaining slots to ten per Rule: Search discipline — insurance fill is not an extra; improvised calls outside the steps and the fill rule are."
+
 ## [6.58.123] - 2026-07-15
 
 ### Changed
