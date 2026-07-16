@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.145] - 2026-07-16
+
+### Fixed
+
+- **The inputs-ready predicate was a riddle, not an instruction (owner call, minion-tested)** — 3-minion trial of 6.58.144's sentence: grouping force held (adversarial minion: "airtight against solo calls") but one minion drifted the title check because a self-composed input reads as not-ready — and the fix-parenthetical would have deepened the riddle. Replaced with grouping-by-command: "after the verdicts a turn fires its specified calls grouped exactly as the steps command — the pre-create batch in its one message, the create alone — and nothing else". Authority = the step lines (explicit, drilled); no readiness reasoning left to lawyer. "Pre-create batch" is the events/jobs heading verbatim; blog's steps group themselves.
+
 ## [6.58.144] - 2026-07-16
 
 ### Fixed
