@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.216] - 2026-07-16
+
+### Changed
+
+- **Verification fetching goal-sized (the law aligned to the good behavior)** — "WebFetch the top 5 survivors" was a bench-prefetch idea the model never executed (it fetches what it will write about — which is also the cheap, correct behavior at goal 1-3). Now "WebFetch the top survivor for each remaining post in the goal" — goal-anchored and observable; gate-failures keep their coverage via pool discipline's drop-and-advance, whose replacement fetch is the legal follow-up.
+
 ## [6.58.215] - 2026-07-16
 
 ### Fixed
