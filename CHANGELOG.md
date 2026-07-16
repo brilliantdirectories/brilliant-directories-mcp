@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.194] - 2026-07-16
+
+### Fixed
+
+- **The location law trimmed to presence-only (owner catch: duplicated precedence)** — the 5a law restated the user-first/primary-country chain the Source candidates facet already owns; two statements of one precedence is the sibling-drift class. Now the law forces presence per query and points to the single derivation home: "and a location per the `Source candidates` section — a placeless query returns global noise."
+
 ## [6.58.193] - 2026-07-16
 
 ### Fixed
