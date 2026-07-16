@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.117] - 2026-07-15
+
+### Fixed
+
+- **The five-call ceiling gun (Rule: Search discipline, shared)** — no turn in any graded run has ever carried more than five calls: "5 every turn" was read as a cap, making the pre-create batch's six-call invariant arithmetically illegal — it split in runs 24 (1+5) and 25 (three five-call turns) with the spare slots going to invented fetches because the insurance list offered "speculative preload / extra query angles" before "a later step's specified calls". Two fixes in the one sentence: the fill list is now priority-ordered (sibling/later-step specified calls FIRST), and one added clause — "A step specifying more than five calls fires them all in its one turn — five is the floor, never a cap" — which also legalizes the six-call dedup turn for five-candidate pools (never observed either, same ceiling).
+
 ## [6.58.116] - 2026-07-15
 
 ### Fixed
