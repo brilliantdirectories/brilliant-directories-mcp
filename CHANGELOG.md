@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.140] - 2026-07-16
+
+### Changed
+
+- **6.58.139 width revert undone (owner call): 10 stays** — all nine anchors restored to ten; corpus width state = 6.58.138's. The narration fix routes through the worker user prompt instead (see the bd-butler-worker repo: buildUserPrompt now commands per-turn pool print + verdict lines and rewords the final-message clause that read as a text ban).
+
 ## [6.58.139] - 2026-07-16
 
 ### Changed
