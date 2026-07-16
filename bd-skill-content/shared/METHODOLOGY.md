@@ -70,7 +70,7 @@ With the pool printed per `Candidate pool discipline (universal pattern)`, one c
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
 ```
 
-Two candidates, three variants each — a five-candidate pool runs the same call with fifteen variants in element 1; a one-candidate pool, its three alone.
+Two candidates, three variants each — a one-candidate pool runs its three alone; a five-candidate pool, the same call with fifteen variants in element 1.
 
 Substitute the `list*` tool matching the post-type family. Compare returned rows client-side against the content-type file's match criteria; the message after the dedup calls opens with one verdict line per candidate — the matched post_ids `— dropped`, or `no match — survives` — each verdict citing the keys probed (the content-type file names them).
 

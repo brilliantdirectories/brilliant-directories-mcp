@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.202] - 2026-07-16
+
+### Fixed
+
+- **The compound caption's terminal instance was the one-candidate shape — reordered (zero new words)** — a live turn counted five candidates (five per-candidate probes, N+1 calls exact) yet its title compound carried one candidate's three variants: the caption's last-position instance ("a one-candidate pool, its three alone") copied verbatim. Everything under a flat count law scaled; the one quantity whose scaling lived only in a caption collapsed to the caption's ending. The caption now ends on the scaling-up instance ("…a five-candidate pool, the same call with fifteen variants in element 1"). Pre-registered escalation if under-coverage recurs: variant arithmetic in flat form on the firing line (3 × N).
+
 ## [6.58.201] - 2026-07-16
 
 ### Fixed
