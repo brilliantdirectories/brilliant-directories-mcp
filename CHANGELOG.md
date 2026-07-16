@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.125] - 2026-07-15
+
+### Fixed
+
+- **"extra query angles" was the candidate-chase's legal cover (Rule: Search discipline fill list)** — the stop-line bans researching a candidate once its dedup keys are known, but the insurance list permitted "extra query angles," which runs read as more angles on the CURRENT candidate: run 31 spent 8 of 10 fill slots drilling an already-keyed (and duplicate) candidate. The fill's purpose was always breadth — now stated: "new-angle searches for fresh candidates — never more calls on a candidate whose dedup keys are already known." Spare slots can only buy discovery, not chases.
+
 ## [6.58.124] - 2026-07-15
 
 ### Fixed
