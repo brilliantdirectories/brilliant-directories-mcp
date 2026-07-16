@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.189] - 2026-07-16
+
+### Fixed
+
+- **The .188 boundary was an appended contradiction (owner catch)** — the skip command still read "when a fact or candidate is in doubt, skip it" while the new sentence commanded a doubtful candidate probes — skip vs probe on the same object, adjacent sentences. Rewritten in place per the never-append lesson: the skip command now owns facts only ("When a fact is in doubt, skip it"); candidates route wholly to "A doubtful candidate is settled by its gates and verdicts, never by leaving it uncounted." Candidate-dropping keeps all its scripted homes (extraction gates, verdicts, routing) — only the free-form anytime-skip license is gone.
+
 ## [6.58.188] - 2026-07-16
 
 ### Fixed

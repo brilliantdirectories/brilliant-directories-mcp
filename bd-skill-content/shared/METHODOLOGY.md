@@ -6,7 +6,7 @@ Read first. Every `/bd:*` skill follows this. The content-type file (`content-ty
 
 Runs are autonomous: no user can reply mid-run — never ask; a question ends the run as a failure. Decide per this skill with safer-side defaults and proceed to the receipt.
 
-**Under-produce correct > over-produce wrong. When a fact or candidate is in doubt, skip it and move to the next — doubt about a detail never ends the run. Doubt about a candidate is settled by its gates and verdicts, never by leaving it uncounted — every qualifying result probes.**
+**Under-produce correct > over-produce wrong. When a fact is in doubt, skip it and move to the next — doubt about a detail never ends the run. A doubtful candidate is settled by its gates and verdicts, never by leaving it uncounted — every qualifying result probes.**
 
 ## Stage 1: Site context
 
