@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.135] - 2026-07-16
+
+### Fixed
+
+- **The pool line had no format spec — the pool has never once printed (owner observation)** — verdict lines bind because they have an exact copyable shape; the pool print was only described ("numbered 1-N list"), and the model copies shapes, never executes descriptions. One worked instance added where the law lives: each line `N. <title> — <start date> — <city or venue>`. With 6.58.134's forced timing and trigger, the pool artifact now has all three anchors the verdict lines have.
+
 ## [6.58.134] - 2026-07-16
 
 ### Fixed
