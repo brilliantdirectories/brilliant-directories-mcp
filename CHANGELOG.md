@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.200] - 2026-07-16
+
+### Fixed
+
+- **The candidate→pool identity stated literally (five words)** — after the de-listing, no sentence said what "the pool" IS on the events path; the chain carried it implicitly (candidate = unit, pool = collective) and this model executes definitions, not implications. Step 6's candidate definition now closes with "— the candidates are the pool," placed where candidates form so the definition precedes every downstream use (Step 7's drops, the shared pool laws, the step heading).
+
 ## [6.58.199] - 2026-07-16
 
 ### Fixed
