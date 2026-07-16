@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.176] - 2026-07-16
+
+### Fixed
+
+- **Step 6 re-welded to the worked call shapes (owner catch — the compression severed the pointer)** — the firing line named the calls verbally but no longer pointed at the `Dedup` section's fenced `listSingleImagePosts` examples; models copy shapes, so the firing moment must reach them: "…on `listSingleImagePosts` only — call shapes per the `Dedup` section: …" (+6 words).
+
 ## [6.58.175] - 2026-07-16
 
 ### Changed
