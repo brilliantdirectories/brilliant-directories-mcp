@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.168] - 2026-07-16
+
+### Fixed
+
+- **Entry test USES the window instead of floating its definition (owner load-bearing audit)** — 6.58.167 defined the window beside an entry that only demanded "later than today", so out-of-window events pooled and died at the gate. Now one clause: "a start date inside the window — later than today, within the next 90 days unless the user set one — enter ONE pool; the shown date pools as shown, never re-verified first." Every term defined where used, aligned with the Date-sanity gate.
+
 ## [6.58.167] - 2026-07-16
 
 ### Fixed
