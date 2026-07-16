@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.166] - 2026-07-16
+
+### Fixed
+
+- **The undefined window + the doubt-skip law looped the run (log-verified on the full 6.58.165 stack)** — Step 6's entry demanded "a future, in-window start date" with no window defined anywhere, and Autonomy commands "when a fact or candidate is in doubt, skip it": every candidate's window status = doubt → all skipped → "None to dedup → return to Step 5" → infinite ten-search rounds with occasional verification fetches. Entry now self-defining: "a start date later than today… later-than-today IS the window when the user set none, and the shown date pools as shown, never re-verified first."
+
 ## [6.58.165] - 2026-07-16
 
 ### Fixed
