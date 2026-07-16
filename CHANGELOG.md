@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.182] - 2026-07-16
+
+### Fixed
+
+Junk-`site:` opener + pool-skip fetch-first, caught live and 2-verifier confirmed (adversarial convergence):
+
+- **Source-credibility gate read as a query-targeting spec** — its class enumeration (gov/association/university, "official") composed the opening round's `site:*.org`/`site:*.com … official` queries and the "official page" fetch prompts (fingerprint: "official" compensated the `.com` probes, rode none of the `.org` ones). The gate row now carries the proven usage law: "This gate judges returned pages — its classes never become query terms or `site:` targets; query shapes come only from the discovery ladder and the content-type file's commanded searches."
+- **`site:` wildcard loophole** — "follows only a domain" read as silent on TLD wildcards (`*.org` is not "a domain"). Now "only a full domain a result list surfaced — never a bare TLD or wildcard", with the pexels + commanded-shapes exemptions explicit.
+- **The unpooled-candidate escape closed at both homes** — every pre-verdict fetch ban was candidate-scoped, and a skipped pool makes nothing a candidate, so a rich round's results were fetched pre-verdict as licensed "discovery." Both the pool-discipline boundary and the Search-discipline ban are now find-scoped and web-call-qualified: "a WebSearch or WebFetch aimed at a specific find … pooled or not … waits for the find's `no match — survives` verdict" / "never a pre-verdict WebSearch or WebFetch on — or because of — a find, pooled or not." BD dedup probes, citation searches, liveness checks, list-page opens, and jobs' commanded portal shapes verified unaffected.
+- **Stale missing-keys license removed** — "pre-verdict research on a single candidate reaches only its missing dedup keys" predated the simplification that made dateless finds non-candidates; it licensed key-pinning fetches the architecture no longer has.
+- **Events list-page fetch fossil deleted** — an unscoped license sentence from the removed harvest design; its drop-and-advance content lives verbatim in the shared pool discipline.
+
 ## [6.58.181] - 2026-07-16
 
 ### Fixed
