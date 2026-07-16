@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.197] - 2026-07-16
+
+### Fixed
+
+- **The 2c shape reintroduced the fusion adverb — reverted to the noun form** — "fire together in ONE message" put "together" back one section from the Dedup laws, and the next fresh run fused its dedup retrieval into a single 3-leg AND call (title + start-date + data_id — byte-similar to the adverb's prior conviction). Scope-ambiguous adverbs bind to the nearest composable unit, the call. Now "share ONE message" — things sharing a container stay distinct; nothing to fuse with.
+
 ## [6.58.196] - 2026-07-16
 
 ### Fixed
