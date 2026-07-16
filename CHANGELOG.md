@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.143] - 2026-07-16
+
+### Fixed
+
+- **`poolImages` restored to the call-type enumeration (owner diagnosis — my 6.58.133 removal re-broke the batch)** — 6.58.118 added it because absence exiled it to solo turns; 6.58.133 removed it on a theoretical pre-verdict risk never once observed, and the solo exile returned the same night (geocode/poolImages/title-check shattering, then a solo poolImages on an otherwise-lawful run). The enumeration governs the model's sense of what may share a message regardless of phase reasoning; the phase law still governs when. Observed beats theoretical.
+
 ## [6.58.142] - 2026-07-16
 
 ### Fixed
