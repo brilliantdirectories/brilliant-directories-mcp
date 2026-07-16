@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.192] - 2026-07-16
+
+### Fixed
+
+- **The narration permission's sibling in the self-check (one word)** — "Unsourced claim presented as fact? Cite or rewrite" carried the same ambiguity just fixed in the Hard rules: "cite" reads as either add-a-link or attribute-in-prose, and it fires at the final pass before posting. Now "Link a source or rewrite." Same verb-etymology gun-class as reference→link and the old retry-ladder rename.
+
 ## [6.58.191] - 2026-07-16
 
 ### Fixed
