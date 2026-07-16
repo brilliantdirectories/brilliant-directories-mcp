@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.215] - 2026-07-16
+
+### Fixed
+
+- **The back half gets named slots (position, the 2-for-2 form)** — the census gained its position earlier ("the message right after the round's results") and stopped floating; verification and the pre-create batch had size and count laws but no stated position, the only unanchored stretch left. Now 2c is "the message right after Stage 2's verdicts" and Step 8 is "the message right after verification completes" — the run reads as a chain of named slots from turn 1 to the create. Pure insertions; every existing law retained 1:1.
+
 ## [6.58.214] - 2026-07-16
 
 ### Fixed
