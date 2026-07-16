@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.153] - 2026-07-16
+
+### Changed
+
+- **Simplification by subtraction (owner design): the dedup turn carries dedup calls ONLY — the whole fill/insurance apparatus removed** — 5b gains the flat ban ("no WebSearch, no WebFetch") and the explicit entry test ("a future, in-window start date (later than today)" — the past-dated YMCA create was the final straw); 5c becomes "No survivor → next round" (another ten-query round, repeat until the post goal); insurance fill, key-pinning fetches, list-page harvest, the fewer-than-five machinery, the reformulation cap, and the 10-per-turn fill drumbeat all deleted from Search discipline/pool discipline/ladder — kept intact: the verdict gate, the pre-verdict candidate ban, the post-verdict specified-calls clause, fires-them-all, stated-timing, read-every-result, earned-domain site:. Eliminate first, add back on evidence.
+
 ## [6.58.152] - 2026-07-16
 
 ### Fixed

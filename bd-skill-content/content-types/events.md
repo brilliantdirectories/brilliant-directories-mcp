@@ -21,9 +21,8 @@ The user invoked the skill with a request like "create event posts on my site" o
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Source discovery.**
     - **5a. Search round** — one turn of ten queries per the `Source candidates` section and METHODOLOGY `Stage 3: Source research` steps 2a-2b.
-    - **5b. Dedup the round — this turn's only job.** Every result showing a title and a future, in-window start date gets dedup-tested: print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)` and fire Step 6's calls in this same message — the title compound plus one date probe per candidate. Once a result shows its title and start date, its research stops until it survives Step 6. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → the whole turn is 5c.
-    - **5c. Insurance fill — same message as 5b.** Slots still open after the dedup calls (ten per turn) fill with new-angle `WebSearch`es — backup candidates for the next cycle in case every tested candidate fails. A `WebFetch` takes a slot only to pin a viable unkeyed entry's missing keys or to open the best list-page. Nothing else rides this turn.
-    - **5d. Cycle.** Newly-keyed and newly-found entries pool and dedup on arrival. Repeat until a candidate survives; a sweep-proven-dry market ends the run per `Source candidates`.
+    - **5b. Dedup the round — this turn's only job.** Every result showing a title and a future, in-window start date (later than today) gets dedup-tested: print the numbered pool (best-fit, up to 10) per METHODOLOGY `Candidate pool discipline (universal pattern)` and fire Step 6's calls in this same message — the title compound plus one date probe per candidate. The dedup turn carries dedup calls only — no `WebSearch`, no `WebFetch`. Once a result shows its title and start date, its research stops until it survives Step 6. Its score: how many candidates it dedup-tests in this one message — ten beats one. None to dedup → 5c.
+    - **5c. No survivor → next round.** Every tested candidate failed, or nothing qualified to test → fire another ten-query round (new angles, one turn, like 5a) and run 5b on its results. Repeat until survivors meet the post goal; a sweep-proven-dry market ends the run per `Source candidates`.
 6. **Duplicate detection.** Stage 2's calls (both retrieval keys: the title compound plus one date probe per candidate, per the `Dedup` section) fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
 7. **Pre-create batch — every call in ONE turn.** 7a, 7b, and 7c need nothing from each other's results — all three fire together in one single message, never in separate turns: one survivor = six calls — the `poolImages` call, the title check, and the survivor's four `Geocode ladder` tiers; each additional survivor adds its four tiers to the same message. (METHODOLOGY `Image strategy` Steps 1-3 path: 7a-7b calls follow that sequencing instead — 7c still fires here.)
     - **7a. Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly (its Step 3 dedup fires at 7b). The `poolImages` call fires in this batch message, never its own turn. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
@@ -58,7 +57,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`), at 5c, open the best list-page(s) and harvest many events per fetch — after their entries show forward dates in the correct location.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`).
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
@@ -77,7 +76,7 @@ Tailor by vertical: real estate → MLS open-house listings; fitness → race ca
 
 A single list-page `WebFetch` may return one event or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
-Still under five keyed after 5c's searches → the ladder's recovery per **Rule: Search discipline** (one month-year query; venue/facility-noun retry only when blocked). Still nothing → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
+No survivor after a round → the next ten-query round per 5c, new angles each time. A swept-dry market → stop with the labelled verdict; a clean "no fresh events found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
 
 ---
 
