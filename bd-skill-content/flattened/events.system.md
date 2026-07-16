@@ -124,7 +124,7 @@ With the pool printed per `Candidate pool discipline (universal pattern)`, one c
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=25
 ```
 
-Two candidates, three variants each — a one-candidate pool runs its three alone; a five-candidate pool, the same call with fifteen variants in element 1.
+Two candidates, three variants each — a one-candidate pool runs its three alone; a ten-candidate pool, the same call with thirty variants in element 1.
 
 Substitute the `list*` tool matching the post-type family. Compare returned rows client-side against the content-type file's match criteria; the message after the dedup calls opens with one verdict line per candidate — the matched post_ids `— dropped`, or `no match — survives` — each verdict citing the keys probed (the content-type file names them).
 
@@ -880,7 +880,7 @@ No survivor after a round → return to Step 5 for the next ten-query round, new
 
 ## Dedup (runbook Step 7)
 
-Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval fires TWO separate calls, batched in the same turn — the `post_start_date` leg never rides in the title call: ONE compound query covering every candidate's 3 title variants, each 1-3 words, plus one date-only probe per candidate — one candidate fires two calls, a five-candidate pool six — a find is a candidate once both its title and start date are known, so every candidate probes here; a date, venue, or city that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start, comma-joined as 8-digit days — the window is `property_value` element 1, the `data_id` alone is element 2:
+Per METHODOLOGY `Stage 2: Duplicate detection`, retrieval fires TWO separate calls, batched in the same turn — the `post_start_date` leg never rides in the title call: ONE compound query covering every candidate's 3 title variants, each 1-3 words, plus one date-only probe per candidate — one candidate fires two calls; a ten-candidate pool, eleven — a find is a candidate once both its title and start date are known, so every candidate probes here; a date, venue, or city that changes at verification re-probes — `post_start_date` + `data_id` alone, window = exactly 3 days — the day before the start, the start day, the day after the start, comma-joined as 8-digit days — the window is `property_value` element 1, the `data_id` alone is element 2:
 `listSingleImagePosts property=["post_start_date","data_id"] property_operator=["contains","eq"] property_value=["20260716,20260717,20260718","8"] limit=50` (July 17 candidate → the probe carries 20260716,20260717,20260718 — the start day in the middle; substitute the site's event data_id). Its verdict line cites the window: `no match (title + 20260716,20260717,20260718) — survives`. Rows include `post_venue` and `post_location`. The date probe needs no title match — a retitled dupe surfaces by date.
 
 A returned row is a dupe when EITHER:

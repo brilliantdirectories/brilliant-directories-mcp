@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.205] - 2026-07-16
+
+### Fixed
+
+- **The five-anchor removed from the dedup arithmetic (owner design)** — every worked instance topped out at five ("a five-candidate pool six", "fifteen variants"), and five is exactly where the census kept sticking; shown sizes are attractors, and the middle instance sat in the anchor seat. The instances are now the two endpoints — the lone-find edge case and the target in terminal position: "one candidate fires two calls; a ten-candidate pool, eleven" / "a one-candidate pool runs its three alone; a ten-candidate pool, the same call with thirty variants in element 1." The scaling formula survives (two points), the sticking-point anchor is gone.
+
 ## [6.58.204] - 2026-07-16
 
 ### Fixed
