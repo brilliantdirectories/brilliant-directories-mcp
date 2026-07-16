@@ -24,13 +24,13 @@ The user invoked the skill with a request like "create job posts on my site" or 
     - **5b. Pool** — every WebSearch result already showing a job title pools as-is (best-fit, up to 10; the 30-day staleness gate applies per `Source candidates` — a result showing no posted-date is never blocked by it). Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message; none pooled → straight to 5c.
     - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` to fill the message — these searches are the round's one reformulation; no viable entries to open → every shortfall call is a new-angle `WebSearch`. The 5b+5c message carries as many calls as it needs. Newly-keyed and newly-found entries pool and dedup on arrival.
 6. **Duplicate detection.** Stage 2's calls fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's jobs-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
-7. **Pre-create batch — every call in ONE turn.** Steps 7a-7c are independent — their calls fire together in one message; the turn carries as many calls as they need. (Steps 1-3 image path: 7b-7c calls follow METHODOLOGY `Image strategy` sequencing instead — 7a still fires here.)
+7. **Pre-create batch — every call in ONE turn.** Steps 7a-7c are independent — their calls fire together in one message; the turn carries as many calls as they need. (METHODOLOGY `Image strategy` Steps 1-3 path: 7b-7c calls follow that sequencing instead — 7a still fires here.)
     - **7a. Geocode survivors only.** Nominatim every non-duplicate candidate's address — their `Geocode ladder` tiers batched together as backups. Skip lat/lon on failure.
-    - **7b. Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
+    - **7b. Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly (its Step 3 dedup fires at 7c). Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
     - **7c. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
-9. **Content manufacture.** Proceed straight from runbook Step 7c — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
-10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` with the field set in the `BD Jobs field reference` section.
+9. **Content manufacture.** Proceed straight from runbook Step 8 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
+10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Jobs field reference` section.
 11. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ---
@@ -125,6 +125,10 @@ For jobs, `post_venue` = company name, so `Geocode ladder` tier 1 (`q="<company>
 
 ---
 
+## Image selection (runbook Step 7b)
+
+**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
+
 ## Category routing (runbook Step 8)
 
 Per METHODOLOGY `Stage 4: Category routing`. Jobs route via the **category ledger** (written at `Stage 1: Site context` step 3). For `post_category` specifically, use the cached `getPostTypeCustomFields.post_category.choices` (from Step 3) — pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. Append the choices keys to the **category ledger** as a second labeled line (`post_category choices: <keys>`); `post_category` copies from that line only — Pattern 3 `category[]` copies from the `categories:` line only.
@@ -135,7 +139,7 @@ User-specified default category in the request → every job in the run goes to 
 
 ## Content manufacture (runbook Step 9)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check.
 
 **Voice:** this page IS the job posting. State the role's facts as your own: "The role requires STOTT certification", "Sessions are one-on-one." Never narrate a source document, its gaps, or its agreement with another source ("the posting says", "the pay band is not shown on the page", "the careers board lists the same date") — a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
@@ -144,8 +148,6 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 **Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for jobs: responsibilities, required qualifications, preferred qualifications, benefits, perks.
 
 **How to apply** — application URL/email/phone surfaced as plain links inside a `How to apply` section. Button styling is NOT in the runbook — if the user wants a styled Apply button they specify it in their `prompts/jobs.md` system prompt.
-
-**Jobs-specific Pexels search topics:** occupation + setting (`"office desk professional"`, `"warehouse worker operations"`, `"nurse hospital ward"`, `"construction site engineer"`, `"teacher classroom"`). Pass to METHODOLOGY `Image strategy` as the `<topic>` slot. NEVER use Pexels for what looks like a company logo — feature image is generic occupation/setting; if the company has an official logo and you can source it from their website verifiably, that's acceptable, but never fabricate.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post, pro-rated to length (a ~400-word post carries 2-4)**; the pass distributes:
 

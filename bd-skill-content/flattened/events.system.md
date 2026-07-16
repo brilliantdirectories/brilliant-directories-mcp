@@ -828,13 +828,13 @@ The user invoked the skill with a request like "create event posts on my site" o
     - **5b. Pool** — every WebSearch result already showing a title and a future, in-window start date pools as-is (best-fit, up to 10). Capture and print the numbered pool per METHODOLOGY `Candidate pool discipline (universal pattern)` — Step 6 fires in that same message; none pooled → straight to 5c. Once title and start date are known, that candidate's source research stops until it survives Step 6.
     - **5c. Shortfall only — fewer than five pooled:** the same message also carries `WebFetch` for viable entries missing only their keys and the best list-page(s), plus new-angle `WebSearch` to fill the message — these searches are the round's one reformulation; no viable entries to open → every shortfall call is a new-angle `WebSearch`. The 5b+5c message carries as many calls as it needs. Newly-keyed and newly-found entries pool and dedup on arrival.
 6. **Duplicate detection.** Stage 2's calls (both retrieval keys: the title compound plus one date probe per candidate, per the `Dedup` section) fired with 5b's message — compare the returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's events-specific match criteria. Dupes drop from the pool with no further calls; survivors advance to METHODOLOGY `Stage 3: Source research` steps 2c-2e verification.
-7. **Pre-create batch — every call in ONE turn.** Steps 7a-7c are independent — their calls fire together in one message; the turn carries as many calls as they need. (Steps 1-3 image path: 7b-7c calls follow METHODOLOGY `Image strategy` sequencing instead — 7a still fires here.)
+7. **Pre-create batch — every call in ONE turn.** Steps 7a-7c are independent — their calls fire together in one message; the turn carries as many calls as they need. (METHODOLOGY `Image strategy` Steps 1-3 path: 7b-7c calls follow that sequencing instead — 7a still fires here.)
     - **7a. Geocode.** Nominatim every address-confirmed survivor — each survivor's GEOCODING.md `Geocode ladder` tiers batched together as backups; the lowest-numbered hit wins per survivor. Skip lat/lon on failure.
-    - **7b. Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly. Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
+    - **7b. Image selection.** Run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` end-to-end; follow its sequencing exactly (its Step 3 dedup fires at 7c). Lock the image before content manufacture — re-doing content when an image fails dedup is the expensive path.
     - **7c. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
 8. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for events-specific authorization.
-9. **Content manufacture.** Proceed straight from runbook Step 7c — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
-10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` with the field set in the `BD Events field reference` section.
+9. **Content manufacture.** Proceed straight from runbook Step 8 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds events-specific load-bearing facts.
+10. **Create the post** — fires ALONE in its own turn, after Steps 6-9 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Events field reference` section.
 11. **Audit summary.** Run METHODOLOGY `Stage 7: Closing reply + JSON receipt`.
 
 ---
@@ -903,6 +903,10 @@ For events, `post_venue` (the venue name) is usually known — the 4-tier branch
 
 ---
 
+## Image selection (runbook Step 7b)
+
+**Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). They are the topical anchor for METHODOLOGY `Image strategy`'s **Axes** table phrases.
+
 ## Category routing (runbook Step 8)
 
 Per METHODOLOGY `Stage 4: Category routing`. Events route via the **category ledger** (written at `Stage 1: Site context` step 3).
@@ -913,15 +917,13 @@ User-specified default category in the request → every event in the run goes t
 
 ## Content manufacture (runbook Step 9)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check.
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check.
 
 **Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document, its gaps, or its agreement with another source ("the organizer's page says", "the page does not publish a start time", "the calendar lists the same date") — an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context, scene details, what to expect.
 
 **Events-specific load-bearing facts**: event date + time, venue + address, ticket price or "free", parking, agenda, how to attend or buy tickets. Surface these in the opening paragraphs.
 
 **Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for events: parking, price tiers, what to bring, schedule blocks, ticket types.
-
-**Events-specific Pexels search topics:** category + venue type (`"outdoor music festival"`, `"tech conference auditorium"`, `"5k race runners"`, `"yoga class studio"`). Pass to METHODOLOGY `Image strategy` as the `<topic>` slot.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post, pro-rated to length (a ~400-word post carries 2-4)**; the pass distributes:
 

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.110] - 2026-07-15
+
+### Fixed
+
+Triple-verification of all three runbooks post-6.58.109 (mechanical sweep + three independent pointer-walkers). Every step target, heading suffix, and METHODOLOGY/GEOCODING/Rule pointer resolves in all three files; blog confirmed fully insulated. Six defects found and fixed (events + jobs mirrored):
+
+- **Step 9 "Proceed straight from runbook Step 7c"** → "from runbook Step 8" — the renumber preserved the old previous-step pointer while Step 8 (category routing) moved between them; a literal reader skipped category routing.
+- **Image dedup double-home on the legacy path** — 7b's "end-to-end" included Image strategy's Step 3 dedup, which 7c re-claims; 7b now scopes it: "(its Step 3 dedup fires at 7c)".
+- **"(Steps 1-3 image path…)" digit collision** with runbook Steps 1-3 in the parent — namespaced to "(METHODOLOGY `Image strategy` Steps 1-3 path…)".
+- **Content section's Stage-5 follow-list still enumerated "image strategy"** — leftover from image living in the content flow; invited re-sourcing a locked image. Deleted from the enumeration.
+- **Pexels-topics paragraph stranded under "(runbook Step 9)"** while its consumer is 7b, pointing at a nonexistent "`<topic>` slot" — re-homed under new "## Image selection (runbook Step 7b)" headings with the pointer fixed to Image strategy's real vocabulary (topical anchor for the Axes phrases).
+- **METHODOLOGY `Stage 6: Post creation` was orphaned** — no runbook step cited it, losing write-pacing and continue-on-failure from the flow; all three create steps (events, jobs, blog) now cite it.
+
+Logged as pre-existing watch-items, no edits: parent-absolute vs legacy-path carve-out; 7b/7c per-survivor scope on multi-post runs; the Step-5 turn's sixth call (jobs schema cache) vs the five-slot floor; jobs Date-sanity carve-out anchored at 2a while the gate fires at 2c; Stage 3's 2a-2e label prefix; five-slots vs create-ALONE; blog's discovery-ladder "any current inventory" crack; blog tail section order.
+
 ## [6.58.109] - 2026-07-15
 
 ### Changed
