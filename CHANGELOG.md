@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.180] - 2026-07-16
+
+### Fixed
+
+- **Pre-create batch fragmentation: only 8a carried the message pin** — 8b's timing was "then confirm…before create" (a temporal word plus an anchor any earlier turn satisfies) and 8c's was "batched together" (tiers with each other, not with the batch message), while the ladder doc's own heading said "in one turn" — a license for a dedicated geocode turn read at execution time. Local timing beats the parent's one-message command, so the title check and geocode kept arriving as solo turns. Fix: the proven pin shape on all three lines — 8b "fired in this batch message, never its own turn", 8c "fire in this batch message, never their own turn", ladder heading "in the runbook step's one batch message". Events + GEOCODING; the jobs twins are untouched pending their own call.
+
 ## [6.58.179] - 2026-07-16
 
 ### Fixed
