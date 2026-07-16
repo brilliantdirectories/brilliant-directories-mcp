@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.154] - 2026-07-16
+
+### Fixed
+
+- **7a's "follow its sequencing exactly" was the batch-fragmentation gun** — a command to SEQUENCE living inside a step commanded to BATCH: the model executed Image strategy as a sub-program mid-batch, and with the fill law gone (6.58.153) nothing packed the turns anymore — poolImages/title/geo each became its own beat. 7a now leads with the pin ("fires in this batch message, never its own turn — one call settles the image"); the Steps 1-3 fallback stays in the parent's parenthetical. Parent gains the binder that passed its binary test the same night: "Pre-create batch — this turn's only job, every call in ONE message" + "No other calls ride this turn."
+
 ## [6.58.153] - 2026-07-16
 
 ### Changed
