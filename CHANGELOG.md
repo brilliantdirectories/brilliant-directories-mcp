@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.136] - 2026-07-16
+
+### Fixed
+
+- **"Only make the tool calls…" was a narration ban (6.58.124 regression)** — the preamble's word order reads as an output contract (produce only tool calls), and narration died in exactly the runs after 6.58.124 shipped: no pool prints, no verdict lines — the entire artifact layer silently offline, which also unanchored the phase boundary (no written verdicts = no post-verdict state = the wandering research the last three runs showed). Preambles rewritten (all three types): "Each turn writes its due text first — pool print, verdict lines — then makes only the tool calls the runbook steps specify…"; the width-law opener now reads "every turn writes its due artifacts, then fires 10 parallel calls". Same sentences, reordered so text is part of the turn's shape.
+
 ## [6.58.135] - 2026-07-16
 
 ### Fixed
