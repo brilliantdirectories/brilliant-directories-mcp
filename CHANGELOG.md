@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.162] - 2026-07-16
+
+### Changed
+
+- **The pool-print score becomes a count invariant (owner: "shrink its abilities")** — serialization persisted with perfect shapes (one candidate per turn; the model pools internally, drips the tests). Motivation language out; flat arithmetic tied to an observable in: "Count the keyed results: N keyed = exactly 1 compound + N date probes, all in this message — fewer probes than keyed results is an incomplete turn" (jobs: 1 compound covering all N). Flat counts are the one prose form with a near-100% obedience record in this corpus.
+
 ## [6.58.161] - 2026-07-16
 
 ### Fixed
