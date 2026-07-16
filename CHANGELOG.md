@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.157] - 2026-07-16
+
+### Fixed
+
+- **5b's distributive opener was the serialization crack (owner demanded proof — the proof failed)** — "Every result… gets dedup-tested" is satisfied by testing one per turn, and "in this same message" anchors to the pool print (a pool-of-one satisfies it); the bulk command lived only in remote shared text, and remote loses to local. Now collective on the executing line: "All results… form ONE pool and get dedup-tested together in this one message… fire Step 6's calls with it." Full serialization-suggestive sweep: only this pair guilty; one watch item logged (Dedup section's "TWO separate calls" subject, anchored by its five-pool-six instance); Stage 2/ladder/Search-discipline verified collective.
+
 ## [6.58.156] - 2026-07-16
 
 ### Fixed
