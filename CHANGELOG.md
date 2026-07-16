@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.146] - 2026-07-16
+
+### Fixed
+
+- **`poolImages` re-restored to the call enumeration (owner catch)** — a stale on-disk overwrite between 6.58.143 and 6.58.144 silently reverted the 6.58.143 restore, and the 6.58.144/145 ships carried the loss. Enumeration verify added to the pre-commit habit for this line.
+
 ## [6.58.145] - 2026-07-16
 
 ### Fixed
