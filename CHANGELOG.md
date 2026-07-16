@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.209] - 2026-07-16
+
+### Changed
+
+- **The gate message gains caged preloading (owner design)** — spare slots in the linking-pass gate message may carry checks for the draft's other linkable nouns, up to 10 checks total. Contained on four sides: one message only, gate-lookup class only, source set = the draft's own nouns (observable), flat cap. None of the historic fill-trigger vocabulary ("insurance", "anticipate") appears; if gate-shaped calls ever leak into other turns, this sentence is suspect #1.
+
 ## [6.58.208] - 2026-07-16
 
 ### Fixed
