@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.201] - 2026-07-16
+
+### Fixed
+
+- **The cap's noun stated (owner wording)** — "cap 10 when more" elided its object; now "cap 10 candidates when more." Same literal-definition doctrine as the pool-identity weld beside it.
+
 ## [6.58.200] - 2026-07-16
 
 ### Fixed
