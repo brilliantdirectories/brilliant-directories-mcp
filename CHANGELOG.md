@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.227] - 2026-07-16
+## [6.58.228] - 2026-07-16
+
+### Fixed
+
+- **The pre-create batch engine restored (3-minion convergent root cause).** Git archaeology proved Step 8's own text was byte-identical across both the era that batched (v6.58.159-176, "poolImages rode a MIXED turn") and the first fragmenting runs — the step was never the variable. The only turn-composition change at the era boundary: v6.58.177 deleted the events preamble fill clause, the file's only standing command to build fat mixed messages ("a later step's specified calls whose inputs are ready"). Restored at full generality in Search discipline: "A message mixes tools freely — BD calls, poolImages, and web calls together; spare slots fill with a later step's specified calls whose inputs are ready. A step that states its own call arithmetic — the pool-print turn's N+1, the create alone — fires exactly that arithmetic" (the arithmetic guard protects the census's exact count and the create's isolation, the .177 deletion's original motive). Preambles: "fill each web message's pack" → "fill each message's pack" (all three skills).
+- **The geocode exemption re-bound — it validated the observed split.** "They ride their runbook step's batch message per its own arithmetic" resolved, for a literal reader, to the tiers' OWN 4-call message (possessive "their", reflexive "its own arithmetic" = 4) — certifying the geocode-only message as complete and giving it first claim on the after-verification slot. Now: "they ride the pre-create step's ONE message beside its poolImages call and title check" — same re-bind in the GEOCODING ladder heading and the worker's WebFetch description (ships as worker v105).
+- Events Step 8 geocode sentence regains the era's "batched together" ("the ladder tiers batched together as backups").
 
 ### Fixed
 
