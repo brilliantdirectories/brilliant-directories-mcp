@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.228] - 2026-07-16
+## [6.58.229] - 2026-07-16
+
+### Fixed
+
+- **Title variants composed in the pool print (events).** Variant compliance tracked worked instances exactly (N=1 and N=10 pass — the corpus's two shown sizes; N=4 and N=7 fail at one variant apiece): the compound is assembled by copying the pool print, whose line spec carried no variants. The print line now composes them per candidate ("Title — YYYYMMDD — v1 | v2 | v3", each 1-3 words) and the compound clause welds to it ("copied from the pool lines"). Date-probe machinery untouched.
+- **auto_geocode ban widened by one token.** "Do NOT pass auto_geocode=1" banned only the value 1 — runs passed auto_geocode:0 unbanned (narrow-enumeration class). Now "Do NOT pass auto_geocode."
 
 ### Fixed
 
