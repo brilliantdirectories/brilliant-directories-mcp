@@ -819,6 +819,23 @@ try {
   }
 }
 
+// CHECK 12: Static-field wire-injection parity. data_posts.post_type is a
+// NOT-NULL column with no default that BD's API never sets (non-strict
+// sql_mode inserts '' when omitted); the wrapper injects post_type="Account"
+// on createSingleImagePost in BOTH surfaces. A refactor that drops either
+// injection silently reopens the empty-string hole.
+{
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  const marker = 'bodyParams.post_type = "Account"';
+  if (!npmSrc.includes(marker)) {
+    err(`Static-field injection missing in mcp/index.js: createSingleImagePost must wire-inject post_type="Account" (data_posts NOT NULL, no default).`);
+  }
+  if (!workerSrc.includes(marker)) {
+    err(`Static-field injection missing in Worker index.ts: createSingleImagePost must wire-inject post_type="Account" (data_posts NOT NULL, no default).`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------

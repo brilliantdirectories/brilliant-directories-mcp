@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.229] - 2026-07-16
+## [6.58.230] - 2026-07-16
+
+### Fixed
+
+- **`post_type: "Account"` is now wrapper-owned plumbing, never AI-promoted.** `data_posts.post_type` is NOT NULL with no default and BD's API doesn't set it; under non-strict sql_mode an omitted value silently inserts `''` (live occurrence: a create that skipped the field). The field-reference row commanding the AI to "always pass" it is deleted from all three skills; instead the wrapper wire-injects `post_type="Account"` on `createSingleImagePost` (when absent, never overriding) in the npm server, the hosted Worker, and the tasks worker (ships as worker v106). New drift CHECK 12 asserts both wrapper injections exist. Scope verified: single-image only — multi-image creates are `data_groups`-class records with no such column; injection never touches updates, lists, or reads.
 
 ### Fixed
 

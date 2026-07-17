@@ -963,7 +963,6 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, always pass) |
 | `data_type` | `20` (single-image classification, always for blogs) |
 | `data_id` | resolved blog post-type id from runbook Step 3 |
 | `post_title` | per the `Title shape` section — clickbait-flavored, anti-slop, ~70 char target |

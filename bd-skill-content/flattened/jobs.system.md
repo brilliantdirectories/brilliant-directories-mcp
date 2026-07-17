@@ -972,7 +972,6 @@ What `createSingleImagePost` receives.
 
 | Field | Value |
 |---|---|
-| `post_type` | `"Account"` (literal — legacy classification field, always pass) |
 | `data_type` | `20` (single-image classification, always for jobs) |
 | `data_id` | resolved jobs post-type id from runbook Step 3 |
 | `post_title` | **Graceful-degradation ladder, ~54 char cap.** Use a colon `:` as the primary separator (BD's slugifier handles colons cleanly — em dashes produce ugly `%E2%80%94` URL encoding). Never two colons in a single title — if the role name itself contains a colon, switch to "at"/"in" prose. Title+Company+City → Title+Company → Title+City → Title (+ employment type as fallback parenthetical). Adjust to fit the cap: drop city first, then company, then fall back to title-only. Examples: `"Marketing Manager: Acme Corp in Austin"` (full), `"Marketing Manager: Acme Corp"` (no city fits), `"Marketing Manager in Austin"` (no company source), `"Marketing Manager (Full-Time)"` (title-only fallback). Plain text, no HTML, no commas. |

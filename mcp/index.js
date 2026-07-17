@@ -6288,6 +6288,13 @@ async function main() {
         autoDefaultSystemTimestamps(name, bodyParams, tz);
       }
 
+      // Static-column wire-injection: data_posts.post_type is NOT NULL with no
+      // default and BD's API does not set it; non-strict sql_mode inserts ''
+      // when omitted. Wrapper owns the constant — agents never see the field.
+      if (name === "createSingleImagePost" && bodyParams.post_type === undefined) {
+        bodyParams.post_type = "Account";
+      }
+
       // Apply the translated users_meta filter pairs as array-syntax
       // query params. Done after the normal loop so the arrays are
       // definitive (no collision with any pre-existing property[]).
