@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.232] - 2026-07-18
+## [6.58.233] - 2026-07-18
+
+### Fixed
+
+- **Blog compound: element-1 merge shape made explicit (live gauntlet turn 2).** The model stacked each topic's variant CSV as its own property_value element (2/2/6 arrays) — "copied from the pool lines" read as per-line elements; the wrapper's -32602 validator rejected it and the model self-corrected perfectly on retry (flat CSV, 15 variants, all 1-3 words). Prevention replaces the retry tax: placeholder now reads "ONE string: every topic's variants joined as a single CSV", a worked instance built from the run's own corrected bytes, "the arrays stay two-and-two". Blog only; events carries the same "copied from the pool lines" phrase with zero mis-shape expressions across its runs — watch, untouched.
 
 ### Fixed
 
