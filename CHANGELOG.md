@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.240] - 2026-07-18
+
+### Fixed
+
+- Blog worked instance carried a 4-word variant beside the 1-3-word law (owner cold-read catch) — replaced with title-true substrings that obey it.
+
 ## [6.58.239] - 2026-07-18
 
 ### Changed
