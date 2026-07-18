@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.234] - 2026-07-18
+## [6.58.235] - 2026-07-18
+
+### Fixed
+
+- **Blog batch gains the failure tail (three-skill alignment audit).** The events batch carries the proven incomplete-turn tail; blog's new batch named its members without one. Added: "a member left to a later message is an incomplete batch." Audit's full output: alignment matrix + carve-out register documented in CHANGELOG history and the session ledger — blog diverges from events/jobs only where anatomy forces it (date-free census = 1 call; batch after draft not verification; gates as the batch's third member replacing geocode; verdicts carry the round not fetches). Events' missing overflow law flagged as a watch (never expressed; goldenchild untouched).
 
 ### Changed
 
