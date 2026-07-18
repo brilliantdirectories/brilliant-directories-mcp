@@ -440,6 +440,15 @@
           ],
           "default": "ASC"
         }
+      },
+      "fields_only": {
+        "name": "fields_only",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Exact-list response trim: CSV of post field names; each returned row carries exactly these fields. Authoritative when present - include_* flags are moot. An unknown name errors (teaching message) so a typo never silently drops a field. Built for dedup/title-check calls where only identity + match-key columns matter (e.g. fields_only=post_id,post_title,post_status,post_filename): ~70% smaller responses, immune to output truncation, total/next_page always intact."
       }
     },
     "schemas": {
@@ -3811,6 +3820,9 @@
           },
           {
             "$ref": "#/components/parameters/include_extras"
+          },
+          {
+            "$ref": "#/components/parameters/fields_only"
           }
         ],
         "responses": {
@@ -9389,14 +9401,19 @@
             "name": "url",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "format": "uri" },
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
             "description": "Single bare canonical image URL (e.g. `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg`). Must respond with HTTP 200/206 to a Range request for the first 64KB. Provide `url` OR `urls`."
           },
           {
             "name": "urls",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Batch mode: comma-separated bare image URLs, up to 50. Probed in parallel; one response carries per-URL results in input order — a failed URL is its own error entry and never breaks the batch. Preferred whenever vetting 2+ candidates."
           }
         ],
@@ -9410,28 +9427,71 @@
                     {
                       "type": "object",
                       "properties": {
-                        "status": { "type": "string", "enum": ["success"] },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "success"
+                          ]
+                        },
                         "message": {
                           "type": "object",
                           "properties": {
-                            "width": { "type": "integer" },
-                            "height": { "type": "integer" },
-                            "format": { "type": "string", "enum": ["jpg", "png"] },
-                            "aspect_ratio": { "type": "number" },
-                            "orientation": { "type": "string", "enum": ["landscape", "portrait", "square"] }
+                            "width": {
+                              "type": "integer"
+                            },
+                            "height": {
+                              "type": "integer"
+                            },
+                            "format": {
+                              "type": "string",
+                              "enum": [
+                                "jpg",
+                                "png"
+                              ]
+                            },
+                            "aspect_ratio": {
+                              "type": "number"
+                            },
+                            "orientation": {
+                              "type": "string",
+                              "enum": [
+                                "landscape",
+                                "portrait",
+                                "square"
+                              ]
+                            }
                           },
-                          "required": ["width", "height", "format", "aspect_ratio", "orientation"]
+                          "required": [
+                            "width",
+                            "height",
+                            "format",
+                            "aspect_ratio",
+                            "orientation"
+                          ]
                         }
                       },
-                      "required": ["status", "message"]
+                      "required": [
+                        "status",
+                        "message"
+                      ]
                     },
                     {
                       "type": "object",
                       "properties": {
-                        "status": { "type": "string", "enum": ["error"] },
-                        "message": { "type": "string" }
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
                       },
-                      "required": ["status", "message"]
+                      "required": [
+                        "status",
+                        "message"
+                      ]
                     }
                   ]
                 }

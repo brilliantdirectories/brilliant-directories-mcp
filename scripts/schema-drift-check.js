@@ -836,6 +836,21 @@ try {
   }
 }
 
+// CHECK 13: fields_only parity. The exact-list response trim (spec param on
+// listSingleImagePosts) must exist in BOTH wrapper surfaces: the requestable
+// set + the trim branch + the unknown-name teaching validator. A refactor
+// dropping either side silently breaks the census diet.
+{
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  for (const [label, src] of [["mcp/index.js", npmSrc], ["Worker index.ts", workerSrc]]) {
+    if (!src.includes("POST_FIELDS_ONLY_REQUESTABLE")) err(`fields_only requestable set missing in ${label}.`);
+    if (!src.includes("fields_only contains unknown field name(s)")) err(`fields_only teaching validator missing in ${label}.`);
+  }
+  const specSrc = fs.readFileSync(SPEC_PATH, "utf8");
+  if (!specSrc.includes('"fields_only"')) err("fields_only parameter missing from the spec.");
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------

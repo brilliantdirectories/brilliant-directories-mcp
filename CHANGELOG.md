@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.235] - 2026-07-18
+## [6.58.236] - 2026-07-18
+
+### Added
+
+- **`fields_only` — exact-list response trim on `listSingleImagePosts` (npm + hosted Worker + spec + drift CHECK 13).** A live blog census response blew the worker's 30k truncation cap mid-row, eating the rows tail AND the total/next_page footer (blinding the overflow law). fields_only=CSV returns exactly the named fields per row — authoritative over include_* flags; unknown name = teaching error (a typo can never silently drop a dedup-criteria column); envelope always intact. Live battery: same 50 rows, 69% smaller (39,628 → 12,221 bytes, under the cap), total survives, typo errors correctly. Field truth derived per skill from each Dedup section's own criteria (universal floor post_id/post_title/post_status/post_filename; events adds post_start_date/post_venue/post_location; jobs adds post_venue=company/post_location). Blog's compound adopts it now; events/jobs one-token adoptions held for owner GO. Wrapper trim only — BD load unchanged; brain-input cost of every census call drops ~70%.
 
 ### Fixed
 

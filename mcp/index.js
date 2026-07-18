@@ -846,8 +846,49 @@ const POST_LEAN_SEO_BUNDLE = [
 // Single: post_content. Multi: group_desc.
 const POST_HTML_BODY_FIELDS = ["post_content", "group_desc"];
 
-function applyPostLean(body, includeFlags) {
+// fields_only — requestable field names on post reads. The exact-list trim is
+// authoritative when present (include_* flags moot); an unknown name is a
+// teaching error so a typo can never silently drop a dedup-criteria column.
+const POST_FIELDS_ONLY_REQUESTABLE = new Set([
+  ...POST_LEAN_ALWAYS_KEEP,
+  ...POST_LEAN_SEO_BUNDLE,
+  ...POST_HTML_BODY_FIELDS,
+  ...POST_TYPE_SUMMARY_PROMOTE,
+  "total_clicks", "total_photos", "cover_photo_url", "cover_thumbnail_url",
+]);
+
+function applyPostLean(body, includeFlags, fieldsOnly) {
   if (!body || body.status !== "success") return body;
+  // fields_only branch — authoritative exact-list trim. Wrapper-junk strips and
+  // promotions still run (data_category promote, clicks/photos rollups) so
+  // requested wrapper-shaped names resolve; include_* strips are skipped so a
+  // requested gated field (e.g. post_content) survives.
+  if (Array.isArray(fieldsOnly) && fieldsOnly.length) {
+    const want = new Set(fieldsOnly);
+    const trimRow = (row) => {
+      if (!row || typeof row !== "object") return row;
+      if (row.data_category && typeof row.data_category === "object") {
+        for (const k of POST_TYPE_SUMMARY_PROMOTE) {
+          if (row[k] === undefined && row.data_category[k] !== undefined) row[k] = row.data_category[k];
+        }
+      }
+      if (row.user_clicks_schema && row.user_clicks_schema.total_clicks !== undefined) {
+        row.total_clicks = Number(row.user_clicks_schema.total_clicks);
+      }
+      if (Array.isArray(row.users_portfolio)) {
+        const first = row.users_portfolio[0];
+        if (first && first.file_main_full_url) row.cover_photo_url = first.file_main_full_url;
+        if (first && first.file_thumbnail_full_url) row.cover_thumbnail_url = first.file_thumbnail_full_url;
+        row.total_photos = row.users_portfolio.length;
+      }
+      const out = {};
+      for (const k of Object.keys(row)) if (want.has(k)) out[k] = row[k];
+      return out;
+    };
+    if (Array.isArray(body.message)) body.message = body.message.map(trimRow);
+    else if (body.message && typeof body.message === "object") body.message = trimRow(body.message);
+    return body;
+  }
   const include = {
     content: !!includeFlags.include_content,
     post_seo: !!includeFlags.include_post_seo,
@@ -5372,6 +5413,22 @@ async function main() {
         }
       }
 
+      // fields_only — exact-list response trim on post reads (authoritative
+      // over include_* flags). Consumed wrapper-side; validated upfront so a
+      // typo fails loud before any BD call instead of silently dropping a
+      // dedup-criteria column.
+      let fieldsOnly = null;
+      if (isPostReadTool && args && args.fields_only !== undefined) {
+        const raw = String(args.fields_only);
+        delete args.fields_only;
+        fieldsOnly = raw.split(",").map((s) => s.trim()).filter(Boolean);
+        const unknown = fieldsOnly.filter((f) => !POST_FIELDS_ONLY_REQUESTABLE.has(f));
+        if (unknown.length) {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: `fields_only contains unknown field name(s): [${unknown.join(", ")}]. Each name must be a requestable post field (check spelling against the tool's field list); the trim keeps exactly the named fields per row.` }) }], isError: true };
+        }
+        if (!fieldsOnly.length) fieldsOnly = null;
+      }
+
       // HARD CAP — clamp `limit > 100` to 100 silently (BD's server-side
       // max). BD itself silently clamps but doesn't tell the agent, so a
       // limit=99999 call returns ~100 records with no signal that the
@@ -6390,7 +6447,7 @@ async function main() {
       // are always lean (create/update echoes trimmed to a small keep-set).
       if (result.body) {
         if (isUserReadTool) result.body = applyUserLean(result.body, includeFlags);
-        else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags);
+        else if (isPostReadTool) result.body = applyPostLean(result.body, includeFlags, fieldsOnly);
         else if (isCategoryReadTool) result.body = applyCategoryLean(result.body, includeFlags);
         else if (isPostTypeReadTool) result.body = applyPostTypeLean(result.body, includeFlags);
         else if (isWebPageReadTool) result.body = applyWebPageLean(result.body, includeFlags);
