@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.233] - 2026-07-18
+## [6.58.234] - 2026-07-18
+
+### Changed
+
+- **Blog pre-create batch (owner GO; blog.md only).** Two consecutive blog runs burned the identical 3-turn tail — gate check solo, poolImages solo, title check solo. Step 12 now carries the batch: "the message right after the draft stands: ONE message carries the linking pass's gate checks, the poolImages call, and the final-title listSingleImagePosts eq check — three tools born to fire together" (events' batch shape with gates as blog's third member in place of geocode). Step 10 drops "Lock the feature image first — re-doing body content when an image fails dedup is the expensive path" — a dead letter (both live runs drafted first) with an obsolete rationale on the poolImages path (pre-deduped; the .191 events precedent) — and routes the poolImages call to the batch. Projected blog run: ~7 turns.
 
 ### Fixed
 
