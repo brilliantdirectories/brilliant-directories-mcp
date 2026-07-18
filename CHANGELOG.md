@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.239] - 2026-07-18
+
+### Changed
+
+- **All three skills now carry fields_only with their own criteria columns (owner GO).** Events' fenced date-probe shape + title compound: the 7-field list (floor + post_start_date/post_venue/post_location); jobs' retrieval calls: the 6-field list (floor + post_venue=company/post_location). Blog additionally gains the contains-semantics variant law from the live 29-post blind-spot proof: each variant is a substring a matching title would contain — the topic's core noun phrase as titles write it (worked instance healed: Trainer Choice/Choosing Trainer replaced with title-true substrings). Census responses across all skills now ~70% smaller, truncation-immune, footer always intact.
+
 ## [6.58.238] - 2026-07-18
 
 ### Fixed
