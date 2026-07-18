@@ -448,7 +448,7 @@
         "schema": {
           "type": "string"
         },
-        "description": "Exact-list response trim: CSV of post field names; each returned row carries exactly these fields. Authoritative when present - include_* flags are moot. An unknown name errors (teaching message) so a typo never silently drops a field. Built for dedup/title-check calls where only identity + match-key columns matter (e.g. fields_only=post_id,post_title,post_status,post_filename): ~70% smaller responses, immune to output truncation, total/next_page always intact."
+        "description": "Exact-list response trim: CSV of post field names; each returned row carries exactly these fields. Authoritative when present - include_* flags are moot. An unknown name errors (teaching message) so a typo never silently drops a field. Name the identity columns PLUS every column your match criteria judge: title-only checks use post_id,post_title,post_status,post_filename; checks that judge dates, venues, companies, or locations add post_start_date,post_venue,post_location. ~70% smaller responses, immune to output truncation, total/next_page always intact."
       }
     },
     "schemas": {

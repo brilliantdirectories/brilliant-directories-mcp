@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.238] - 2026-07-18
+
+### Fixed
+
+- **fields_only spec description taught the wrong shape to events/jobs.** The example carried blog's title-only floor; every skill's model reads this schema at turn 1, and an events model imitating it would strip its own criteria columns (post_venue/post_location/post_start_date) — silently degrading date+place verdicts to title-only. Description now teaches per-criteria shapes: title-only checks use the floor; checks judging dates/venues/companies/locations add their columns. Spec-only change; behavior identical.
+
 ## [6.58.237] - 2026-07-18
 
 ### Fixed
