@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.231] - 2026-07-18
+## [6.58.232] - 2026-07-18
+
+### Fixed
+
+- **Blog census: overflow law + Shape A binding (post-ship audit; blog.md only, events/jobs blobs byte-identical).** Literal execution of the shipped compound against the test site returned total=92 vs limit=50 — 42 matching rows unseen with no law addressing overflow (a dupe in page 2 survives invisibly, and the one-call law forbade paginating). Jobs' proven overflow precedent twinned: "total above the returned row count → re-run once, element 1 carrying each topic's single most distinctive variant." Second gap from the adversarial audit: Shape A (user-specified topic) skipped the pool machinery entirely — now "a pool of one — Step 5 prints it as 1. with its variants and fires its census." Audit's other 15 findings triaged: 3 rejected on verification, the rest are shared-file safety laws (deliberately untouched) or theory contradicted by events' live record (watches).
 
 ### Fixed
 

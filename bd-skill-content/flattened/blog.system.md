@@ -819,7 +819,7 @@ User's explicit post-type pick always wins.
 
 ### Shape A — User-specified topic
 
-User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim. Skip vertical brainstorming. Run source research for that exact topic.
+User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim. Skip vertical brainstorming. The topic is a pool of one — Step 5 prints it as `1.` with its variants and fires its census per the `Dedup` section. Run source research for that exact topic.
 
 ### Shape B — Vertical-derived (no topic provided)
 
@@ -877,7 +877,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Blog-specific match criteria:
 - Topic angle: semantic overlap on the core thesis/angle, not just shared keywords.
 - Date: NOT a dedup factor (blogs are evergreen).
 
-Retrieval is ONE call, fired in the pool-print message: `listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["<every topic's variants as one CSV, copied from the pool lines>","<the resolved blog data_id>"] limit=50` — 3 × N variants in element 1; N topics = 1 call; a second dedup call on the same pool is an incomplete first message. The compound's score: how many variants ride element 1 — 3 × N is full marks; a trimmed variant saves a token and ships a dupe.
+Retrieval is ONE call, fired in the pool-print message: `listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["<every topic's variants as one CSV, copied from the pool lines>","<the resolved blog data_id>"] limit=50` — 3 × N variants in element 1; N topics = 1 call; a second dedup call on the same pool is an incomplete first message. The compound's score: how many variants ride element 1 — 3 × N is full marks; a trimmed variant saves a token and ships a dupe. `total` above the returned row count → re-run once, element 1 carrying each topic's single most distinctive variant — the narrower net surfaces the rows the first cast left unseen.
 
 ---
 
