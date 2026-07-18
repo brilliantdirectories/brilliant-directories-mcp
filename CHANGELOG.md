@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.230] - 2026-07-16
+## [6.58.231] - 2026-07-18
+
+### Fixed
+
+- **Blog runbook gains the events-proven census + research machinery (blog.md only; events/jobs flattened blobs byte-identical).** A live 18-20-turn blog run spent 9 turns on serial per-topic dedup (the Dedup section had match criteria but NO call shape — blog.md:98 referenced "the pool's compound query" that never existed), 2 fetch waves = 10 fetches against the 2-fetch budget (Step 8's naked "land 3-5 angles" license), and a redundant create-schema re-fetch. Five transplants of proven events mechanisms: pool print with variants composed in the lines + fire-same-message (Step 5), the ONE-call compound with 3 × N arithmetic + incomplete-message tail + anti-thrift score (Dedup), the fire/judge ownership handshake (Step 7), the verdicts-carry-the-round fusion + one-fetch-wave law with the citation-ladder rung as the named exception (Step 8), and the turn-1 schema provenance pin (Step 13). Projected: ~18-20 turns → ~9.
 
 ### Fixed
 
