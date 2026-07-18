@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.237] - 2026-07-18
+
+### Fixed
+
+- **fields_only gated to exactly `listSingleImagePosts`** (was all post-read tools) — the requestable set is single-post-shaped and the spec declares the param on the list tool only; a multi-image caller would have hit a confusing teaching error. Spec-consistency: the code gate now matches the spec's declaration. Full-surface battery receipts: new npm 4/4 (trim exact + total intact; fields_only authoritative over include_content; typo = teaching error; no-param = byte-identical 18-field lean default), OLD published npm 6.58.230 + the param = graceful success with full lean rows (stale-version users degrade to today's behavior, never break), deployed Worker trim verified through the Butler path.
+
 ## [6.58.236] - 2026-07-18
 
 ### Added

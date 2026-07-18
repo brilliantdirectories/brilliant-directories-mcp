@@ -5418,7 +5418,7 @@ async function main() {
       // typo fails loud before any BD call instead of silently dropping a
       // dedup-criteria column.
       let fieldsOnly = null;
-      if (isPostReadTool && args && args.fields_only !== undefined) {
+      if (name === "listSingleImagePosts" && args && args.fields_only !== undefined) {
         const raw = String(args.fields_only);
         delete args.fields_only;
         fieldsOnly = raw.split(",").map((s) => s.trim()).filter(Boolean);
