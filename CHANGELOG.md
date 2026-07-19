@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.287] - 2026-07-19
+
+### Fixed
+
+- **Search ladder REVERTED (owner call) — candidate mechanics kept.** The 15-row ladder and the 5a/6a restructure (.281-.284, .286) are removed; 5a's inline five templates and 6a's original new-angle text are restored verbatim from v6.58.280. Kept: the .279 count-chain welds (count print, one line per counted candidate, omission arithmetic, conditioned pool-of-one, 3 × N = line count, per-line verdicts) and the .280/.285 mechanical harvest (per-result walk, occupation-containment role cut, title→URL→snippet employer ladder, board guard).
+
 ## [6.58.286] - 2026-07-19
 
 ### Fixed
