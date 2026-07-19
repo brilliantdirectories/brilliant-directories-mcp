@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.276] - 2026-07-19
+
+### Fixed
+
+- **Brand-blurb comparator names the real field.** "and URL" → "or `full_url`" (the actual `getSiteInfo` key, live-verified; "or" because a match on either field classifies), and "the moment they return" dropped — the match is a definition, not a scheduled act; `getSiteInfo` is in hand from turn-1 discovery and the query/fetch ban is the timing-free enforcement. Detection stays arithmetic (exact fields), the ban stays the class (own name and domain in any form).
+
 ## [6.58.275] - 2026-07-19
 
 ### Fixed
