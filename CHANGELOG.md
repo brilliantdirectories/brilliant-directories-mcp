@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.268] - 2026-07-19
+
+### Fixed
+
+- **6a given a consumer: the printed insurance line.** Every reliably-riding call in the corpus has a downstream consumer that fails without it; 6a had none, and consequence-free calls are what the model economizes — five wordings failed identically. Commanded printed artifacts are the arc's 100%-compliance class (category ledger, pool lines, verdict lines — never skipped once), so the five calls now feed one: "The message prints `insurance: <the five shapes fired>` — an unprinted insurance line is an incomplete turn." Pool size has nothing to grab: the obligation is to the line, and the line needs the calls.
+
 ## [6.58.267] - 2026-07-19
 
 ### Fixed
