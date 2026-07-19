@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.274] - 2026-07-19
+## [6.58.275] - 2026-07-19
+
+### Fixed
+
+- **Brand-blurb clause hardened from classification to operation.** The .273 sentence ("a line naming the site or its own brand is context, not a subject") left the model weighing three vague terms — the BlaakLine re-run still burned round 2 on five brand-name queries (including `site:` probes of the customer's own domain) before self-correcting. Rewritten with the field taxonomy's mechanical shape: the comparator is arithmetic against data in hand (`getSiteInfo`'s `website_name` and URL — the BlaakLine topic was literally equal to `website_name`), the classification fires at the turn-1 read ("the moment they return"), the action welds to the constraints-only sentence's runbook default, and the ban moves to the observable layer: the site's own name and domain never enter a search query or fetch. Same weight, no new machinery; worker-label amplifier trim ("they choose what to make") remains queued for v111.
 
 ### Fixed
 
