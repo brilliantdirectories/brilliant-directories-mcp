@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.254] - 2026-07-19
+
+### Changed
+
+- **The 14-turn autopsy's four one-liners.** (1) Jobs' 3×N tail made count-explicit ("a compound below 3 × N is an incomplete turn" — the old "missing any pooled candidate's variants" was satisfiable at 1×N; witnessed twice). (2) The census turn gets its slot definition (owner's insurance shape): "A pool at goal-size or thinner makes this message SIX calls: the compound plus five — WebFetch or WebSearch on the round's unharvested source pages (hubs, boards)… a killed pool re-pools from their yields at the next pool-print; the message's slots are exactly these" — deliberate jobs divergence #8 (events' N+1 census is never thin); replays the race run at ~8-9 turns instead of 14. (3) The comma example restored to the ported substring law (`Metro DMV` for `Metro, DMV` — two comma-blind variants witnessed). (4) The echo valve in Rule: Search discipline ("a query echoing a fetched page's content is never a class; a lone genuine call fires alone") — four witnesses, three costumes, a per-winner site-tour ritual. Worker-side companion (owner's deploy): PER_SITE_CAP=1 closes the same-site dupe-race window (concurrent run created post 1517 inside another run's census-to-create gap).
+
 ## [6.58.253] - 2026-07-19
 
 ### Changed
