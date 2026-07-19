@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.281] - 2026-07-19
+
+### Fixed
+
+- **Jobs search rounds made mechanical — the 15-row `Search ladder` (Axes-table pattern applied to search).** 6a asked the model to invent "five shapes the run has not yet fired" (creative judgment) and honor "never repeats of spent queries" (memory judgment) — both economization surfaces. Now: one fixed ladder, five rows per round — 5a fires rows 1-5, each 6a round fires the five rows after the highest row yet cited in an insurance line (first 6a round = rows 6-10; row 15 spent → restart at row 1 with the next adjacent occupation). The insurance line cites row numbers — `insurance: row <r> <shape> (<n results>) ×5` — so spent-tracking is arithmetic on the previous round's printed artifact, and the next round's queries are determined, not chosen. Rows 11-15 add Workday, iCIMS, JazzHR, state-facet, and Recruitee shapes.
+
 ## [6.58.280] - 2026-07-19
 
 ### Fixed
