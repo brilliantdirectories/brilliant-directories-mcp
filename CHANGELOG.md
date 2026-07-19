@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.310] - 2026-07-19
+
+### Changed
+
+- **Internal-link density raised to owner's ratio; under-delivery permissions killed (owner: 495-word post with 3 links, all pre-CTA, is too low — "we encourage him to cop out").** METHODOLOGY budget: "a target of one internal link per ~100 words, cap 10 (a ~500-word post carries 4-5)" (was ~150). Two standing permissions deleted per find-the-permission: the **Short posts exception rule** ("posts under ~500 words may carry fewer total links" — the exact license a 495-word post used to under-deliver; redundant anyway, a per-wordcount target self-scales) and the **"under-budget beats a forced carrier"** valve, now "a slot goes unfilled only when the draft's nouns run out" — same anti-carrier guard, no blanket under-delivery blessing. Events/jobs opening placement cap 0-1 → 0-2 so the target's arithmetic seats the intended shape (a couple riding the intro's nouns, the rest after the CTA); with opening capped at 2, a ~500-word post's 4-5 links land mostly in body sections by arithmetic — no new distribution prose needed.
+
 ## [6.58.309] - 2026-07-19
 
 ### Changed

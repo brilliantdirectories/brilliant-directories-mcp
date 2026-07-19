@@ -161,7 +161,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 | Section | Placement caps |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-1 (riding a noun the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has) |
 | Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
 
