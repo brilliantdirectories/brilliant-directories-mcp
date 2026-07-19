@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.261] - 2026-07-19
+
+### Fixed
+
+- **Census restock itemized (6a/6b) — the last compulsory calls living outside the lettered convention.** A certified .259 run passed the six-call round (5b rode) but skipped the restock five on a nine-candidate pool: one specified call is an inclusion ask, five invented calls under a rich pool lose to economization — the model enforcing the removed conditional by instinct. Now the census message speaks the 8a/8b grammar: "SIX calls — 6a and 6b in this ONE message" — 6a the compound, 6b the five restock calls with the full cargo cascade. Every compulsory multi-call turn now shares one form: turn 1's numbered list, 5a/5b, 6a/6b, 8a/8b/8c.
+
 ## [6.58.260] - 2026-07-19
 
 ### Fixed
