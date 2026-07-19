@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.250] - 2026-07-19
+
+### Changed
+
+- **Jobs Step 8 gains events' under-fill failure tail and its degraded-branch arithmetic, jobs-flavored for remote survivors.** Clause-class audit (incomplete-turn tails, exactly-clauses, failure tails, caps, alone-clauses) found the last gap: events' "fewer is an incomplete turn" appears twice in its Step 8, jobs had none — and jobs lacked any branch arithmetic for remote survivors (no location → geo omitted → "six calls" impossible; contradictory arithmetic at the run's end). Now: "a remote survivor with no location fires two — its poolImages call and title check; fewer is an incomplete turn. Each additional survivor adds its own six (or two)." Events' no-venue branch correctly not ported (jobs' venue=company is always known). Alignment arc closed: every load-bearing clause class in events now has its jobs counterpart or a documented carve-out.
+
 ## [6.58.249] - 2026-07-19
 
 ### Changed
