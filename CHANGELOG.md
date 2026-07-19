@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.241] - 2026-07-18
+
+### Fixed
+
+- **Jobs census never fired on a live graded run (9 turns, dedup skipped wholesale) — three buried permissions closed.** Step 6's pool laws were tool-scoped ("All WebSearch results...", "Count the keyed results", "Once a result shows its title") while the Source candidates section legitimately licenses fetch-harvest — fetch-born candidates fell outside every trigger, so the pool-print, the compound, and the verdicts all silently skipped. Now provenance-neutral: "Every candidate showing a job title — from a search result or a fetched page — enters ONE pool." Pool-of-one sentence added (blog Shape A's proven form): a converged single winner prints and fires its compound the same. Step 5 now states the `getPostTypeCustomFields` sixth-slot arithmetic in the executing step (was a trailing sentence in Step 3's section; fired solo, cost a turn). Workflow proven by 3-battery empirical sweep (17 queries, ~170 results): ATS site: results carry title+company in the result title itself (~48/50 individual postings) — the events-shape pool-from-results path needs zero pre-dedup fetches; gov-portal/list-board candidates keep the harvest-fetch door, now feeding the same pool law.
+
 ## [6.58.240] - 2026-07-18
 
 ### Fixed
