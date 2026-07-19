@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.251] - 2026-07-19
+
+### Changed
+
+- **Jobs Step 6 gains the provenance weld that makes events' 3×N reliable — in blog's malformation-safe form.** Events enforces 3 variants per candidate by making the compound a copy operation from the printed pool lines; jobs lacked any weld (events' "copied from the pool lines" is the proven blog-malformation gun, so it was withheld), and "covering every pooled candidate" let 1×N feel complete — witnessed twice (6 employer-name variants for 6 candidates). Transplant is blog's proven .233 merge form: "the pool lines' variants merged into element 1 as one comma-joined string — 3 × N variants covering every pooled candidate."
+
 ## [6.58.250] - 2026-07-19
 
 ### Changed
