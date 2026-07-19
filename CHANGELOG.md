@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.266] - 2026-07-19
+
+### Fixed
+
+- **The stated-arithmetic law's numeric fossil genericized.** Search discipline's example cited "the pool-print turn's N+1" — events' instance, readable as a universal pool-print cap that leaves no room for jobs' six-call census. Now "the pool-print turn's stated count" — each skill's own file states its arithmetic, the shared law names the class. Events and blog semantics unchanged (their in-file counts govern, as before).
+
 ## [6.58.265] - 2026-07-19
 
 ### Fixed
