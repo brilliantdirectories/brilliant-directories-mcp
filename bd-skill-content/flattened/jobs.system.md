@@ -877,7 +877,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a), with one adjustment: the **Date sanity gate does NOT apply** to jobs — the **30-day staleness gate** is jobs' only date rule. Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`); a shown posted-date within 30 days ranks a listing higher, its absence never drops one.
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a), with one adjustment: the **Date sanity gate does NOT apply** to jobs — the **30-day staleness gate** is jobs' only date rule. Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<occupation> <location> hiring now`) + list-page vocabulary (`<location> <occupation> job openings board`); a shown posted-date within 30 days ranks a listing higher, its absence never drops one. Unless the user directs otherwise, prefer listings that fit the site's niche and carry strong local search intent, with public application info available.
 
 **Facets to derive:**
 - **Occupation/industry** — from the user's named occupations + audience/vertical from `getSiteInfo` + the resolved post type's `feature_categories` (cached).
@@ -948,19 +948,23 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the job posting. State the role's facts as your own: "The role requires STOTT certification", "Sessions are one-on-one." Never narrate a source document, its gaps, or its agreement with another source ("the posting says", "the pay band is not shown on the page", "the careers board lists the same date") — a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
+**Voice:** this page IS the job posting. State the role's facts as your own: "The role requires STOTT certification", "Sessions are one-on-one." Never narrate a source document, its gaps, or its agreement with another source ("the posting says", "the pay band is not shown on the page", "the careers board lists the same date") — a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
-**Jobs-specific load-bearing facts**: role + employment type, company + city + state, top 3-5 responsibilities, required qualifications, how to apply. Surface these in the opening section.
+**Jobs-specific load-bearing facts** — the opening paragraphs summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it fits.
 
-**Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for jobs: responsibilities, required qualifications, preferred qualifications, benefits, perks.
+**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin">`.
 
-**How to apply** — application URL/email/phone surfaced as plain links inside a `How to apply` section. Button styling is NOT in the runbook — if the user wants a styled Apply button they specify it in their `prompts/jobs.md` system prompt.
+**Bullets per ANTI-SLOP `Bullets rule`** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. Later sections group their own supporting details into bullets where scannability helps.
+
+**Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
+
+**How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post, pro-rated to length (a ~400-word post carries 2-4)**; the pass distributes:
 
-| Section | Recommended links |
+| Section | Link caps |
 |---|---|
-| Opening section (role + load-bearing facts) | 0-1 (category or location filter, riding a noun the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-1 (category or location filter, riding a noun the opening already has) |
 | Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
 

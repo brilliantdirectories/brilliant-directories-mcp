@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.296] - 2026-07-19
+
+### Changed
+
+- **Jobs output aligned to the events pattern (owner-directed, jobs.md only — field reference untouched).** Same structure, jobs-flavored: opening paragraphs summarize the role in natural flowing order (role + type, who's hiring, where, pay when published, what the work is, who it fits); Application CTA — the bare `btn btn-secondary btn-lg vmargin` snippet in its own `<p>` right after the intro when an application/info URL is known; core facts as one scannable `<ul>` after the CTA (role, employer, location, pay, type at a glance) with later sections grouping their own bullets; section headings in natural search phrasing; voice clamped "straightforward and positive — informative first, never puffery"; caps table header "Link caps" + opening bounded at the CTA; selection preference "fit the site's niche, strong local search intent, public application info available" (the 30-day recency preference already exists as the staleness rank rule — not duplicated). The now-false "Button styling is NOT in the runbook" disclaimer deleted; How-to-apply keeps email/phone paths, a known URL rides the CTA. Shared fixes (.293-.295: hyperlink-not-narrate self-check, citation carrier discipline, row-36 escape-hatch deletion) already flow to jobs via METHODOLOGY/ANTI-SLOP.
+
 ## [6.58.295] - 2026-07-19
 
 ### Fixed
