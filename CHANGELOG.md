@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.308] - 2026-07-19
+
+### Changed
+
+- **Internal-link budget DRY'd to one definition, unified across all skills (owner: match them all, best SEO density).** The budget now lives once in METHODOLOGY `Required outcomes` item 4 — "a target of one internal link per ~150 words, cap 10 (a ~400-word post carries 2-3; a ~1,000-word post 6-7), distributed per the content-type file's placement caps" — replacing three near-identical per-skill sentences. Blog's density rises from ~200 to ~150 words per link (~1,000-word blog: 6-7 vs 4-5 — denser internal authority flow into category/member/filtered pages, still well inside natural editorial range); events/jobs cap normalizes 8→10 (ceiling only; their placement tables still govern distribution) and the old "~1,200-word post 6-8" instance — whose 8 was never seatable in their placement tables (max 7) — is corrected to "~1,000-word post 6-7", achievable in all three tables. The three content-type lines slim to a grep-able back-pointer ("within the internal-link budget; the pass observes these placement caps:"); Link order item 2 and URL-PATTERNS `Internal-link variety` re-point to the single definition ("the internal-link budget" / "METHODOLOGY `Required outcomes`"). "Links ride only nouns the draft already contains" was a duplicated copy — the definition site already commands it. skill-ref-check: all 128 section references resolve.
+
 ## [6.58.307] - 2026-07-19
 
 ### Changed
