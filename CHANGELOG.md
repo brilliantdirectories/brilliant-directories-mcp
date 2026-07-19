@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.248] - 2026-07-19
+
+### Changed
+
+- **Jobs Step 5 rewritten in the turn-1 slot convention after the sixth-slot law's second observed miss.** Turn 1 and the pre-create batch never wobble because the turn IS its enumerated call list ("turn 1's slots are exactly these"); Step 5 attached the custom-fields call as an afterthought sentence. Now: "the opening round fires exactly six calls in ONE message: five queries... plus Step 3's `getPostTypeCustomFields` call; the round's slots are exactly these. Later rounds fire five new-angle queries." Line 65's command fused to the slot ("in the Step 5 opening round's sixth slot, never its own turn"); its trailing timing clause compressed to the why alone. Net tokens ≈ zero.
+
 ## [6.58.247] - 2026-07-19
 
 ### Changed
