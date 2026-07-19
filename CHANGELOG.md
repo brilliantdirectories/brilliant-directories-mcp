@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.258] - 2026-07-19
+
+### Fixed
+
+- **The stopping rule restored + the custom-fields call single-homed.** (1) The converge-and-end law existed only inside the reverted .244 Rule and never got re-shipped; Step 7's loop clause covered scarcity but was silent on surplus — a run with five verified survivors kept hunting a second wave (witnessed). Now: "Survivors at or above the goal end the hunt — the top survivor advances to Step 8, the rest stand as backups." Events/blog need no equivalent (their discovery is goal-bounded by construction). (2) The sixth-slot wobble's remaining mechanism: the call had two homes and the earlier one was a command ("After resolution, call…" primes an early solo fire ~1-in-6, the verb beating its own qualifier). Line 65 demoted to a pointer ("Resolution feeds… Step 5's opening round carries the call in its sixth slot") — the only imperative now lives in the sealed slot list.
+
 ## [6.58.257] - 2026-07-19
 
 ### Fixed
