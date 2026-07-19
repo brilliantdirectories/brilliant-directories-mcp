@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.246] - 2026-07-19
+
+### Changed
+
+- **Jobs anchor-aligned to events — four transplants of the golden child's proven sentences, jobs-flavored only where required.** Jobs was fixed issue-by-issue but never received events' timing anchors; the witness run's slips map to exactly those missing sentences. Step 6 title gains "the message right after a search round's results arrive"; Step 6 gains events' round-binding law verbatim ("A round has ONE pool-print turn... a second dedup turn on the same round's results is an incomplete first turn") and the prescribed pool-line format (`Title — Company — v1 | v2 | v3`); Step 8 title gains "the message right after verification completes for all survivors". Events/blog untouched (flattened byte-identical). Jobs carve-outs preserved: post-type flavors, custom-fields sixth slot, ATS/government source buckets, staleness gate, company+location criteria, canonical-posting machinery.
+
 ## [6.58.245] - 2026-07-19
 
 ### Reverted
