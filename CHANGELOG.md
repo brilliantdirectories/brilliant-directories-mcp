@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.312] - 2026-07-19
+
+### Changed
+
+- **Advisory-inventory voice and events link-supply collapse: commands cut at source (owner incident run + minion forensic hunt, findings byte-verified).** The jobs run's "If you [situation], the site's [category] [verdict]" carriers were COMMANDED: ANTI-SLOP's open-ended worked example `("If you're a Los Angeles trainer looking for studio work…")` deleted (the model completed the conditional with inventory verdicts); the journalist-citation simile — which taught that links get introduced in prose — replaced with the overlay law ("linked in place with the sentence unchanged, never as the host's inventory"); depth-menu donors defused ("peers, alternatives... where this one sits in the landscape" → "peers and category leaders from the wider market, and how it compares among them"; `("best choice for someone who wants Z")` → fact-shaped `("the only weekday-morning option in its category")`); depth-menu object law widened posts→"posts or pages" (category pages/calendar were outside the ban's letter); jobs Voice "related openings appear only as links riding the role's own nouns" → "riding nouns the finished draft already wrote, never sentences written to carry them"; site-furniture ban now covers the whole sentence, not just anchor text; row 36 examples gain "the calendar", "the directory". Events under-floor (1 link vs floor 5) was a legal supply collapse, now unblocked: re-target ladder gains a gate-free category-only Pattern 3 terminal before dropping; member-count-gate fallback names the gate-free Patterns; events/jobs linking headers now cite `Pattern 3 filter params` alongside Pattern 6; "Per post, pick from" → "mix several of"; Pattern 1 tier usable on category/city nouns; anchor-granularity law gains a drop-the-location-filter fallback; URL liveness gate scoped to external URLs. Owner-ordered: intros 7→6 sentences (events+jobs); later sections with enumerable facts (inclusions/tiers/formats/requirements; responsibilities/qualifications/benefits) present them as their own `<ul>`; events CTA targets the event's own page — a third-party booking/checkout engine never outranks it (Cloudbeds incident; the booking URL stays legal as body material). skill-ref-check 128/128.
+
 ## [6.58.311] - 2026-07-19
 
 ### Changed
