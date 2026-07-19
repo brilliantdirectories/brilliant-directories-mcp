@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.299] - 2026-07-19
+
+### Changed
+
+- **The .297 fetch-cargo substance re-homed to Content manufacture (owner placement), runbook untouched.** Both Depth lines now carry it, de-duplicated against their neighbors: events — include everything known as truth about the event (its story, program or speakers, tiers and inclusions, venue and day-of specifics); jobs — the company's story, pay and benefits specifics, the workplace and team context. Both: a known registration/tickets (events) or application/official listing (jobs) URL is fetched before drafting.
+
 ## [6.58.298] - 2026-07-19
 
 ### Changed
