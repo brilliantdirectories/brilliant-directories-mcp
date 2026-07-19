@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.256] - 2026-07-19
+
+### Changed
+
+- **Census insurance made unconditional (owner ruling) + case-twins clause.** The thin-pool conditional was a decision point inside a slot definition — the wobble surface the slot convention exists to remove; the census message is now always SIX calls ("N candidates = 1 compound" resolves the arithmetic). And case twins ("Personal Trainer"/"personal trainer") were gaming the 3×N count with fake diversity — matching is case-insensitive, so twins now count as one variant.
+
 ## [6.58.255] - 2026-07-19
 
 ### Changed
