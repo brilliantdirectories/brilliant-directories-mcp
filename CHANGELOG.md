@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.278] - 2026-07-19
+
+### Fixed
+
+- **Jobs variant law: negative example inverted to positive instance.** A live jobs run produced `Metro DMV` in its dedup compound — the runbook's own forbidden example, verbatim: "never an invented compound (`Metro DMV` for...)" handed the model the exact string to copy. Negated instances are still instances. Replaced with the positive worked form: a title writing `Metro, DMV` yields the variant `Metro` — a variant never spans a comma.
+
 ## [6.58.277] - 2026-07-19
 
 ### Fixed
