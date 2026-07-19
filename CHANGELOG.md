@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.286] - 2026-07-19
+
+### Fixed
+
+- **Insurance-line format seam closed.** "One insurance line per row" collided with the old single-line `×5` template — two formats, a choice. Now per-row lines, `insurance: row <r> <shape> (<n results>)`, five lines; a missing line is an unfired row.
+
 ## [6.58.285] - 2026-07-19
 
 ### Fixed
