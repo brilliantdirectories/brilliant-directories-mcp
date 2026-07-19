@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.294] - 2026-07-19
+
+### Fixed
+
+- **Two causing levers from the Wellness Together output (narration 8→4 after .293; these close the residue).** (1) External citations had no carrier discipline — "Link naturally in flowing prose" licensed sentences ABOUT the source as citation hosts ("[Org] frames the event as…"); the clause now reads "A citation wraps a noun in a sentence about the subject — never a sentence about the source" (shared; internal links already had wrap-nouns-only). (2) The link-caps table's "Opening section" had no boundary after the CTA restructure — now "Opening (all paragraphs before the CTA)".
+
 ## [6.58.293] - 2026-07-19
 
 ### Fixed
