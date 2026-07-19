@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.315] - 2026-07-19
+
+### Changed
+
+- **Direct reader address removed — the last advisory-voice command (owner's proven import prompt: "Do not address the reader directly").** ANTI-SLOP Voice target: "Address the reader directly where audience-fit matters." → "Audience fit is stated in third person — who it suits, who it does not — never by addressing the reader." Evidence split across live outputs: every good fit sentence was already third person ("It fits travelers who...", "It suits a trainer who..."); every advisory-inventory defect was second person ("If you want to compare...", "If your work leans..."). Direct address is the grammar of advice; advice on a directory page points at inventory. Net-neutral: one causing sentence swapped, nothing layered.
+
 ## [6.58.314] - 2026-07-19
 
 ### Changed
