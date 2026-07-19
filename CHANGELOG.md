@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.244] - 2026-07-19
+
+### Added
+
+- **Rule: Task instructions — customer prose chooses the goal, the platform owns execution mechanics.** A live customer-instruction run (site 44004) hit 39 turns for one event post: "before creating, check duplicates" re-homed the census to pre-create, "create only the earliest" serialized it per-candidate, "check every organisation / until exhausted" licensed per-date-band re-sweeps, "exactly as published" licensed name-confirmation spirals over a fetched PDF. Root (two minion audits, converged): the corpus's only precedence claim was create-only's "even if custom instructions say otherwise" — deference-by-default everywhere else licensed task prose to re-sequence mechanics. The rule (placed after Autonomy, read before Stage 1) obeys every customer goal choice — including named extra verification acts and extra dedup sources, which run packed / ride the census batch — while probe timing, batching, packs, and stopping stay platform law; blanket "confirmed/official" wording asks no further act of a document in hand; the hunt ends at goal-count unique survivors. Replay projection: 39 → ~10-11 turns. Companion in Rule: Search discipline: a fetched URL is read once — re-fetching it is an incomplete first read.
+
 ## [6.58.243] - 2026-07-19
 
 ### Fixed
