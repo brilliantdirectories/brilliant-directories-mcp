@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.292] - 2026-07-19
+
+### Fixed
+
+- **Three output smoking guns from the first .291-era live post (Dodgers Sunset Run).** (1) Core-info block had no placement or contents — it surfaced as a buried schedule garnish missing cost/venue/date; now: one scannable `<ul>` immediately after the CTA — date, start times, venue + address, cost or "free", formats/distances — with later sections carrying their own grouped bullets (agenda, speakers, parking, what to bring). (2) Eight source-narrations ("The FAQ page confirms…") — the shared self-check's "link a source" was being satisfied by narrating sources; events Voice now commands the positive form: a source exists only as a hyperlink on a fact, never as a sentence's subject, with a rewrite pair. (3) Two links manufactured into one opening sentence against the 0-1 row — the table header said "Recommended links"; recommended is weighable, now "Link caps".
+
 ## [6.58.291] - 2026-07-19
 
 ### Changed
