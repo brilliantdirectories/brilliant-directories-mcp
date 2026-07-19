@@ -169,7 +169,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
-**Short posts exception rule:** posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed.
+**Short posts exception rule:** posts under ~500 words may carry fewer total links. Under-link beats stuffed.
 
 ### Image strategy
 

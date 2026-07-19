@@ -223,7 +223,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 2. **After the first 1-2 internal links**, external citations mix in among the continuing internal links — internals keep flowing per the content-type budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
-**Short posts exception rule:** posts under ~500 words may carry fewer total links than the per-type floor. Under-link beats stuffed.
+**Short posts exception rule:** posts under ~500 words may carry fewer total links. Under-link beats stuffed.
 
 ### Image strategy
 
@@ -711,7 +711,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "certified personal trainers in Boston" → `title="Certified personal trainers in Boston by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor names the destination's content qualified by the post's topic ("Los Angeles fitness expos" for a fitness expo post), not the raw category label and not the page. External anchors carry the source's name ("the IATBP member portal", not "member portal").
+**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor is a noun phrase the draft already contains, as its sentence wrote it — `title` names the destination; the anchor never does. External anchors carry the source's name ("the IATBP member portal", not "member portal").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -962,7 +962,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per job post, pro-rated to length (a ~400-word post carries 2-4)**; the pass distributes:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per job post, pro-rated to length (a ~400-word post carries up to 4)** — links exist only where the draft's own nouns invite them; the pass distributes:
 
 | Section | Link caps |
 |---|---|

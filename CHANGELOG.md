@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.300] - 2026-07-19
+
+### Fixed
+
+- **The link-narration generator found and inverted — two co-generators, all skills.** Every manufactured "the personal training jobs listing shows…" sentence traces to (1) URL-PATTERNS' anchor law commanding destination-naming anchors ("The anchor names the destination's content… 'Los Angeles fitness expos'") — a post about one subject never naturally writes plural destination-phrases, so obeying the law required building host sentences; now inverted: the anchor is a noun phrase the draft already contains, as its sentence wrote it — `title` names the destination, the anchor never does; and (2) budget floors ("4-8 / carries 2-4", blog "5-10 / 3-5") reading as quotas — now pure ceilings ("up to 8 / up to 4", "up to 10 / up to 5") with "links exist only where the draft's own nouns invite them", and METHODOLOGY's "per-type floor" phrase deleted. The bans (row 36, belonging test) were never the problem — these two laws were manufacturing what the bans then had to catch.
+
 ## [6.58.299] - 2026-07-19
 
 ### Changed
