@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.279] - 2026-07-19
+
+### Fixed
+
+- **Jobs pool-print chain welded end-to-end — the pool-of-one/no-insurance class closed at its permissions.** Two runs pooled 1 of ~10 candidates and skipped the five insurance searches. Events-vs-jobs forensics: events' pool size is visible in its call count (N+1 calls — a date probe per candidate); jobs' round is constant at six calls, so under-pooling left no trace, and 6b's "One candidate is a pool of one — fire its compound" read as a complete mini-recipe (both failures executed it verbatim). Five swaps, jobs.md only: the pool print opens with the count and prints one line per counted candidate (fewer lines than the count = incomplete print); omission arithmetic stated (the compound is one call at any pool size — omitting saves zero); the pool-of-one blessing now conditioned on the results yielding one AND re-welded to the round's six calls; 6a's "free insurance" justification replaced with "the goal counts Step 7 survivors, never candidates at the read" (the corpus-side counterweight to the arbitration segment's goal pressure); Dedup's "score/full marks" grading frame replaced with exact arithmetic (element 1 = 3 × the pool print's line count) and per-candidate verdict fingerprints (one verdict line per pool line, company cited). Chain: results → count → N lines → 3N variants → N verdicts — each number consumed by the next step.
+
 ## [6.58.278] - 2026-07-19
 
 ### Fixed
