@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.242] - 2026-07-19
+
+### Fixed
+
+- **Jobs research-inversion seam closed (2 turns/run).** The v6.58.241 witness run proved the census machinery but bought two turns from one seam: citation sources and the winner's application-page fetch fired AFTER the pre-create batch, and the late fetch surfaced the real street address, forcing a title-check + geocode re-weld. Step 7 now names the survivor pack's spares — each advancing survivor's application-page fetch (prompt asks street address + application contact) and its Stage 5 citation sources ride the spare slots as inputs come ready, so Step 10 drafts from facts in hand. Minion-audited + hand-verified against the pack law's own vocabulary ("whose inputs are ready"; citation ladder already a named spare class — permission promoted to command; Stage 5 rung (a) covers at draft time, no double-fetch). Also: METHODOLOGY's Stage 2 census example limit 25→50 — the jobs census composes the shared example (proven live), and 25 was teaching a lower row ceiling than events/blog's own fenced shapes; fields_only keeps the response lean at 50.
+
 ## [6.58.241] - 2026-07-18
 
 ### Fixed
