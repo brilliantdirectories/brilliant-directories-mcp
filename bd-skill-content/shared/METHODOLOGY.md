@@ -238,7 +238,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 
 - Any en/em-dash outside code? Rewrite.
 - Throat-clearing opener? Cut.
-- Unsourced claim presented as fact? Link a source or rewrite.
+- Unsourced claim presented as fact? Hyperlink it to its source or rewrite — naming the source in prose is not sourcing.
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.

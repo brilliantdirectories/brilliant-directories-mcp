@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.293] - 2026-07-19
+
+### Fixed
+
+- **.292's bandaids replaced with the causing-lever fixes (owner correction: update the lever, never layer; spirit, never examples).** The source-narration class is now fixed at its actual gun — the shared self-check item whose "Link a source" was satisfiable by narrating sources in prose reads "Hyperlink it to its source or rewrite — naming the source in prose is not sourcing" (all skills inherit); the events-side counter-sentence with its rewrite-pair example is deleted. The core-block line is trimmed to spirit ("the what, when, where, and cost at a glance") with the slot and later-section enumerations dropped. "Link caps" stands.
+
 ## [6.58.292] - 2026-07-19
 
 ### Fixed
