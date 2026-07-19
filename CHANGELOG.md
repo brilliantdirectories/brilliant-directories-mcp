@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.274] - 2026-07-19
+
+### Fixed
+
+- **Empty-string create-omission: `post_promo: ""` (and any optional numeric/boolean body field) no longer bounces `-32602` on create\* tools.** A live events run sent `post_promo: ""` on `createSingleImagePost` and lost a turn to the validation bounce; on an INSERT there is nothing to clear, and BD stores the row identically with the field absent (proven live on the test site). Both engines now drop the field: the Worker's zod shape parses `""` to undefined for optional numeric/boolean create fields (garbage like `"abc"` still bounces loudly; numeric strings still coerce; the agent-facing schema is byte-identical), and the npm wrapper strips the same class before forwarding. Updates keep the loud bounce — `""` there may be clear-intent, which `clear_fields` serves. Drift-check CHECK 14 holds the two engines in parity. Battery: 10/10 npm, live-verified stored `NULL` vs `5`.
+
 ## [6.58.273] - 2026-07-19
 
 ### Fixed

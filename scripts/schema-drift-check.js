@@ -851,6 +851,19 @@ try {
   if (!specSrc.includes('"fields_only"')) err("fields_only parameter missing from the spec.");
 }
 
+// CHECK 14: Empty-string create-omission parity. On create* tools an optional
+// numeric/boolean body field arriving as "" is omission intent — BOTH surfaces
+// drop it instead of bouncing (-32602 on the Worker, client-side on npm).
+// Updates keep the loud bounce. A refactor dropping either side reopens the
+// post_promo:"" create-bounce class.
+{
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  for (const [label, src] of [["mcp/index.js", npmSrc], ["Worker index.ts", workerSrc]]) {
+    if (!src.includes("EMPTY_STRING_CREATE_OMISSION")) err(`Empty-string create-omission strip missing in ${label}.`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------

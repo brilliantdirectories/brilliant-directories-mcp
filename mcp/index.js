@@ -556,13 +556,13 @@ function buildTools(spec) {
             // string — Array.isArray fails downstream and guards skip.
             const resolved = val && val.$ref ? resolveRef(spec, val.$ref) : val;
             properties[key] = { ...resolved };
+            bodyProps[key] = resolved;
           }
           if (schema.required) {
             for (const r of schema.required) {
               if (!required.includes(r)) required.push(r);
             }
           }
-          bodyProps = schema.properties;
         }
       }
 
@@ -584,6 +584,7 @@ function buildTools(spec) {
         method: method.toUpperCase(),
         path: urlPath,
         bodyProps,
+        required,
       };
     }
   }
@@ -6322,6 +6323,15 @@ async function main() {
       if (eavRoute) args = eavDirect;
 
       for (const [key, val] of Object.entries(args || {})) {
+        // EMPTY_STRING_CREATE_OMISSION (parity: hosted src/index.ts): on create*
+        // tools an optional numeric/boolean "" is omission intent (nothing to
+        // clear on INSERT; proven live) — dropped, never forwarded.
+        if (
+          val === "" && name.startsWith("create") &&
+          toolDef.bodyProps[key] &&
+          ["integer", "number", "boolean"].includes(toolDef.bodyProps[key].type) &&
+          !toolDef.required.includes(key)
+        ) continue;
         // Check if this is a path parameter (appears in URL template)
         if (urlPath.includes(`{${key}}`)) {
           urlPath = urlPath.replace(`{${key}}`, encodeURIComponent(String(val)));
