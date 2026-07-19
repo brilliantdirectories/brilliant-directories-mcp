@@ -888,11 +888,11 @@ The user's explicit post-type pick always wins.
 7. `site:jobs.smartrecruiters.com <occupation>`
 8. `<occupation> jobs <city>`
 9. `<adjacent-occupation> careers`
-10. `site:governmentjobs.com <occupation>`
+10. `<occupation> vacancies <country>`
 11. `site:myworkdayjobs.com <occupation>`
 12. `site:icims.com <occupation>`
 13. `site:applytojob.com <occupation>`
-14. `<occupation> jobs <state>`
+14. `<occupation> jobs <second city>`
 15. `site:recruitee.com <occupation>`
 
 ---

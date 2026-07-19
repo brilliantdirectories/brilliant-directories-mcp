@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.282] - 2026-07-19
+
+### Fixed
+
+- **Search ladder de-localized — shapes stay fixed, places don't.** BD sites are international; two rows were place-shaped: `site:governmentjobs.com` (US-only) → `<occupation> vacancies <country>`, and `<occupation> jobs <state>` (US-shaped) → `<occupation> jobs <second city>`. The global-ATS `site:` rows stay — they are country-neutral SaaS infrastructure (live receipt: `apply.workable.com` returned London and Sydney postings in this session's own SERPs); facets carry the locale per `Source candidates` country routing.
+
 ## [6.58.281] - 2026-07-19
 
 ### Fixed
