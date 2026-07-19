@@ -918,7 +918,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft. Budget **up to 10 internal links per 2000 words, pro-rated to the post's length (a ~1,000-word post carries up to 5)** — links exist only where the draft's own nouns invite them; the pass observes these caps:
+Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft. Budget **a target of one internal link per ~200 words, cap 10 (a ~1,000-word post carries 4-5)** — links ride only nouns the draft already contains; the pass observes these caps:
 
 | Section | Recommended links |
 |---|---|

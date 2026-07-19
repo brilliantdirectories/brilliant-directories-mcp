@@ -157,7 +157,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per job post, pro-rated to length (a ~400-word post carries up to 4; a ~1,200-word post the full 8)** — links exist only where the draft's own nouns invite them; the pass observes these caps:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **a target of one internal link per ~150 words, cap 8 (a ~400-word post carries 2-3; a ~1,200-word post 6-8)** — links ride only nouns the draft already contains; the pass observes these caps:
 
 | Section | Link caps |
 |---|---|

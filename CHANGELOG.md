@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.307] - 2026-07-19
+
+### Changed
+
+- **Internal-link balance restored as a per-wordcount target (owner: last run's 1-per-post was below intent).** All three skills: "a target of one internal link per ~150 words, cap 8" (blog: per ~200 words, cap 10), with worked arithmetic in the parenthetical. Safe by the externals precedent: the guards (draft-nouns-only, no added sentences, belonging test, anchors-as-written, under-budget-beats-forced-carrier valve) make the target satisfiable only by wrapping nouns the draft already contains — drive without the factory.
+
 ## [6.58.306] - 2026-07-19
 
 ### Changed
