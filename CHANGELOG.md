@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.302] - 2026-07-19
+
+### Changed
+
+- **Jobs Step 7 fetch parenthetical widened by owner order (five words appended).** "(its prompt asks the posting's street address and application contact, plus the `Depth` line's cargo)" — the two process-critical items stay the runbook's own (street address feeds geocode tier 2, contact feeds How-to-apply); the content cargo delegates by rule-name to Content manufacture's `Depth` line, so future depth tuning never touches the runbook again. Resolves the .301 out-of-bounds flag.
+
 ## [6.58.301] - 2026-07-19
 
 ### Fixed
