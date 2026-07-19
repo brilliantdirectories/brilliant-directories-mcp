@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.269] - 2026-07-19
+
+### Fixed
+
+- **Full-runbook audit's one finding: Step 7's no-survivor branch orphaned the pre-fired round.** "Return to Step 5" fired five fresh queries while 6a's five yields sat unused — the insurance wasted on the exact path it exists for. Rerouted: no survivor → the pre-fired yields pool at the next pool-print (Step 6 again); Step 5 only when no pre-fired yields are in hand. Every other step verified coherent against events and the wanted per-step behavior.
+
 ## [6.58.268] - 2026-07-19
 
 ### Fixed
