@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.267] - 2026-07-19
+
+### Fixed
+
+- **6a's cargo swapped to the model's most-practiced act (owner's design): five new-angle queries — the next round, pre-fired.** The hubs-curation cargo (backward-looking selection from prior results) ran a 0% compliance record; new-angle query rounds ran 100% every return-to-Step-5 all arc. Same slot, same count, proven cargo class: five shapes the run has not yet fired, never repeats of spent queries (the discipline's own law). Both payoff branches stated: a fully-duped pool re-pools from these yields at the next pool-print; a surviving candidate makes them free insurance. Turn-1 rehoming of the create-fields call shelved per owner ruling (turn 2 accepted as mostly-working).
+
 ## [6.58.266] - 2026-07-19
 
 ### Fixed
