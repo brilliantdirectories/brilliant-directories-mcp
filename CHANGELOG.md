@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.264] - 2026-07-19
+
+### Fixed
+
+- **Three harmonizations from the live-SERP ground truth — corrections only, no new machinery.** (1) The aggregator ban's verb: "avoid" read as "these results don't exist" and silently deleted the live engine's dominant posting class from the pool (a real SERP held ~11 postings, 7 on Indeed viewjob pages; the lawful pool counted 3 — the night's thin pools were lawful counting under the ban). Now "Never fetch or link" + the pools-clause line 101 always implied: a result showing the dedup keys pools as an aggregator copy, keys from the snippet, canonical posting reached after it survives. (2) Verdict format cites the keys probed (title + company; a location-split verdict cites its deciding city) — the old three-key instance demanded a city snippets may not hold. (3) The overflow re-run phrase: the candidate's city or most distinctive title token.
+
 ## [6.58.263] - 2026-07-19
 
 ### Fixed
