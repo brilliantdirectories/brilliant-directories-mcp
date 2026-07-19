@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.263] - 2026-07-19
+
+### Fixed
+
+- **The fetch-before-census root: jobs' criteria demanded a key snippets don't carry.** Dedup's third axis (location) rarely rides jobs SERPs — every certified compound carried page-derived city tokens, meaning the model was fetching postings to build lawful location-bearing probes: the criteria beat the sequencing law, sensibly. Fix mirrors events' snippet-complete geometry: probes carry title and company variants alone (location is never a variant — the invented city-variant class dies with it); location decides at the verdicts on returned rows (`post_venue`/`post_location` already ride `fields_only`), and a title+company match with the candidate's city unknown pends to survivor verification. Prose may never demand what the data in hand cannot supply.
+
 ## [6.58.262] - 2026-07-19
 
 ### Fixed
