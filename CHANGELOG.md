@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.289] - 2026-07-19
+
+### Changed
+
+- **Events Voice: tone merged, duplicate dropped.** The .288 tone sentence was appended beside the old "Local context, scene details, what to expect" fragment — whose "what to expect" had just moved into the opening-summary list, a same-push duplicate. Merged into one sentence, net-negative: "Local context and scene details, told welcoming and positive — informative first, never puffery."
+
 ## [6.58.288] - 2026-07-19
 
 ### Changed
