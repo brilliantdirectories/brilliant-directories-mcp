@@ -950,9 +950,9 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Voice:** this page IS the job posting. State the role's facts as your own: "The role requires STOTT certification", "Sessions are one-on-one." Never narrate a source document, its gaps, or its agreement with another source ("the posting says", "the pay band is not shown on the page", "the careers board lists the same date") — a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding the role's own nouns.
 
-**Jobs-specific load-bearing facts** — the opening paragraphs summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it fits.
+**Jobs-specific load-bearing facts** — two intro paragraphs, at least seven sentences between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it fits.
 
-**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin">`.
+**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin">` — button text in title case.
 
 **Bullets per ANTI-SLOP `Bullets rule`** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. Later sections group their own supporting details into bullets where scannability helps.
 

@@ -915,9 +915,9 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document, its gaps, or its agreement with another source ("the organizer's page says", "the page does not publish a start time", "the calendar lists the same date") — an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details, told welcoming and positive — informative first, never puffery.
 
-**Events-specific load-bearing facts** — the opening paragraphs summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
+**Events-specific load-bearing facts** — two intro paragraphs, at least seven sentences between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
-**Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin">`.
+**Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin">` — button text in title case.
 
 **Bullets per ANTI-SLOP `Bullets rule`** — the event's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the what, when, where, and cost at a glance. Later sections group their own supporting details into bullets where scannability helps.
 

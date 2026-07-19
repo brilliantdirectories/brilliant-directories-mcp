@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.304] - 2026-07-19
+
+### Changed
+
+- **Owner balance specs from the first post-.301 outputs (both skills).** Intro floor: two intro paragraphs, at least seven sentences between them, before the CTA — a one-sentence intro over a button reads as bad balance. CTA button text in title case ("Health Coach Application", not "health coach application").
+
 ## [6.58.303] - 2026-07-19
 
 ### Fixed
