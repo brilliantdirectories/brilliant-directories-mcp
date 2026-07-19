@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.271] - 2026-07-19
+
+### Fixed
+
+- **6b's zero-candidate tail harmonized with the .269 reroute** — it still said "return to Step 5," pre-dating the pre-fired-yields path; a zero-candidate round now pools 6a's yields at the next pool-print, Step 5 only with none in hand. Both no-candidate and no-survivor branches now speak one law. Adversarial re-simulation of the full runbook otherwise clean; incidental .270 gain confirmed: the 5a/6a site: templates are now "commanded search shapes," making the discipline's site:-follows-surfaced-domains exemption explicit for round 1.
+
 ## [6.58.270] - 2026-07-19
 
 ### Fixed
