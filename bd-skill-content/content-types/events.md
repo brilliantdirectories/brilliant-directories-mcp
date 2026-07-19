@@ -118,13 +118,13 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: an event page is a destination, not a stub — include everything known as truth about the event: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a known registration or tickets URL is fetched before drafting.
+**Depth**: an event page is a destination, not a stub — include everything known as truth about the event: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a known registration or tickets URL is fetched before drafting, its prompt asking for the event's story, speakers, program, and tiers alongside the logistics.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per event post, pro-rated to length (a ~400-word post carries up to 4)** — links exist only where the draft's own nouns invite them; the pass distributes:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per event post, pro-rated to length (a ~400-word post carries up to 4; a ~1,200-word post the full 8)** — links exist only where the draft's own nouns invite them; the pass observes these caps:
 
 | Section | Link caps |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-1 (category or location filter, riding a noun the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-1 (riding a noun the opening already has) |
 | Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
 

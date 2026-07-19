@@ -4,7 +4,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-The page speaks as the thing it is, never as a report about its source. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak as the employer or organizer — the source of truth, stating the role's or event's facts in their own authority. Every voice: declarative and active — facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides. Generous with specifics, no press-release tone. Name specific things. No over-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). Link generously: the telling's natural mentions of related things are the anchors, each linked to its matching page, cited the way a journalist links another outlet's piece, never as the host's inventory.
+The page speaks as the thing it is, never as a report about its source. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak as the employer or organizer — the source of truth, stating the role's or event's facts in their own authority. Every voice: declarative and active — facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). The telling's natural mentions of related things are the only candidate anchors, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
@@ -56,8 +56,8 @@ The page speaks as the thing it is, never as a report about its source. Article-
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
-15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). One or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
-16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject or as direct address ("If you're…") — move its link onto a noun the rewrite keeps.
+15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). Beyond the lists the content-type file commands, one or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
+16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
 
@@ -65,13 +65,13 @@ The page speaks as the thing it is, never as a report about its source. Article-
 |---|---|
 | Directness | Statements or announcements? |
 | Rhythm | Varied sentence length, or metronomic? |
-| Trust | No over-explaining, nothing spelled out twice? |
+| Trust | No sentence restating another sentence in the same terms? |
 | Authenticity | Sounds human-typed? |
 | Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
 
 ## Drift triggers (stop and rewrite)
 
-Wh- sentence-starter in prose (FAQ labels exempt). Hedging every claim. Explaining what you're about to say. Padding when data doesn't support length. Three "and"s in one sentence.
+Wh- sentence-starter in prose (FAQ labels exempt). Hedging every claim. Explaining what you're about to say. Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence.
 
 ## Wrong-example reference
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.301] - 2026-07-19
+
+### Fixed
+
+- **The link-first-intro and business-card diseases fixed at their generators — two-minion forensic convergence, ~26 in-place swaps across 5 files, all verified byte-exact before editing.** Link side: "The article's first 1-2 links must be internal" (a thrice-repeated presupposition the model satisfied by front-loading exactly 2 intro links) → pure order semantics ("An external link never appears before an internal one"); URL-PATTERNS' surviving "1-3 filtered-listing links … distributed across intro, middle" floor-plus-intro-command → "up to 3 … distributed"; ANTI-SLOP's "Link generously … each linked" (live at drafting time, re-flooring every ceiling) → "the only candidate anchors"; "the pass distributes" → "observes these caps" + opening rows lose their named link type; gate clause "planned links / close siblings / ships its link" → "wrapped links / (deleted) / keeps its link"; check 16's launder-path loses direct-address and gains "or drops"; Stage 1 no longer feeds "anchor-text choices". Depth side: "Under-produce correct > over-produce wrong" → "A wrong fact is worse than a missing fact — a rule that weighs facts, never length"; the section-killer gains the confident-knowledge scope and the corpus's first completeness check ("Source-supported material with no section carrying it? Add the section."); "Every claim source-supported" → "Every record fact" (context/knowledge claims no longer each demand one of 2-3 capped citations); "Scrape facts, not content" → "not wording" + the record's story named as harvest cargo; stub permission inverted ban-first; depth menu default-on ("Work through every depth dimension… skipping a supported dimension is the failure"); "shorter honest post beats padded fabricated" → "omit the missing data point, never the depth around it"; "no asides"/"over-explaining"/"spelled out twice"/"padding vs length" all re-scoped to their real targets; bullets cap excludes commanded lists; ~1,200-word anchor instance added; Depth-line fetch prompts widened (story/speakers/program/tiers; responsibilities/pay/benefits/employer story). Out-of-bounds flag: jobs runbook Step 7's narrow fetch parenthetical ("street address and application contact") fights the Depth-line prompt — owner's call.
+
 ## [6.58.300] - 2026-07-19
 
 ### Fixed

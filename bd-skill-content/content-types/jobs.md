@@ -153,15 +153,15 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: a job page is a destination, not a stub — include everything known as truth about the listing: the company's story, pay and benefits specifics, the workplace and team context; a known application or official listing URL is fetched before drafting.
+**Depth**: a job page is a destination, not a stub — include everything known as truth about the listing: the company's story, pay and benefits specifics, the workplace and team context; a known application or official listing URL is fetched before drafting, its prompt asking for responsibilities, qualifications, pay, benefits, and the employer's story alongside the logistics.
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per job post, pro-rated to length (a ~400-word post carries up to 4)** — links exist only where the draft's own nouns invite them; the pass distributes:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per job post, pro-rated to length (a ~400-word post carries up to 4; a ~1,200-word post the full 8)** — links exist only where the draft's own nouns invite them; the pass observes these caps:
 
 | Section | Link caps |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-1 (category or location filter, riding a noun the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-1 (riding a noun the opening already has) |
 | Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
 
