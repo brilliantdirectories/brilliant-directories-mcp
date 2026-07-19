@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.262] - 2026-07-19
+
+### Fixed
+
+- **Step 6 inverted to the owner's design: the search is the constant, the compound is the rider.** The "pool maintenance" identity read as dedup-is-the-job, extras optional — and the model economized the web five on its certified debut. Correct frame: the run searches continuously; the pool-print round is the SAME six-call shape as Step 5 (3-for-3 certified) with the compound in the concrete-rider seat 5b proved reliable — 6a five web calls (hubs, then new angles; discovery continuing), 6b the compound per the fence. The model repeats a certified turn shape instead of learning a new identity. Step 5's bytes untouched.
+
 ## [6.58.261] - 2026-07-19
 
 ### Fixed
