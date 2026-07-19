@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.273] - 2026-07-19
+
+### Fixed
+
+- **The brand-blurb class named: a Topic/nuance naming the site or its own brand is context, not a subject.** A live customer run (chauffeur directory) put its own tagline in the field; the model obeyed the field's contract — subject = the brand — and burned two rounds hunting the customer's own (misspelled) domain for events that don't exist, ending in an honest empty shortfall. The customer meant "make content that fits my site" — the empty-field default. One sibling clause beside the constraints-only law: choose subjects from the vertical the same way. All three skills inherit (a blog run would have written a brand-navel article; jobs would have hunted the customer's own openings).
+
 ## [6.58.272] - 2026-07-19
 
 ### Fixed
