@@ -118,7 +118,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: an event page is a destination, not a stub — include everything known as truth about the event: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a known registration or tickets URL is fetched before drafting, its prompt asking for the event's story, speakers, program, and tiers alongside the logistics.
+**Depth**: an event page is a destination, not a stub — include everything known as truth about the event: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **up to 8 internal links per event post, pro-rated to length (a ~400-word post carries up to 4; a ~1,200-word post the full 8)** — links exist only where the draft's own nouns invite them; the pass observes these caps:
 

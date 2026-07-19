@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.303] - 2026-07-19
+
+### Fixed
+
+- **Self-audit polish on .301: three blemishes.** Both Depth-line fetch prompts repeated their own cargo lists in the same sentence — now "that same cargo" (events) / "that cargo plus responsibilities and qualifications" (jobs); URL-PATTERNS' swapped sentence started lowercase — "Up to 3".
+
 ## [6.58.302] - 2026-07-19
 
 ### Changed
