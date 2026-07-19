@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.259] - 2026-07-19
+
+### Fixed
+
+- **Purpose-naming for the two multi-purpose turns — the foreign-rider smoking gun.** Night-tape analysis: purpose-pure turns never fail (turn 1, pre-create 9-for-9, create-alone unbroken); turns carrying a foreign-purpose rider shed it (custom-fields off the discovery round ~1-in-3, the census's five insurance calls never rode) — the model plans turns by intent and only audits slots against calls the intent generated. Fix: fold the rider into each turn's named purpose. Census title: "its one job is pool maintenance: count, print, probe, and restock" (+ "the restock half of this turn's one job" on the insurance tail). Step 5 title: "the opening round stocks the run… five discovery queries… and Step 3's create-fields call". Certified this run before the fix: the two-key criterion's richest pool ever (8 candidates, ~26 distinct variants, 3.25×N). Banked fallback if purpose-naming fails its witness: custom-fields as turn 1's speculative seventh slot (system_name=job_listing), then the deterministic tripwire.
+
 ## [6.58.258] - 2026-07-19
 
 ### Fixed
