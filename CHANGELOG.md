@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.247] - 2026-07-19
+
+### Changed
+
+- **Alignment transplants five through seven: jobs' Dedup section matches events'.** (5) The compound score sentence, verbatim ("3 × N is full marks; a trimmed variant saves a token and ships a dupe") — the 3-variants-per-candidate enforcer, witnessed missing on the .246 run (3 candidates rode 1 variant each). (6) The verdict-line format instance, jobs-flavored: `no match (title + company + city) — survives`. (7) The changed-fact re-probe, jobs-flavored ("A company, city, or title that changes at verification re-probes") — the Wheat Ridge address-change hole. Full-file diff otherwise clean; the site:-target guard deliberately NOT ported (jobs' ATS site: probes are battery-proven best queries — true carve-out).
+
 ## [6.58.246] - 2026-07-19
 
 ### Changed
