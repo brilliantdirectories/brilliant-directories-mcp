@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.253] - 2026-07-19
+
+### Changed
+
+- **Jobs Step 6 rebuilt as events' paragraph skeleton — byte-parallel sentence order, jobs tokens only where required.** The week's transplants had patched events' sentences onto jobs' original .241 skeleton, leaving a quilt in a non-events order; witnessed cost: rich results pooled ONE candidate of 6-8 (the read-and-count imperative opener — events' first commanded act — was the missing piece). Now events' exact flow: title anchor → "Read the results and count the candidates" → candidate criterion + line format (with the substring law) → cap 10/the-candidates-are-the-pool → pool score → round law → fire-calls with the merge weld → N=1-call arithmetic with the incomplete tail → research-stops → pool-of-one → return. One deliberate token: "results" not "WebSearch results" (jobs candidates are legally fetch-born — the .241 trigger lesson). Second witnessed echo costume same run: five fetches of ONE URL with sliced prompts — the held echo valve's case doubles.
+
 ## [6.58.252] - 2026-07-19
 
 ### Changed
