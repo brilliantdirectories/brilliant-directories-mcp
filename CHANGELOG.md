@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.311] - 2026-07-19
+
+### Changed
+
+- **Link budget converted from ceiling to floor; carrier-disease commands cut at source; anchors 2-4 words (owner-directed + minion balance audit).** Budget: "hitting — never exceeding — the internal-link budget: **a floor of one internal link per ~100 words, cap 10 (a ~500-word post carries 5)**" — every ceiling-only word replaced ("up to"→"hitting", "a target of"→"a floor of", "within"→"meeting", "observes these placement caps"→"fills these placement ranges", "may continue"→"continue", header "Placement caps"→"Placement range"). Table floors raised so ranges seat the floor and the cap: blog opening 0-1→1, body 3-6→4-8 (maxima 10→12); events/jobs opening 0-2→1-2, body 2-5→3-8 with max-1-per-section→max-2 (maxima 8→11, previously the cap-10 was arithmetically unreachable), close 0-1→1; filtered-listing sub-cap 3→6 (unique-href preserves variety; 3 structurally locked sparse sites under floor). Carrier-sentence disease ("A similar personal trainer opening shows how strong the market is...") cut at its four authorizing commands: ANTI-SLOP anchor law re-grounded ("The telling's natural nouns — the city, the role, the category, the venue, and any related thing it names while talking about the subject — are the only candidate anchors"; the old "mentions of related things are the only candidate anchors" × a link quota = commanded manufacture); outcome heading "Internal links to related coverage"→"Internal links riding the draft's own nouns"; depth-menu object law ("their material is the subject and its real world, never another of the site's posts") + "Comparable anchors" dimension renamed "Comparables"; URL-PATTERNS tier-4 worked example taught other-record talk under a positive "Carrier:" label → "Rides a time mention the draft already has (\"the July 19 race day\")". Anchor text 2-4 words (was 2-5), internal and external; self-check now "Anchor under 2 or over 4 words? Resize..."; the 5-word worked-example anchor shrunk to "personal trainers in Boston". skill-ref-check 128/128.
+
 ## [6.58.310] - 2026-07-19
 
 ### Changed

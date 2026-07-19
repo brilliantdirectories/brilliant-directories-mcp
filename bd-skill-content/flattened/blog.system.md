@@ -186,13 +186,13 @@ A good post covers the full picture: core facts, practical considerations, usefu
 1. **Load-bearing facts up front.** The first intro paragraph answers the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it"). The content-type file specifies which facts are load-bearing for the data type.
 2. **Every record fact source-supported — by a source about THIS record.** A similarly-named different event, role, or record is a different subject, never a source. No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is a failure; short is fine only when source and confident knowledge are both genuinely exhausted.
 3. **External source citations: target 2 per post** (1 acceptable; hard cap 3, the 3rd only when it substantially improves accuracy; one per source — same-owner pages = one source, per the Source credibility gate), never before an internal link per `Link order`. Source in order, stopping at target: (a) this run's Stage 3 verified set — zero calls, the default path; (b) one batched round per **Rule: Search discipline**: broad topic query (3-6 plain words, no operators) + a `<topic> guidelines`-or-`standards` companion, judged by the Source credibility gate, then one `site:` probe on a surfaced domain — it rides the citations' fetch pack; (c) practice/profession topic → its encyclopedia article's institutional references; (d) ship with fewer — fewer beats a forced one. Budget: 3 WebSearch + 2 WebFetch per post. Cite static destinations only — a specific article, abstract, or the organization's own page, never a search-results/query URL (`?term=`, `?q=`, `search?`, tag/archive indexes). A citation wraps a noun the finished draft already contains, in a sentence about the subject — never a sentence about the source, never a sentence added to carry it — with `rel="nofollow" target="_blank"`; no forced "Source: X" footer. Helps Google EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) signals.
-4. **Internal links to related coverage** — use URL-PATTERNS.md Pattern 1 (specific post URLs) or Pattern 3 (the post-type page carrying at least one filter — category, location, date, or combos). **Write the entire body first, with zero links and zero link intent. Then a linking pass: its targets are the run's verified internal targets — live posts this run's dedup/list calls already returned (**`post_status=1`**) and Pattern 3/6 URLs constructed from the post's own category and location values — then wrap noun phrases the finished draft already contains (the city, the role, the category, the venue, a concept another post covers) onto targets from that list, up to — never exceeding — the internal-link budget: **a target of one internal link per ~100 words, cap 10 (a ~500-word post carries 4-5)**, distributed per the content-type file's placement caps. The linking pass may not add, reshape, or reorder a single sentence. The wrapped targets' gate checks (member-count and taxonomy lookups) share ONE message — exactly ten checks: wrapped links first, spare slots filled with the draft's other linkable nouns; fewer only when nouns run out. This is the run's only gate message: a cleared check keeps its link; a failed or unchecked one re-targets to a cleared spare, a run-verified post URL, or Pattern 5, or drops.** A link with no natural carrier is re-targeted to a noun the draft does have; a slot goes unfilled only when the draft's nouns run out. Anchor text reads as part of its sentence, never a standalone CTA, never a trailing "More X in Y" section. Never fabricate URLs; a reference with no verifiable target omits that link.
+4. **Internal links riding the draft's own nouns** — use URL-PATTERNS.md Pattern 1 (specific post URLs) or Pattern 3 (the post-type page carrying at least one filter — category, location, date, or combos). **Write the entire body first, with zero links and zero link intent. Then a linking pass: its targets are the run's verified internal targets — live posts this run's dedup/list calls already returned (**`post_status=1`**) and Pattern 3/6 URLs constructed from the post's own category and location values — then wrap noun phrases the finished draft already contains (the city, the role, the category, the venue, a concept another post covers) onto targets from that list, hitting — never exceeding — the internal-link budget: **a floor of one internal link per ~100 words, cap 10 (a ~500-word post carries 5)**, distributed per the content-type file's placement ranges. The linking pass may not add, reshape, or reorder a single sentence. The wrapped targets' gate checks (member-count and taxonomy lookups) share ONE message — exactly ten checks: wrapped links first, spare slots filled with the draft's other linkable nouns; fewer only when nouns run out. This is the run's only gate message: a cleared check keeps its link; a failed or unchecked one re-targets to a cleared spare, a run-verified post URL, or Pattern 5, or drops.** A link with no natural carrier is re-targeted to a noun the draft does have; a slot goes unfilled only when the draft's nouns run out. Anchor text reads as part of its sentence, never a standalone CTA, never a trailing "More X in Y" section. Never fabricate URLs; a reference with no verifiable target omits that link.
 5. **External links to sources, ticket/registration vendors, organizers' own pages** — with `rel="nofollow" target="_blank"`.
-6. **Work through every depth dimension that fits the post type** — they separate a republished record from a destination page. Each one that source data + confident knowledge honestly support goes in — skipping a supported dimension is the failure; omit only one that would require guessing.
+6. **Work through every depth dimension that fits the post type** — their material is the subject and its real world, never another of the site's posts; they separate a republished record from a destination page. Each one that source data + confident knowledge honestly support goes in — skipping a supported dimension is the failure; omit only one that would require guessing.
   - **What to expect** — sensory + situational detail that sets the scene up front.
   - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
-  - **Comparable anchors** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
+  - **Comparables** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
   - **Industry insight / players** — peers, alternatives, category leaders from the wider market, where this one sits in the landscape.
@@ -220,7 +220,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 ### Link order (universal — internal first, external later)
 
 1. **An external link never appears before an internal one** (any internal Pattern per URL-PATTERNS.md).
-2. **Once an internal link has appeared**, external citations mix in among the continuing internal links — internals may continue per the internal-link budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
+2. **Once an internal link has appeared**, external citations mix in among the continuing internal links — internals continue per the internal-link budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block.
 3. **Unique href per post.** No URL repeats. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
 ### Image strategy
@@ -294,7 +294,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link missing `rel="nofollow" target="_blank"`? Add.
 - Citation on a search/query URL? Replace with the static source page, or drop.
-- Anchor over 5 words? Tighten to the sentence's own noun phrase; move the description to `title` as a descriptive noun phrase, never an instruction ("Browse...").
+- Anchor under 2 or over 4 words? Resize to the sentence's own 2-4 word noun phrase; move the description to `title` as a descriptive noun phrase, never an instruction ("Browse...").
 - Same href twice? Re-derive one under a different Pattern, or cite a different source's static page for an external; drop only if none fits.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Re-read that ledger line — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
 - Section present without source data or confident knowledge to support it? Remove. Source-supported material with no section carrying it? Add the section.
@@ -459,7 +459,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-The page speaks as the thing it is, never as a report about its source. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak as the employer or organizer, stating the role's or event's facts in their own authority. Every voice: declarative and active — facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). The telling's natural mentions of related things are the only candidate anchors, cited the way a journalist links another outlet's piece, never as the host's inventory.
+The page speaks as the thing it is, never as a report about its source. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak as the employer or organizer, stating the role's or event's facts in their own authority. Every voice: declarative and active — facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Address the reader directly where audience-fit matters ("If you're a Los Angeles trainer looking for studio work…"). The telling's natural nouns — the city, the role, the category, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, cited the way a journalist links another outlet's piece, never as the host's inventory.
 
 ## Banned
 
@@ -707,9 +707,9 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | Internal | `<a href="/..." title="<descriptive>">text</a>` (no rel, no target) |
 | External | `<a href="https://..." title="<descriptive>" rel="nofollow" target="_blank">text</a>` |
 
-**`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "certified personal trainers in Boston" → `title="Boston trainer listings filtered by category and specialty"`. Helps screen readers, hover previews, and SEO.
+**`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "personal trainers in Boston" → `title="Boston trainer listings filtered by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
-**Anchor text: 2-5 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor is a noun phrase the draft already contains, as its sentence wrote it — `title` names the destination; the anchor never does. External anchors carry the source's name ("the IATBP member portal", not "member portal").
+**Anchor text: 2-4 word noun phrase that reads as part of the sentence — internal and external alike.** The longer description belongs in `title`, never in the anchor. Never the target's full title, never generic ("here", "this page"), never site furniture or page-type nouns ("member directory", "full jobs board", "the events calendar"). The anchor is a noun phrase the draft already contains, as its sentence wrote it — `title` names the destination; the anchor never does. External anchors carry the source's name ("the IATBP member portal", not "member portal").
 
 ## Composition examples (substitute `data_filename` for prefix)
 
@@ -736,7 +736,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety
 
-In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. Up to 3 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes` — distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
+In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, pick from: (a) category-only, (b) location-only, (c) category+location combined. Up to 6 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes` — distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
 
 ## Link shape priority (universal)
 
@@ -745,7 +745,7 @@ Resolve each internal link to the most specific verifiable target the draft's ow
 1. **Category + location combo.** Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
 2. **Single-filter category-only** OR **single-filter location-only.** Use when only one dimension is naturally relevant in the sentence. A specific related post (Pattern 1) counts at this tier when its topic matches the mention.
 3. **Location + daterange** (events only). Combine with category for the tightest anchor.
-4. **Date-range alone** (events only). Carrier: a same-day mention the draft already has ("three other races share the July 19 date"). Skip for non-time-bound post types.
+4. **Date-range alone** (events only). Rides a time mention the draft already has ("the July 19 race day"). Skip for non-time-bound post types.
 
 Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run so the run's posts don't all target the same pages.
 
@@ -916,12 +916,12 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft, within the internal-link budget; the pass observes these placement caps:
+Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft, meeting the internal-link budget; the pass fills these placement ranges:
 
-| Section | Placement caps |
+| Section | Placement range |
 |---|---|
-| Direct-answer opening | 0-1 |
-| Body H2 sections | 3-6 spread across sections (1-2 per major section, max) |
+| Direct-answer opening | 1 |
+| Body H2 sections | 4-8 spread across sections (1-2 per major section, max) |
 | FAQ block | 1-2 (answer text may include a link) |
 | Conclusion | 1 (always — riding a sentence the conclusion already needs, never a "go browse X" line) |
 

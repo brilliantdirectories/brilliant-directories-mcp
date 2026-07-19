@@ -157,13 +157,13 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, within the internal-link budget; the pass observes these placement caps:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget; the pass fills these placement ranges:
 
-| Section | Placement caps |
+| Section | Placement range |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has) |
-| Body sections (company/responsibilities/qualifications) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
+| Opening (all paragraphs before the CTA) | 1-2 (riding nouns the opening already has) |
+| Body sections (company/responsibilities/qualifications) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
+| Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 
 Jobs get category, location (`lat`+`lng`+`location_value`+`location_type=locality`) filter dimensions. No date filter for jobs.
 

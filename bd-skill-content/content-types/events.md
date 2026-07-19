@@ -120,13 +120,13 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Depth**: an event page is a destination, not a stub — include everything known as truth about the event: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, within the internal-link budget; the pass observes these placement caps:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget; the pass fills these placement ranges:
 
-| Section | Placement caps |
+| Section | Placement range |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has) |
-| Body sections (venue/scene/what-to-expect) | 2-5 links, **maximum 1 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 0-1 (riding a sentence the close already needs, never a "go browse X" line) |
+| Opening (all paragraphs before the CTA) | 1-2 (riding nouns the opening already has) |
+| Body sections (venue/scene/what-to-expect) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
+| Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
 
