@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.291] - 2026-07-19
+
+### Changed
+
+- **CTA instance stripped to the bare class snippet.** `Register` as instance anchor text would become every post's button text — instances beat prose. The sentence binds the URL; the class is the only prescription; anchor wording is the model's.
+
 ## [6.58.290] - 2026-07-19
 
 ### Changed
