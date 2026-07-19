@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.314] - 2026-07-19
+
+### Changed
+
+- **Site-blind law de-bloated to one statement (owner: bloaty).** Voice target head now "The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist." (was triple-stated: "never as the website hosting it" + the knowledge clause + "reads identically wherever published"). Granularity fallback de-enumerated: "rides a URL filtered another way instead — any shape `Pattern 3 filter params` supports" (was "(category, daterange)" — the Pattern section owns the filter list).
+
 ## [6.58.313] - 2026-07-19
 
 ### Changed
