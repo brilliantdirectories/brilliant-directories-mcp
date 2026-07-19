@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.255] - 2026-07-19
+
+### Changed
+
+- **Census insurance slots quality-gated and given their fallback.** "qualifying" binds the five insurance slots to the Source candidates section's own gate (a trash round no longer commands trash fetches), and slots qualifying hubs can't fill take the next round's new-angle queries — the full cascade: qualifying hubs → fresh queries → echoes banned by the valve → under-five only when angles are spent.
+
 ## [6.58.254] - 2026-07-19
 
 ### Changed
