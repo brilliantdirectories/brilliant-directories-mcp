@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.270] - 2026-07-19
+
+### Fixed
+
+- **5a and 6a given literal template sets — the golden turns' actual dynamic (owner's find).** Turn 1 and pre-create carry copy-paste call text; 5a/6a carried section pointers, and the model copies literal text at ~100% while following references at ~60%. 5a now names its five battery-proven shapes (`<occupation> hiring now`, board vocabulary, the three ATS site: probes); 6a names five untried-class templates (Ashby, SmartRecruiters, city-faceted, adjacent-occupation, governmentjobs) with facet placeholders, never repeats of spent queries. The compulsory dynamic completed: every slot in every compulsory turn now contains the text of its own call.
+
 ## [6.58.269] - 2026-07-19
 
 ### Fixed
