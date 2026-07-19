@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.285] - 2026-07-19
+
+### Fixed
+
+- **Harvest key-cuts corrected and de-biased.** Three over-prescriptions found on audit: (1) "role = the title's first segment" was wrong for Lever's `<employer> - <role>` order — now the role is the title segment containing the searched occupation (first segment only as fallback), string containment against the fired query's own facet; (2) the employer ladder reordered title-first (display brand beats tenant slug — Lever showed `Acme` vs `sigma-squared`) with the URL rung generalized to path OR subdomain slug OR a careers page's own domain, any TLD; (3) instances cut to one per shape — three same-shape ATS examples read as an enumeration and bias the model to those domains; one per shape teaches the pattern, and the Search ladder already names the probed domains. Board guard unchanged.
+
 ## [6.58.284] - 2026-07-19
 
 ### Fixed
