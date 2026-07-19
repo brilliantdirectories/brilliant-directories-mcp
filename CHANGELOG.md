@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.288] - 2026-07-19
+
+### Changed
+
+- **Events output upgraded, owner-directed, near-net-neutral prose (events.md only; field reference untouched).** (1) Opening paragraphs now a natural-order event summary: what it is + purpose, date/time, venue, who it's for, what to expect, price, how to attend, known background/history (never manufactured). (2) Registration CTA: when a registration/official URL is in hand, a Bootstrap button (`btn btn-secondary btn-lg vmargin`, nofollow+_blank) rides its own `<p>` right after the intro — outside prose link order/budgets, URL never repeated in prose, `post_url` stays request-only. (3) Bullets: core event info as one scannable block + grouped detail candidates incl. agenda schedules. (4) Section headings: natural search phrasing, never forced. (5) Voice: welcoming and positive — informative first, never puffery. (6) Selection: prefer niche-fit candidates with strong local search intent unless the user directs otherwise.
+
 ## [6.58.287] - 2026-07-19
 
 ### Fixed

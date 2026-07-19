@@ -857,7 +857,7 @@ The user's explicit post-type pick always wins.
 
 ## Source candidates (runbook Step 5)
 
-Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`).
+Per METHODOLOGY `Stage 3: Source research` (sub-step 2a). Discovery is faceted and list-producing — derive the facets, then run the discovery ladder per **Rule: Search discipline**: one batched round of broad-faceted temporal (`<category> <location> <window>`) + list-page vocabulary (`<location> <category> calendar`). Unless the user directs otherwise, prefer candidates that fit the site's niche and carry strong local search intent.
 
 **Facets to derive:**
 - **Category** — from the resolved post type's `feature_categories` (cached) + audience/vertical as flavor.
@@ -913,11 +913,15 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document, its gaps, or its agreement with another source ("the organizer's page says", "the page does not publish a start time", "the calendar lists the same date") — an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context, scene details, what to expect.
+**Voice:** this page IS the event page. State the event's facts as your own: "Doors open at 6", "Tickets run $25." Never narrate a source document, its gaps, or its agreement with another source ("the organizer's page says", "the page does not publish a start time", "the calendar lists the same date") — an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context, scene details, what to expect. Tone is welcoming and positive about the event — informative first, never puffery.
 
-**Events-specific load-bearing facts**: event date + time, venue + address, ticket price or "free", parking, agenda, how to attend or buy tickets. Surface these in the opening paragraphs.
+**Events-specific load-bearing facts** — the opening paragraphs summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
-**Bullets per ANTI-SLOP `Bullets rule`** — content that often qualifies for events: parking, price tiers, what to bring, schedule blocks, ticket types.
+**Registration CTA** — unless the user directs otherwise, when a registration or official event URL is in hand, a button rides its own `<p>` immediately after the intro paragraph(s): `<a class="btn btn-secondary btn-lg vmargin" href="<registration URL>" title="<descriptive>" rel="nofollow" target="_blank">Register</a>` — anchor text the action the source offers (Register, Get Tickets, RSVP). The button stands outside the prose link order and budgets; the registration URL lives here only — prose never repeats it, and `post_url` stays request-only.
+
+**Bullets per ANTI-SLOP `Bullets rule`** — the core event information as one scannable block, plus grouped details that deepen the reader's grasp: parking, price tiers, what to bring, schedule blocks, ticket types, agenda schedules.
+
+**Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end. Budget **4-8 internal links per event post, pro-rated to length (a ~400-word post carries 2-4)**; the pass distributes:
 
