@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.316] - 2026-07-19
+
+### Changed
+
+- **Explicit second-person ban for listing-type posts (owner: say it explicitly; final you/your sweep).** Voice target listing sentence now ends "— third person throughout, never second ("you", "your")." Scoped to listings, not global: blog's question-H2 command legitimately uses second person ("When should you Z?") because real long-tail queries do — a global ban would break that SEO lever. Sweep found no other second-person commands; the law also covers listing headings and closers (imperative "submit your details" now resolves to organizer-fact form). Row 36's "for readers who follow…" ban verified non-conflicting (post's readers vs the thing's participants).
+
 ## [6.58.315] - 2026-07-19
 
 ### Changed
