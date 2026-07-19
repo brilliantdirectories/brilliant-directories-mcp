@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.257] - 2026-07-19
+
+### Fixed
+
+- **The jobs census wobble's smoking gun: the candidate criterion was a judgment where events' is a calculation.** Events' criterion is its dedup keys visible (title + future date — two tokens, one arithmetic test; junk self-filters because aggregators show no dates). Jobs' said only "showing a job title" — half its keys, and semantic soup on a jobs SERP where aggregator pages show title-shaped text everywhere; under the four-way classification load the model collapsed to the single cleanest posting (the pool-of-ones, the convergences; .255's rich census = that round's results happened to arrive ATS-clean). The discipline's own universal law already states it ("a snippet showing the dedup keys pools and probes as-is"). Criterion now key-complete: "the dedup keys — a job title and its employer, in the result's title, snippet, or URL" — employer is jobs' junk discriminator exactly as the date is events' (Indeed query-pages show no employer; guides show no title; postings and hubs show both).
+
 ## [6.58.256] - 2026-07-19
 
 ### Changed
