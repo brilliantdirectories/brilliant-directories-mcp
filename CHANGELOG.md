@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.306] - 2026-07-19
+
+### Changed
+
+- **Citation target restored (owner: the external drive is wanted).** "up to 2 (0 or 1 is fine)" → back to "target 2 per post (1 acceptable…), stopping at target". Safe now because .305's structural guards stay: a citation can't ride an added sentence and can't be a same-owner second page — so the target's pressure drives the source ladder toward a real second source, never the carrier factory. "(d) ship with fewer — fewer beats a forced one" stays as the release valve.
+
 ## [6.58.305] - 2026-07-19
 
 ### Fixed
