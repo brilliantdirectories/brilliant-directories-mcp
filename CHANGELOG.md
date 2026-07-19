@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.318] - 2026-07-19
+
+### Changed
+
+- **Listing voice generalized to "the record's facts" (owner: shared files serve all three skills).** "stating the role's or event's facts" → "stating the record's facts as settled knowledge" — matches METHODOLOGY's "Every record fact" vocabulary and covers any future listing type (property, product) the clause's own definition ("any post that IS the thing") already admits. Blogs unaffected: they run under the article-type sentence, never this clause.
+
 ## [6.58.317] - 2026-07-19
 
 ### Changed
