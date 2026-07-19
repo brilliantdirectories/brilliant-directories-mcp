@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.283] - 2026-07-19
+
+### Fixed
+
+- **Ladder row 10: `<country>` → `<location>`.** Country-level job queries return aggregator mush, and naming a granularity in the row over-prescribes what `Source candidates` already owns — its location facet's three modes decide the granularity; the row just fills the slot.
+
 ## [6.58.282] - 2026-07-19
 
 ### Fixed

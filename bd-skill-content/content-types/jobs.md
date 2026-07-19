@@ -83,7 +83,7 @@ The user's explicit post-type pick always wins.
 7. `site:jobs.smartrecruiters.com <occupation>`
 8. `<occupation> jobs <city>`
 9. `<adjacent-occupation> careers`
-10. `<occupation> vacancies <country>`
+10. `<occupation> vacancies <location>`
 11. `site:myworkdayjobs.com <occupation>`
 12. `site:icims.com <occupation>`
 13. `site:applytojob.com <occupation>`
