@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.305] - 2026-07-19
+
+### Fixed
+
+- **The last three output residuals fixed at their causes — two-minion convergence, 15 in-place swaps.** Citation side: "target 2 per post" was the corpus's last quota (same floor disease as the removed internal budgets) → "up to 2 (0 or 1 is fine)"; "ship under-cited" labeled obedience a defect → "ship with fewer — fewer beats a forced one"; no distinct-source law existed (page #2 of the same domain was the cheapest compliant move) → "one per source — same-owner pages = one source"; the external side never had the internal side's protections → citations now wrap "a noun the finished draft already contains… never a sentence added to carry it"; the anchor-tighten pipeline minted truncated-title anchors → "Tighten to the sentence's own noun phrase" + the lone worked title example no longer shares its anchor's head. Voice side: narration bans were quote-verb-enumerated (frames/covers/points-to passed) → verb-class ("Never make a source document a sentence's actor, quoting or analyzing", both skills) + row 34 gains the analysis verbs and drops its opener-only scope; "the posting frames" added to Inanimate-as-actor; row 36 now catches site-mentions in any position ("on this site") and single interpreting sentences; the self-check's link-and-keep escape closed ("a source-naming sentence still rewrites after the link"); ANTI-SLOP's floating "source of truth" appositive deleted. Out-of-bounds flag: blog runbook step 8's "leaves the post under-cited" copy — owner's edit.
+
 ## [6.58.304] - 2026-07-19
 
 ### Changed
