@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.295] - 2026-07-19
+
+### Fixed
+
+- **The manufactured link-carrier template killed at its source.** Every run's "If you are following X… / If you want Y…" link-host sentence traced to ANTI-SLOP row 36's own rewrite escape hatch — "or speak to the reader's situation directly ('If you coach clients around Costa Mesa…')" — a worked example the model reused as a carrier factory. Deleted; the row now ends at its real test: rewrite about the subject; every sentence survives with its link removed. Net-negative words, all skills inherit.
+
 ## [6.58.294] - 2026-07-19
 
 ### Fixed
