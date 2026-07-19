@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.265] - 2026-07-19
+
+### Fixed
+
+- **The last two-reading phrase: "on `listSingleImagePosts` only" scoped to the probes.** Events' wording, safe where the census carries no web, ambiguous in jobs where 6a's five must ride the same message — a literal message-scope read could suppress them. Now "only for the probes." Final contradiction sweep of the six-call census turn: clean.
+
 ## [6.58.264] - 2026-07-19
 
 ### Fixed
