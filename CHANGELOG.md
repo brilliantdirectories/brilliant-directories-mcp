@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.272] - 2026-07-19
+
+### Fixed
+
+- **The red-team's two receipted holes closed.** (1) The author-probe slot collision (witnessed twice: the unhomed Step 4 probe shape-swapping into Step 5's sealed six, displacing 5b): the probe now rides Step 5's message as its seventh call when the request names no author — the "six (or two)" conditional-arithmetic form. (2) The insurance line was forgeable (its content copyable from the runbook's own templates; enforcement policed only the unprinted case): now each shape prints with its result count — `insurance: <shape> (<n results>) ×5` — a count only a fired query supplies, restoring the golden-artifact property (content only the results can provide). Plus the deferral token inverted: "The next round, pre-fired" → "Fired now, read next round."
+
 ## [6.58.271] - 2026-07-19
 
 ### Fixed
