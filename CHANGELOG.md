@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.317] - 2026-07-19
+
+### Changed
+
+- **Identity license removed from listing voice (owner: does this cover "we"/"our"?).** "Speak AS the employer... in their own authority" licensed first person; the intent was always authority, not identity — the good outputs are third-person reportage with the organizer's certainty. Voice target: "speak with the employer's or organizer's authority, stating the role's or event's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your")." Same license cut in both type files: "State the event's/role's facts as your own:" → "as settled knowledge:" (the worked instances "Doors open at 6", "Tickets run $25" were already third person and stand).
+
 ## [6.58.316] - 2026-07-19
 
 ### Changed
