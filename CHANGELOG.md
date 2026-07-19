@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.284] - 2026-07-19
+
+### Fixed
+
+- **Ladder row 10: `vacancies` → `job vacancies`.** Bare "vacancies" drifts to rentals/motels in American English; the "job vacancies" collocation is unambiguous in every English while keeping the Commonwealth board vocabulary the row exists for.
+
 ## [6.58.283] - 2026-07-19
 
 ### Fixed
