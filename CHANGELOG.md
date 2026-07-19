@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.290] - 2026-07-19
+
+### Changed
+
+- **Registration CTA slimmed to the owner's form.** The .288 paragraph restated laws the corpus already enforces (self-check adds nofollow/_blank to externals; unique-href handles repeats) — surgical-prose violation. Now one sentence + the bare instance: include the CTA in its own `<p>` immediately after the intro when a registration/official URL is known.
+
 ## [6.58.289] - 2026-07-19
 
 ### Changed

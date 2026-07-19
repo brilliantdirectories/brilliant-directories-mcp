@@ -112,7 +112,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Events-specific load-bearing facts** — the opening paragraphs summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
-**Registration CTA** — unless the user directs otherwise, when a registration or official event URL is in hand, a button rides its own `<p>` immediately after the intro paragraph(s): `<a class="btn btn-secondary btn-lg vmargin" href="<registration URL>" title="<descriptive>" rel="nofollow" target="_blank">Register</a>` — anchor text the action the source offers (Register, Get Tickets, RSVP). The button stands outside the prose link order and budgets; the registration URL lives here only — prose never repeats it, and `post_url` stays request-only.
+**Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known, include this CTA immediately after the intro paragraphs inside its own `<p>`: `<a class="btn btn-secondary btn-lg vmargin" href="<registration URL>">Register</a>`.
 
 **Bullets per ANTI-SLOP `Bullets rule`** — the core event information as one scannable block, plus grouped details that deepen the reader's grasp: parking, price tiers, what to bring, schedule blocks, ticket types, agenda schedules.
 
