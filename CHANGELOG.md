@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.245] - 2026-07-19
+
+### Reverted
+
+- **Rule: Task instructions + read-once companion (both from 6.58.244) removed; corpus restored to 6.58.243 bytes exactly.** First post-.244 jobs run showed scattered law-slips (turn-2 solo returned after 3-for-3 compliance, bare-apex site: forms, 18+ turns) concentrated in the largest blob — consistent with preamble-weight erosion on the mini loop model; events stayed clean. The rule's value is receipted (site 44004) but its correct home is conditional: worker-side injection only on runs carrying customer Custom Instructions, so normal runs bear zero added weight. Rule text preserved in the internal ledger for that ship.
+
 ## [6.58.244] - 2026-07-19
 
 ### Added
