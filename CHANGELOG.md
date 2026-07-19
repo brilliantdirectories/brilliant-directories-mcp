@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.249] - 2026-07-19
+
+### Changed
+
+- **Final alignment transplant: jobs Step 6 gains events' pool-score sentence, verbatim** ("Its score: how many candidates enter the pool — an omitted candidate costs a later round") — witnessed missing when a certification run left a title-bearing employer-page candidate (TriHealth) unpooled. Score audit across all three skills now complete: every score sentence events carries, jobs carries; events' "copied from the pool lines" phrase deliberately NOT ported (the proven blog-malformation gun — jobs uses the ONE-string fence form).
+
 ## [6.58.248] - 2026-07-19
 
 ### Changed
