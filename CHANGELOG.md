@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.297] - 2026-07-19
+
+### Fixed
+
+- **Three levers from the Lion's Gate output (dry post, mutated carrier costumes, dropped source gold).** (1) ANTI-SLOP row 36's "survives with its link removed" was a grammatical test — carrier sentences pass it; now the belonging test: every sentence must belong in a post carrying zero links. (2) events Depth line: an event page is a destination, not a stub — venue, day-of logistics, and local context nearly always support honest depth; reach before settling short (the "short because the source is thin is fine" permission was stopping the model at the source's edge while the tickets page and homepage held tiers, inclusions, the portal story, and named speakers). (3) The extraction filter: events Step 7 had no fetch-prompt cargo spec (jobs' twin slot has one) — survivor fetch prompts now ask for everything the summary and core block carry (background and story, program or speakers, tiers and inclusions, venue specifics), and a known registration or tickets URL is one of the fetches.
+
 ## [6.58.296] - 2026-07-19
 
 ### Changed
