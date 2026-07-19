@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.277] - 2026-07-19
+
+### Fixed
+
+- **"not a topic" → "not a topic to research."** The brand text sits in the Topic field, so bare "not a topic" was self-contradictory; "to research" names the denied act and binds the classification to the query/fetch ban.
+
 ## [6.58.276] - 2026-07-19
 
 ### Fixed

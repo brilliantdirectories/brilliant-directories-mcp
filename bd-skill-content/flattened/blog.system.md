@@ -73,7 +73,7 @@ Build the agent's mental model of the site — what it's about, who it serves, i
 
 Cached data feeds Stage 4 category routing, Stage 5 anchor-text choices, and the internal-link inventory.
 
-Infer location from `primary_country`, vertical from site info and categories. A `Topic/nuance:` line in the run's instructions carrying only style/format constraints is not a missing topic: apply the constraints and choose subjects per the content-type runbook. A `Topic/nuance:` naming the site's own brand or domain — matched against `getSiteInfo`'s `website_name` or `full_url` — is the site introducing itself, not a topic: choose subjects from the vertical the same way; the site's own name and domain never enter a search query or fetch.
+Infer location from `primary_country`, vertical from site info and categories. A `Topic/nuance:` line in the run's instructions carrying only style/format constraints is not a missing topic: apply the constraints and choose subjects per the content-type runbook. A `Topic/nuance:` naming the site's own brand or domain — matched against `getSiteInfo`'s `website_name` or `full_url` — is the site introducing itself, not a topic to research: choose subjects from the vertical the same way; the site's own name and domain never enter a search query or fetch.
 
 **Member-city targeting — NEVER bulk-list members to discover their cities.** Only fires when the user's prompt explicitly targets by member coverage ("cities where I have members," "places members are based," "areas we cover"). Use `listCities` — BD auto-seeds it on every member signup, so it surfaces exactly the cities where members exist. Lean response (`city_ln`, `city_filename`, `state_sn`, `country_sn`).
 
