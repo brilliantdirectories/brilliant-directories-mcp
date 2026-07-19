@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.260] - 2026-07-19
+
+### Fixed
+
+- **Step 5 rebuilt in the itemized-spec convention (8a/8b/8c grammar) — the sixth-slot saga's true mechanism found.** The two never-fail turns don't just count slots: they spec every call as its own numbered/lettered item (turn 1's numbered call list; pre-create's 8a/8b/8c), and the model executes itemized lists top to bottom while prose clauses get summarized away. The custom-fields call was the only compulsory call living as a clause — four wordings, six misses, both directions. Now: "call 5a and 5b in this ONE message of exactly six calls" — 5a five discovery queries (score attached), 5b the create-fields call with syntax and cache spec. Line 65 tightened to a pure pointer ("runbook Step 5b carries the call").
+
 ## [6.58.259] - 2026-07-19
 
 ### Fixed
