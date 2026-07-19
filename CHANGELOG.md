@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.280] - 2026-07-19
+
+### Fixed
+
+- **Jobs candidate keys made mechanical — the harvest is now a commanded walk with extraction positions.** Three .279-era runs showed the model pools only results whose title line carries both keys, dropping snippet/URL-keyed candidates: the criterion was a definition ("every result showing the dedup keys… is a candidate"), never a procedure, and jobs' employer key — unlike events' born-mechanical date — hides in three homes. Replaced with the per-result walk: role = the title's first segment cut at its first separator; employer = the ATS URL's slug (`apply.workable.com/<employer>/` class — three real instances), else the title's ` at `/final `-` segment, else the snippet's named company; a board's own name is never the employer; both keys cut = a candidate, no employer in the three homes = not one. Three of five 5a probes are ATS by design, so the pool's backbone is now regex-grade like events'.
+
 ## [6.58.279] - 2026-07-19
 
 ### Fixed
