@@ -920,7 +920,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft, within the internal-link budget; the pass observes these placement caps:
 
-| Section | Recommended links |
+| Section | Placement caps |
 |---|---|
 | Direct-answer opening | 0-1 |
 | Body H2 sections | 3-6 spread across sections (1-2 per major section, max) |

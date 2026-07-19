@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.309] - 2026-07-19
+
+### Changed
+
+- **Placement-cap vocabulary aligned to its tables (owner truth-check on .308).** The three per-skill link tables now all head their column `Placement caps` — blog's said `Recommended links` (not a cap word) and events/jobs said `Link caps`, while the lead-ins and the METHODOLOGY budget both point at "placement caps". One token end-to-end; row content untouched.
+
 ## [6.58.308] - 2026-07-19
 
 ### Changed
