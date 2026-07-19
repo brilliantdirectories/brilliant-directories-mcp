@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.313] - 2026-07-19
+
+### Changed
+
+- **Site-blind writer perspective — the native fix replacing token whack-a-mole (owner: fix the tense/perspective so it inherently can't happen).** Voice target head now: "The page speaks as the thing it is, never as a report about its source, and never as the website hosting it — the writer does not know the site, its pages, or its other listings exist; the text reads identically wherever it is published." Every inventory-voice variant ("the site's X", "the calendar", "sits alongside other...") becomes unwritable by perspective rather than banned by enumeration; the .312 token additions ("the calendar", "the directory") retracted from row 36 accordingly. De-prescribed the .312 supply fixes per owner: re-target ladder and gate fallback now offer "a Pattern 3 URL in any filter shape" + run-verified post URLs (was "gate-free category-only"); anchor-granularity fallback stated positively ("A draft noun without the city rides a URL filtered another way (category, daterange) instead" — no else-negation); the per-post link-shape mix gains "(d) direct post links (Pattern 1) to run-verified rows already in hand" — dedup-cache post linking was already licensed in the targets sentence and Link shape priority tier 2 but invisible at the shape-menu moment.
+
 ## [6.58.312] - 2026-07-19
 
 ### Changed
