@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.243] - 2026-07-19
+
+### Fixed
+
+- **Jobs census dropped fields_only on a live run (fat rows, cost-only) — jobs gets its own fenced shape.** Jobs was the only skill composing METHODOLOGY's shared Stage 2 example (which carries no fields_only — each skill's list differs) with its Dedup prose clause; the merge held on one run and dropped on the next. Fence = 100% compliance across all graded runs (events 2/2, blog 1/1), prose-merge = 1/2. Jobs' Dedup section now carries the full fenced call — bracketed placeholders (blog's live-proven form) + limit=50 + the 6-field list inline — and the shared example gains `fields_only="<the content-type file's Dedup fields_only list>"` so no census instance anywhere omits the field.
+
 ## [6.58.242] - 2026-07-19
 
 ### Fixed

@@ -121,7 +121,7 @@ Run all pool candidates together, in ONE turn — the same turn the pool prints.
 With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query (**Rule: Compound filters**) covers the titles; the content-type file adds any further retrieval keys as their own separate calls, batched in this same turn. `property_value` is exactly TWO elements — element 1: every candidate's 3 variants (each 1-3 words — trim full names to their distinctive core) comma-joined into one string; element 2: the data_id alone:
 
 ```
-listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=50
+listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","9"] limit=50 fields_only="<the content-type file's Dedup fields_only list>"
 ```
 
 Two candidates, three variants each — a one-candidate pool runs its three alone; a ten-candidate pool, the same call with thirty variants in element 1.
@@ -914,7 +914,7 @@ Per METHODOLOGY `Stage 2: Duplicate detection`. Jobs-specific match criteria:
 - Company: same company (`post_venue`) semantic match.
 - Location: same city.
 
-Distinctive phrases = employer names, never bare role titles. Title + company + location together decide each row, so multi-location employers dedup per location, not per brand. `total` exceeds the returned row count → re-run once with the candidate's city as the phrase. Retrieval calls carry `fields_only="post_id,post_title,post_status,post_filename,post_venue,post_location"`.
+Distinctive phrases = employer names, never bare role titles. Title + company + location together decide each row, so multi-location employers dedup per location, not per brand. `total` exceeds the returned row count → re-run once with the candidate's city as the phrase. Retrieval fires as: `listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["<every pooled candidate's variants as ONE CSV string>","<the resolved jobs data_id>"] limit=50 fields_only="post_id,post_title,post_status,post_filename,post_venue,post_location"` — every retrieval call carries the same `fields_only`.
 
 Date is NOT a dedup axis (jobs don't have a freshness-comparable date field).
 
