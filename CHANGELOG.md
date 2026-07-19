@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.252] - 2026-07-19
+
+### Changed
+
+- **Final two transplants — blog's census-war lessons ported to jobs.** (1) The variant-substring law, jobs-flavored ("each a substring a matching title would contain, the role or employer as titles write it, never an invented compound") — need witnessed live (an invented-compound variant that would match nothing). (2) Blog's "the arrays stay two-and-two" malformation guard onto the fence tail — jobs runs the identical two-array compound shape. Alignment across all three skills now closed under five audits: section diff, score sentences, clause classes, the 3×N provenance weld, and cross-skill lesson port.
+
 ## [6.58.251] - 2026-07-19
 
 ### Changed
