@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.298] - 2026-07-19
+
+### Changed
+
+- **.297's Step 7 runbook edit REVERTED (owner order: runbook steps are off-limits for output levers).** The verification sentence restored verbatim. The belonging test (ANTI-SLOP) and the events Depth line stand.
+
 ## [6.58.297] - 2026-07-19
 
 ### Fixed
