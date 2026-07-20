@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.437] - 2026-07-20
+
+### Changed
+
+- Events Step 5 pointer retargeted: "five queries **in the shapes the Source candidates section commands**" (was "per the Source candidates section" — the section holds both the commanded query shapes AND the source-type vocabulary 2a bans from query composition; a live run composed all five queries as site:eventbrite/meetup/racecheck from the wrong half, starving the pool to 1). Jobs unaffected (different 5a/5b architecture). Same run also proved the .435 compound fence: 1-candidate pool → correctly formed 2-element compound + probe, N+1 exact.
+
 ## [6.58.436] - 2026-07-20
 
 ### Changed
