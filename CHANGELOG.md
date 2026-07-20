@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.433] - 2026-07-20
+
+### Changed
+
+- All five "Its score:" pronouns replaced with exact canonical owners (owner spotted the ambiguity — Step 6's bound to "the pool", the wrong noun): "The Search round's score" (events+jobs Step 5), "The Pool-print turn's score" (events Step 6), "2c's score" (verification packing — step-number is the corpus's own reference style), "The depth score" (dimension law — deliberately not "post's score", which would collide with ANTI-SLOP's 50-point scoring).
+
 ## [6.58.432] - 2026-07-20
 
 ### Changed
