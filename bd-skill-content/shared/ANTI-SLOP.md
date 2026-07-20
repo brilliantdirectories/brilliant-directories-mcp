@@ -21,6 +21,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Reportative evidentiality** — any document, org, or this record itself as Sayer of a speech verb. State the fact bare.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
+- **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles another post ("the same style shows up in..."). Each record stands alone.

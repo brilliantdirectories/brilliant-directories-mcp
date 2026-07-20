@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.367] - 2026-07-20
+
+### Changed
+
+- **Construction #12: Metaphoric identification — the one genuine gap in Gemini's four (owner: mechanics, not tokens).** Our metaphor ban was VERB-scoped ("literal verbs") and the closed set governs SUBJECTS — "The office is a tech hub" hides the metaphor in the predicate nominal with a legal subject and literal copula. Now banned as a construction: the record equated with an image ("a hub", "an oasis", "a haven") — the thing is what it literally is. Gemini's other three = re-derivations of standing law (asset-agent = literal verbs; curation = vague-declaratives+specifics; process-praise = puffery+fingerprints). Tokens KEPT alongside: fingerprints are the proven enforcement channel (suits precedent); construction = class coverage, tokens = delete-on-sight tells — channels, not redundancy.
+
 ## [6.58.366] - 2026-07-20
 
 ### Changed
