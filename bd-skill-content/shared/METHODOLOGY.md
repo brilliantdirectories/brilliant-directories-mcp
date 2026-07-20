@@ -64,7 +64,7 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 Run all pool candidates together, in ONE turn — the same turn the pool prints. A candidate at any later point without its verdict line → run Stage 2 now for every verdict-less candidate, before their next call. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts.
 
-With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query (**Rule: Compound filters**) covers the titles; the content-type file adds any further retrieval keys as their own separate calls, batched in this same turn. `property_value` is exactly TWO elements — never one, never one per candidate — element 1: ALL candidates' variants (each 1-3 words — trim full names to their distinctive core) comma-joined into ONE string — 3 × N values, one string; element 2: the data_id alone:
+With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query (**Rule: Compound filters**) covers the titles; the content-type file adds any further retrieval keys as their own separate calls, batched in this same turn. `property_value` is exactly TWO elements — never one, never one per candidate — element 1: ALL candidates' variants (each 1-3 words — trim full names to their distinctive core) comma-joined into ONE string; element 2: the data_id alone:
 
 ```
 listSingleImagePosts property=["post_title","data_id"] property_operator=["contains","eq"] property_value=["Campbell River,River Marathon,Campbell Marathon,Studio Three,Reformer Week,Pilates Reformer","<data_id>"] limit=50 fields_only="<the content-type file's Dedup fields_only list>"

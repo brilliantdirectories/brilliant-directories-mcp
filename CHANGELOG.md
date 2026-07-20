@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.444] - 2026-07-20
+
+### Changed
+
+- **Jobs variant-pollution factory dismantled (validation run: 8/9 census — the floor worked — but 15 variants carrying "Chicago"/"Remote"/"Metro DMV"/bare "Personal Trainer").** Find-the-permission again: the bans ("location is never a variant", "never bare role titles") were fine; other sentences authorized and compelled the junk. Killed: (1) the pool-line parenthetical's role permission ("the role or employer") and its location-teaching example ("a title writing `Metro, DMV` yields `Metro`") → employer-fragments only, example now `Smith, Jones & Co` → `Smith`; (2) the "exactly 3 × N" compulsion (three homes: pool-line "its three", Step 6 double-mention + below-3×N teeth, Dedup law) — jointly unsatisfiable with clean variants for one-word employers (Fitify), so padding was mandatory; now "every distinct employer fragment per candidate, up to three each", teeth repointed at the real crime (an omitted real fragment ships a dupe; a candidate with no variant in element 1 is an incomplete turn); (3) employer home order flipped URL-first (ATS slugs are structurally the employer — kills location-as-employer at the source and retires the Company-Role inversion watch-item; board URLs still void per the board-name rule, falling through to title then snippet). Shared METHODOLOGY: the "— 3 × N values, one string" reinforcement tail deleted (count now per content file; events keeps its own 3 × N in Step 6 + Dedup score — flattened events drift measured at exactly one line, the tail). Net words down; zero new sentences.
+
 ## [6.58.443] - 2026-07-20
 
 ### Changed
