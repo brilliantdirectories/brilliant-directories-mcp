@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.343] - 2026-07-19
+
+### Changed
+
+- **Comparison instance tightened (owner): "the city's only weekday-morning session"** — five words, concrete subject, fact-shaped; same anti-verdict teaching.
+
 ## [6.58.342] - 2026-07-19
 
 ### Changed
