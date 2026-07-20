@@ -196,7 +196,6 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
 | `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon carry the map pin. Do NOT prepend the company name (already in `post_venue`). Remote with no location: OMIT. |
-| `post_url` | Only on explicit user request — renders CTA button on post page. All other links go in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |

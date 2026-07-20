@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.321] - 2026-07-19
+
+### Changed
+
+- **`post_url` rows deleted from both field tables (owner: an event run passed it unprompted; never mention it anywhere).** The row's own description — "renders CTA button on post page" — collided with the corpus's Registration/Application CTA mission; the "only on explicit user request" guard lost to the attraction, and BD rendered a second button. Field removed from the model's universe entirely (events + jobs; blog never had it); a user who explicitly requests post_url still gets it via the tool schema. METHODOLOGY's receipt-template `post_url` key is the machine-consumed report of the created post's live URL — different semantic, worker-parsed, unchanged.
+
 ## [6.58.320] - 2026-07-19
 
 ### Changed

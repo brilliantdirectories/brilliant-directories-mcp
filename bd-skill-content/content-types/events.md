@@ -158,7 +158,6 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). The source's published end clock time fills the last six digits (10 AM conclusion → `100000`). For a single-day event, set to the same date as `post_start_date` with the actual end time. Source states no end at all: equal to `post_start_date`. |
 | `post_venue` | Venue name only ("Stubb's BBQ", "Staples Center", "Delta Hotels Toronto"). |
 | `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon carry the map pin. Do NOT prepend the venue name (already in `post_venue`). |
-| `post_url` | Only on explicit user request — renders CTA button on post page. All other links go in the post content. |
 | `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |
