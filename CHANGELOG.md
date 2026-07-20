@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.395] - 2026-07-20
+
+### Changed
+
+- **Lead law de-prescribed + full GO batch (B-H).** The .394 first-sentence carve was too prescriptive — both load-bearing laws restored to their original any-order lists verbatim, with one appended clause each: jobs "the first sentence leads with who's hiring and the role"; events "the first sentence leads with the event and what it is". Split shapes named at all four spots: "(never 3/3 or 4/4)". Seals: #2 fit class opens (suits/fits/works for — any fit verb; fit-as-subject "The best fit is..."); #9 resembles OR DIFFERS ("but this one stays focused on..."); #5 heading example + "Why The Setting Works"; Conclusion-recap += "The result is"; compounds += -ready/-facing; location_value never a ZIP outside location_type=postal_code (postal_code mode preserved).
+
 ### Changed
 
 ## [6.58.394] - 2026-07-20
