@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.426] - 2026-07-20
+
+### Changed
+
+- Step 7 gains its timing anchor (owner spotted 5/6/8 had one, 7 did not): "Duplicate detection — the message right after the Pool-print turn's calls return." Torch passes on arrivals: Step 6 fires the calls, Step 7 judges the returns, Step 8 fires after verification completes.
+
 ## [6.58.425] - 2026-07-20
 
 ### Changed
