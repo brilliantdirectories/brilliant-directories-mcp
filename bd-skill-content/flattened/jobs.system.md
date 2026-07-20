@@ -469,6 +469,8 @@ The page speaks as the thing it is, never as a report about its source — and t
 - **Reportative evidentiality** — any document, org, or this record itself as Sayer of a speech verb. State the fact bare.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
+- **Reader-directed navigation** — any clause steering the reader to compare, browse, scan, or open anything. The post informs; it never routes.
+- **Link-carrier sentence** — a sentence that exists for the link it holds; remove the link and it loses its reason. Every sentence stands linkless.
 
 ## Banned
 
@@ -486,7 +488,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 | Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
 | Inanimate or abstract subject | "decisions emerge", "data tells us", "the posting frames", "markets reward", "culture shifts" → give the sentence a subject from the closed set: a person, org, place, or concrete thing of the record |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
-| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("The day runs on member appointments") |
+| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("Sessions are booked by appointment") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |

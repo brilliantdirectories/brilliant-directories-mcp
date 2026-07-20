@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.348] - 2026-07-20
+
+### Changed
+
+- **Constructions list completed with the two pragmatic classes grammar cannot catch (owner ask), + one fix-arm tension.** Added: "Reader-directed navigation" (clauses steering the reader to compare/browse/scan — person-subject versions pass every grammatical law; this is the named ban) and "Link-carrier sentence" (exists for its link; every sentence stands linkless) — the two all-day recurrers now named as constructions, aligning with the dominance and fit-participants laws. Row 34's fix-arm example "The day runs on member appointments" modeled the metaphoric-predication disease inside a repair instruction — now "Sessions are booked by appointment". Full-file audit verdict: three-layer architecture (closed-set whitelist / eight named constructions / token-tell rows), no contradictions, no further trims.
+
 ## [6.58.347] - 2026-07-20
 
 ### Changed
