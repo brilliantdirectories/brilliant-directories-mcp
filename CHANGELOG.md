@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.386] - 2026-07-20
+
+### Changed
+
+- **Appended which-clauses banned outright** (new pattern row): a fact riding ", which ..." on another sentence splits into its own sentence — direct statement beats the appendage even for plain facts. Completes the which-arc: content classes banned in any container (.383/.384), corpus permissions swept (.385), now the container itself is dead.
+
 ## [6.58.385] - 2026-07-20
 
 ### Changed
