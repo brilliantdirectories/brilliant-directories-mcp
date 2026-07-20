@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.405] - 2026-07-20
+
+### Changed
+
+- Restate-not-drop trimmed: "restate it in a legal shape" — both pronouns bind to "the thought"; the bare "restate in a legal shape" variant was rejected (dropping-it would lose its antecedent and could bind to "the wording").
+
 ## [6.58.404] - 2026-07-20
 
 ### Changed

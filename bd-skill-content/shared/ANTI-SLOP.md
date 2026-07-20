@@ -15,7 +15,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Banned constructions (the construction itself, in every wording)
 
-Every `Banned constructions` and `Banned patterns` entry kills the wording, never the thought — restate the fact in a legal shape; dropping it is its own failure.
+Every `Banned constructions` and `Banned patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). The record or a person carries the fit ("perfect for anyone who...").
