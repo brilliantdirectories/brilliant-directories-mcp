@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.456] - 2026-07-20
+
+### Changed
+
+- **Jobs gains the census score — the reward channel that opened events up ("the score is the whole kicker" — owner).** "The Pool-print turn's score: how many candidates enter the pool — an omitted one costs a later round" — events' exact position and grammar; the count-print's duplicate cost clause trimmed so the omission cost states once, in the score. This was the last non-domain asymmetry between the two Step 6s: jobs' extra length is now entirely the price of extraction-class data (three employer homes, board class, occupation gate); the motivational spine — floor, score, count artifact, N+1 arithmetic — is identical.
+
 ## [6.58.455] - 2026-07-20
 
 ### Changed
