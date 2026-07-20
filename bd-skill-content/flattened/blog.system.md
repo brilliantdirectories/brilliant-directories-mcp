@@ -506,7 +506,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 | Marketing compounds | "[X]-centric", "[X]-driven", "[X]-worthy", "[X]-leading", "[X]-forward" → plain descriptors |
 | Timeline filler | "Since its inception", "From day one", "Over the years" → the exact year, or cut |
 | Sentence-initial shell | A sentence opening with "That [abstract noun]" summing the prior sentence ("That mix gives...", "That structure works...") → open with the fact itself |
-| Appended which-clause | A fact riding ", which ..." on another sentence ("The summit, which draws 3,000 attendees") → give the fact its own sentence ("The summit draws 3,000 attendees.") |
+| Appended relative clause | A fact riding a comma-appended clause (", which ...", ", who ...", ", where ...", ", whose ...") on another sentence ("The summit, which draws 3,000 attendees") → give the fact its own sentence ("The summit draws 3,000 attendees."). Restrictive clauses that define their noun ("trainers who hold NASM certification") stay. |
 | Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |

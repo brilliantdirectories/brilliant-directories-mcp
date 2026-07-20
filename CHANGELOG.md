@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.387] - 2026-07-20
+
+### Changed
+
+- **Appended-clause ban widened from ", which" to the relativizer family** (", who", ", where", ", whose") — banning one token invites a relativizer switch; the class is the comma-appended background clause. Restrictive clauses that define their noun stay legal. Corpus grep confirmed no worked example models the sibling forms.
+
 ## [6.58.386] - 2026-07-20
 
 ### Changed
