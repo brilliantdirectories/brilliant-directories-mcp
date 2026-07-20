@@ -6,6 +6,15 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your"). Every voice: declarative and active, and every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers who..."); facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content. The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
+## Banned constructions (grammar-level law — the construction itself is banned, in every wording)
+
+- **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
+- **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
+- **Metaphoric locative predication** — a posture verb on an abstract subject ("sits inside", "lives in"). State the location or relation literally.
+- **Reportative evidentiality** — any document, org, or this record itself as Sayer of a speech verb. State the fact bare.
+- **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
+- **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
+
 ## Banned
 
 | Pattern | Examples / fix |

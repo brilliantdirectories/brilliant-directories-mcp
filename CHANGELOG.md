@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.347] - 2026-07-20
+
+### Changed
+
+- **Banned constructions written as grammar-level law (owner: the AI knows technical directives better than example lists).** New ANTI-SLOP section names the six mechanics as law — the construction itself is banned in every wording: shell-noun/discourse-deictic subjects; relational clauses with abstract Carriers; metaphoric locative predication; reportative evidentiality (any document, org, or the record itself as Sayer); metadiscursive importance predication; unglossed jargon transfer. Each with its replacement directive. The class DEFINITION is the boundary — no token list to wiggle around; works with the closed-set subject law as the positive side.
+
 ## [6.58.346] - 2026-07-20
 
 ### Changed
