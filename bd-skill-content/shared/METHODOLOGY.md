@@ -238,7 +238,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Throat-clearing opener? Cut.
 - Unsourced record fact presented as fact? Hyperlink it to its source or rewrite — naming the source in prose is not sourcing, and a source-naming sentence still rewrites after the link.
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
-- External link missing `rel="noopener" target="_blank"`? Add.
+- External link not carrying exactly `rel="noopener" target="_blank"`? Fix it.
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Anchor under 2 or over 4 words? Resize to the sentence's own 2-4 word noun phrase; move the description to `title` as a descriptive noun phrase, never an instruction ("Browse...").
 - Same href twice? Re-derive one under a different Pattern, or cite a different source's static page for an external; drop only if none fits.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.412] - 2026-07-20
+
+### Changed
+
+- **Two levers found in the Breathwork culprit hunt, both fixed in place.** (1) The .397 audience seal's "(as the source states it)" INVITED attribution — "The page positions the training for..." was the model demonstrating compliance; now "(the source's own audience, never projected from the site's member professions)". (2) The external-attribute self-check tested PRESENCE ("missing? Add") so the recurring target="blank" typo passed — now exactness: "not carrying exactly rel="noopener" target="_blank"? Fix it." Corpus proven typo-free (the model composes the typo from memory on body citations; CTA template-copies stay correct). No levers found for unique-href dup, SEO self-narration, appendages, fit adjuncts — laws strong, recidivism pending first gated run.
+
 ## [6.58.411] - 2026-07-20
 
 ### Changed
