@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.373] - 2026-07-20
+
+### Changed
+
+- **Jobs midpoint rounded to two decimals (owner: prevent .3333-style floats).** Events needs nothing — both its price paths copy source values verbatim, no arithmetic; jobs' midpoint is the corpus's only price division and now rounds.
+
 ## [6.58.372] - 2026-07-20
 
 ### Changed
