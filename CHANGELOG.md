@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.392] - 2026-07-20
+
+### Changed
+
+- **First-sentence link ban (all skills) + bare-furniture seal (Road to Wellness opening "Race calendar fills with...").** The mint: our own research vocabulary (events.md vertical list "race calendars", discovery query shape "<category> calendar") recycled into an opening prose subject to carry a link. Three in-place fixes, no new rules: internal-link placement list gains "none in the post's first sentence"; citation exclusion list gains "never the post's first sentence"; off-subject narration's mention clause widens to "the site or its furniture" with the bare-furniture example.
+
 ## [6.58.391] - 2026-07-20
 
 ### Changed
