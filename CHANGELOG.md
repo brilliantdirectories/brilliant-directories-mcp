@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.354] - 2026-07-20
+
+### Changed
+
+- **Voice target bulleted (owner): eight laws, one per bullet, wording preserved.** Word-diff proof of zero loss: the whole change is 8 bullet markers + two punctuation splits. Order unchanged (identity / per-type voice / sentence grammar / economy / style / fit register / anchors) — audit found it already logical; no contradictions, nothing past need.
+
 ## [6.58.353] - 2026-07-20
 
 ### Changed
