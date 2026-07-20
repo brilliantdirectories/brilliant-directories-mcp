@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.362] - 2026-07-20
+
+### Changed
+
+- **URL-case How-to-apply section abolished (owner, Thrive Seattle grading).** When the application URL rides the CTA, a trailing How To Apply section has nothing to say — the run padded it ("Use the button above to open the application page") with page-deixis pointing at the post's own layout. Law now: "a known URL rides the CTA and no How to apply section exists for it — the button is the whole answer"; the email/phone closing section stands. Run dating: "suits" present = pre-.356 bytes — every other flaw (sits-alongside ×2, points-to/names/lists ×3, Seattle-matters, restatement filler) already carries a law newer than the run.
+
 ## [6.58.361] - 2026-07-20
 
 ### Changed
