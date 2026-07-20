@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.419] - 2026-07-20
+
+### Changed
+
+- Events Steps 6-7: quantifier fronted — "every candidate's 3 title variants in ONE title compound" / "every candidate in ONE title compound" (was compound-first with the totality trailing; the serialized runs kept "ONE compound" and dropped "every"). Pure word-order flip, owner-designed; Dedup section untouched. Turn-3 serialization context: arithmetic verified intact and live at all four command sites; no textual blocker exists — dilution theory current; user-prompt salience line held in pocket.
+
 ## [6.58.418] - 2026-07-20
 
 ### Changed
