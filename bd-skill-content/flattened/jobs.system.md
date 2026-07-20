@@ -470,7 +470,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Banned constructions (the construction itself, in every wording)
 
-Every ban here and in `Banned patterns` kills the wording, never the thought — restate the fact in a legal shape; dropping it is its own failure.
+Every `Banned constructions` and `Banned patterns` entry kills the wording, never the thought — restate the fact in a legal shape; dropping it is its own failure.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). The record or a person carries the fit ("perfect for anyone who...").
@@ -540,7 +540,7 @@ Every ban here and in `Banned patterns` kills the wording, never the thought —
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
-17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow.
+17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow — restate, never drop.
 18. Every depth dimension that source data or confident knowledge supports — present? Skipping one is the failure.
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)

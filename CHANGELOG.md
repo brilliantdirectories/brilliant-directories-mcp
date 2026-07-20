@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.404] - 2026-07-20
+
+### Changed
+
+- Restate-not-drop line hardened on self-audit: "here" spatial cross-ref replaced with greppable section names ("Every Banned constructions and Banned patterns entry..."); check 17 gains the force at the decision moment: "Apply its arrow — restate, never drop."
+
 ## [6.58.403] - 2026-07-20
 
 ### Changed
