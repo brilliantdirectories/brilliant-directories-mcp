@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.391] - 2026-07-20
+
+### Changed
+
+- CTA paragraph law trimmed: "the steps and what to have ready" (dropped "an applicant/attendee takes" — restated what "the steps" already says). Both files.
+
 ## [6.58.390] - 2026-07-20
 
 ### Changed
