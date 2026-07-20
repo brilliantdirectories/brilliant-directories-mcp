@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.411] - 2026-07-20
+
+### Changed
+
+- "distributed evenly across the post's full length, never clustered" — canonical distribution/clustering antonym pair (metalanguage doctrine); "spread and distributed" synonym-doubling rejected as redundancy.
+
 ## [6.58.410] - 2026-07-20
 
 ### Changed
