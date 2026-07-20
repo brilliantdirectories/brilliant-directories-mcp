@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.442] - 2026-07-20
+
+### Changed
+
+- **Jobs Step 6 gets the binary treatment (live jobs run: 5 pre-verdict posting fetches at turn 3, then a pool of 1 — Vitruvian — from SERPs holding ~14 keyed candidates; the walk and count artifact never executed).** Two clauses, the events .439/.441 twins mapped to jobs' canon: (1) sufficiency seal after the three homes — "No other test — the result's own title, URL, and snippet are enough to cut both keys; its page is never fetched to cut them" (fetch-ban scoped to the result's own page for key-cutting: list-page harvest, 2c survivor fetches, and canonical-posting probes untouched); (2) quota flip — "cap 10 candidates when more" → "the pool holds the first ten the walk yields — fewer only when it yields fewer" (ceiling + floor + walk-order entry; jobs' "the date orders the pool" keeps ranking within it). Qualification unchanged and mechanical: keys cuttable + staleness arithmetic; what's killed is judgment beyond the stated test. Six-call round law untouched — events precedent says shape arithmetic follows the census.
+
 ## [6.58.441] - 2026-07-20
 
 ### Changed
