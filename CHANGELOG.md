@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.439] - 2026-07-20
+
+### Changed
+
+- **Events Step 6 census made binary (run on .438: pooled 1 of ~20 dated results — the grant deletion held, zero web calls in turn 3, but the star-shop survived).** Diff .420→.438 proved NO census regression — identical definition text produced the 8-call bulk pool AND the pool-of-1; the variance is structural (run-11-vs-12 precedent). Root: every command bound to "candidate" — a judgment token the model fills by *selection* (an invisible set-forming step where 20 becomes 1). Rebind: the command surface now binds to "dated result" — "Every result line in the five outputs showing a title and a start date later than today... is a dated result — no other test, the line's own words are enough"; definition first, then every command inherits it (score, fire, compound, probes, N+1, return-to-Step-5). Bridge "its members are the round's candidates" keeps Step 7/Dedup/pool-discipline language bound with zero downstream sweeps. Phantom source "copied from the pool lines" dropped (the print rarely renders in call-carrying messages — coverage lives in the calls; verdict lines print 100% in call-free messages). Quota flip: "cap 10 candidates when more" (ceiling) → "the pool holds ten when the outputs show ten — fewer only when they don't" (flat-number fill, the ≈100%-obeyed lever class). Owner doctrine: "make it binary not judgment." Events only — jobs' walk+count-print machine already binds candidacy mechanically ("Both keys cut, the result is a candidate"); its quota flip drafted, reverted on owner's scope call.
+
 ## [6.58.438] - 2026-07-20
 
 ### Changed
