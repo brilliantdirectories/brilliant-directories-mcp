@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.441] - 2026-07-20
+
+### Changed
+
+- **Quota clause compressed (owner's design): "the pool holds ten when the outputs show ten or more — the first ten in the order found — fewer only when they don't" → "the pool holds the first ten in the order found — fewer only when the outputs show fewer."** Five words shorter, same three bounds: "first ten" carries ceiling + selection in one stroke; the floor keeps its subject named (owner's draft's dangling "they" repaired) and re-uses the membership test's own verb — "show," the definition's "a result line showing a title and a start date" — so floor and census run one test with one verb.
+
 ## [6.58.440] - 2026-07-20
 
 ### Changed
