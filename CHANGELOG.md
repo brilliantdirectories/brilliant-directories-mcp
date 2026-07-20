@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.351] - 2026-07-20
+
+### Changed
+
+- **Self-check gap closed (owner audit): the checklist predated the constructions.** Checks 1-16 gate token-level patterns and check 6 covers constructions #1-3 via the closed set, but nothing swept the other five at posting time. New check 17, one line, references by name: "Any sentence instantiating a `Banned constructions` entry, in any wording? Apply its arrow." DRY — the gate points at the master list, restates nothing.
+
 ## [6.58.350] - 2026-07-20
 
 ### Changed
