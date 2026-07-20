@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.370] - 2026-07-20
+
+### Changed
+
+- **ADJUDICATION RESULT (Sunset Relays, first certified-bytes run): the Offer construction, site-blindness, and shell bans all HELD — zero instances of the campaign's worst diseases.** CTA block, parking-by-lot-name local context, five-tier price harvest, full timeline all executed. Two fixes from the survivors: (1) construction #3's hole — posture verbs on RECORD subjects slipped ("the race sits with", "the 5K sits alongside") because the ban was abstract-subject-scoped; boundary now "a posture verb on anything but a physical place — places sit; records and entries do not." (2) post_promo law — "numeric only" invited stripping the decimal (59.30→593 shipped live) and midpoint-of-tiers matches no real entry on multi-tier races; now "a plain decimal number (59.30)... tiers or a range → the lowest standard adult price." Counted stochastic misses (laws exist): reportative ×2, dimension-label heading ×1, intro 5/6 sentences, internal floor 2/~6.
+
 ## [6.58.369] - 2026-07-20
 
 ### Changed
