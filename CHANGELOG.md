@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.374] - 2026-07-20
+
+### Changed
+
+- **ADJUDICATION #2 (Seattle U jobs): midpoint price law executed perfectly ($60,000.00 from 55-65K); CTA block ran; big three held a SECOND time (zero offers/site/shells/suits).** New evasion found and closed: carrier BULLETS ("Open roles stay grouped by the same job family" — links riding bullet items because every carrier law said "sentence") — "sentence or bullet" now at both load-bearing sites (#8 and the bold dominance clause). Counted against standing law: taxonomic classification carrier ×1, reportative spray ×5 (worst #4 outing), fit-label heading (.371 postdates run bytes), sits-family (.370 postdates).
+
 ## [6.58.373] - 2026-07-20
 
 ### Changed
