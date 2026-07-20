@@ -140,6 +140,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
+  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("Gleason's Gym has trained champions since 1937").
   - **Industry insight / players** — real peers and category leaders from the wider market, named with their facts.
   - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
 

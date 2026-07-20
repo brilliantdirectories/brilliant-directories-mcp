@@ -194,6 +194,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
+  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("Gleason's Gym has trained champions since 1937").
   - **Industry insight / players** — real peers and category leaders from the wider market, named with their facts.
   - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
 
@@ -976,7 +977,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them (never 3/3 or 4/4), summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for; the first sentence leads with who's hiring and the role. The post closes with two paragraphs about the role, at least six sentences split unevenly between them (never 3/3 or 4/4).
 
-**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>` of how to apply — the steps and what to have ready, stated in third person, never commands — never a description of the button, the form, or its fields, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The official URL is the button's — never spent as a body citation.
+**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>` of how to apply — the steps and what to have ready, stated in third person, never commands — never a description of the button, the form, or its fields, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The official URL is the button's — never spent as a body citation. Never the button alone.
 
 **Bullets** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 

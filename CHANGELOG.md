@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.401] - 2026-07-20
+
+### Changed
+
+- **The midget-post culprit (Gleason's grading): the depth menu had NO organizer/venue-story dimension** — "background on the organizer, what they're known for" had no commanded slot, and unnamed slots never fill. New menu line: "The organizer and venue's story — who runs it, their history, what they're known for; confident knowledge counts". Depth menu otherwise audit-clean (all dimensions intact; the other skips were check-18 violations on uncertain bytes, now backstopped by .400's no-fact-twice + patterns-table sweep). CTA block gains four words both files: "Never the button alone." (bare-button specimen).
+
 ## [6.58.400] - 2026-07-20
 
 ### Changed
