@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.448] - 2026-07-20
+
+### Changed
+
+- **Jobs variants supply-bound (.447 run: compound CLEAN — zero pollution, the factory stays dead — but collapsed to ONE variant per employer, dropping three real second name-forms the SERPs showed: Sigma Squared, Functional Inspired Training, Morrow Health; each an uncaught retitled-dupe class. Plus "MORROW & MORROW Medical" shipped 4 words against the 1-3 law).** Mirror gun-class of .444's exactness lesson: a ceiling without a supply-binding collapses to the minimum — "up to three" read as free choice. Now the count binds to enumerable supply: "one per distinct employer name form the result shows: the title's form, the URL's form, a shown parent brand — up to three, each 1-3 words trimmed to the distinctive core" (the variant supply IS the three homes the walk already reads — binary, no judgment); Dedup law harmonized to "every distinct employer name form... an omitted form saves a token and ships a dupe." Trim-to-core relocated onto the pool line (the shared copy didn't bind there — MORROW proved it). Events' remaining variant wisdom (leaders, generics, shorter-substrings) reaches jobs via the shared Distinctive-phrase law — not duplicated.
+
 ## [6.58.447] - 2026-07-20
 
 ### Changed
