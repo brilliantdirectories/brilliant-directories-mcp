@@ -4,7 +4,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Voice target
 
-The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your"). Every voice: declarative and active, with a concrete party as the sentence's subject — the employer, the organizer, the person, the place — doing real things in literal verbs ("East Bank Club is looking for trainers who..."), never an abstraction (the model, the market, the environment) as actor; facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Audience fit is described in third person, plainly evaluative in a friend's everyday words ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content. The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
+The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist. Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to. Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your"). Every voice: declarative and active, with a concrete party as the sentence's subject — the employer, the organizer, the person, the place — doing real things in literal verbs ("East Bank Club is looking for trainers who..."), never an abstraction (the model, the market, the environment) as the subject of any verb — is/has/suits/sits/makes included — and never a subject that sums the writing's own prior sentences ("that context", "that kind of autonomy"); facts stated plainly, not hedged or reported. Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source. Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length. Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content. The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
 ## Banned
 
@@ -20,7 +20,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 | Binary contrasts / negative listing | "Not X. Y." / "isn't X, it's Y" / "Not a concert. Not a conference. It's Z." → just say Y |
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
 | Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
-| Inanimate as actor | "decisions emerge", "data tells us", "the posting frames", "markets reward", "culture shifts" → name the human doing the thing, never the human saying it |
+| Inanimate or abstract subject | "decisions emerge", "data tells us", "the posting frames", "markets reward", "the role sits inside", "that context makes" → name the person, org, or place as subject; a fit or location fact states the thing bare ("a good fit for instructors", "The job is at Elite Sports NW") |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
 | Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("The day runs on member appointments") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
@@ -28,10 +28,10 @@ The page speaks as the thing it is, never as a report about its source — and t
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
 | Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No visualization warm-up before the point. |
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay" → cut |
-| Vague declaratives | "significant", "important", "the implications are", "the stakes are" without naming the specific thing → name it |
+| Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
-| Formulaic attribution | "[Org/page/posting/schedule] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor, never as the speaker; a claim that cannot be stated bare drops |
+| Formulaic attribution | "[Org/page/posting/listing/schedule — any document or the record itself] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor, never as the speaker; a claim that cannot be stated bare in plain words drops |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 | Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…"), or that mentions the site in any position ("on this site", "the site's") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a sentence or section about reading or interpreting the source document always fails → rewrite about the subject; every sentence must belong in a post carrying zero links — parsing without its link is not the test, belonging is |
 
@@ -47,7 +47,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 4. Banned adverb / jargon / vocabulary fingerprint (delve/showcase/leverage/nestled/vibrant/bustling/tapestry/etc.)? Delete or replace with a concrete subject-specific word.
 4a. Scene-setting opener ("Picture this", "Imagine", "It's a [adjective] [time]...")? Cut, state the subject directly.
 5. Passive voice? Name the actor.
-6. Inanimate or abstract noun as actor? Rewrite with the person or place doing the real thing.
+6. Inanimate or abstract noun as subject — any verb, is/has/suits/sits included? Rewrite with the person, org, or place as subject.
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
@@ -65,7 +65,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 |---|---|
 | Directness | Statements or announcements? |
 | Rhythm | Varied sentence length, or metronomic? |
-| Trust | No sentence restating another sentence in the same terms? |
+| Trust | No sentence restating another sentence — in the same terms or summed into an abstract noun ("that context")? |
 | Authenticity | Sounds human-typed? |
 | Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
 

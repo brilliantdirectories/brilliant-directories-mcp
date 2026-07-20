@@ -110,7 +110,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Voice:** this page IS the event page. State the event's facts as settled knowledge: "Doors open at 6", "Tickets cost $25." Never make a source document a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out, attribution is never a third door; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details, told welcoming and positive — informative first, never puffery.
 
-**Events-specific load-bearing facts** — two intro paragraphs, at least six sentences between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
+**Events-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them.
 
 **Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known — the event's own event page; a third-party booking or checkout engine never outranks it — include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
@@ -126,7 +126,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has; none → the slots move to body sections) |
 | Body sections (venue/scene/what-to-expect) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
+| Closing (the final two paragraphs) | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them). A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row.
 

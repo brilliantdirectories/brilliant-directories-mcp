@@ -143,9 +143,9 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the job posting. State the role's facts as settled knowledge: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out, attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
+**Voice:** this page IS the job posting. State the role's facts as settled knowledge: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out, attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Draw comparisons from the role's real market: employer type, pay bands, schedule shape; related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
 
-**Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for.
+**Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for. The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them.
 
 **Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
@@ -163,7 +163,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 |---|---|
 | Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has; none → the slots move to body sections) |
 | Body sections (company/responsibilities/qualifications) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
-| Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
+| Closing (the final two paragraphs) | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 
 Jobs get category, location (`lat`+`lng`+`location_value`+`location_type=locality`) filter dimensions. No date filter for jobs.
 

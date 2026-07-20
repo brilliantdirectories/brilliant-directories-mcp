@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.345] - 2026-07-20
+
+### Changed
+
+- **THE RELATIONAL-CLAUSE GAP + SHELL NOUNS — the mechanic behind every awkward sentence, named and closed (linguistics minion, byte-verified).** The abstraction ban was written in material-process vocabulary ("as actor", "doing real things") but every defect ("That context makes", "It suits", "the role sits inside", "The facility context matters") is a RELATIONAL clause — suits/sits/has/makes/matters have no actor, so abstract subjects were letter-compliant. The law now covers all verbs: "never an abstraction ... as the subject of ANY verb — is/has/suits/sits/makes included — and never a subject that sums the writing's own prior sentences (shell nouns: that context, that kind of autonomy)". The Trust row's "in the same terms" was the buried permission licensing shell-noun cohesion — now bans summed-into-an-abstract-noun restatement. Row 23 renamed "Inanimate or abstract subject" with stative examples + a relational fix path; check 6 matches. Attribution: "listing" + "the record itself" close the synonym/self-Sayer escapes; claims must be stateable "bare in plain words"; unglossed source labels ("injury prevention for industry") translate to what the thing does or drop (harvest law now covers phrases, not just paragraphs). "matters" joins Vague declaratives. Depth-dimension labels never enter prose. Fit sentences: the thing itself as subject. jobs.md's own "Comparison context comes from" — the instruction performing the defect — now "Draw comparisons from the role's real market". Plus owner structure: intros AND closes = two paragraphs, six-plus sentences split unevenly (close mirrors opening), both skills.
+
 ## [6.58.344] - 2026-07-19
 
 ### Changed
