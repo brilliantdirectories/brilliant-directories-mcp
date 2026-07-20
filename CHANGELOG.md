@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.385] - 2026-07-20
+
+### Changed
+
+- **Which-permission sweep.** Corpus grep for which-clauses found one real license: blog.md's meta-description worked example ended "and which style fits a small apartment" — modeling both a which-phrase and an abstract-carrier "fits" inside example material ("space needs for a small apartment" now). Two rule-prose interrogative "which" tokens in METHODOLOGY rephrased out (Confidence gate, load-bearing-facts line). Zero "which" tokens remain in the corpus outside this changelog.
+
 ## [6.58.384] - 2026-07-20
 
 ### Changed
