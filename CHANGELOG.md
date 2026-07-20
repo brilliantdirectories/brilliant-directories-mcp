@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.443] - 2026-07-20
+
+### Changed
+
+- **Jobs seal scoped to key-cutting: "No other test —" → "Nothing else cuts the keys —".** The .442 opening was absolute and sat one sentence before "(the 30-day staleness gate applies…)" — a literalist could read the seal as overriding the gate and pool stale listings. Confirmed in a by-hand simulation of the full jobs flow on live SERP data (walked ~40 result lines as the AI would). Scoping the subject to the keys walls the gate off; the fetch-ban and the floor's membership force are unchanged. Simulation also verified: census math binary end-to-end, Dedup's "3 × N, N = the pool print's line count" agrees with the new quota, remote/pending-city branches intact. Watch-list (pre-existing, not shipped): Company-Role title inversion on the first-segment fallback (self-heals at verification), wrong-occupation keyed results can pool (no occupation test exists; improbable to reach create), bare-role variants law violated by the weak run.
+
 ## [6.58.442] - 2026-07-20
 
 ### Changed
