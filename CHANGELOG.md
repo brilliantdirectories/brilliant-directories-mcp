@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.420] - 2026-07-20
+
+### Changed
+
+- Step 6: "Fire all the candidates' dedup calls" — universal quantifier on the fire command itself (one word, same axis as .419).
+
 ## [6.58.419] - 2026-07-20
 
 ### Changed
