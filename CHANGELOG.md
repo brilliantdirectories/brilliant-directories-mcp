@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.415] - 2026-07-20
+
+### Changed
+
+- CTA ownership sentence trimmed to "The URL is the button's first — never a body citation; never the button alone." ("verified live, never a guessed path" restated the snippet's <verified official URL> and the per-path liveness gate).
+
 ## [6.58.414] - 2026-07-20
 
 ### Changed
