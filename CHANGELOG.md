@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.371] - 2026-07-20
+
+### Changed
+
+- **The "Who This Event Fits" heading smoking gun (owner): the dimension name "Who this is for / who it's not for" is the corpus's only headline-shaped label** — every other section got a record heading because its material carries nouns (course/parking/times); fit's material is audience classes, so the vacancy got filled by the nearest heading-shaped phrase: the rulebook's own label. Occupant named per tonight's pattern: "a fit section's heading names its participants, never the label" — this post's own first sentence held the correct heading ("Teams, Solo Runners, And Families").
+
 ## [6.58.370] - 2026-07-20
 
 ### Changed
