@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.331] - 2026-07-19
+
+### Changed
+
+- **The convergence batch — four grammar-level roots behind every recurring fail in the NETA + FFF certification posts.** (1) Evidentiality: the fact-mandate made the model transfer facts WITH their evidence ("NETA lists", "the site centers", "the title names", and the "That points to" inference chains — same instinct aimed at its own reasoning). The binary that removes the hedge's grammatical slot, in both Voice lines: "state each fact bare or leave it out". (2) The comparison-link ban was scoped to the depth menu, letting intro comparisons ("rather than a general gym floor") escape — relocated to the universal anchor law: "linked in place with the sentence unchanged, never on a comparison, never as the host's inventory" (DRY move; menu copy removed). (3) The .322 CTA snippet taught its own defect — no href/title/rel/target, and the FFF run copied it verbatim; both snippets now show the complete element: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`. (4) The citation ladder's terminal "(d) ship with fewer — fewer beats a forced one" was the same cop-out shape as the .310 valve — both posts jumped to (d) without firing (b); now "legitimate only once (b)'s round has fired."
+
 ## [6.58.330] - 2026-07-19
 
 ### Changed
