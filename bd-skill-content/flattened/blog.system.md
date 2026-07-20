@@ -470,8 +470,8 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 ## Banned constructions (the construction itself, in every wording)
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
-- **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
-- **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"), or any verb placing or positioning the record alongside or among other things ("which places it alongside other industry events"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
+- **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit ("perfect for anyone who...").
+- **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"), or any verb placing or positioning the record alongside or among other things ("which places it alongside other industry events"), or a simile filing it among a class ("openings like this one"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or an org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why It Matters...").
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
@@ -505,7 +505,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay", "(Read: ...)", "(Think: ...)" → cut |
 | Marketing compounds | "[X]-centric", "[X]-driven", "[X]-worthy", "[X]-leading", "[X]-forward" → plain descriptors |
 | Timeline filler | "Since its inception", "From day one", "Over the years" → the exact year, or cut |
-| Sentence-initial shell | A sentence opening with "That [abstract noun]" summing the prior sentence ("That mix gives...", "That structure works...") → open with the fact itself |
+| Sentence-initial shell | A sentence opening with "That" or "That [abstract noun]" summing the prior sentence ("That mix gives...", "That makes...") → open with the fact itself |
 | Non-restrictive relative clause | A fact riding a comma-appended clause (", which ...", ", who ...", ", where ...", ", whose ...") on another sentence ("The summit, which draws 3,000 attendees") → give the fact its own sentence ("The summit draws 3,000 attendees."). Restrictive clauses that define their noun ("trainers who hold NASM certification") stay. |
 | Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |

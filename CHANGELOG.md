@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.390] - 2026-07-20
+
+### Changed
+
+- **Svetness jobs-run seals (5 wiggles found, each patched at its gap).** (1) Construction #2's fix arm named the sanctioned form ("perfect for anyone who...") — its own definition was minting "suits" with a legal carrier. (2) Sentence-initial shell row gains bare "That" ("That makes..."). (3) Adjacency gains the simile vehicle ("openings like this one"). (4) THE ABSENT-FACT COLLISION: the Bullets law commanded an employment-type/cost slot while the Voice law commanded silence on absent facts — the model filled the mandatory slot with "Not stated on the page"; both Bullets laws now carry "A slot the source doesn't fill is dropped, never written as missing." (5) CTA paragraph register: "how to apply/register — the steps and what to have ready — never a description of the form or its fields" (was "application/registration facts", licensing form-narration).
+
 ## [6.58.389] - 2026-07-20
 
 ### Changed
