@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.413] - 2026-07-20
+
+### Changed
+
+- Post-incident housekeeping: sources normalized to LF and zip/flattened rebuilt deterministically. No prose changes — content byte-identical to 6.58.412.
+
 ## [6.58.412] - 2026-07-20
 
 ### Changed
