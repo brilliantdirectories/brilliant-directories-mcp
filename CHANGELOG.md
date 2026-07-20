@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.330] - 2026-07-19
+
+### Changed
+
+- **.329 trimmed (owner: no bloat).** post_promo row: "The published cost to attend — ticket, registration, entry, or booking fee — numeric only..." (flourish "whatever the event calls it" cut; four class instances kept — they defeat the literal read).
+
 ## [6.58.329] - 2026-07-19
 
 ### Changed
