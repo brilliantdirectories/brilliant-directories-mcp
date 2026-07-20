@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.325] - 2026-07-19
+
+### Changed
+
+- **The dominance rule — priority collisions between the corpus's own laws resolved (Pearl Park run: "Readers who want more fitness classes can compare...", single-sentence link paragraphs, a "Related Fitness Picks" links section).** Root: the link floor is a command, bans are bans, and commands beat bans — .310's deletion of the under-budget valve removed the only counterweight, so the draft manufactures navigation prose ("Readers who...", "People who... can browse/open") to feed the quota. Nothing ever said who wins when quota meets clean prose. Now item 4 states it: "a slot goes unfilled only when the draft's nouns run out — and a sentence added, kept, or shaped to fill a slot is a worse failure than the unfilled slot: the budget never outranks the prose." Second collision: .319's fact-mandate fed row-34 attribution ("The event page describes a welcoming workout") — facts arrived with provenance; both Depth lines now weld the mandate to the voice law: "every fact the source holds enters the post as settled knowledge". Third: expired-event links — dedup returns past events as Pattern 1 rows; events linking law now "A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row."
+
 ## [6.58.324] - 2026-07-19
 
 ### Changed

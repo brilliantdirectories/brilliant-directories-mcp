@@ -118,9 +118,9 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: an event page is a destination, not a stub — every fact the source holds enters the post: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
+**Depth**: an event page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget; the pass fills these placement ranges:
+**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget. A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row. The pass fills these placement ranges:
 
 | Section | Placement range |
 |---|---|

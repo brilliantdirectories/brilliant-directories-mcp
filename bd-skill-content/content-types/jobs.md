@@ -153,7 +153,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: a job page is a destination, not a stub — every fact the source holds enters the post: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
+**Depth**: a job page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
