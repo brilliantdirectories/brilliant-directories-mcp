@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.324] - 2026-07-19
+
+### Changed
+
+- **Contradiction audit before the certification run (owner: "no contradicting prose anywhere?") — one found, fixed.** jobs.md's Voice worked instance taught `"The role requires STOTT certification"` while the shared Voice law names "the role" as a banned actor — the buried-permission-via-example pattern that beats bans. Instance now `"Candidates need STOTT certification"` (concrete party, same fact). Events instances verified clean ("Doors open at 6", "Tickets run $25" — concrete things; row 23's ban class is abstractions). Full sweep otherwise clean: no reader-address stragglers, no abstract-agent feeders, blog's second-person question-H2s correctly scoped outside the listing-type law.
+
 ## [6.58.323] - 2026-07-19
 
 ### Changed
