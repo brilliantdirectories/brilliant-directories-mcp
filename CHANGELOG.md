@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.435] - 2026-07-20
+
+### Changed
+
+- **Compound-malformation fences (live run: 28-variant element 1 shipped with element 2 dropped; wrapper parity hint coached the shape but the retry collapsed to one candidate).** Three surgical fences: shape law gains "— never one —"; the example's anonymous "9" becomes the self-naming "<data_id>" placeholder (jobs' proven style); recovery-scope law added: "A compound that errors re-fires once, corrected, still covering every candidate — never re-fired per candidate." Grid enumeration rejected as bloat (the example IS the grid). Architecture correction on record: jobs_api /tool routes through the brilliantmcp wrapper — the 3.9.6 parity hint reaches butler runs.
+
 ## [6.58.434] - 2026-07-20
 
 ### Changed
