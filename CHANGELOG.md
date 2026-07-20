@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.388] - 2026-07-20
+
+### Changed
+
+- **Relative-clause row renamed to its canonical grammar term**: "Appended relative clause" (a coinage) is now "Non-restrictive relative clause" — the metalanguage the model's grammar knowledge is indexed under, making the exemption a matched textbook pair (non-restrictive dies, restrictive stays). Body unchanged.
+
 ## [6.58.387] - 2026-07-20
 
 ### Changed
