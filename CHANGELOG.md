@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.349] - 2026-07-20
+
+### Changed
+
+- **Dedup pass (owner: stay lean).** The constructions section is the master layer, so superseded prose is CUT, not kept alongside: the Inanimate-or-abstract-subject table row deleted (4th statement of one law — closed set + check 6 + constructions carry it); Trust-row instance parenthetical gone; "or reported" trimmed from Voice (construction #4 + row 43 carry it); constructions header shortened. Net: ANTI-SLOP smaller than before .348.
+
 ## [6.58.348] - 2026-07-20
 
 ### Changed
