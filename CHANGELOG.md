@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.449] - 2026-07-20
+
+### Changed
+
+- **Board class defined functionally (live run: NESTA and NSCA job boards pooled as "employers" with "NESTA job board"/"NSCA Job Board" shipped as variants).** The board-name rule's example list (Indeed, ZipRecruiter, Glassdoor) read as the complete registry — the enumeration-permits-the-unlisted gun-class, inverse of the .102 enumeration-outlaws lesson. BD sites span thousands of niches and every niche has its own boards (HealtheCareers, HigherEdJobs, LawCrossing...), so no list survives; the class is now functional and niche-blind: "a board is any site listing many employers' jobs" — the three names demoted to examples of the class. One inline definition, ~8 words; the existing chain does the rest (board classified → no employer in the three homes → not a candidate; its listings still pool as aggregator copies per line 95).
+
 ## [6.58.448] - 2026-07-20
 
 ### Changed
