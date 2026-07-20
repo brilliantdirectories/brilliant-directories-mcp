@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.332] - 2026-07-19
+
+### Changed
+
+- **Distinct-source citation rule scoped to articles (owner: a listing's best links ARE the organizer's own pages).** Independent sources back claims (blog territory); a listing documents one record, and its deepest pages are the record's own — about, staff, program, registration. Item 3 parenthetical now: "for article-type posts one per source — same-owner pages = one source; a listing's externals may all be the record's own pages, each a different page carrying different information". Makes the listing citation floor achievable from pages the run already fetched (zero extra calls); unique-href still bars linking the same page twice. FFF's 3 distinct fffacademy pages re-grade to PASS.
+
 ## [6.58.331] - 2026-07-19
 
 ### Changed
