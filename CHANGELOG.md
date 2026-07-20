@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.377] - 2026-07-20
+
+### Changed
+
+- **The link balancer in prose (owner: no runbook touch) + Balboa grading.** Universal density law at the linking pass's home: "at most one link per sentence, at most two per paragraph, spread across the post's full length" — replacing the body-row-only "never two in the same paragraph" fragment (both type files) whose body scoping let the jobs intro cram six links LEGALLY. #5 construction covers headings ("Why It Matters..." witnessed); "in one place" (3× across two posts as carrier filler) joins the jargon delete-on-sight row. Balboa event graded: best harvest yet (1955 origin, 72nd running, packet logistics, RRCA independent citation), placement nearly correct, price law executed WITH JUDGMENT ($90 standard over $85 member); residuals counted under standing law (belongs-on/fits-calendar carriers ×2, page-keeps, prices-sit, one shell).
+
 ## [6.58.376] - 2026-07-20
 
 ### Changed

@@ -19,7 +19,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
 - **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or an org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
-- **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
+- **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why It Matters...").
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
 - **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
@@ -45,7 +45,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
 | Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("Members book sessions by appointment") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
-| Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
+| Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer, in one place → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove, suits, suited, boasts, curated, discerning, seamless, oasis → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
 | Scene-setting openers | "Picture this:", "Imagine", "It's a crisp morning in...", "The smell of [X] fills the air..." → state the article's subject directly. No visualization warm-up before the point. |
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay", "(Read: ...)", "(Think: ...)" → cut |
