@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.323] - 2026-07-19
+
+### Changed
+
+- **Abstract-agent style killed at its lever (owner: "East Bank Club's 360 Coaching model points to a trainer who likes..." should be "East Bank Club is looking for trainers who can deliver...").** The disease is grammatically ACTIVE voice with an abstraction as subject (the role/model/market/environment) doing metaphor-verbs (points to, puts, sits, rewards, shows) — so "declarative and active" was satisfied by it, and the pronoun bans fed it by vacating the subject slot. The causing clause now demands the subject: "declarative and active, with a concrete party as the sentence's subject — the employer, the organizer, the person, the place — doing real things ("East Bank Club is looking for trainers who..."), never an abstraction (the role, the model, the market, the environment) as actor". Self-check 6 aligned: "Inanimate or abstract noun as actor? Rewrite with the person or place doing the real thing."
+
 ## [6.58.322] - 2026-07-19
 
 ### Changed
