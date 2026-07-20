@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.341] - 2026-07-19
+
+### Changed
+
+- **Final drift audit (owner): one find — the corpus taught its own metaphor.** Events Voice instance "Tickets run $25" modeled non-literal predication against the new "literal verbs" law; now "Tickets cost $25". All other today-added clauses certified load-bearing: instances at one-per-shape, no rotation sets, no remaining law-vs-instance tension.
+
 ## [6.58.340] - 2026-07-19
 
 ### Changed
