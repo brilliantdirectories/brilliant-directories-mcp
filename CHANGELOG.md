@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.328] - 2026-07-19
+
+### Changed
+
+- **post_url leak refixed (NETA run sent it again) + $299 not passed to post_promo.** .321's silence strategy disproven: the TOOL SCHEMA still advertises post_url, so deleting the corpus row removed our guard while the schema kept selling the field — silence loses to schema presence. Both field tables regain an explicit dull-never row: "Never sent — the registration/application URL lives in post_content's CTA; only an explicit user request fills it" (redirects the CTA impulse to its real home instead of just banning). The skipped price: post_promo's command was correct but sat under the heading "Recommended (include when source data supports)" — soft vocabulary, the same priority inversion the depth dimensions had. All three skills' heading now: "Source-supported (a field whose data the source supplies is filled — leaving it empty is the failure)."
+
 ## [6.58.327] - 2026-07-19
 
 ### Changed
