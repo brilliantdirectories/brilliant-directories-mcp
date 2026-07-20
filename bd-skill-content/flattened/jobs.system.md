@@ -719,7 +719,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the page lists ("local personal trainers"), never site furniture ("our directory," "browse trainers").
+- **Use Pattern 5** when no verifiable category or location fits the sentence. The anchor is still a draft noun naming the people themselves ("local personal trainers"), never site furniture ("our directory," "browse trainers") and never a description of the page.
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes
@@ -972,7 +972,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Voice:** this page IS the job posting. State the role's facts as settled knowledge: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out, attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Ground market context in real specifics: employer type, pay bands, schedule shape; related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
 
-**Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for. The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them, still about the role — never the listings.
+**Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for. The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them, still about the role.
 
 **Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>`, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 

@@ -719,7 +719,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the page lists ("local personal trainers"), never site furniture ("our directory," "browse trainers").
+- **Use Pattern 5** when no verifiable category or location fits the sentence. The anchor is still a draft noun naming the people themselves ("local personal trainers"), never site furniture ("our directory," "browse trainers") and never a description of the page.
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes

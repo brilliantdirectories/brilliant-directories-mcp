@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.380] - 2026-07-20
+
+### Changed
+
+- **URL-PATTERNS prose audit (owner: check beyond URL mechanics) — one contradiction found and fixed:** Pattern 5's anchor guidance said "names who the page lists" — a PAGE-INVENTORY anchor license contradicting the anchor law fourteen lines below ("title names the destination; the anchor never does") and feeding the TFX-style anchors ("Austin competition listings"); now "a draft noun naming the people themselves... never a description of the page." Close-occupant clauses trimmed to the pure positive (owner: prescriptive check): "still about the event." / "still about the role." — the negative tells were redundant with four standing bans.
+
 ## [6.58.379] - 2026-07-20
 
 ### Changed

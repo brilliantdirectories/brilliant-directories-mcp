@@ -719,7 +719,7 @@ Slug = `city_filename` from the return.
 ### When to use Pattern 6 vs Pattern 5
 
 - **Use Pattern 6** when the post body names BOTH a specific category AND a verifiable location, OR a specific category alone with a verifiable top/sub slug, OR a verifiable location alone.
-- **Use Pattern 5** when no verifiable category or location fits the sentence. Anchor text still names who the page lists ("local personal trainers"), never site furniture ("our directory," "browse trainers").
+- **Use Pattern 5** when no verifiable category or location fits the sentence. The anchor is still a draft noun naming the people themselves ("local personal trainers"), never site furniture ("our directory," "browse trainers") and never a description of the page.
 - **When in doubt, Pattern 5 is the safer default.**
 
 ## Internal vs external link attributes
@@ -937,7 +937,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Voice:** this page IS the event page. State the event's facts as settled knowledge: "Doors open at 6", "Tickets cost $25." Never make a source document a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out, attribution is never a third door; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details, told welcoming and positive — informative first, never puffery.
 
-**Events-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them, still about the event — never the calendar.
+**Events-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them, still about the event.
 
 **Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known — the event's own event page; a third-party booking or checkout engine never outranks it — include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>`, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
