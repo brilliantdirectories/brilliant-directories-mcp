@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.452] - 2026-07-20
+
+### Changed
+
+- **Jobs floor data-bound + occupation gate — the pair that closes the census (fresh-bytes run: variants CLEAN, boards out, zero fetches — every .448-.451 law obeyed — but pool 1 of ~7; the floor's subject was the problem).** (1) The floor graded itself: "the first ten the walk yields — fewer only when it yields fewer" is self-certified (walk 1 → yield 1 → pool 1, compliant). Owner questioned "the walk? or the output?" at .442; the walk-binding was the wrong call. Now events' golden formula translated: "the pool holds the first ten candidates in the order found — fewer only when the outputs and pages in hand show fewer" — measured against data (the dual domain named as data, not as procedure). (2) Floor-required companion: with no occupation test, the data-bound floor would FORCE pooling wrong-occupation keyed results (Greenhouse frontend engineers — the model had been illegally self-filtering them, happening to be right). Binary gate on the candidacy line: "Both keys cut and the role sharing a word with the searched occupation, the result is a candidate" — word-overlap, case-insensitive, niche-blind. Simulated on the run's SERPs: pool = 7 right-occupation, Greenhouse six out, Intellect-class in. Law now matches the observed good behavior instead of banning it.
+
 ## [6.58.451] - 2026-07-20
 
 ### Changed
