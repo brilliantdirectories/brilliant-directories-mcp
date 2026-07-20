@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.417] - 2026-07-20
+
+### Changed
+
+- Jobs intro list: "where" → "the city" — parity with events .416; street addresses stay in the header field and Location bullet, never intro prose.
+
 ## [6.58.416] - 2026-07-20
 
 ### Changed
