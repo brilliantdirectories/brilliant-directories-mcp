@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.333] - 2026-07-19
+
+### Changed
+
+- **The fit-license hole closed + dominance made bold + CTA counts toward unique-href (Milwaukee festival run).** "Readers who follow [category]" appeared 3× — row 36's literally banned string — because the friend-register fit license was the authorizing container: carriers masquerade as fit prose. The distinguisher, now in the law: "fit names the thing's own participants, never readers or followers of content." The dominance clause gains bold — the floor was **bold** while its counterweight was plain, and in a one-emission fight emphasis is priority. Unique-href now explicit: "No URL repeats — the CTA's URL counts" (Eventbrite URL rode both CTA and body). Source-narration, reported-missing Cost bullet, and That-chains in this sample are .331 targets the run likely predates — not double-fixed.
+
 ## [6.58.332] - 2026-07-19
 
 ### Changed
