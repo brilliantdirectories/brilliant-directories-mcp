@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.322] - 2026-07-19
+
+### Changed
+
+- **CTA snippet shows its full shape (owner).** Events + jobs CTA lines: `` `<a class="btn btn-secondary btn-lg vmargin">` `` inside prose "inside its own `<p>`" → the snippet itself carries the wrapper: `` `<p><a class="btn btn-secondary btn-lg vmargin"></a></p>` `` — the button is never a floating `<a>`.
+
 ## [6.58.321] - 2026-07-19
 
 ### Changed
