@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.339] - 2026-07-19
+
+### Changed
+
+- **Negative fit instance fixed (owner: "the pick" is shopping register — wrong for events/jobs).** `"not the pick for..."` → `"not for anyone who..."` — mirrors the positive instance's shape exactly, natural in both skills.
+
 ## [6.58.338] - 2026-07-19
 
 ### Changed
