@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.434] - 2026-07-20
+
+### Changed
+
+- Compound score owners upgraded to each section's own long form (max-compliance echo): events "The title compound's score", blog "The compound query's score". Jobs intentionally unchanged — it states the arithmetic as a command ("Element 1 carries exactly 3 × N variants"), stronger than a score frame.
+
 ## [6.58.433] - 2026-07-20
 
 ### Changed
