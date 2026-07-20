@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.416] - 2026-07-20
+
+### Changed
+
+- Events intro list: "venue + address" → "venue + city" — street addresses out of intro prose (they render in the header field and the Where: bullet); "city" over "location" to avoid the post_location field association re-importing the address.
+
 ## [6.58.415] - 2026-07-20
 
 ### Changed
