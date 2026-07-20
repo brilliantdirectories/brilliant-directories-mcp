@@ -974,7 +974,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it's for. The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them, still about the role.
 
-**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>`, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
+**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, a 2-3 sentence `<p>` of application facts, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
 **Bullets** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 

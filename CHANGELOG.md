@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.381] - 2026-07-20
+
+### Changed
+
+- **Gemini full-disposition close + two occupant fills.** All three Gemini items now have explicit dispositions (reportative = sealed law, misses counted; navigation-purge = law, its no-body-links half rejected as SEO-destructive; state-verbs = law, its cold register rejected as warmth-conflicting) — and the audit exposed the one unexecuted sliver: no settled-knowledge instance anchored the EVENT-as-subject verb (where "lands at" grew) → "The meet takes place Saturday at Pearl Park" joins the events Voice instances. Plus the owner-caught "The button opens the August 8 meet" — the CTA paragraph was a content VACANCY filled with UI narration → occupant named: "a 2-3 sentence <p> of registration facts" (events) / "of application facts" (jobs).
+
 ## [6.58.380] - 2026-07-20
 
 ### Changed
