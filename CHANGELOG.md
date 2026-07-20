@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.378] - 2026-07-20
+
+### Changed
+
+- **Internal-link floor eased one notch (owner + blog grading): one per ~125 words, cap 10 (a ~500-word post carries 4).** Count was never the disease — PRESSURE was: every manufactured carrier traced to the floor demanding a link the draft's nouns couldn't supply; -1 per 500 words cuts that pressure while keeping never-under-deliver. Blog graded: strongest citation set of the campaign (Cleveland Clinic/AHA/ACSM/HSS distinct authorities) and natural post-links riding real nouns; disease = five "A [category] page fits this stage because..." Offer-carriers + guidance-as-sayer citation sentences + THREE unique-href dupes (foam-rolling ×2, runner-plan ×2, MedlinePlus ×2 — standing law, counted; Gemini's review missed all three).
+
 ## [6.58.377] - 2026-07-20
 
 ### Changed
