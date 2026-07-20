@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.366] - 2026-07-20
+
+### Changed
+
+- **Gemini anti-slop review triaged: 4 adopted, 4 already-covered, 1 rejected.** Adopted: "Marketing compounds" pattern row (the suffix CLASS: [X]-centric/-driven/-worthy/-leading/-forward); "Timeline filler" row (Since its inception / From day one / Over the years → exact year or cut); "(Read:...)/(Think:...)" into Performative emphasis; fingerprints += boasts, curated, discerning, seamless, oasis ("hub" rejected — "transit hub" is a real venue fact). Already covered, no edits: spatial-anchor (dies under literal verbs), scope-creep (second-person ban + participants-fit; source-stated "all levels welcome" must STAY legal), JSON-leak (reported-missing + reportative evidentiality verbatim). Rejected: colon-list ban — collides with the commanded labeled core block.
+
 ## [6.58.365] - 2026-07-20
 
 ### Changed
