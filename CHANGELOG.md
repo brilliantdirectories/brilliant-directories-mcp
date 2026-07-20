@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.350] - 2026-07-20
+
+### Changed
+
+- **Final trim: row 45's belonging-test tail cut (20-word duplicate of construction #8, "Every sentence stands linkless"); grep-verified no by-name cross-refs.** Loss audit of all .349 cuts confirmed clean: deleted row 32 had zero references; every cut's function lives in exactly one surviving home.
+
 ## [6.58.349] - 2026-07-20
 
 ### Changed
