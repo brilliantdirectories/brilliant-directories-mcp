@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.422] - 2026-07-20
+
+### Changed
+
+- **Rewards are the lever (Elevate collapse diagnosis — owner's ruling: bans stay, effort stays).** (1) Disarmed my own .421 wing-clipper: "developed, never a passing mention" had made MENTIONING a dimension illegal, so omission became the safe play → check 18 now "grown into developed material? A mention is a seed, not coverage". (2) The dimension law gains its score in the pattern that provably works (Step 6's pool score): "Its score: how many supported dimensions became developed sections — the fuller post wins; thinness is the risk, never length." P3 dropped as redundant with P2.
+
 ## [6.58.421] - 2026-07-20
 
 ### Changed
