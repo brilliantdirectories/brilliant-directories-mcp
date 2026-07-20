@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.438] - 2026-07-20
+
+### Changed
+
+- **Pre-verdict research permission DELETED (live run: full Stage 2 bypass — star find surfaced in 2 of 5 queries with complete keys, model skipped the pool print, ran 2c-class verification on the unpooled find, and created the site's 4th SCW Dallas dupe; only the exact-title check fired and the "- Workshops" suffix beat it).** METHODOLOGY pool discipline's head clause "Research to discover candidates is fine through Stage 2's verdicts, but a..." was the corpus's sole grant legalizing any pre-verdict web call — and its only function was hosting the fence that follows. Every legal pre-verdict query is commanded through its own channel (Step 5 shapes, 2b's site: license, Steps 6/7 return-to-Step-5, pool 2), so the grant did zero independent work while handing the model a discovery-vs-research judgment call to hide a converging dive behind. Now the sentence opens with the ban: "A WebSearch or WebFetch aimed at a specific find's domain, venue, or pages... waits for the find's `no match - survives` verdict." Flow map verified: events/jobs/blog all self-contained, four flows improve, zero break; the one behavior lost (researching an incomplete-key SERP find into candidacy) was already illegal under the date gate's "shown date taken as shown." Grant originated in the pool-gate fix as the line's "legitimate side" — the ban half did the work; the permission half became the escape.
+
 ## [6.58.437] - 2026-07-20
 
 ### Changed
