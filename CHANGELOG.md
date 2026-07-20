@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.455] - 2026-07-20
+
+### Changed
+
+- **Jobs Step 6 restructured to events' N+1 call arithmetic — the structural census fix (three jobs collapses across three different variant laws proved the census was never a variant problem).** The diagnosis: events' census is enforced in the CALL channel — N candidates force N+1 visible calls (each candidate's date probe); jobs' N lived inside one compound string with no call-arithmetic forcing it. Jobs now gains its unused second key: one `post_venue` probe per candidate (the match criteria always judged company via post_venue; it was never probed — a fully retitled dupe still carries its company there). Turn 3 = pool print + 1 title compound + N venue probes = N+1 calls, byte-parallel to events. 6a demoted to the shortfall branch ("fewer than five pooled →" — the flat-count gate; 4 straight skips proved the unconditional six was dead law). 6b = "The compound and probes"; lone-find fires its two calls. Also: slot 3 anchored ("one more employer-anchored string" — the freedom slot had licensed "Boston MA Personal Trainer", a location bet) and the example employer renamed `Acme` → `Bramblewood` (Acme is a REAL employer live in the lever SERPs — an example name colliding with live data can anchor selection; example names must be unmistakably fictional). Events verified byte-golden (diff = 0).
+
 ## [6.58.454] - 2026-07-20
 
 ### Changed
