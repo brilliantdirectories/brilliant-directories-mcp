@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.446] - 2026-07-20
+
+### Changed
+
+- **The recovery clause's twins swept (owner caught the miss).** The overflow re-run phrase — "the candidate's city or most distinctive title token" — carried both surviving class-permissions: "title token" (any title word = the role-side free class) and city-first ordering. Now "the candidate's most distinctive employer fragment, or its city, as the phrase" — narrowing power identical (the employer fragment is a title token in our posts; city stays as the secondary tool because the title spec embeds it). Verified in the same pass: "for the probes" (line 25) is load-bearing (scopes the tool constraint to the dedup subset of the six-call message — without it the sentence bans 6a's WebSearches); blog carries its own variant count (blog.md:21), so the .444 shared-tail deletion left no skill countless.
+
 ## [6.58.445] - 2026-07-20
 
 ### Changed
