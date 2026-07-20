@@ -143,7 +143,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the job posting. State the role's facts as settled knowledge: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
+**Voice:** this page IS the job posting. State the role's facts as settled knowledge: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out, attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work actually is, told straightforward and positive — informative first, never puffery. Comparison context comes from the role's market (employer type, pay bands, schedule shape); related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
 
 **Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences between them, summarize the role in any natural flowing order: the role and employment type, who's hiring, where, pay when published, what the work is, and who it fits.
 
@@ -153,7 +153,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: a job page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
+**Depth**: a job page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
 
 **How to apply** — a known URL rides the CTA; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
@@ -161,7 +161,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 | Section | Placement range |
 |---|---|
-| Opening (all paragraphs before the CTA) | 1-2 (riding nouns the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has; none → the slots move to body sections) |
 | Body sections (company/responsibilities/qualifications) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 

@@ -108,7 +108,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the event page. State the event's facts as settled knowledge: "Doors open at 6", "Tickets run $25." Never make a source document a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details, told welcoming and positive — informative first, never puffery.
+**Voice:** this page IS the event page. State the event's facts as settled knowledge: "Doors open at 6", "Tickets run $25." Never make a source document a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out, attribution is never a third door; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details, told welcoming and positive — informative first, never puffery.
 
 **Events-specific load-bearing facts** — two intro paragraphs, at least six sentences between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
@@ -118,13 +118,13 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
-**Depth**: an event page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
+**Depth**: an event page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget; the pass fills these placement ranges:
 
 | Section | Placement range |
 |---|---|
-| Opening (all paragraphs before the CTA) | 1-2 (riding nouns the opening already has) |
+| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has; none → the slots move to body sections) |
 | Body sections (venue/scene/what-to-expect) | 3-8 links, **maximum 2 per major body section** — never two links in the same paragraph, never three links clustered in the final two sections |
 | Closing paragraph | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 

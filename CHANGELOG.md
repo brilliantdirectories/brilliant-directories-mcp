@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.336] - 2026-07-19
+
+### Changed
+
+- **Label-literal routing + attribution's last doors — minion-verified, 13 in-place fixes.** CLASS 1+3 (self-classification carriers "It fits the fitness classes category" / "The role sits in the personal training jobs category", AND under-floor links — two horns of one disease): the routing law read label-literally (category links seemed to need the taxonomy LABEL in prose), "the category" sat in both canonical anchor-noun lists licensing the label's presence, the opening floor of 1-2 forced a link into the intro, and the "what it is / who it's for" intro facts laundered the classification sentence as commanded content. Fixes: concept nouns route by MEANING ("water workout" rides its category's listing page — "the taxonomy label lives only in the URL, never planted into prose"); "the category" removed from both anchor lists ("a thing a category page lists"; "a concept another post or a category's listing page covers"); opening range 0-2 with slots moving to body sections when no natural noun exists; unfilled-slot test now per-section. CLASS 2 (attribution relapse "describes itself as Chicago's premier... and says"): confirmed 3-way collision — puffery ban blocks bare, fact-mandate demands entry, attribution was the only exit — plus row 23's "→ name the human" arrow literally paving "[Org] frames" and row 34's sentence-only scope exempting headings ("How East Bank Club Frames Personal Training"). Fixes: "Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare" (both Depth lines); binary gains "attribution is never a third door"; row 23 arm "name the human doing the thing, never the human saying it"; row 34 covers headings and gains the drop arm.
+
 ## [6.58.335] - 2026-07-19
 
 ### Changed
