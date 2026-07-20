@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.431] - 2026-07-20
+
+### Changed
+
+- "the content-type file names the dedup keys" — canonical compound term restored (bare "the keys" was its only unpaired usage).
+
 ## [6.58.430] - 2026-07-20
 
 ### Changed
