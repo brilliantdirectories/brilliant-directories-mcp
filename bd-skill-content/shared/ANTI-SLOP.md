@@ -24,7 +24,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles another post ("the same style shows up in..."). Each record stands alone.
-- **Reader-directed navigation** — any clause steering the reader to compare, browse, scan, or open anything. The post informs; it never routes.
+- **Offer / navigation** — any sentence whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
 - **Link-carrier sentence** — a sentence that exists for the link it holds; remove the link and it loses its reason. Every sentence stands linkless.
 
 ## Banned patterns

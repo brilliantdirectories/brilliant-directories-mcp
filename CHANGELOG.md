@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.364] - 2026-07-20
+
+### Changed
+
+- **THE OFFER CONSTRUCTION — the speech-act-level master class behind every surviving carrier, banned at the illocutionary level (owner: ban the mechanic, no token lists).** All carriers across the recent jobs+events posts share one two-part machine: a beneficiary/purpose adjunct ("For a wider look...", "for people who want...", "If X is the better match...") + a presentational-availability clause ("carries", "brings", "covers", "sits alongside") — the sentence's illocutionary force is an OFFER, not an assertion. Construction #7 upgraded from Reader-directed navigation to "Offer / navigation": "Every sentence asserts a fact about the subject; the post never offers, never routes" — navigation absorbed as an offer with steering verbs; any future wording is born banned because offering requires goal-framing + availability regardless of tokens. **CTA becomes a block (owner): a short record-material `<h2>`, one factual sentence, then the button** — both skills; balances the button and gives it the heading structure.
+
 ## [6.58.363] - 2026-07-20
 
 ### Changed

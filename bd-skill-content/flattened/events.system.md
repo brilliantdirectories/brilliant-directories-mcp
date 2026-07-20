@@ -478,7 +478,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles another post ("the same style shows up in..."). Each record stands alone.
-- **Reader-directed navigation** — any clause steering the reader to compare, browse, scan, or open anything. The post informs; it never routes.
+- **Offer / navigation** — any sentence whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
 - **Link-carrier sentence** — a sentence that exists for the link it holds; remove the link and it loses its reason. Every sentence stands linkless.
 
 ## Banned patterns
@@ -936,7 +936,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Events-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them, summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + address, who it's for, what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). The close mirrors the opening's shape: two paragraphs, at least six sentences split unevenly between them.
 
-**Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known — the event's own event page; a third-party booking or checkout engine never outranks it — include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
+**Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known — the event's own event page; a third-party booking or checkout engine never outranks it — include this CTA immediately after the intro paragraphs as its own block — a short record-material `<h2>`, one factual sentence, then `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
 **Bullets** — the event's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the what, when, where, and cost at a glance. A later section whose facts enumerate — inclusions, tiers, formats, requirements — presents them as its own `<ul>`.
 
