@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.454] - 2026-07-20
+
+### Changed
+
+- **Jobs variants: owner's fingerprint doctrine replaces the name-form taxonomy.** The .448 "observed name forms" law was a carved limitation — variants were never observed-forms-only; they're generative fingerprint BETS on how an existing post might be titled (events' own `Austin Summit` example is a combo absent from the source title). Purpose now heads the law: "each a fingerprint bet on an existing post's title" — three bets per candidate: the employer, an employer + role combo, one more distinctive string (owner's formula, his example verbatim: `Acme,Acme Nurse,Nurse Acme`). Substring-dominance redundancy accepted by design ("the first one would hit anyways" — tokens free, misses expensive, freedom over carving across thousands of niches). Template back to `v1 | v2 | v3`; Dedup law back to exactly 3 × N — the restored shared "3 × N values" is now TRUE for all three skills again, tension dissolved. Jobs = events + employer anchor − date key. Events verified still byte-golden (diff = 0).
+
 ## [6.58.453] - 2026-07-20
 
 ### Changed
