@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.383] - 2026-07-20
+
+### Changed
+
+- **The certified-stable test's four wiggles, patched at their exact gaps (Livelong summit grading).** (1) THE WHICH-CLAUSE LOOPHOLE: carriers hid in subordinate clauses riding legitimate fact sentences ("...keynotes, which places it alongside...", "...hormones, which works for attendees following...") — every carrier law said "sentence or bullet"; now "sentence, bullet, or clause" at Offer, Link-carrier, and the bold dominance clause. (2) Document-as-subject's wiggle was row 43's own arm — "the source's name may ride as an anchor" read as licensing the linked source name in SUBJECT position ("The summit page lists...") — now "as an anchor in a sentence about the subject, never as its subject or speaker". (3) Sentence-initial shell gets the proven token channel: new pattern row ("That mix gives...", "That structure works..." → open with the fact itself). (4) The close law's "mirrors the opening" indirection removed — self-contained spec: "The post closes with two paragraphs about the event/role, at least six sentences split unevenly between them." Ships WITH the staged noopener batch (rel="nofollow noopener" everywhere external). FREEZE-TEST VERDICT ON RECORD: site-awareness/suits/navigation/nav-close/button ALL DEAD on proven bytes; survivors were these four wiggles + structure counts.
+
 ## [6.58.382] - 2026-07-20
 
 ### Changed

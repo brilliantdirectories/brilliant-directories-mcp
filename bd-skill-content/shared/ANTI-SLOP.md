@@ -25,8 +25,8 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles another post ("the same style shows up in..."). Each record stands alone.
-- **Offer / navigation** — any sentence or bullet whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
-- **Link-carrier sentence** — a sentence or bullet that exists for the link it holds; remove the link and it loses its reason. Every sentence and bullet stands linkless.
+- **Offer / navigation** — any sentence, bullet, or clause whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
+- **Link-carrier sentence** — a sentence, bullet, or clause that exists for the link it holds; remove the link and it loses its reason. Every sentence, bullet, and clause stands linkless.
 
 ## Banned patterns
 
@@ -51,10 +51,11 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay", "(Read: ...)", "(Think: ...)" → cut |
 | Marketing compounds | "[X]-centric", "[X]-driven", "[X]-worthy", "[X]-leading", "[X]-forward" → plain descriptors |
 | Timeline filler | "Since its inception", "From day one", "Over the years" → the exact year, or cut |
+| Sentence-initial shell | A sentence opening with "That [abstract noun]" summing the prior sentence ("That mix gives...", "That structure works...") → open with the fact itself |
 | Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
-| Formulaic attribution | "[Org/page/posting/listing/schedule — any document or the record itself] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor, never as the speaker; a claim that cannot be stated bare in plain words drops |
+| Formulaic attribution | "[Org/page/posting/listing/schedule — any document or the record itself] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor in a sentence about the subject, never as its subject or speaker; a claim that cannot be stated bare in plain words drops |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 | Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…"), or that mentions the site in any position ("on this site", "the site's") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a sentence or section about reading or interpreting the source document always fails → rewrite about the subject |
 
