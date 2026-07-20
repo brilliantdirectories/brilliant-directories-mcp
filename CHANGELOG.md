@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.337] - 2026-07-19
+
+### Changed
+
+- **The last three residuals, killed at their mechanics (owner's Expo + East Bank samples).** (1) Metaphoric predication ("this role sits in a member-heavy setting"): "the role" removed from the abstraction ban — it's the record, whose plain-fact subjecthood is licensed, so the ban kept losing to legitimacy; the metaphor class dies instead by one word: "doing real things **in literal verbs**". (2) Attribution relapse ("Vendor pages point to", "The club also says") was commanded by row 34's own remedy — "with the source linked mid- or end-sentence" requires the source's name in the sentence, and the shortest path is making it the speaker; arm now "the source's name may ride as an anchor, never as the speaker". (3) The suits-epidemic is register priming — corpus concept-vocabulary is the fit/suit family against one friend-register instance; law now commands the register ("plainly evaluative **in a friend's everyday words**", instances + "a perfect match for..."), and the last corpus primer de-primed (jobs "who it fits" → "who it's for"; "suits/suited" verified absent from corpus).
+
 ## [6.58.336] - 2026-07-19
 
 ### Changed
