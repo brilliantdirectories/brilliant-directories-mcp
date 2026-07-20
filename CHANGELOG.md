@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.361] - 2026-07-20
+
+### Changed
+
+- **Three constructions join from the Ultimate Performance grading (owner: name the mechanics).** "Taxonomic self-classification" (the record filing itself into a catalog — category is metadata, never prose), "Scalar approximation" (degree scales between reference points — .356 deleted the COMMAND but never named the construction, so command-free instances leaked), "Cross-record resemblance" (this record resembling another post to justify a link — the deleted Comparables dimension's ghost). Eleven constructions total; blog's X-vs-Y format untouched (compares subjects, not the post to siblings).
+
 ## [6.58.360] - 2026-07-20
 
 ### Changed
