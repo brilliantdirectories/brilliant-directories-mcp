@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.410] - 2026-07-20
+
+### Changed
+
+- Density law: "spread evenly across the post's full length, never clustered" — "at either end" SCOPED the cluster ban and licensed mid-post clusters (Tahoe post: 4 links in paragraph 2, itself a flagrant 2-per-paragraph violation); "evenly" is now the operative word, the ban unscoped.
+
 ## [6.58.409] - 2026-07-20
 
 ### Changed
