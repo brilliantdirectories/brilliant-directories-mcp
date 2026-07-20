@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.450] - 2026-07-20
+
+### Changed
+
+- **The .449 board definition restructured (owner caught the syntax): the inline aside nested an em-dash pair inside an already-dashed clause, splitting subject from verb by twelve words ("a board's own name — a board is... — is never the employer").** Now two complete thoughts, semicolon-joined: "a board's own name is never the employer; a board is any site listing many employers' jobs (Indeed, ZipRecruiter, Glassdoor)." Rule first with subject-verb adjacency, definition second, names as examples inside the definition. Semantics unchanged and re-verified against every source class: single-employer careers pages and per-company ATS pages are not boards; government portals, university boards, and chambers are — their listings pool with the real employer, their names never do.
+
 ## [6.58.449] - 2026-07-20
 
 ### Changed
