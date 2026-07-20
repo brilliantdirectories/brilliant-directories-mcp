@@ -161,7 +161,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 | Section | Placement range |
 |---|---|
-| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has; none → the slots move to body sections) |
+| Opening (all paragraphs before the CTA) | 0-2 (riding nouns the opening already has, never the first sentence; none → the slots move to body sections) |
 | Body sections (company/responsibilities/qualifications) | 3-8 links, **maximum 2 per major body section**, never three links clustered in the final two sections |
 | Closing (the final two paragraphs) | 1 (riding a sentence the close already needs, never a "go browse X" line) |
 

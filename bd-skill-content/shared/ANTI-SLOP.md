@@ -9,7 +9,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your").
 - Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers who..."). Facts stated plainly, not hedged.
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source.
-- Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length.
+- Generous with specifics, no press-release tone. Name specific things. No re-explaining, no fact entering twice. Vary sentence length.
 - Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content; a participant described by the content they follow ("attendees following wellness talks") is the follower form.
 - The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
@@ -69,7 +69,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 3a. Invented tricolon ("X, Y, and Z" with no real third item)? Drop the third or rewrite.
 3b. `-ing` participial opener — more than one per section, or any of the banned three ("Looking ahead", "Bringing together", "Drawing on")? Restructure.
 3c. Conclusion or section closer that recaps ("In short", "Ultimately", "The takeaway", etc.)? Replace with a next-step or a fresh specific.
-4. Banned adverb / jargon / vocabulary fingerprint (delve/showcase/leverage/nestled/vibrant/bustling/tapestry/etc.)? Delete or replace with a concrete subject-specific word.
+4. Banned adverb / jargon / vocabulary fingerprint (delve/showcase/leverage/nestled/vibrant/bustling/tapestry/suits/suited/etc.)? Delete or replace with a concrete subject-specific word.
 4a. Scene-setting opener ("Picture this", "Imagine", "It's a [adjective] [time]...")? Cut, state the subject directly.
 5. Passive voice? Name the actor.
 6. Subject outside the closed set (person, org, place, concrete thing of the record)? Rewrite so it is.
@@ -83,7 +83,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
-17. Any sentence instantiating a `Banned constructions` entry, in any wording? Apply its arrow.
+17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow.
 18. Every depth dimension that source data or confident knowledge supports — present? Skipping one is the failure.
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)

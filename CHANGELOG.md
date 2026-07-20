@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.400] - 2026-07-20
+
+### Changed
+
+- **The gate gap (Pilates & Purpose grading) — four culprit fixes, all in-place.** (1) THE BIG ONE: self-check 17 swept only Banned constructions — the Banned patterns TABLE had no post-draft gate, which is why table bans (which-appendages, shells, compounds, attribution) kept surviving drafts; 17 now sweeps both. (2) Check 4's inline fingerprints gain suits/suited (the model sweeps the inline list, not the row). (3) Placement tables carry the first-sentence bound inline where links are placed ("riding nouns the opening already has, never the first sentence"). (4) Voice: "No re-explaining, no fact entering twice" (verbatim 6-item inclusions list appeared twice).
+
 ## [6.58.399] - 2026-07-20
 
 ### Changed
