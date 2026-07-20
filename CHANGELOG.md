@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.406] - 2026-07-20
+
+### Changed
+
+- Check 17 tail: "restate legally, never drop" — self-contained at the decision point; prevents restating into a different banned shape.
+
 ## [6.58.405] - 2026-07-20
 
 ### Changed
