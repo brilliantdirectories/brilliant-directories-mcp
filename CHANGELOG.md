@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.440] - 2026-07-20
+
+### Changed
+
+- **Two seals from the .439 validation run — the rebind WORKED (census 1→12 candidates, 11-call turn 3, zero web calls) with exactly two flaws, both closed.** (1) Compound element-1 stacking: the model shipped one CSV triple per candidate — 13 `property_value` elements — because "every candidate's 3 variants comma-joined into one string" carries a distributive reading (each candidate's own string). Now collective + double-bounded: "exactly TWO elements — never one, never one per candidate — element 1: ALL candidates' variants... comma-joined into ONE string — 3 × N values, one string." (2) The .439 quota flip stated the floor and silently dropped the cap's ceiling — 12 rode a ten-pool. Now one binary clause carrying ceiling + floor + selection on the line: "the pool holds ten when the outputs show ten or more — the first ten in the order found — fewer only when they don't" (order-found pulled from METHODOLOGY's pool-size law onto the line it governs).
+
 ## [6.58.439] - 2026-07-20
 
 ### Changed
