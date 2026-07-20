@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.421] - 2026-07-20
+
+### Changed
+
+- **Four wiggles from the Fitness Body Expo grading, in-place, ~15 words.** (1) Label-heading collision resolved at its site: heading law "never forced or stuffed" += "never a dimension label" (events+jobs — "What To Expect" was legal search phrasing under the local law while banned by METHODOLOGY). (2) Row 60 gains the genre-class: "or the record's genre or category in general as the sentence's subject" ("Expo events bring stages..."). (3) Split shapes de-enumerated: "(never 3/3 or 4/4)" → "(never an even split)" ×4 — the model produced 2/2, the third even shape. (4) Check 18: "developed, never a passing mention" — "13th edition" name-drops no longer satisfy a dimension.
+
 ## [6.58.420] - 2026-07-20
 
 ### Changed
