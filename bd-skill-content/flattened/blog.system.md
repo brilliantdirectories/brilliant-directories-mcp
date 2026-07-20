@@ -568,7 +568,7 @@ Tickets cost $20 to $45 for the Saturday show. Bring sunscreen.
 
 ## Scope
 
-Prose only. See `METHODOLOGY.md` (research/gates/dedup/hard-rules), `URL-PATTERNS.md` (links).
+Prose and sentence law, including how link-bearing sentences read. URL construction and targets: `URL-PATTERNS.md`. Research/gates/dedup/hard-rules: `METHODOLOGY.md`.
 
 ===== FILE: shared/URL-PATTERNS.md =====
 

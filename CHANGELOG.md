@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.369] - 2026-07-20
+
+### Changed
+
+- **Scope line de-drifted (owner audit): "Prose only" predated the file's link-sentence law** — a literal read told the model the anchor bullet and Offer/link-carrier constructions were outside their own file's jurisdiction. Now names the true division: ANTI-SLOP owns the sentence a link rides; URL-PATTERNS owns the URL. Wrong-example section audited fine (deliberate banned chars, labeled); check 18's cross-file reference is gate-to-law, standard.
+
 ## [6.58.368] - 2026-07-20
 
 ### Changed
