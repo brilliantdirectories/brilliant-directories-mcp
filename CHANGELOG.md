@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.372] - 2026-07-20
+
+### Changed
+
+- **The $593 mystery solved (owner suspected summation): the sum is $536.59 — 593 is exactly 59.30 with the decimal stripped.** The old "numeric only" wording read as digits-only; .370's "a plain decimal number ("59.30")" is the cure, and jobs carried the same trap phrase ("numeric only... decimals optional") — harmonized to "a plain decimal number, no currency symbol, no commas" (its 14.50/70000.00 instances already teach the shape). Lowest-adult-price held over average: a bookable "from" number beats a phantom nobody pays; jobs keeps midpoint for salary ranges (typical-value territory). Live post 1614 repaired via API: badge now $59.30.
+
 ## [6.58.371] - 2026-07-20
 
 ### Changed
