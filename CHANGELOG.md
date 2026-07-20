@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.352] - 2026-07-20
+
+### Changed
+
+- **Scoring converted from rubber-stampable threshold to mandatory improvement cycle (owner: raise the bar?).** Self-scores inflate to any threshold (grader = graded), so the number is cosmetic; instead: "rate 1-10; revise the lowest-scoring dimension, then ship if ≥40/50" — there is always a lowest dimension, so every post gets one guaranteed revision pass against its weakest axis. **Drift triggers trimmed 5→3** (owner audit): Wh- starter / hedging / pre-explaining were third statements of table+checklist laws; kept the two unique circuit-breakers (filler-while-facts-remain, three-ands) + a by-reference constructions sweep mid-draft.
+
 ## [6.58.351] - 2026-07-20
 
 ### Changed

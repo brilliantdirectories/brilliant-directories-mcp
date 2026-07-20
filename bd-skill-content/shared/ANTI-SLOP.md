@@ -70,7 +70,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Banned constructions` entry, in any wording? Apply its arrow.
 
-## Scoring (rate 1-10, ship if ≥40/50)
+## Scoring (rate 1-10; revise the lowest-scoring dimension, then ship if ≥40/50)
 
 | Dimension | Question |
 |---|---|
@@ -82,7 +82,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 
 ## Drift triggers (stop and rewrite)
 
-Wh- sentence-starter in prose (FAQ labels exempt). Hedging every claim. Explaining what you're about to say. Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence.
+Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence. Any `Banned constructions` entry surfacing mid-draft.
 
 ## Wrong-example reference
 
