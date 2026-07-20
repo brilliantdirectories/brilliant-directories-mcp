@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.436] - 2026-07-20
+
+### Changed
+
+- First-sentence link ban RELOCATED, zero new words: it trailed mid-cap-list AFTER the wrap command whose examples (the city, the role, the venue) name exactly the nouns the lead law concentrates in sentence 1 — the invitation preceded the exclusion. Now "wrap noun phrases the finished draft already contains — never in the post's first sentence — (the city, ...)": the exclusion rides the wrap verb, before the examples, phrased identically to the citation law's ban.
+
 ## [6.58.435] - 2026-07-20
 
 ### Changed
