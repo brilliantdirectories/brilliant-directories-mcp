@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.432] - 2026-07-20
+
+### Changed
+
+- Step 6: "Read every result from all five queries and count each candidate" — "queries" is Step 5's canonical unit; "each" is the distributive quantifier (per-item processing) where "all" is collective (gestalt-satisfiable) — the per-item skip was the disease.
+
 ## [6.58.431] - 2026-07-20
 
 ### Changed
