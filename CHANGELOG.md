@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.360] - 2026-07-20
+
+### Changed
+
+- **Search-intent pairing terms land in meta_title, not the H1 (owner + Gemini).** Gemini's "Dates, Venue, & What to Expect" H1 suffix rejected on three grounds: the title spec bans commas outright, a fixed suffix is the repeating-template disease at H1 level, and it's metadiscourse (describes the page, not the event). The insight relocated to its right field: post_meta_title rows gain "plus a searcher's pairing term (events: dates, tickets, schedule / jobs: salary, hiring, apply) where natural" — the SERP title carries the query shapes; the H1 keeps its ~54-char headline+hook identity.
+
 ## [6.58.359] - 2026-07-20
 
 ### Changed
