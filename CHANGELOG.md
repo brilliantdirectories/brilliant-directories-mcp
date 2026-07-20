@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.319] - 2026-07-19
+
+### Changed
+
+- **Mechanical-tone and hollow-post culprits cut (owner's Pilates + Fitify samples).** (1) "It suits people who..." was the corpus quoting itself — the fit law's own "who it suits, who it does not" verb fed the output; now "Audience fit is described in third person, plainly evaluative the way a friend recommends ("perfect for anyone who...", "not the pick for..."), never by addressing the reader." (2) The advisory disease survived the pronoun ban by converting to third person ("Trainers comparing this opening... can scan coaching jobs") — the comparison depth dimensions command comparative content and comparative content is the perfect link carrier; kill shot in the menu lead: "a comparison sentence never carries a link" — comparisons stay as richness, lose all carrier value. (3) Title-replay opener + fact-cramming ("Mat Pilates Anniversary Event - San Diego Loft puts a 1:00 PM to 4:00 PM mat class inside...") — item 1 now: the first paragraph answers the core question "across its sentences, never packed into one — and the body never opens with the post title restated." (4) Hollow posts (Fitify fetch returned 15M users, full responsibilities/requirements/benefits — post used none): priority inversion — dimensions carried failure-language, fact-inclusion didn't; both Depth lines now "every fact the source holds enters the post... a fetched fact left unused is the failure."
+
+- **External citations scale with length (owner: blogs support more; keep it simple; fix the math).** "target 2 per post (1 acceptable; hard cap 3, the 3rd only when it substantially improves accuracy...)" → "**2 per ~500 words, cap 6 total (a ~500-word listing carries 2-3; a ~1,500-word post 6)** (fewer only when credible sources are genuinely exhausted; ...)". Same shape as the internal law — one ratio, one cap, clean instances (cap lands exactly at 1,500 words); a 500-word event carrying 3 is legal headroom under the cap. Floor of 2 preserved per the owner's .306 ruling; the citation ladder, one-per-source, noun-riding, and no-carrier-sentence guards all unchanged — never fabricate or force a citation when sources run dry.
+
 ## [6.58.318] - 2026-07-19
 
 ### Changed
