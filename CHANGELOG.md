@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.382] - 2026-07-20
+
+### Changed
+
+- **Events settled-knowledge instances trimmed 3→2 (owner):** "Doors open at 6" and "Tickets cost $25" were the same shape (concrete-thing fact); one instance per shape — kept "Tickets cost" (also anchors the literal-verb price fix) + the event-subject instance.
+
 ## [6.58.381] - 2026-07-20
 
 ### Changed
