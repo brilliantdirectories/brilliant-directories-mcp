@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.424] - 2026-07-20
+
+### Changed
+
+- Dimension score reworded: "how many developed sections rise from the record's material" — kills the .422 wording's two flaws: "supported dimensions became sections" collided with "dimensions are lenses, not sections" three lines up, and the finite menu could excuse non-menu sections; "rise from material" reuses the corpus's own grounded idiom (no fabrication-adjacent "invent" vocabulary). Conflict-mapped: check 18 = floor gate, Stage 5 no-template = license, this = reward — three roles, no overlap.
+
 ## [6.58.423] - 2026-07-20
 
 ### Changed
