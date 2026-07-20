@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.399] - 2026-07-20
+
+### Changed
+
+- **Page-tour mint killed (East Bank grading).** Citation law's "each a different page carrying different information" licensed page-tour sections (×8 document-as-subject cluster) — now "each backing different record facts — the page itself never a sentence's subject or a section's topic". CTA paragraph exclusion widens three words: "never a description of the button, the form, or its fields" ("The button below opens the live listing").
+
 ## [6.58.398] - 2026-07-20
 
 ### Changed
