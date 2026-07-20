@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.418] - 2026-07-20
+
+### Changed
+
+- Link-budget example gains a second data point ("a 1,200-word post carries 10") — the lone "~500-word post" archetype was a soft size anchor; the scale now visibly continues upward. No caps existed anywhere (audited: events/jobs skill files carry zero size anchors).
+
 ## [6.58.417] - 2026-07-20
 
 ### Changed
