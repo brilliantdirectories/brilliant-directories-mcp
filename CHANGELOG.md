@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.363] - 2026-07-20
+
+### Changed
+
+- **How-to-apply line trimmed (owner: too prescriptive)** — "a known URL rides the CTA and needs no How to apply section; application by email or phone surfaces as plain links in a closing How to apply section." The flourish restating its own clause cut.
+
 ## [6.58.362] - 2026-07-20
 
 ### Changed

@@ -155,7 +155,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Depth**: a job page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
 
-**How to apply** — a known URL rides the CTA and no `How to apply` section exists for it — the button is the whole answer; application by email or phone surfaces as plain links in a closing `How to apply` section.
+**How to apply** — a known URL rides the CTA and needs no `How to apply` section; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — distributed, NOT clustered at the end, meeting the internal-link budget; the pass fills these placement ranges:
 
