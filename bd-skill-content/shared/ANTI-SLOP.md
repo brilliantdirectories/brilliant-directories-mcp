@@ -17,7 +17,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 - **Reader-directed navigation** — any clause steering the reader to compare, browse, scan, or open anything. The post informs; it never routes.
 - **Link-carrier sentence** — a sentence that exists for the link it holds; remove the link and it loses its reason. Every sentence stands linkless.
 
-## Banned
+## Banned patterns
 
 | Pattern | Examples / fix |
 |---|---|
@@ -70,7 +70,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Banned constructions` entry, in any wording? Apply its arrow.
 
-## Scoring (rate 1-10; revise the lowest-scoring dimension, then ship if ≥40/50)
+## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)
 
 | Dimension | Question |
 |---|---|

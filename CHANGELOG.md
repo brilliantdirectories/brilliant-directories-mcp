@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.353] - 2026-07-20
+
+### Changed
+
+- **Revision reentrancy + section naming (owner).** A constructions DIMENSION was rejected — dimensions grade (1-10), laws gate (binary); grading a law lets a 44/50 post ship with violations aboard. The real gap was sequencing: the revise-the-weakest cycle writes new sentences AFTER check 17 ran; scoring header now "revised sentences re-pass the self-check". Section pair named: `Banned constructions` / `Banned patterns` (bare "## Banned" renamed; zero cross-refs, table column already "Pattern").
+
 ## [6.58.352] - 2026-07-20
 
 ### Changed
