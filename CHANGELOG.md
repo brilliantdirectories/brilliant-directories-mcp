@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.396] - 2026-07-20
+
+### Changed
+
+- **City-only location filtering — the Roxbury ZIP's real mint was our own corpus.** Five worked-example URLs carried ZIP-laden location_value ON LOCALITY MODE ("Austin, TX 78701", "Duluth, MN 55802") and line 27 said "use the post's post_location string regardless of mode" — the model copied us. postal_code mode (never used by any run, never live-certified) removed from the content-skill corpus: always location_type=locality, location_value = clean city string, never a street address, never a ZIP (absolute now). Examples cleaned; anchor-granularity branch collapsed to "anchor says the city".
+
 ## [6.58.395] - 2026-07-20
 
 ### Changed

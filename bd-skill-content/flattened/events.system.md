@@ -600,7 +600,7 @@ WebPage-backed link patterns (custom `list_seo` pages with arbitrary slugs, hand
 | `q` | `q=keyword` | How BD renders its own tag links. Skill-built links filter via the params below, never `q=`. |
 | `category[]` | `category[]=Category%20Name` | Value copied character-for-character from the category ledger — any other string filters nothing. One category per link. |
 | `daterange` | `daterange=mm%2Fdd%2Fyyyy+-+mm%2Fdd%2Fyyyy` | Single-day = same date both sides. |
-| `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN+55802&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Use `location_type=locality` for city-level (default for content-skill links). Use `location_type=postal_code` for ZIP-radius filtering on sites where the city is too broad (e.g. dense metros). Use the post's `post_location` string for `location_value` regardless of mode. |
+| `lat` / `lng` / `location_value` / `location_type` | `lat=46.7534&lng=-92.0681&location_value=Duluth%2C+MN&location_type=locality` | **Send all four together — `location_type` is required even though `lat`/`lng` do the search.** `lat`/`lng` drive the geo radius (implicit default from site settings). `location_value` is the human-readable label that BD writes into the sidebar search-form input. `location_type` toggles the sidebar form's mode (city vs ZIP) — omit it and BD's URL parser breaks, returning zero results. Always `location_type=locality` (city-level). `location_value` is the clean city string ("Duluth, MN"). |
 
 ## Encoding rules
 
@@ -742,11 +742,11 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 ```
 /events
 /events?category[]=Live%20Music
-/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
+/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX&location_type=locality
 /events?daterange=06%2F15%2F2026+-+06%2F15%2F2026
-/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality
-/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
-/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX+78701&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
+/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX&location_type=locality
+/events?lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
+/events?category[]=Live%20Music&lat=30.2672&lng=-97.7431&location_value=Austin%2C+TX&location_type=locality&daterange=06%2F15%2F2026+-+06%2F17%2F2026
 ```
 
 ## Don't
@@ -756,7 +756,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 - Trailing slashes (BD doesn't use them).
 - Double-encode `post_filename` (already URL-safe).
 - Mix protocols (use `getSiteInfo.full_url` protocol).
-- Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text must match the URL granularity: if `location_type=locality` (city-level), say the city in the link text; if `location_type=postal_code` (ZIP-level), say the city + ZIP. A draft noun without the city rides a URL filtered another way instead — any shape `Pattern 3 filter params` supports. `location_value` is display-facing (`lat`/`lng` drive the filter) — give it the granularity's clean string ("Los Angeles, CA"), never a street address, never a ZIP outside `location_type=postal_code`. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
+- Invent geo params. Only `lat`+`lng`+`location_value`+`location_type` (sent together — `location_type` required) filter by location. `state_sn`, `state`, `country`, `city`, `region`, `zip` as raw query params are NOT supported — BD ignores them and the URL filters nothing. Anchor text says the city when the URL filters by location. A draft noun without the city rides a URL filtered another way instead — any shape `Pattern 3 filter params` supports. `location_value` is display-facing (`lat`/`lng` drive the filter) — give it the clean city string ("Los Angeles, CA"), never a street address, never a ZIP. Do not say "in [State]" or "in [Country]" — state/country are not supported filter modes.
 - Build links to WebPage-backed URLs that require `listWebPages` discovery (custom `list_seo` pages with arbitrary slugs, hand-built WebPages) — those are `/bd:seo` territory. **Pattern 6 slug-hierarchy URLs are NOT in this category** — they're constructed from live list-tool lookups, no `listWebPages` call needed.
 - Bulk-list existing posts to "see what's available" for internal linking — the ban is on new lookups; live post rows already in context from this run's dedup/list calls are fair Pattern 1 targets. Pattern 3 URLs are constructed from the current post's own category + location values — no lookup needed.
 
