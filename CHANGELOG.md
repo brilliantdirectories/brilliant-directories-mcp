@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.414] - 2026-07-20
+
+### Changed
+
+- **Fabricated CTA path sealed (Longevity Tour: /about and /schedule both 404 — homepage is the one-pager's only live URL).** The collision: one real URL, three link slots — the model spent the homepage as a body citation, then unique-href + URL-is-the-button's demanded fresh URLs, so it minted paths. Seals, all word-level: CTA snippet href is "<verified official URL>"; ownership clause now "The URL is the button's FIRST — verified live, never a guessed path, never a body citation; never the button alone" (button claims the verified URL before citations spend it; sole-URL posts legally ship with the button as the only external via the existing fewer-when-exhausted clause); liveness gate gains "each exact path, a verified domain never clears its other paths" (kills domain-level verification reading).
+
 ## [6.58.413] - 2026-07-20
 
 ### Changed

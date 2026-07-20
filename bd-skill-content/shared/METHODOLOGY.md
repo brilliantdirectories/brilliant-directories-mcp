@@ -107,7 +107,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 ### URL liveness gate
 
-Every external URL the post will link to must be verified live before publish (internal URLs verify per their Pattern's own gate). Three outcomes by `WebFetch` response:
+Every external URL the post will link to — each exact path, a verified domain never clears its other paths — must be verified live before publish (internal URLs verify per their Pattern's own gate). Three outcomes by `WebFetch` response:
 
 - **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead.)
 - **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
