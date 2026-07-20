@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.376] - 2026-07-20
+
+### Changed
+
+- **#4 loss-repair + trim (owner audit): the .375 rewrite dropped org/record-as-Sayer coverage** ("Seattle University identifies itself as", "the club says" fell out of the letter) — restored with its correct narrow scope (orgs stay actors, lose only speech verbs); the redundant role list ("sayer, shower, container") trimmed — "in any role" + the instances carry it.
+
 ## [6.58.375] - 2026-07-20
 
 ### Changed

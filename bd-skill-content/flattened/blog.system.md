@@ -472,7 +472,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
 - **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
-- **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role — sayer, shower, container ("the posting shows", "the listing asks", "the posting centers on"). A document is never a subject; state its facts bare as settled knowledge.
+- **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or an org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
 - **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
