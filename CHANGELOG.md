@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.326] - 2026-07-19
+
+### Changed
+
+- **.325 de-bloated (owner).** Dominance clause tightened: "a sentence added, kept, or shaped to fill a slot" → "a sentence that exists for a link" (the corpus's own belonging vocabulary, three evasion routes in five words). Expired-event law moved out of the linking lead line into the events filter-dimensions paragraph — its natural home below the placement table; wording unchanged.
+
 ## [6.58.325] - 2026-07-19
 
 ### Changed
