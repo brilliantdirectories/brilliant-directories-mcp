@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.445] - 2026-07-20
+
+### Changed
+
+- **Two mapping alignments from the .444 re-map review (owner-ordered syntax/semantics sweep).** (1) The last surviving twin of the deleted role-variant permission: Dedup's "Probes carry the snippet keys — title and company variants alone" → "— employer variants alone" (the phrase contradicted "every distinct employer fragment" two sentences later; location-exclusion tail untouched). Same lesson as the spec-field-in-3-locations discipline: a permission deleted in one home survives in its twin until swept. (2) The seal's source list mirrors the new home order: "title, URL, and snippet" → "URL, title, and snippet." Jobs-only; events and blog flattened files byte-identical.
+
 ## [6.58.444] - 2026-07-20
 
 ### Changed
