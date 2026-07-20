@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.398] - 2026-07-20
+
+### Changed
+
+- CTA seal trimmed to the one load-bearing sentence: "The official URL is the button's — never spent as a body citation." (phone-only path already covered by the trigger's "or official information URL" + "how to register — the steps").
+
 ## [6.58.397] - 2026-07-20
 
 ### Changed
