@@ -39,7 +39,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
 | Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
-| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("Sessions are booked by appointment") |
+| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("Members book sessions by appointment") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.355] - 2026-07-20
+
+### Changed
+
+- **Banned-patterns row-by-row audit (owner): 23 of 24 rows approved as-is, all load-bearing, one contradiction found and fixed** — the Hedged-facts fix-arm example "Sessions are booked by appointment" was PASSIVE, violating the Passive-voice row three lines down; now "Members book sessions by appointment" (person subject, active, literal). Overlap check clean: amplifier vs negative-listing rows self-disambiguate; attribution row pairs with construction #4 (row = operational arms, construction = class); no row duplicates another.
+
 ## [6.58.354] - 2026-07-20
 
 ### Changed
