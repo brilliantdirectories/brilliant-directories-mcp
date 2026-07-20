@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.453] - 2026-07-20
+
+### Changed
+
+- **Shared compound tail RESTORED verbatim ("— 3 × N values, one string") — events' flattened corpus verified byte-identical to the golden v6.58.441 run (git diff = zero lines).** Owner called the .444 trim wrong when it shipped ("was it good insurance?"); an events census collapse followed on the trimmed bytes; the discriminating experiment is the restore. If the next events run's census returns, the tail was causal (position salience at the law line beats content redundancy); if it collapses again on golden bytes, the cause is the documented stochastic census gap (run 11 vs 12 precedent) and the fix moves to the forced-artifact split or worker structured SERPs. Known tension accepted per owner priority: shared "3 × N values" is nominally false for jobs' up-to-three name forms — jobs' own Dedup law ("every distinct employer name form... up to three each") is the local override; watch jobs' next compound for re-padding.
+
 ## [6.58.452] - 2026-07-20
 
 ### Changed
