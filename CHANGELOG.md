@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.365] - 2026-07-20
+
+### Changed
+
+- **CTA block paragraph: "one factual sentence" → "a 2-3 sentence `<p>`" (owner: less prescriptive), both skills.** Audit answers on record: old #7's every operative element survives inside the Offer bullet (steering verbs, never-routes; "informs" upgraded to "asserts"); the Offer class is the FIFTH independent layer on the carrier disease (site-blindness, participants-fit, dominance, #8, Offer) plus noun-routing as the enabling path — multi-angle by construction.
+
 ## [6.58.364] - 2026-07-20
 
 ### Changed
