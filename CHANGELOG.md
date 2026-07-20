@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.402] - 2026-07-20
+
+### Changed
+
+- **THE SHRINKAGE MECHANISM SEALED (owner's insight): bans were read as content-removal licenses.** The model's cheapest compliance when hitting a banned shape was deleting the THOUGHT; no law forbade it. One global line above the constructions, inherited by both tables via check 17: "Every ban here and in Banned patterns kills the wording, never the thought — restate the fact in a legal shape; dropping it is its own failure." Also: organizer-story dimension example de-verticalized ("open since 1937 and known citywide").
+
 ## [6.58.401] - 2026-07-20
 
 ### Changed

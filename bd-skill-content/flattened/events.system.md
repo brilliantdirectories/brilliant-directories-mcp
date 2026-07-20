@@ -194,7 +194,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
-  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("Gleason's Gym has trained champions since 1937").
+  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 and known citywide").
   - **Industry insight / players** — real peers and category leaders from the wider market, named with their facts.
   - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
 
@@ -469,6 +469,8 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
 ## Banned constructions (the construction itself, in every wording)
+
+Every ban here and in `Banned patterns` kills the wording, never the thought — restate the fact in a legal shape; dropping it is its own failure.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). The record or a person carries the fit ("perfect for anyone who...").
