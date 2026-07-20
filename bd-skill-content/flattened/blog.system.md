@@ -181,7 +181,7 @@ The content-type file may specify a fallback category.
 
 ### Required outcomes (any structure achieves these)
 
-A good post covers the full picture: core facts, practical considerations, useful context, honest comparisons, deeper insights on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
+A good post covers the full picture: core facts, practical considerations, useful context, deeper insights on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
 
 1. **Load-bearing facts up front.** The first intro paragraph answers the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") across its sentences, never packed into one — and the body never opens with the post title restated. The content-type file specifies which facts are load-bearing for the data type.
 2. **Every record fact source-supported — by a source about THIS record.** A similarly-named different event, role, or record is a different subject, never a source. No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is a failure; short is fine only when source and confident knowledge are both genuinely exhausted.
@@ -194,8 +194,8 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
-  - **Industry insight / players** — peers and category leaders from the wider market, and how it compares among them.
-  - **Positive comparison** — favorable positioning of the role or event itself against real peers in its market, with a specific honest reason ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
+  - **Industry insight / players** — real peers and category leaders from the wider market, named with their facts.
+  - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
 
 
 

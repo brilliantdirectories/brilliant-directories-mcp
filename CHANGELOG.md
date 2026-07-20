@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.357] - 2026-07-20
+
+### Changed
+
+- **The comparison-command family swept — four siblings of the deleted Comparables dimension cut (owner: anything else causing it?).** Outcomes list drops "honest comparisons"; Industry insight drops "and how it compares among them" (→ "named with their facts"); "Positive comparison" renamed "**Standout fact**" with positioning-vocabulary removed (→ "a verifiable fact that sets the role or event apart in its real market"); jobs Voice "Draw comparisons from..." → "Ground market context in real specifics:". Blog's X-vs-Y post FORMAT untouched — comparison articles are a commanded blog genre, distinct from listing posts placing themselves on analogy scales. Zero comparison commands remain in the events/jobs output path.
+
 ## [6.58.356] - 2026-07-20
 
 ### Changed
