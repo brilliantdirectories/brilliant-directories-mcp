@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.393] - 2026-07-20
+
+### Changed
+
+- Furniture-mention example de-verticalized: "the calendar fills with..." (dropped "race" — fitness-specific; kept bare, no possessive — the possessive form is the already-known ban, the bare form is the seal).
+
 ## [6.58.392] - 2026-07-20
 
 ### Changed
