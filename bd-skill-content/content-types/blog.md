@@ -163,14 +163,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft, meeting the internal-link budget; the pass fills these placement ranges:
-
-| Section | Placement range |
-|---|---|
-| Direct-answer opening | 1 |
-| Body H2 sections | 4-8 spread across sections (1-2 per major section, max) |
-| FAQ block | 1-2 (answer text may include a link) |
-| Conclusion | 1 (always — riding a sentence the conclusion already needs, never a "go browse X" line) |
+Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote (FAQ answer text may include a link).
 
 **Link targets — all valid for blog posts:**
 

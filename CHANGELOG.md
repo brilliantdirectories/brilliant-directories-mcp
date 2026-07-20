@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.407] - 2026-07-20
+
+### Changed
+
+- **Per-section link quotas removed, all three skills (owner's call, proven by Aloha Run).** Three-for-three: every recent intro link rode a manufactured banned-shape sentence ("Race calendar fills with...", "lands on the race calendar", "sits among the San Diego races") — the Opening 0-2 range acted as a quota the model satisfied by minting carriers. Placement tables deleted in events/jobs/blog; the density law alone places links (1/sentence, 2/paragraph, none in first sentence, spread full length, floor/cap), riding only nouns the draft already wrote. Dangling "placement ranges" pointer in the METHODOLOGY budget line removed.
+
 ## [6.58.406] - 2026-07-20
 
 ### Changed
