@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.408] - 2026-07-20
+
+### Changed
+
+- Post-quota-removal audit: the explicit anti-end-cluster guard was the one softly-covered loss — restored at the single density source, five words: "spread across the post's full length, never bunched at either end". FAQ stays "a link" (singular = per-answer permission, agrees with density; plural invites in-answer stacking).
+
 ## [6.58.407] - 2026-07-20
 
 ### Changed
