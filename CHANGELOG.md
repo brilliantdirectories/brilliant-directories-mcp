@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.368] - 2026-07-20
+
+### Changed
+
+- **Comma-example audit (owner): pattern-row tokens KEPT — they are the law, not illustrations** (delete-on-sight strings = the proven enforcement channel per the suits kill; constructions carry law in definitions, patterns carry law in tokens). One true duplication cut: Marketing compounds' parenthetical instantiated its own suffix templates.
+
 ## [6.58.367] - 2026-07-20
 
 ### Changed
