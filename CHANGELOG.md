@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.429] - 2026-07-20
+
+### Changed
+
+- Owner caught two missed artifact templates in the em-dash sweep: jobs pool line (Title - Company - v1 | v2 | v3) and blog pool line (N. Topic - v1 | v2 | v3) — converted; a proper single-span audit now confirms zero dashed templates corpus-wide (the ban-row's own U+2014 exhibits intentionally excepted).
+
 ## [6.58.428] - 2026-07-20
 
 ### Changed

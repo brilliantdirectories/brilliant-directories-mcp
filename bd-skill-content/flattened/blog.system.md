@@ -802,7 +802,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
 4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
-5. **Build and print the numbered topic pool — the first message after Step 4 resolves.** Run the `Topic resolution` section. Pool size `N=5`, each line `N. Topic — v1 | v2 | v3` — its three title variants, each 1-3 words. The pool prints and its dedup call fires in this same message.
+5. **Build and print the numbered topic pool — the first message after Step 4 resolves.** Run the `Topic resolution` section. Pool size `N=5`, each line `N. Topic - v1 | v2 | v3` — its three title variants, each 1-3 words. The pool prints and its dedup call fires in this same message.
 6. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
 7. **Duplicate detection.** Step 5's call already fired — compare its returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's blog-specific match criteria.
 8. **Source research per topic.** Run METHODOLOGY `Stage 3: Source research`. Run the `Source research` section. Land 3-5 source-supported angles BEFORE drafting — the verdicts' own message carries the search round; then ONE fetch message carrying the round's best pages; that fetch message's pack is the research's whole fetch budget. A later fetch message fires only as the citation ladder's next rung when the `Source credibility gate` leaves the post under-cited.
