@@ -472,14 +472,14 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
 - **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
-- **Reportative evidentiality** — any document, org, or this record itself as Sayer of a speech verb. State the fact bare.
+- **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role — sayer, shower, container ("the posting shows", "the listing asks", "the posting centers on"). A document is never a subject; state its facts bare as settled knowledge.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact.
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
 - **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles another post ("the same style shows up in..."). Each record stands alone.
-- **Offer / navigation** — any sentence whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
+- **Offer / navigation** — any sentence or bullet whose function is offering or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "for people who want...", "If X is the better match..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
 - **Link-carrier sentence** — a sentence or bullet that exists for the link it holds; remove the link and it loses its reason. Every sentence and bullet stands linkless.
 
 ## Banned patterns

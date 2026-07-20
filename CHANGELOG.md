@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.375] - 2026-07-20
+
+### Changed
+
+- **The reportative survivor explained and sealed (Gemini triage: 1 late, 1 half-caught, 1 real).** Our #4 was scoped to "Sayer of a speech verb" — the jobs spray used CONTAINER verbs ("the posting shows/centers on/ties/asks"), the document shifting from speech-role to topic-holder role; and "the posting" masquerades as "the record itself" inside the closed set. Now: "a document... as a sentence's subject IN ANY ROLE — sayer, shower, container... A document is never a subject; state its facts bare as settled knowledge." Offer construction gains "or bullet" (the .374 patch covered #8 + dominance but missed Offer).
+
 ## [6.58.374] - 2026-07-20
 
 ### Changed
