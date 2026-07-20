@@ -329,7 +329,7 @@ No skill-run ID, no per-gate counts, no wall-clock.
 
 ## Hard rules (every BD growth skill, forever)
 
-- **Scrape facts, not wording.** Extract facts — and the record's story: background, history, named people, program or responsibility detail — from publicly-available avenues. Reword everything in BD-site voice, into plain meaning — a source's self-label that means nothing concrete is translated into what the thing actually does, or dropped. Never paste source paragraphs, sentences, or phrases verbatim.
+- **Scrape facts, not wording.** Extract facts — and the record's story: background, history, named people, program or responsibility detail — from publicly-available avenues. Reword everything in BD-site voice — a source's self-label that means nothing concrete is translated into what the thing actually does, or dropped. Never paste source paragraphs, sentences, or phrases verbatim.
 - **No fabrication.** If source lacks a data point, omit it from the post. Never invent details to fill a template slot. Adaptive depth: omit the missing data point, never the depth around it — fabricated padding is the failure, not honest length.
 - **Source references are optional + casual, not forced attribution.** When natural, link the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
 - **Publication default is draft unless the run's instructions explicitly authorize publishing live.**

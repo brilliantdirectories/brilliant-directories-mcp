@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.346] - 2026-07-20
+
+### Changed
+
+- **Subject law converted from blacklist to CLOSED WHITELIST (owner: enumeration is whack-a-mole; prove the root fix).** A blacklist can always be wiggled; a closed whitelist cannot — every sentence has one subject slot, and the law now states the complete set of what may occupy it: "every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb." Every abstraction, every shell noun, every future variant is excluded BY CONSTRUCTION, not by being on a list. Deleted accordingly: the 3-token abstraction list, the 5-verb enumeration, the 2 shell instances, row 23's last-run example echoes (fix arm now points at the closed set), check 6 rewritten as the set test. "into plain meaning" decoration trimmed (the operative translate-or-drop machinery stands)...
+
 ## [6.58.345] - 2026-07-20
 
 ### Changed
