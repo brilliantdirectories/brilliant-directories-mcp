@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.403] - 2026-07-20
+
+### Changed
+
+- Both CTA laws halved (~110 words to ~65 + snippet), all eight load-bearing elements kept: user override, URL-known trigger, own-page-over-booking-engine (events), placement after intro, h2+p+button block, paragraph register (steps / what to have ready / third person / no commands / no button-form description), full snippet, URL-is-the-button's + never-alone.
+
 ## [6.58.402] - 2026-07-20
 
 ### Changed
