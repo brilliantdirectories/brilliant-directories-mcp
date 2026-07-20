@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.329] - 2026-07-19
+
+### Changed
+
+- **post_promo's real gate found (owner): the word "ticket".** "A published ticket price" made the model's literal read skip the NETA $299 — a registration/certification fee, no ticket exists. Now "The published cost to attend or participate, whatever the event calls it — ticket, registration, entry, booking, or application fee — numeric only...". Complements .328's heading fix: the heading gives the duty force, the row no longer misnames the class.
+
 ## [6.58.328] - 2026-07-19
 
 ### Changed
