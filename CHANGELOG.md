@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.327] - 2026-07-19
+
+### Changed
+
+- **Link-shape balance restored via noun-class routing (owner: runs link mostly to dupe pages, listing links lost).** Culprit 1 was .312's tier-2 clause "— its category or city qualifies", which let Pattern 1 (zero-cost, in-hand dedup rows) steal the very nouns listing links ride; now "A specific related post (Pattern 1) counts at this tier when a draft noun names its specific subject; bare category or city nouns go to their listing pages." Culprit 2: item 4's target-construction clause omitted date — daterange listing links were invisible at target enumeration; now "constructed from the post's own category, location, and — for events — date values". Balance emerges from routing, not quotas: each noun class has one home (specific subject → post link; category/city/date noun → its listing page); listing URLs remain zero-call by existing law.
+
 ## [6.58.326] - 2026-07-19
 
 ### Changed
