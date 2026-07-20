@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.451] - 2026-07-20
+
+### Changed
+
+- **Jobs pool-line template made count-free: `Title - Company - v1 | v2 | v3` → `Title - Company - <its name-form variants, | separated>`.** The three-slot display contradicted the up-to-three law — and this model copies shapes over descriptions (gun-class #6): a one-form employer facing three displayed slots pads with junk (the regression run's "East Bank Club,Chicago,Personal Trainer" is the exact fingerprint, though stale bytes remain the leading suspect for that run — five current laws would have had to fail simultaneously). The self-naming placeholder is jobs' own proven style (`<data_id>`); the `|` separator teaching survives inside the placeholder; the adjacent parenthetical still defines forms and count. Events' template stays `v1 | v2 | v3` — its exact-three law matches its guaranteed supply; a template's slot count must match its law's count.
+
 ## [6.58.450] - 2026-07-20
 
 ### Changed
