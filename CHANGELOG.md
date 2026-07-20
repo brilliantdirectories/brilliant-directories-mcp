@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.428] - 2026-07-20
+
+### Changed
+
+- **Commanded run-artifact templates made legal under the em-dash ban (owner's call: fix the format, not the prose).** The pool-line and verdict-line templates commanded em-dashes while ANTI-SLOP bans them "everywhere" — the cheapest resolution was suppressing the visible pool print (observed: calls with no words). All artifact templates converted to plain hyphen across events/jobs/METHODOLOGY: `Title - YYYYMMDD - v1 | v2 | v3`, `no match - survives`, `no match (title + 20260717) - survives`, `no match (title + Acme Corp) - survives`, `- dropped` — every copy of the load-bearing trigger token changed together (the packing rule matches it verbatim).
+
 ## [6.58.427] - 2026-07-20
 
 ### Changed
