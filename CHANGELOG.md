@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.384] - 2026-07-20
+
+### Changed
+
+- **Coverage audit closed the two linkless variants the .383 clause patch missed.** (1) Metaphoric locative widened from posture verbs to any verb placing or positioning the record alongside/among other things ("which places it alongside other industry events") — transfer-verb adjacency-classification now in-class even without a link. (2) Fit law seals the participant-costume: "a participant described by the content they follow ('attendees following wellness talks') is the follower form."
+
 ## [6.58.383] - 2026-07-20
 
 ### Changed

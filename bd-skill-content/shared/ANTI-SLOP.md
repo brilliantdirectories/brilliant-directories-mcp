@@ -10,14 +10,14 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers who..."). Facts stated plainly, not hedged.
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides about the writing or its source.
 - Generous with specifics, no press-release tone. Name specific things. No re-explaining. Vary sentence length.
-- Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content.
+- Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content; a participant described by the content they follow ("attendees following wellness talks") is the follower form.
 - The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
 ## Banned constructions (the construction itself, in every wording)
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/has/makes someone. The record or a person carries the fit.
-- **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
+- **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"), or any verb placing or positioning the record alongside or among other things ("which places it alongside other industry events"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or an org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why It Matters...").
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
