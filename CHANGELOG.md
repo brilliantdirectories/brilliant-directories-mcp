@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.359] - 2026-07-20
+
+### Changed
+
+- **Dimension-label headings + the 2-3-sections stall (owner).** The repeating H2s ("What To Expect", "Who This Fits") are the depth menu's own labels worn as headings — the label ban covered prose, never headings; now "a dimension's label never enters the prose or its headings — dimensions are lenses, not sections; headings rise from THIS record's own material." The 2-3-section stall is NO set limit (none exists) — it's knowledge-dimension shyness: source-fed dimensions always appear (fact-mandate drives them), knowledge-fed ones (historical/local/industry) skip because no gate checked coverage; self-check 18 closes it: "Every depth dimension that source data or confident knowledge supports — present? Skipping one is the failure."
+
 ## [6.58.358] - 2026-07-20
 
 ### Changed
