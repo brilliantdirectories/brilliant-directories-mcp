@@ -736,7 +736,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety
 
-In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) to run-verified rows already in hand. Up to 6 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes` — distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
+In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) riding nouns the draft already wrote, to run-verified rows in hand. Up to 6 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes` — distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
 
 ## Link shape priority (universal)
 

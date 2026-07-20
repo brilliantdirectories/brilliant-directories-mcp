@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.320] - 2026-07-19
+
+### Changed
+
+- **Shape-mix option (d) gains the noun-riding rider it was born without (McGaw run: "sits in the same fitness lane as the site's live... openings across the directory").** The .313 addition "(d) direct post links (Pattern 1) to run-verified rows already in hand" carried no carrier constraint, so the pass manufactured an intro sentence naming sibling openings — while the draft held natural carriers ("People who already coach one on one", "already teaches yoga, Pilates"). Now "(d) direct post links (Pattern 1) riding nouns the draft already wrote, to run-verified rows in hand." Watches (no lever found, no edit): "The page emphasizes" source-as-actor variance; one run dropped the core-facts bullet block.
+
 ## [6.58.319] - 2026-07-19
 
 ### Changed
