@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.335] - 2026-07-19
+
+### Changed
+
+- **Blog had the same bullets-killer cross-ref — removed.** blog.md's "List shape per ANTI-SLOP `Bullets rule`" cited the restraint rule as its authority, identical to the events/jobs pattern fixed in .334; now "**List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria)." All three skills' list commands now stand on their own authority.
+
 ## [6.58.334] - 2026-07-19
 
 ### Changed
