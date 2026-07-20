@@ -519,6 +519,8 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 
 ## Self-check before posting
 
+Run every check below against the assembled body and every create-call field; a hit gets its fix applied in place, and the rewrite re-passes the sweep.
+
 1. Any `–` (U+2013) or `—` (U+2014) outside code? Rewrite.
 1a. Any curly quote (U+2018/2019/201C/201D), ellipsis (U+2026), or NBSP (U+00A0) outside code? Replace with straight ASCII.
 2. Throat-clearing opener? Cut.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.423] - 2026-07-20
+
+### Changed
+
+- Self-check section gains its operating line (was a bare title + questions): "Run every check below against the assembled body and every create-call field; a hit gets its fix applied in place, and the rewrite re-passes the sweep."
+
 ## [6.58.422] - 2026-07-20
 
 ### Changed
