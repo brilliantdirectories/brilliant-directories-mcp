@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.379] - 2026-07-20
+
+### Changed
+
+- **The close's content vacancy named (the last live lever; Gemini triage: 2 rejected, 1 re-derivation).** Trimming "landing how to attend" (.365, correctly, as prescriptive) left the close CONTENT-unspecified — vacancy doctrine: the events model filled it with calendar-navigation twice ("Where The Austin Calendar Goes Next"). Occupant named, four words per skill: close "still about the event — never the calendar" / "still about the role — never the listings". Gemini's no-body-links proposal rejected (deletes the SEO floor by design); its cold operational-verb register rejected (conflicts the friend-warmth law); its reportative fix = the sealed #4 re-derived. Same-bytes variance (jobs 8.5 vs events 5.5) proves the residual is stochastic compliance at link-pressure, not a missing law.
+
 ## [6.58.378] - 2026-07-20
 
 ### Changed
