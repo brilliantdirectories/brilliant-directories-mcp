@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.427] - 2026-07-20
+
+### Changed
+
+- **Aside-ban unscoped — the core fix by deletion (Phoenix "wellness lane" specimen).** The Voice law banned asides "about the writing or its source" — the scope licensed every OTHER aside class (city event-scene, market, calendar, genre) as link vehicles. Scope deleted: "no filler, no asides." Net minus four words; the proposed row-60 list-growth (local scene) and item-4 carrier-scope additions retracted as band-aids.
+
 ## [6.58.426] - 2026-07-20
 
 ### Changed
