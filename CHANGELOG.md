@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+## [6.58.394] - 2026-07-20
+
+- **First sentence says the damn thing (W Costa Navarino buried-lead fix).** "in any natural flowing order" licensed backwards openings that buried who's hiring / what the event is in trailing phrases. Both load-bearing laws now carve sentence one: jobs — who is hiring, for what role, where ("East Bank Club in Chicago is hiring personal trainers."); events — the event, what, when, where (reuses the established Pearl Park example). Rest still flows in any order. Blog already law-bound to direct-answer openings.
+- **CTA mood sealed**: "the steps and what to have ready, stated in third person, never commands" — the sample's "Use the official application page, review..., prepare..." exposed an imperative vacancy the .390 wording would have amplified.
+
 ## [6.58.393] - 2026-07-20
 
 ### Changed
