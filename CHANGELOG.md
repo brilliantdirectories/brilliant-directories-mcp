@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.358] - 2026-07-20
+
+### Changed
+
+- **Gemini EEAT suggestions audited: ~90% already forced (depth-menu failure-language + jobs market-grounding line); surgical delta = two words** — Local context dimension gains "landmarks" and "parking" ("neighborhood character, nearby landmarks and amenities, parking, transit/access"). Jobs untouched: Industry insight is already menu-forced and the local-market grounding is the Voice line "Ground market context in real specifics" + Depth's numbers/team cargo — a second force would be duplication.
+
 ## [6.58.357] - 2026-07-20
 
 ### Changed
