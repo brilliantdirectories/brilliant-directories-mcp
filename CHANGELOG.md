@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.447] - 2026-07-20
+
+### Changed
+
+- **Dangling pointer deleted: 6b's "per the `Dedup` section's fence" → "per the `Dedup` section."** Nothing in the Dedup section is named or describable as "the fence" — the ref-checker passes the section name but can't see the attribute; the word was a fossil pointing at nothing. The command (every keyed candidate from any search or fetch so far aboard) stands unchanged. On record as residual-by-design: shared METHODOLOGY's Distinctive-phrase example is title-fragment-flavored (events-correct); jobs' employer-source laws override on the command surface — if a jobs run ever title-fragments, that example is the pre-named culprit.
+
 ## [6.58.446] - 2026-07-20
 
 ### Changed
