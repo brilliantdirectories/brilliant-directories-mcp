@@ -149,7 +149,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
-**Bullets per ANTI-SLOP `Bullets rule`** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
+**Bullets** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 

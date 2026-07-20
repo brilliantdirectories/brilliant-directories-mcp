@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.334] - 2026-07-19
+
+### Changed
+
+- **Missing core-bullets lever found on second witness (McGaw, Equinox): the command cited its own killer.** "Bullets per ANTI-SLOP `Bullets rule`" routed the model to a rule whose headline is "Cut... Prose is primary" — the restraint outgunned the command via the command's own cross-ref, while check 15's exemption for commanded lists sat buried mid-rule. Type files now command "**Bullets**" on their own authority (cross-ref dropped); check 15 leads with its exemption: "The content-type file's commanded lists always stand. Beyond them: ..." Equinox post otherwise confirmed the .331-.333 coverage map — every carrier/narration defect in it targets an already-shipped fix; its harvest (pay bands, first-month benefits, cert paths) shows the fact-mandate working.
+
 ## [6.58.333] - 2026-07-19
 
 ### Changed

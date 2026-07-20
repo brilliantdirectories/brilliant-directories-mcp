@@ -114,7 +114,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Registration CTA** — unless the user requests otherwise: when a registration or official information URL is known — the event's own event page; a third-party booking or checkout engine never outranks it — include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
-**Bullets per ANTI-SLOP `Bullets rule`** — the event's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the what, when, where, and cost at a glance. A later section whose facts enumerate — inclusions, tiers, formats, requirements — presents them as its own `<ul>`.
+**Bullets** — the event's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the what, when, where, and cost at a glance. A later section whose facts enumerate — inclusions, tiers, formats, requirements — presents them as its own `<ul>`.
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 

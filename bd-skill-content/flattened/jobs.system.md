@@ -511,7 +511,7 @@ The page speaks as the thing it is, never as a report about its source — and t
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
-15. **Bullets rule.** Bullets used as a default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria). Beyond the lists the content-type file commands, one or two lists per post, max. Prose is primary; bullets are a tool, not a layout.
+15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 
 ## Scoring (rate 1-10, ship if ≥40/50)
@@ -952,7 +952,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, include this CTA immediately after the intro paragraphs: `<p><a class="btn btn-secondary btn-lg vmargin" href="<official URL>" title="<descriptive phrase>" rel="nofollow" target="_blank">Button Text In Title Case</a></p>`.
 
-**Bullets per ANTI-SLOP `Bullets rule`** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
+**Bullets** — the job's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed.
 
