@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.397] - 2026-07-20
+
+### Changed
+
+- **Encinitas run's two collisions sealed.** (1) MISSING CTA BUTTON: the model spent the official Scripps URL as an intro citation, then unique-href forbade reusing it on the button — the button died. Both CTA laws: "The official URL is the button's — never spent as a body citation"; events adds the phone-only path (official page on the button, the call fact in the paragraph). (2) FABRICATED AUDIENCE: "It draws yoga instructors and personal trainers" invented to host two member-listing links — a community class recast as a pro event. Events load-bearing "who it's for" now "(as the source states it, never projected from the site's member professions)".
+
 ## [6.58.396] - 2026-07-20
 
 ### Changed
