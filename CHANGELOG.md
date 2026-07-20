@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.430] - 2026-07-20
+
+### Changed
+
+- Pool discipline: "Stage 2 dedup for every entry whose dedup keys are known" → "Stage 2 dedup for every entry — the content-type file names the keys." The conditional was vacuously true (every skill's admission bar already requires keys to pool) so its only live effect was the out: skip a pooled entry's probe by second-guessing a key. Keys-at-the-door unchanged; probes now unconditional. Net minus three words.
+
 ## [6.58.429] - 2026-07-20
 
 ### Changed
