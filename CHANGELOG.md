@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.425] - 2026-07-20
+
+### Changed
+
+- Step 6 opening quantified (owner-designed): "the Search round's results" (grep-able step cross-ref), "Read every result from all five searches and count all the candidates" (the "all 5 WebSearch results" variant was rejected — it would teach reading five RESULTS and stopping; the round is five QUERIES × up to 8 results). "the candidates are the pool" kept — the pool outlives dedup.
+
 ## [6.58.424] - 2026-07-20
 
 ### Changed
