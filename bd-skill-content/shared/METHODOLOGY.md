@@ -138,7 +138,6 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **What to expect** — sensory + situational detail that sets the scene up front.
   - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
-  - **Comparables** — neutral orientation against something familiar from the subject's own world ("similar to X but Y").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
   - **Industry insight / players** — peers and category leaders from the wider market, and how it compares among them.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.356] - 2026-07-20
+
+### Changed
+
+- **The "closer to X than Y" command deleted + "suits" token-banned (owner).** Scalar comparative predication ("The program feels closer to a training weekend than a drop-in class") is the Comparables dimension executing its own licensed template — "similar to X but Y" IS "closer to X than Y"; the dimension is deleted (zero cross-refs; Positive comparison's fact-shaped superlative stays). "The weekend suits teachers" was legal through a real hole — construction #2 bans abstract Carriers and the closed set licenses the record, so record+"suits" passed every law; owner's token ban lands in Vocabulary fingerprints: "suits, suited" — deleted on sight everywhere. Shell subjects ("That structure works", "That range makes") and "the page says" are already banned classes — their appearance flags a cache-gate run; first clean-gap run adjudicates.
+
 ## [6.58.355] - 2026-07-20
 
 ### Changed
