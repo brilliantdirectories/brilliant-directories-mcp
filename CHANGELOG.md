@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.338] - 2026-07-19
+
+### Changed
+
+- **Fit instances trimmed to one per polarity (owner: repetition risk).** Both positives were "perfect"-based — a two-item rotation the model would spam; "a perfect match for..." dropped. "In a friend's everyday words" carries the variety; one positive + one negative instance teach the shapes.
+
 ## [6.58.337] - 2026-07-19
 
 ### Changed
