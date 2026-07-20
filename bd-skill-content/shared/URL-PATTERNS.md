@@ -155,7 +155,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 | Type | Format |
 |---|---|
 | Internal | `<a href="/..." title="<descriptive>">text</a>` (no rel, no target) |
-| External | `<a href="https://..." title="<descriptive>" rel="nofollow noopener" target="_blank">text</a>` |
+| External | `<a href="https://..." title="<descriptive>" rel="noopener" target="_blank">text</a>` |
 
 **`title` attribute required on every `<a>` in post body content** (`post_content`, `group_desc`). Short descriptive phrase (~50-80 chars) of what the link points to — not a duplicate of the anchor text, never an instruction ("Browse...", "Check..."). Example: anchor "personal trainers in Boston" → `title="Boston trainer listings filtered by category and specialty"`. Helps screen readers, hover previews, and SEO.
 
