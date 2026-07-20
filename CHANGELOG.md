@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.340] - 2026-07-19
+
+### Changed
+
+- **Negative fit instance removed entirely (owner: why does it need to exist?).** The "who it's not for" dimension already commands the content and the register command governs both polarities; the positive instance anchors the register, mirroring is trivial. Final form: `plainly evaluative in a friend's everyday words ("perfect for anyone who...")`.
+
 ## [6.58.339] - 2026-07-19
 
 ### Changed
