@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.342] - 2026-07-19
+
+### Changed
+
+- **Second law-vs-instance tension from the same sweep: the Positive-comparison instance taught category-talk in prose** ("the only weekday-morning option in its category" vs the never-planted taxonomy law) — now "of its kind". Full instance inventory swept; no further tensions: every remaining worked instance is literal-verbed, concrete-subjected, register-aligned, and taxonomy-free.
+
 ## [6.58.341] - 2026-07-19
 
 ### Changed

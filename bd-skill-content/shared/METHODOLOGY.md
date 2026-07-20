@@ -142,7 +142,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby amenities, transit/access. Skip when the post type has no place anchor.
   - **Industry insight / players** — peers and category leaders from the wider market, and how it compares among them.
-  - **Positive comparison** — favorable positioning of the role or event itself against real peers in its market, with a specific honest reason ("the only weekday-morning option in its category"). Never puffery, never praise of the post or its source.
+  - **Positive comparison** — favorable positioning of the role or event itself against real peers in its market, with a specific honest reason ("the only weekday-morning option of its kind"). Never puffery, never praise of the post or its source.
 
 
 
