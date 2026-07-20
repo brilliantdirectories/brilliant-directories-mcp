@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.344] - 2026-07-19
+
+### Changed
+
+- **503-safe create retry (Healthspan run: HTTP 503, post lost, no retry).** Stage 6's own law commanded the loss ("On failure: continue to next record. Do not retry blindly.") — correct dupe-safety, wrong outcome for transient 5xx. Now: "On a 5xx failure: one exact-title probe — row present → the post was created, proceed; row absent → retry the create once. Any other failure: continue to the next record. Never retry blindly." Orphan check on the live site confirmed the 503 struck pre-creation (no Healthspan row); site/Worker/npm all health-verified 200. Run also fired 8 min post-push — inside the banked 15-minute cache gate; its stale-pattern content does not indict the .336+ fixes.
+
 ## [6.58.343] - 2026-07-19
 
 ### Changed
