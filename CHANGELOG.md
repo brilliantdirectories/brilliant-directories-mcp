@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.458] - 2026-07-20
+
+### Changed
+
+- **The .457 count discipline's cap conflict sealed (caught by the post-ship error check): "one line per dated result" contradicted the ten-cap when the outputs show more than ten (~15 today → ten lawful lines would read as "an incomplete print"). Jobs never hit it (pools of 5 and 8, under the cap); its "per counted candidate" construction binds lines to the count's own members. Events now: "one line per pooled dated result."** One word.
+
 ## [6.58.457] - 2026-07-20
 
 ### Changed
