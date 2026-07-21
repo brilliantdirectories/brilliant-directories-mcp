@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.461] - 2026-07-21
+
+### Changed
+
+- **Blog heading monoculture dismantled (owner: every H2 was a question, every FAQ titled "Frequently Asked Questions").** Four existing-sentence updates, zero new prose: (1) the H2 law rebalanced — "Question-shaped H2s for ~60%" with 3 question examples and 0 statement examples becomes "Mix question-shaped and statement-shaped H2s" exampled 2:2, the "where natural" judgment escape deleted, the soft ratio replaced with the cap-law "neither shape runs the whole page"; (2) answer-first framing neutralized — "its implicit question" → "what its heading promises" (serves both shapes); (3) the FAQ H2 freed — "named in the topic's own words — never the stock 'Frequently Asked Questions'" (the quoted string was a verbatim command; the per-language parenthetical dies with it); (4) the assembly-point restatement repaired — "question H2s" → "mixed-shape H2s" in the post_content spec (the .102 gun-class: the compressed local description was overriding the distant nuanced law). Bloat audit of the whole Content-manufacture region: everything else load-bearing, kept. Blog-only; events and jobs flattened byte-identical (diff = 0).
+
 ## [6.58.460] - 2026-07-21
 
 ### Changed

@@ -938,12 +938,12 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 ### Body structure (universal across formats)
 
 1. **Direct-answer opening paragraph.** First `<p>` answers the headline's implicit question in 40-100 words — in fresh words, never re-typing the title as the first sentence. No throat-clearing ("Here's the thing"), no preamble. The first ~80 words make clear what the article covers and why it matters.
-2. **Question-shaped H2s for ~60% of sections.** "What is X?" "How does Y work?" "When should you Z?" — captures long-tail queries and AI-Overview citations. Mix in statement-shaped H2s for variety where natural.
-3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to its implicit question. Then expand with detail, examples, lists.
+2. **Mix question-shaped and statement-shaped H2s.** "How does Y work?" "When should you Z?" beside "The Real Cost of X", "Choosing Y in 2026" — questions capture long-tail queries and AI-Overview citations; neither shape runs the whole page.
+3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
 4. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
 5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 6. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
-7. **FAQ block before conclusion.** H2 "Frequently Asked Questions" (or per-language equivalent) with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
+7. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
 8. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
@@ -1000,7 +1000,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Blog-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + question H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
+| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
 | `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and space needs for a small apartment."). |
 | `post_meta_keywords` | Same exact CSV as `post_tags`. |
