@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.457] - 2026-07-20
+
+### Changed
+
+- **Events learns from jobs — the golden child inverted (jobs 2-for-2 full census on the .455/.456 stack; events 1-for-2 on golden bytes, latest run pooling 1 of ~15 and dating the dateless Fit Expo line from its own knowledge).** Four events-side ports, line-for-line mapped against jobs before shipping: (1) the WALK verb — "Walk every result line of all five outputs one by one" (jobs' commanded procedure replaces events' passive classification); (2) the outside-knowledge seal — "a line showing no date is never dated from outside knowledge" (events' form of jobs' never-source-keys-elsewhere law; seals tonight's observed violation); (3) the floor noun made explicit — "the first ten dated results" (each skill's floor names its own binary class: jobs=candidates walk-defined, events=dated results; never cross-import the other's noun); (4) the count discipline — "The pool print opens with the count and prints one line per dated result — fewer lines than the count is an incomplete print" (jobs' proven count-then-match artifact, same position). Rows verified already-parallel and untouched: anchor, membership seal, score (verbatim), one-round law, N+1 fire clause, empty-pool return (jobs' pre-fired-yields branch NOT ported — it names 6a machinery events doesn't have; importing it would be a dangling pointer). Jobs and blog byte-untouched (diff = 0 both).
+
 ## [6.58.456] - 2026-07-20
 
 ### Changed
