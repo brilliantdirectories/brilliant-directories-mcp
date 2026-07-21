@@ -853,7 +853,7 @@ User said "write about XYZ" or "draft an article on ABC." Use the topic verbatim
 
 ### Shape B — Vertical-derived (no topic provided)
 
-User said "write articles for SEO traffic," "organic search," "viral content," "industry news," "related to a topic," "trending content," or similar — anything that means "you pick the topic." Brainstorm `N` distinctly different topic candidates cached from **Site context discovery**.
+User said "write articles for SEO traffic," "organic search," "viral content," "industry news," "related to a topic," "trending content," or similar — anything that means "you pick the topic." Brainstorm `N` distinctly different topic candidates cached from **Site context discovery**. Unless the user directs otherwise, prefer topics that fit the site's niche and intersect with its categories; balance long-tail evergreen SEO value with deeper niche perspectives and high-search-intent topical authority.
 
 **Within-pool diversity — span distinct subjects.** Each candidate must occupy its own sub-theme of the vertical. If two or more share a sub-theme, anchor noun, focus, or subject, regenerate with broader spread before taking #1.
 

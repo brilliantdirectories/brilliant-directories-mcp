@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.460] - 2026-07-21
+
+### Changed
+
+- **Blog gains the niche-preference clause, matching events'/jobs' placement and convention** — appended to Shape B's brainstorm command (blog's candidate-generation stage, the analog of the other skills' Source candidates tail): "Unless the user directs otherwise, prefer topics that fit the site's niche and intersect with its categories; balance long-tail evergreen SEO value with deeper niche perspectives and high-search-intent topical authority." Mirrors the prompts/blog.md tailwind (line 11) so users stop pasting it into custom instructions; corpus-voice conversions: "my niche/categories" → "the site's niche / its categories", "pick" → the family verb "prefer" (stays a preference under "Unless the user directs otherwise", never a gate against custom topics). The categories clause is mechanical, not decorative: intersecting topics arrive with live Stage 4 category-ledger routing and Pattern 3 link targets. Blog-only; events and jobs flattened byte-identical (diff = 0).
+
 ## [6.58.459] - 2026-07-20
 
 ### Changed
