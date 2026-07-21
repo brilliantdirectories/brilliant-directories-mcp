@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.459] - 2026-07-20
+
+### Changed
+
+- **New depth dimension: "The program / agenda"** — "the published run of show: day-by-day or hour-by-hour flow, itinerary, speakers or session lineup, as the source states it; a start time alone is logistics, a flow is a section." The schedule facts always arrived via events' Depth cargo ("program or speakers… day-of specifics") but no lens scored building them into a section — now the depth score rewards it. Shared menu (self-scoping via "that fits the post type"); additive bullet at the menu's end, nothing edited; census machinery untouched in all three flattened files.
+
 ## [6.58.458] - 2026-07-20
 
 ### Changed
