@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.541] - 2026-07-22
+
+### Fixed
+
+- **Sentence-opening anchors shipped lowercase ("training tips matter most...", and post 1719 before it) — systematic.** The wrap-in-place law reads the anchor as a frozen string in the case the draft wrote it, and draft nouns are lowercase; nothing ever said anchors obey sentence capitalization. One sentence in the anchor master-law: "An anchor opening a sentence capitalizes its first word like any sentence opener."
+
 ## [6.58.540] - 2026-07-22
 
 ### Fixed
