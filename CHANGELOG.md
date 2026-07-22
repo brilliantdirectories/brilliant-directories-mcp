@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.509] - 2026-07-22
+
+### Changed
+
+- **"no anchor phrase twice" joins the placement series — the completing half of the .508 weld.** Post 1731: "mobility routine" anchored two different targets, "recovery habits" spanned three placements — identical words landing on different pages is its own confusion class, uncovered by the href-keyed rule. Two links can always find two noun phrases; zero over-ban risk.
+
 ## [6.58.508] - 2026-07-22
 
 ### Changed
