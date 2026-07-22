@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.468] - 2026-07-22
+
+### Changed
+
+- **Owner's review of .467: the combined cap re-homed, precedence stated, the intro's double word-spec consolidated.** (1) "cap 10 internal and external combined" moved OUT of the internal-link budget (mis-shelved — a combined law in a single-domain budget) into the Link order section, the internal/external interplay organ: "Internal and external links together cap 10 — the internal floor holds; externals fill the remainder" (the precedence clause resolves the 1,200-word seam: floor 6 + external ratio ~5 = 11 vs cap 10 — now externals give). Item 4 keeps floor + examples only. (2) ~125 floor restoration REJECTED with arithmetic: at ~125 the floor alone (~10 internal) eats the whole combined cap — floor 10 + commanded externals ~5 = 15 vs 10 = jointly unsatisfiable (the exactness gun-class); ~200 is what makes combined-10 coherent, and it killed the carrier template. (3) Blog item 1: "in 40-100 words" dropped (duplicated the ~80-word marker; the 6-8 sentence law governs length), the ~80 clause pinned inside the para-1 clause, the trailing dangler deleted. Net words down.
+
 ## [6.58.467] - 2026-07-22
 
 ### Changed
