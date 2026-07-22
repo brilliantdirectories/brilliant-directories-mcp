@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.486] - 2026-07-22
+
+### Changed
+
+- **Two-phase linking made a transcript artifact instead of a mental-state claim: "Write the entire body first — a standalone message carrying zero `<a>` tags; the commanded CTA button is the one exception." + "The created body carries the draft's words unchanged, each anchor a run of them wrapped in place — one added, removed, or reworded word is a defect."** Post 1711 shipped label-anchor carrier sentences with "zero links and zero link intent" and the label ban both live — self-certified procedure, no transcript trace. The draft now stands linkless as its own message; the create body is a wrap-only diff of it; anchors can only be runs of the draft's own words, killing label anchors and carrier sentences without enum lists. Gate-check wording "wrapped"→"chosen" (links enter at create time), both homes.
+- **.485's taxonomy-membership example-list clause reverted (both homes) — it layered words on a law that was live and ignored.** Restored "taxonomy words (...) never enter the prose" with "calendar" and "schedule" added per owner (events specimens).
+
 ## [6.58.485] - 2026-07-22
 
 ### Changed
