@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.536] - 2026-07-22
+
+### Changed
+
+- **Both listing Voices speak "the record" instead of the type-noun ("State the record's facts...", "the record needs no re-introduction")** — role, job, and event all have live transfer specimens from tonight's posts ("The job ties to one branch", "The event also gives"); "record" has zero all night — meta-jargon doesn't transfer, and the model reads it fluently corpus-wide.
+
 ## [6.58.535] - 2026-07-22
 
 ### Changed
