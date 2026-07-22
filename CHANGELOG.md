@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.500] - 2026-07-22
+
+### Changed
+
+- **Venue row: "proper-noun place" -> "named place" (owner's wording)** — plainer than grammar jargon, self-consistent (the one term carries the definition, the case trigger, and the geocode fill), and "No named place in the source" is the precise trigger (the source has names; it's a place-name that's missing).
+
 ## [6.58.499] - 2026-07-22
 
 ### Fixed
