@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.530] - 2026-07-22
+
+### Changed
+
+- **Evidential-subject row trimmed to one example** — the pair was the same costume twice (location-datum + placement verb); the heuristic sentence carries the generalization. Per the one-example-per-lane rule.
+
 ## [6.58.529] - 2026-07-22
 
 ### Changed
