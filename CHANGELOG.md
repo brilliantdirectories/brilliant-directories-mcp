@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.474] - 2026-07-22
+
+### Changed
+
+- **The heading cap made countable (owner's census on post 1700: FIVE of seven body H2s Q-led — "What Two Sessions Cover", "When Three Days Makes Sense", "How To Fit…" — all question-shaped by the .462 classifier's own definition).** The leak was the cap's wording: "neither shape runs the WHOLE page" is satisfied by a single token statement — one statement H2 inoculates a 5:1 page. Swapped for arithmetic riding the shipped classifier: "question-shaped H2s stay at or under half." FAQ H3s untouched (the law scopes H2s); the long-tail why-clause stands. Also on record: Gemini's title micro-check was a false alarm — blog's Title-shape table sanctions the Question row; "single statement only" is the events/jobs title spec. The same specimen confirmed six ships live: headless at-a-glance fired correctly on a tabulating topic, zero closing maxims, clean whitelist HTML, natural anchors, direct-answer opening, third person.
+
 ## [6.58.473] - 2026-07-22
 
 ### Changed
