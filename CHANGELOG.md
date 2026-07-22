@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.526] - 2026-07-22
+
+### Changed
+
+- **Linking loosened by fear-boundary, not law-repeal (three under-floor runs = the chill):** (1) the wrapping license in item 4 — "wrapping a noun a sentence already owns is never the crime" — under tripled carrier-felony risk the cheapest safe path had become not-linking; the license names the free action; (2) the short-close license scoped to "filler sentences" with "links riding the close's real sentences stand" (both homes) — closes are where category/city links naturally live and the fresh .524 line read as banning them. Carrier, destination, and narration bans all unchanged.
+
 ## [6.58.525] - 2026-07-22
 
 ### Changed
