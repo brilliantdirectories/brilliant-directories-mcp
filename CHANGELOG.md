@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.469] - 2026-07-22
+
+### Changed
+
+- **Blog intro made explicit (owner's draft, converged): "split unevenly between them" (restores the events/jobs family verbatim my .467 port dropped), "the first `<p>`" (explicit antecedent), ~80 → ~100 words (the answer window's room), "no preamble — in either" (extends the ban to paragraph 2's context role).** Rejected from the draft: "or ever" (vague scope; "in either" covers both paragraphs and mid-post preamble isn't a real failure mode) and "between the two intro <p>'s" (the family's two-word "between them" carries identical explicitness).
+
 ## [6.58.468] - 2026-07-22
 
 ### Changed

@@ -154,7 +154,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Body structure (universal across formats)
 
-1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly (never an even split): the first answers what the headline promises in fresh words — its first ~80 words making clear what the article covers and why it matters — never re-typing the title as the first sentence; the second widens with the article's context and stakes. No throat-clearing ("Here's the thing"), no preamble.
+1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly between them (never an even split): the first `<p>` answers what the headline promises in fresh words — its first ~100 words making clear what the article covers and why it matters — never re-typing the title as the first sentence; the second widens with the article's context and stakes. No throat-clearing ("Here's the thing"), no preamble — in either.
 2. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; neither shape runs the whole page. Questions capture long-tail queries and AI-Overview citations.
 3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
 4. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
