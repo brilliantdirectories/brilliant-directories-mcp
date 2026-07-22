@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.483] - 2026-07-22
+
+### Changed
+
+- **The category-page link monoculture dismantled at its cause (owner's census: 4 of 6 internal links on the Lizzo post were `?category[]=` pages; events specimens skew the same).** The culprit was supply economics, not preference: Pattern 3 is the only free-and-guaranteed class (constructed from the ledger, zero calls); Pattern 1's supply was a dedup byproduct (empty on fresh topics — no legal call existed to discover a related post); Pattern 4 needs a known person; Pattern 6 a gate. And no distribution law existed for pattern TYPES. Two existing clauses extended in the shared linking pass, ~15 words, all three skills inherit: (1) the gate-check class widened — "(member-count, taxonomy, and title-filtered post lookups)" — Pattern-1 DISCOVERY legalized inside the existing ten slots (a spare probing a draft noun for a live related post is now a gate check; cleared rows feed the existing re-target ladder; not bulk-listing — the ban stands); (2) the distribution clause now covers type as well as position — "distributed evenly across the post's full length and across the pattern types the draft's nouns support — never clustered, never one pattern carrying the page" (supply-conditional; can't force a pattern the draft can't feed). Events/jobs' killed-dupe-rows Pattern-1 pipeline stays primary; the probes supplement. Category caps rejected as bandaid per owner.
+
 ## [6.58.482] - 2026-07-22
 
 ### Changed
