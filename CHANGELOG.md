@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.476] - 2026-07-22
+
+### Changed
+
+- **The taxonomy-anchor ban made universal (owner's call): the .475 clause joins the shared linking pass's anchor-source list** — "(…a concept another post or a category's listing page covers — never a category's own label, and taxonomy words ('category', 'section') never enter the prose)". The vulnerability is structural (any skill placing Pattern 3 links can label-anchor); events/jobs hadn't leaked yet — their specimens anchored concept phrases ("expo weekend", "Spokane weekend") — but nothing made that hold. Blog's .475 copy stays as the local decision-point reinforcement per the position doctrine.
+
 ## [6.58.475] - 2026-07-22
 
 ### Changed
