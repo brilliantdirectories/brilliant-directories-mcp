@@ -286,13 +286,13 @@ Universal `post_tags` field constraints — applies to ALL post types (single-im
 
 ## Stage 6: Post creation
 
-Call per-type `create*` tool with assembled fields. Assemble against the per-type field reference: every field this run already resolved ships — copy values (e.g. `lat`/`lon`, `post_location`, `post_venue`) verbatim from the run's earlier tool results, never from memory. Pace BD writes ~600ms apart. On a 5xx failure — or a create response without a `post_id` greater than zero — one exact-title `listSingleImagePosts eq` probe — row present → the post was created and its row's `post_id` stands as the create response's for Stage 7; row absent → retry the create once. Any other failure: continue to the next record. Never retry blindly.
+Call per-type `create*` tool with assembled fields. Assemble against the per-type field reference: every field this run already resolved ships — copy values (e.g. `lat`/`lon`, `post_location`, `post_venue`) verbatim from the run's earlier tool results, never from memory. Pace BD writes ~600ms apart. On a 5xx failure — or a success response without a `post_id` greater than zero — one exact-title `listSingleImagePosts eq` probe — row present → the post was created and its row's `post_id` stands as the create response's for Stage 7; row absent → retry the create once. Any other failure: continue to the next record. Never retry blindly.
 
 ## Stage 7: Closing reply + JSON receipt (the final message, always, in this order)
 
 After the last create's response, the run is not finished until you emit this — never stop on the create tool call. The receipt fires only when no candidate still owes a create — a due create's message is never the receipt's. A run that created posts but sends no receipt still owes one.
 
-**Part 1 — the human reply, plain Markdown.** `-` bullets, links as `[text](url)`, zero HTML tags. One parent bullet per post in the receipt's `posts` array — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "View in Admin". No bullet presents any other post. Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
+**Part 1 — the human reply, plain Markdown.** `-` bullets, links as `[text](url)`, zero HTML tags. One parent bullet per post in the receipt's `posts` array — the title linked to its live URL — with one child bullet per detail: post type, post_id, author (name + user_id), publish status (published live / saved as draft), the full live URL written out, the `<admin_edit_url>` linked as "View in Admin". No bullet presents any other post. A count under the goal states the shortfall reason plainly in the reply. Never narrate the process or your own output mechanics ("Emitting the receipt", "Here is the JSON").
 
 **Part 2 — the receipt**, a raw JSON object directly after the reply:
 

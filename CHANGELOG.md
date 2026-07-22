@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.464] - 2026-07-22
+
+### Changed
+
+- **Two seals on .463 (owner's review): (1) the Stage 6 recovery trigger scoped to "a success response without a `post_id` greater than zero"** — the .463 wording ("a create response without...") captured error responses too, colliding with the same paragraph's "Any other failure: continue to the next record"; two rules claimed the 400-error case. One word disambiguates: errors skip per the existing law, fake successes probe. **(2) Part 1 gains the partial-goal guarantee: "A count under the goal states the shortfall reason plainly in the reply"** — the JSON always carried the reason; now the customer card must too ("A third qualifying candidate could not be found; 2 of 3 created"). Confirmed unchanged by owner review: B1's word order (provenance binds to the id), the two-valve Stage 7 opening (anti-undershoot + anti-overshoot, no overlap), the array-welded Part 1 bullets, and late pre-create lookups staying legal (the anchor withdrawal was deliberate).
+
 ## [6.58.463] - 2026-07-22
 
 ### Changed
