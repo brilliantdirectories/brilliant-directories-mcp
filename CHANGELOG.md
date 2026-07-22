@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.494] - 2026-07-22
+
+### Fixed
+
+- **Blog pre-create batch re-anchored to an achievable moment — "the message right after source research completes" (Steps 12/13 swapped: batch before manufacture; body wraps only Step 12-cleared targets and materializes in the create call).** The old anchor ("right after the draft stands") pointed at a message the worker loop cannot produce (a call-less draft message terminates the run), so every blog run improvised around it — gates and title/image scattered across turns, draft folded into the create. This is the events/jobs anchor convention ("right after verification completes") applied to blog; runs drop a turn.
+
 ## [6.58.493] - 2026-07-22
 
 ### Changed
