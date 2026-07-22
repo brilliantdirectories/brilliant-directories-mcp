@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.517] - 2026-07-22
+
+### Changed
+
+- **Blog Step 12 "planned links first" harmonized to "chosen links first"** — one term per concept across the shared law and its runbook echo.
+
 ## [6.58.516] - 2026-07-22
 
 ### Changed
