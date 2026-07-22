@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.516] - 2026-07-22
+
+### Changed
+
+- **Two clarity fixes in item 4, owner's read-through: the floating first-sentence clause sharpened to "no link in the post's first sentence", and "wrapped targets'/wrapped links first" re-corrected to "chosen" — stale vocabulary from the dead pre-.494 ordering** (the .486 word-swap died as .488 revert collateral and became correct again when .494 moved the batch before drafting; nothing is wrapped at gate time).
+
 ## [6.58.515] - 2026-07-22
 
 ### Changed
