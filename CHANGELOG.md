@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.546] - 2026-07-22
+
+### Fixed
+
+- **SEO-furniture sections ("Milpitas Coaching Fit": "The role lines up with Milpitas coaching roles that sit inside one city", "Milpitas Sports Center gives the job a clear community anchor" — reads solely for SEO, useless to a candidate).** Root was a corpus contradiction: shared already requires record-material headings (METHODOLOGY: "headings rise from THIS record's own material", bans any heading "about search value, SEO"; ANTI-SLOP Off-subject narration bans the "Why This Fits Local Search" H2) — but the jobs/events "Section headings" rule ordered the opposite, "natural search phrasing — category, place, or intent words as a reader would search them". That keyword-assembled H2 created an empty SEO room the Off-subject-narration prose then filled. Fix: aligned both content-type heading rules to shared — "record-material noun phrases — the job's/event's own facts... never the site's categories or an assembled search phrase". No shared change needed (shared was already correct; the content-type override was the culprit).
+
 ## [6.58.545] - 2026-07-22
 
 ### Fixed

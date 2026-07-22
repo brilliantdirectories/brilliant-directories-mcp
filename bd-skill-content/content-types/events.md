@@ -116,7 +116,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Bullets** — the record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the what, when, where, and cost at a glance. A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate — inclusions, tiers, formats, requirements — presents them as its own `<ul>`.
 
-**Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed, never a dimension label.
+**Section headings**: record-material noun phrases — the event's own facts, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label.
 
 **Depth**: an event page is a destination, not a stub — every available fact enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 

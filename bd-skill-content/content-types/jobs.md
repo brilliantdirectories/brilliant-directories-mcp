@@ -151,7 +151,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Bullets** — the record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 
-**Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed, never a dimension label.
+**Section headings**: record-material noun phrases — the job's own facts, work, or requirements; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label.
 
 **Depth**: a job page is a destination, not a stub — every sourced fact enters the post as settled knowledge: the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known application or official listing URL is fetched before drafting, its prompt asking for that cargo plus responsibilities and qualifications alongside the logistics.
 
