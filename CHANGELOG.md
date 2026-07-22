@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.513] - 2026-07-22
+
+### Changed
+
+- **Two owner catches on .512: the What-to-expect colon-list cut (its classes were siblings' territory — schedule = Program/agenda, layout/conditions = Practical considerations; redundant enum) and jobs' orphaned "informative first" harmonized to "informative, never puffery"** ("first" ranked informative above the now-repealed warmth demand; nothing comes second).
+
 ## [6.58.512] - 2026-07-22
 
 ### Fixed
