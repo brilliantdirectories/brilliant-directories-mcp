@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.518] - 2026-07-22
+
+### Changed
+
+- **Item 4's loose re-target sentence cut ("A link with no natural carrier is re-targeted to a noun the draft does have") — a worse duplicate of the ladder's precise law two sentences earlier; the safe-harbor clause keeps its antecedent.** Owner's read-through; net-negative prose.
+
 ## [6.58.517] - 2026-07-22
 
 ### Changed
