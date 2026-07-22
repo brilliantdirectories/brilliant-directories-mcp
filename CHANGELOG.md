@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.478] - 2026-07-22
+
+### Changed
+
+- **Conclusion spec converted to the family's sentence currency (owner's call): "two `<p>`s, 6-8 sentences split unevenly between them" — the 100-150-word count dropped.** Symmetric with the intro's identical 6-8 construction; length is governed by the sentence count + the sentence cap, one currency instead of two.
+
 ## [6.58.477] - 2026-07-22
 
 ### Changed
