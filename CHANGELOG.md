@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.501] - 2026-07-22
+
+### Changed
+
+- **CTA lead-in ban hardened in place, both homes: "never the button, link, or form described, never what they open."** Live specimen ("The official training link opens the weekend schedule, tuition notes, and registration path in one place") stepped around the two-noun enum by describing "the link" and its contents — the third noun and the mechanism dodge closed inside the existing parenthetical, five words, no new prose.
+
 ## [6.58.500] - 2026-07-22
 
 ### Changed
