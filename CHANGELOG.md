@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.504] - 2026-07-22
+
+### Changed
+
+- **New ANTI-SLOP banned construction: False agency — inanimate subject + causative verb + evaluative payoff ("The free format keeps the session open", "the pier setting gives the race a clear local draw").** The signature slop frame live across events posts ("The event also gives", "The pier setting keeps", "Four divisions anchor the field"); neighbors covered fit-verbs and posture-verbs but not the causative-benefactor frame. The object is the binary: measurable facts ride any subject ("The series runs through August" stays legal); evaluative payoffs never do.
+
 ## [6.58.503] - 2026-07-22
 
 ### Changed
