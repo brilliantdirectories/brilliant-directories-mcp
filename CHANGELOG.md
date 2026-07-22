@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.503] - 2026-07-22
+
+### Changed
+
+- **Internal-link budget raised per owner: floor 1/~125 words (was 1/~200), plateau 12 (was 8), worked examples "a ~500-word post carries 4; a 1,000-word post carries 7-9; a 1,500-word-or-longer post carries 10-12"; combined internal+external cap 16 (was 12 = old plateau 8 + external 4).** The model is a floor-seeker (every run delivers the floor and stops); the raise captures the standing nouns runs kept leaving unlinked (member-directory, date-tier). Safe-harbor clause unchanged — noun-poor posts still under-fill legally.
+
 ## [6.58.502] - 2026-07-22
 
 ### Changed
