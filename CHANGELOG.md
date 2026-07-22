@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.540] - 2026-07-22
+
+### Fixed
+
+- **The parataxis slab (Honolulu post: 0 of 20 sentences connective-led — pure statement-after-statement): the connection license + the because-clause lead, both listing homes.** Three causes: "bare" read as unconnected (linking two facts asserts an inference the accuracy laws made scary), every modeled example in the corpus is paratactic (no subordinate clause anywhere in the example inventory), and the no-restating pressure. The license names the safe act ("two source facts may share a sentence, a because/while/so between them stating both, never inventing"); the label opens the lead slot.
+
 ## [6.58.539] - 2026-07-22
 
 ### Changed
