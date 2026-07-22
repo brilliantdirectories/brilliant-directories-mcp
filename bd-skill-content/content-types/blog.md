@@ -17,7 +17,7 @@ The user invoked the skill with a goal like "write blog articles for SEO," "writ
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
-4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
+4. **Author resolution.** A pre-specified `user_id` in the request settles it — no call. Else run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Build and print the numbered topic pool — the first message after Step 4 resolves.** Run the `Topic resolution` section. Pool size `N=5`, each line `N. Topic - v1 | v2 | v3` — its three title variants, each 1-3 words; v1 is the topic's head noun — the 1-2 word subject as titles write it (`Personal Trainer`, `Recovery`). The pool prints and its dedup calls — the compound plus one subject probe per line — fire in this same message.
 6. **Apply pool discipline.** Apply METHODOLOGY's `Candidate pool discipline (universal pattern)`.
 7. **Duplicate detection.** Step 5's calls already fired — compare their returned rows and write the verdicts per METHODOLOGY `Stage 2: Duplicate detection` and the `Dedup` section's blog-specific match criteria.

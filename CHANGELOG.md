@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.502] - 2026-07-22
+
+### Changed
+
+- **Step 4 gains the pre-specification gate at the step, all three runbooks: "A pre-specified `user_id` in the request settles it — no call. Else run METHODOLOGY's `Author resolution (universal pattern)`..."** A live events run fired the author lookup despite "Post Author user_id: 5" in the prompt — the step's run-now verb beat the referenced ladder's rung-1 skip (the .489 gun). The gate moves the short-circuit to where the walk happens; `user_id` string-matches the live prompt line. Known twin cost: rung-1 semantics now live at the ladder + three step-gates.
+
 ## [6.58.501] - 2026-07-22
 
 ### Changed

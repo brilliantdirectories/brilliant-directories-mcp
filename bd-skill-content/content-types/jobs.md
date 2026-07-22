@@ -18,7 +18,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 1. **Autonomy.** Per METHODOLOGY `Autonomy`: never ask; decide and proceed.
 2. **Site context discovery.** Run METHODOLOGY `Stage 1: Site context`.
 3. **Post-type discovery.** Run the `Post-type discovery` section.
-4. **Author resolution.** Run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
+4. **Author resolution.** A pre-specified `user_id` in the request settles it — no call. Else run METHODOLOGY's `Author resolution (universal pattern)` against the resolved `data_id`.
 5. **Search round — the opening round stocks the run: call 5a and 5b in this ONE message of exactly six calls; the round's slots are exactly these. Later rounds fire 5a alone, new angles each time.**
     - **5a. Five discovery queries** — the round's set, facets per `Source candidates` and METHODOLOGY `Stage 3: Source research` steps 2a-2b: `<occupation> hiring now`, `<occupation> job openings board`, `site:apply.workable.com <occupation>`, `site:boards.greenhouse.io <occupation>`, `site:jobs.lever.co <occupation>`. The Search round's score: how many results it surfaces showing a job title — ten candidates beat one.
     - **5b. The create-fields call** — `getPostTypeCustomFields data_id=<resolved>` (or `system_name=<resolved>`) per `Post-type discovery`. Cache `post_category.choices` and `post_job.choices` — used at create time. Step 4's author probe, when the request names no author, rides this message as its seventh call — six calls, seven with the probe aboard; the probe never takes 5b's slot.
