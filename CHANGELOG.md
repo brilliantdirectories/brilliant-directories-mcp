@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.484] - 2026-07-22
+
+### Changed
+
+- **"pattern" capitalized to the canonical noun in the .483 distribution clause ("the Pattern types... never one Pattern carrying the page") — matches the corpus convention ("any internal Pattern per URL-PATTERNS.md"); lowercase read generic instead of canonical.** Owner's catch.
+
 ## [6.58.483] - 2026-07-22
 
 ### Changed
