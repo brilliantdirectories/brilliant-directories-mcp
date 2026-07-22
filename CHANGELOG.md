@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.463] - 2026-07-22
+
+### Changed
+
+- **Receipt truth-welds + the exit-door guard (incident: a blog run did its title check, never fired the create, then receipted "Created 1 of 1... Post ID: 0... published live" to the customer card — with a self-contradicting shortfall_reason confessing the skip).** Six shared-METHODOLOGY edits, two-minion adversarial-certified across 8+ scenarios (incident replay, partial goals, error responses, malformed post_id echoes, 5xx recovery, goal-shaving, same-message receipt): (1) Stage 7 opens "After the last create's response" + the guard "The receipt fires only when no candidate still owes a create — a due create's message is never the receipt's" (the exact door the incident used; all three skills route through it — the seam is byte-parallel in blog/events/jobs, blog just has the tallest assembly cliff); (2) post_create_count welded to reality: "posts with a post_id greater than zero returned by a create* response this run — nothing else counts"; (3) posts[]: "one object per counted create response — post_id copied from it; not counted, no entry" (an error response can no longer mint a post_id:0 entry); (4) post_create_goal "from the run's instructions, never lowered to match the outcome" (goal-shaving sealed); (5) Stage 6 recovery widened + deputized ("or a create response without a post_id greater than zero"; "its row's post_id stands as the create response's for Stage 7") — without this, the welds would forbid counting a genuinely created recovery-path post; (6) Part 1 bullets welded to the posts array + "No bullet presents any other post." No-candidate runs receipt immediately (dropped candidates owe nothing; pool-exhaustion already routes to the receipt) — no wait-forever. Withdrawn after minion falsification: the blog Step-13 anchor swap (would forbid the commanded second poolImages batch; un-exportable to events/jobs). Benched: publish-status weld, empty-array reply clause, the certified Step-13 belt, worker-side receipt reconciliation (Fix D — the code-layer guarantee, owner's call).
+
 ## [6.58.462] - 2026-07-21
 
 ### Changed
