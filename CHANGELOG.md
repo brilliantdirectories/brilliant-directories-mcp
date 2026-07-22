@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.471] - 2026-07-22
+
+### Changed
+
+- **The .470 CTA exemption REVERTED — shipped without owner approval.** The owner's .470 GO covered the two cap numbers (plateau 8, combined 12); the "(the CTA button block exempt)" clause rode in from the minion's optional row on my recommendation and was never approved. Link order rule 1 restored verbatim. The underlying finding (minion S6: the events/jobs CTA is a commanded external "right after the intro," colliding with "an external never before an internal" — forcing intro link-smuggling) moves to the bench as a decision item, not a ship.
+
 ## [6.58.470] - 2026-07-22
 
 ### Changed

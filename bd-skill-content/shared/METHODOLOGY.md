@@ -166,7 +166,7 @@ Full `title=` requirement + composition examples in URL-PATTERNS.
 
 ### Link order (universal — internal first, external later)
 
-1. **An external link never appears before an internal one** (any internal Pattern per URL-PATTERNS.md; the CTA button block exempt).
+1. **An external link never appears before an internal one** (any internal Pattern per URL-PATTERNS.md).
 2. **Once an internal link has appeared**, external citations mix in among the continuing internal links — internals continue per the internal-link budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block. Internal and external links together cap 12 — the internal floor holds; externals fill the remainder.
 3. **Unique href per post.** No URL repeats — the CTA's URL counts. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
