@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.543] - 2026-07-22
+
+### Fixed
+
+- **Second-person leak in the new friend-frame identity.** "knowledgeable friend telling you what's worth knowing" contradicted the same file's second-person ban (line 9: never "you"/"your"; line 13: never addressing the reader). "telling you" -> "sharing": drops the "you", keeps the friend framing, no announcer risk ("sharing" a fact states it plainly).
+
 ## [6.58.542] - 2026-07-22
 
 ### Fixed
