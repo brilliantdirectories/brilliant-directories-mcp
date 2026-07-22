@@ -184,7 +184,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | Field | Jobs-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
-| `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Bramblewood"`, `"Loudoun County Government"`, `"Equinox"`. |
+| `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Bramblewood"`, `"Loudoun County Government"`. |
 | `post_start_date` | Required. The source's future apply-by date — application close date, deadline, start date, and similar are all this one date. Else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). A date listed without a clock time → `000000`. |
 | `post_url` | Never sent — the application URL lives in post_content's CTA; only an explicit user request fills it. |
 | `post_promo` | Salary or hourly rate as shown in the source — a plain decimal number, no currency symbol, no commas. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high, rounded to two decimals. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |

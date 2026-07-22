@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.531] - 2026-07-22
+
+### Changed
+
+- **Redundant-example sweep (lane-audited corpus-wide): 8 true same-costume duplicates cut** — sits-with pair, Why-It-Matters pair, oasis (string-banned elsewhere), appears-to-involve (synonym of seems), That-approach shell, the second maxim, Staples Center, Equinox. Protected as load-bearing: the two marginals (FAQ stems, distance hooks) and both image-topic lists (their five-vertical spread models axis variety). Plus owner's register fix: the evidential cure example reads "The studio is located in Wynwood" (was "sits").
+
 ## [6.58.530] - 2026-07-22
 
 ### Changed
