@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.499] - 2026-07-22
+
+### Fixed
+
+- **Events expire law resolved unknown end-times DOWNWARD — a no-end event expired at its own start moment, and an end-date-without-time at that day's first second (dying before its final day). Both cells now resolve upward to `235959`.** Live specimen: the pet-5K listing set to unpublish at the race's 8:00 AM start, obeying the law exactly.
+- **`post_venue` redefined from formatting-speak ("Venue name only") to the definition: "The proper-noun place where the event happens" + the address-without-name case (the geocode's named place when Nominatim returns one; else omit).** Live specimen: venue omitted while the meta named Cal State LA — the model could not classify a campus under a name-only spec.
+- **Voice class ban hardened by role, all three homes: "a source document — or anything that publishes or displays a fact —".** The hydra stepped inside the noun-class boundary ("the published details", "the form shows" — parts and renderings of the document); the functional phrase closes composition-level dodges without example growth.
+
 ## [6.58.498] - 2026-07-22
 
 ### Changed
