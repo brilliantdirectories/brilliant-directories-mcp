@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.514] - 2026-07-22
+
+### Fixed
+
+- **CTA "verified official URL" operationally defined: `<an official URL this run fetched>` (both homes).** "Verified" had no procedure — the model lifted an apply-button href (`usajobs.gov/.../ApplyStart/...`, a login-gated action path) off a fetched page without ever fetching the href itself; it cannot classify a gate it never sees. Fetched-or-illegal is mechanical.
+- **The listing-externals exception closes its same-page reading: "may all be the record's own pages — each page once — each backing different record facts."** The clause licensed the same URL repeatedly (FAQ x2 on the Carry Forward run, "each backing a different fact" reading as compliant). The three link surfaces now each have their permission dead: internal pass (.508/.509), citations (this), the button (above).
+
 ## [6.58.513] - 2026-07-22
 
 ### Changed
