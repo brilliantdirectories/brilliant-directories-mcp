@@ -149,14 +149,14 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 |---|---|---|
 | How-to | 1500-2500 | Step-by-step instruction on accomplishing X |
 | Listicle | 1200-2000 | "N ways to X," "Top N Y," "N best Z" |
-| Pillar / comprehensive guide | 2500-4000 | Definitive long-form coverage of a topic |
-| News / announcement | 600-1200 | Event/launch/update coverage |
+| Pillar / comprehensive guide | 2500-4000 | Definitive long-form guide to a topic |
+| News / announcement | 600-1200 | Event, launch, or update news |
 | Comparison / vs | 1500-2500 | "X vs Y," "When to choose X over Y" |
 
 ### Body structure (universal across formats)
 
-1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly between them (never an even split): the first `<p>` answers what the headline promises in fresh words — its first ~100 words making clear what the article covers and what the reader can do or decide with it — never re-typing the title as the first sentence; the second widens with the article's context and concrete consequences. No throat-clearing ("Here's the thing"), no preamble — in either.
-2. **At-a-glance block** — when the topic's facts tabulate (targets, doses, tiers, steps): directly after the intro, one `<ul>` of plain key-value facts ("Weekly target: 150 minutes moderate"), each under ~10 words — no heading, no label: the bare `<ul>` sits between the intro and the first `<h2>`. A topic without tabulating facts skips the block.
+1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly between them (never an even split): the first `<p>` answers what the headline promises in fresh words — its first ~100 words making clear the article's subject and what the reader can do or decide with it — never re-typing the title as the first sentence; the second widens with the article's context and concrete consequences. No throat-clearing ("Here's the thing"), no preamble — in either.
+2. **At-a-glance block** — when the topic's facts tabulate (targets, doses, tiers, steps): directly after the intro, one `<ul>` of plain key-value facts ("Weekly target: 150 minutes moderate"), each under ~10 words — no heading, no label: the bare `<ul>` goes between the intro and the first `<h2>`. A topic without tabulating facts skips the block.
 3. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; question-shaped H2s stay at or under half. Questions capture long-tail queries and AI-Overview citations.
 4. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
 5. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
@@ -221,7 +221,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s (question-led at or under half — recount here) + answer-first paragraphs + FAQ (its fact-paragraph before the first H3) + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
-| `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and space needs for a small apartment."). |
+| `post_meta_description` | Blog-specific flavor: one sentence naming the decision the post settles (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and space needs for a small apartment."). |
 | `post_meta_keywords` | Same exact CSV as `post_tags`. |
 | `post_start_date` | Required. The user's future publish datetime if given, else identical to `post_live_date`. `YYYYMMDDHHmmss`, site timezone. A date given without a clock time → `000000`. |
 

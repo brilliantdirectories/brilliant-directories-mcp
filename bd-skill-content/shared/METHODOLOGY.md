@@ -137,11 +137,11 @@ A good post covers the full picture: core facts, practical considerations, usefu
 6. **Work through every depth dimension that fits the post type** — their material is the subject and its real world, never the site's own posts or pages, and a dimension's label never enters the prose or its headings — dimensions are lenses, not sections; headings rise from THIS record's own material — a fit section's heading names its participants, never the label; they separate a republished record from a destination page. Each one that source data + confident knowledge honestly support goes in — skipping a supported dimension is the failure; omit only one that would require guessing. The depth score: how many developed sections rise from the record's material — the fuller post wins; thinness is the risk, never length.
   - **What to expect** — the record's observable specifics, stated as settled knowledge.
   - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
-  - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then fixes ("If X happens, do Y").
+  - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
-  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 and known citywide").
-  - **Industry insight / players** — real peers and category leaders from the wider market, named with their facts.
+  - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 in the same Fifth Street building").
+  - **Industry insight / players** — real peers and market leaders from the wider market, named with their facts.
   - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
   - **The program / agenda** — the published run of show: day-by-day or hour-by-hour flow, itinerary, speakers or session lineup; a start time alone is logistics, a flow is a section.
 
@@ -265,7 +265,7 @@ Field rules that apply across ALL post types via `createSingleImagePost` (and `c
 | `post_image`            | Feature image URL per Stage 5 image strategy. Pass `auto_image_import=1` for external images. Pexels via `Rule: Image URLs`, or omit.                                                                                                                               |
 | `post_category`         | The Stage 4-matched **category ledger** value, copied character-for-character. The ledger is the only category source — any tool response or post row that disagrees is wrong.                                                                                      |
 | `post_meta_title`       | SEO `<title>` tag, ~80-120 chars. Expand on `post_title` with long-tail keyword modifiers — audience qualifier, geographic context, use case, related terms — that didn't fit the title's tight cap. The content-type file gives type-specific examples.            |
-| `post_meta_description` | SEO meta description, ~150-160 chars. One-sentence value proposition. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: value proposition for the decision at hand).                      |
+| `post_meta_description` | SEO meta description, ~150-160 chars. One sentence stating what the record is and its key facts. Not a verbatim repeat of `post_title`. The content-type file adds type-specific flavor (events: include date + city; blogs: the decision the post settles).                      |
 | `post_meta_keywords`    | Pass the same exact CSV value as `post_tags`.                                                                                                                                                                                                                       |
 | `post_live_date`        | Required on every create: the current site-local datetime, `YYYYMMDDHHmmss` (14 digits). Source priority: the `Current UTC datetime:` line in your prompt converted to `getSiteInfo.timezone`; else `getSiteInfo.current_site_datetime` as-is (already site-local). |
 

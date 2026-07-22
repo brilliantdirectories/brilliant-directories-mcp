@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.520] - 2026-07-22
+
+### Changed
+
+- **The poison-example sweep (17 findings, full corpus audit): every ban-row example rebuilt SELF-QUARANTINING — composed only from vocabulary the corpus already bans elsewhere, so shape-ban rows carry zero free words for the drafting model to lift.** The maxim examples now open on banned recap phrases; the False-agency pair rides fingerprint words (seamless/elevates/vibrant/showcases — replacing the .519 pair that had reloaded the gun with leaves/lends); the tricolon is all-fingerprint; the shell examples truncate before their verbs. Also: the legal-side "Bring sunscreen." command fixed (highest-transfer slot in the file), "known citywide" actorless passive fixed, "on facts the source states" -> "on facts in hand", "category leaders" -> "market leaders", "the draw" out of the events title row, "coverage" out of the blog format table, "value proposition" jargon out of all three meta-description rows, if/then pitfalls as facts not commands, "what the article covers" -> "the article's subject", "actually" and the misplaced "sits" cleaned.
+
 ## [6.58.519] - 2026-07-22
 
 ### Fixed

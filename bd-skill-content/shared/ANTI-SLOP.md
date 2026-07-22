@@ -19,11 +19,11 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). A person carries the fit, or the record in the commanded copula form only ("perfect for anyone who..."); the record never fit-verbs a person.
-- **False agency** — an attribute, setting, or format as benefactor: inanimate subject + causative verb + evaluative payoff ("The compact route leaves race day uncomplicated", "the pier setting lends the race a clear local draw"). The payoff is the test, anywhere in the sentence — a trailing ", which ..." clause included: a measurable fact rides any subject ("The position offers competitive wages with commissions"); an evaluative payoff never does — state the bare fact or who does what.
+- **False agency** — an attribute, setting, or format as benefactor: inanimate subject + causative verb + evaluative payoff ("The seamless course elevates race day", "the vibrant pier setting showcases the race"). The payoff is the test, anywhere in the sentence — a trailing ", which ..." clause included: a measurable fact rides any subject ("The position offers competitive wages with commissions"); an evaluative payoff never does — state the bare fact or who does what.
 - **Fact-gloss** — a sentence or clause re-describing a stated fact as its mood, ease, appeal, or reach ("starts at 8:00 a.m." → "a short runway before the course begins"), or asserting such a quality with no checkable fact under it. The test: strike the clause — if no checkable fact leaves the post, it was gloss; the sentence keeps its fact clauses. Commanded restatements — the core-facts `<ul>`, FAQ answers, audience fit in its commanded form — stand.
 - **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"), or any verb placing or positioning the record alongside or among other things ("which places it alongside other industry events"), or a simile filing it among a class ("openings like this one"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or the record's org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
-- **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why It Matters...", "Why The Setting Works").
+- **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why It Matters...", "Why The Setting Matters").
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
 - **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
@@ -38,7 +38,7 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 |---|---|
 | En-dash (`–`, U+2013) and em-dash (`—`, U+2014) | Use commas, periods, parens, or "to" for ranges. Banned everywhere. |
 | Smart-punctuation drift | Curly single quotes (`'` `'`, U+2018/2019), curly double quotes (`"` `"`, U+201C/201D), ellipsis (`…`, U+2026), non-breaking space (U+00A0). Use straight `'`, straight `"`, three periods `...`, regular space. Auto-inserted by the model, near-perfect AI tell alongside em-dash. |
-| Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for rhythm ("welcoming, energizing, and unforgettable"). Use only when the content genuinely has three items. Never invent a third for cadence. |
+| Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for rhythm ("vibrant, bustling, and stunning"). Use only when the content genuinely has three items. Never invent a third for cadence. |
 | "Not just X, it's Y" amplifier | "It's not just a race, it's a community", "more than just a conference", "isn't merely a workshop" → state Y directly. Distinct from negative listing — this is the additive escalator. |
 | Participial/gerund openers | "Standing in the lobby...", "Looking ahead...", "Bringing together...", "Drawing on decades of experience..." Max one `-ing` participial opener per section. "Looking ahead", "Bringing together", "Drawing on" banned outright. |
 | Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "The result is", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — name the next step, not a restatement. |
@@ -47,7 +47,7 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 | Dramatic fragmentation | "Two days. Two stages. That's it." → combine into a real sentence |
 | Rhetorical setups | "What if I told you...", "Think about it:", "Here's what I mean:", Wh- sentence-starters in prose → restructure. **Exempt: FAQ question labels** ("When is...?", "Where does...?", "How much...?") — those are structural Q&A, not prose openers. |
 | Passive voice | "was created", "is believed", "mistakes were made" → name the actor |
-| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts the source states → state it plainly ("Members book sessions by appointment") |
+| Hedged facts | "looks built around", "seems to focus on", "appears to involve" on facts in hand → state it plainly ("Members book sessions by appointment") |
 | Adverb crutches | really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, crucially, ultimately → delete |
 | Business jargon | navigate, unpack, lean into, deep dive, double down, circle back, take a step back, moving forward, at its core, at the end of the day, when it comes to, in today's landscape, game-changer, in one place → plain language |
 | Vocabulary fingerprints | delve, showcase, leverage, harness, elevate, empower, unlock, foster, vibrant, bustling, stunning, breathtaking, nestled, rich tapestry, treasure trove, suits, suited, boasts, curated, discerning, seamless, oasis → replace with a concrete verb or adjective tied to the specific subject. Highest-signal single-word AI tells in 2026 detectors. |
@@ -55,12 +55,12 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 | Performative emphasis | "Let that sink in", "Make no mistake", "Full stop", "Period.", "And that's okay", "(Read: ...)", "(Think: ...)" → cut |
 | Marketing compounds | "[X]-centric", "[X]-driven", "[X]-worthy", "[X]-leading", "[X]-forward", "[X]-ready", "[X]-facing" → plain descriptors |
 | Timeline filler | "Since its inception", "From day one", "Over the years" → the exact year, or cut |
-| Sentence-initial shell | A sentence opening with "That" or "That [abstract noun]" summing the prior sentence ("That mix gives...", "That makes...") → open with the fact itself |
+| Sentence-initial shell | A sentence opening with "That" or "That [abstract noun]" summing the prior sentence ("That mix...", "That approach...") → open with the fact itself |
 | Non-restrictive relative clause | A fact riding a comma-appended clause (", which ...", ", who ...", ", where ...", ", whose ...") on another sentence ("The summit, which draws 3,000 attendees") → give the fact its own sentence ("The summit draws 3,000 attendees."). Restrictive clauses that define their noun ("trainers who hold NASM certification") stay. |
 | Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
-| Closing maxim | a section or paragraph bowing out on a tidy wisdom sentence ("That keeps progress visible without turning the routine into a new project", "A week built that way is easier to repeat than one hard workout") → end on the concrete fact, number, or next step — a closer that could end a different post is the maxim |
+| Closing maxim | a section or paragraph bowing out on a tidy wisdom sentence ("At the end of the day, consistency is what counts", "Ultimately, the routine is the real victory") → end on the concrete fact, number, or next step — a closer that could end a different post is the maxim |
 | Formulaic attribution | "[Page/posting/listing/schedule — any document, the record, or its org] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor in a sentence about the subject, never as its subject or speaker; a claim that cannot be stated bare in plain words drops |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 | Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…"), or the record's genre or category in general as the sentence's subject, or that mentions the site or its furniture in any position ("on this site", "the site's", "the calendar fills with...") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a sentence or section about reading or interpreting the source document always fails → rewrite about the subject |
@@ -118,7 +118,7 @@ Tickets cost $20—$45 for the Saturday show — bring sunscreen.
 Right:
 
 ```
-Tickets cost $20 to $45 for the Saturday show. Bring sunscreen.
+Tickets cost $20 to $45 for the Saturday show. Gates open at noon.
 ```
 
 ## Scope
