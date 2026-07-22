@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.472] - 2026-07-22
+
+### Changed
+
+- **The Gemini-critique adoptions, owner-vetted through two challenge rounds.** (1) ANTI-SLOP gains the "Closing maxim" ban row — sections bowing out on tidy wisdom sentences ("That keeps progress visible without turning the routine into a new project") → end on the concrete fact, number, or next step; the #1 AI-tell in the external critique, previously unnamed. (2) The Practical-considerations dimension teaches the if/then shape — "pitfalls as if/then fixes ('If X happens, do Y')" — person-neutral by construction (listings render it third-person under ANTI-SLOP line 9 automatically; blog may use either voice), conditional advice = information gain with zero fabrication. (3) Blog body structure gains item 2, the conditional at-a-glance block — plain key-value `<ul>` after the intro, ONLY when the topic's facts tabulate (targets, doses, tiers, steps); the condition prevents the template fingerprint the owner flagged (items 2-8 renumbered 3-9; the field-table summary is number-free, verified). REJECTED and dead: HTML tables (owner + Froala whitelist), first-person "Trainer Insights" callouts (fabricated experience — the deepest ban; Gemini's own "fake format-based experience" framing conceded it).
+
 ## [6.58.471] - 2026-07-22
 
 ### Changed

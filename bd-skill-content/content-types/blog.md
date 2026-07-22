@@ -155,13 +155,14 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 ### Body structure (universal across formats)
 
 1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly between them (never an even split): the first `<p>` answers what the headline promises in fresh words — its first ~100 words making clear what the article covers and why it matters — never re-typing the title as the first sentence; the second widens with the article's context and stakes. No throat-clearing ("Here's the thing"), no preamble — in either.
-2. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; neither shape runs the whole page. Questions capture long-tail queries and AI-Overview citations.
-3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
-4. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
-5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
-6. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
-7. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
+2. **At-a-glance block** — when the topic's facts tabulate (targets, doses, tiers, steps): directly after the intro, one `<ul>` of plain key-value facts ("Weekly target: 150 minutes moderate"), each under ~10 words. A topic without tabulating facts skips the block.
+3. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; neither shape runs the whole page. Questions capture long-tail queries and AI-Overview citations.
+4. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
+5. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
+6. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
+7. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
+8. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
+9. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
 

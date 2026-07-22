@@ -191,7 +191,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
 6. **Work through every depth dimension that fits the post type** — their material is the subject and its real world, never the site's own posts or pages, and a dimension's label never enters the prose or its headings — dimensions are lenses, not sections; headings rise from THIS record's own material — a fit section's heading names its participants, never the label; they separate a republished record from a destination page. Each one that source data + confident knowledge honestly support goes in — skipping a supported dimension is the failure; omit only one that would require guessing. The depth score: how many developed sections rise from the record's material — the fuller post wins; thinness is the risk, never length.
   - **What to expect** — sensory + situational detail that sets the scene up front.
   - **Who this is for / who it's not for** — skill level, audience fit, accessibility, life stage.
-  - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, pitfalls, exclusions, hidden costs, timing.
+  - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then fixes ("If X happens, do Y").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
   - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 and known citywide").
@@ -514,6 +514,7 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 | Vague declaratives | "significant", "important", "matters", "the implications are", "the stakes are" without naming the specific thing → name it |
 | Telling not showing | "this is incredibly difficult", "this is what leadership looks like" → demonstrate with specifics |
 | Fabricated authority | "studies show", "experts agree", "research suggests", "PubMed-indexed studies" without citation → link a specific static source or rewrite as opinion |
+| Closing maxim | a section or paragraph bowing out on a tidy wisdom sentence ("That keeps progress visible without turning the routine into a new project", "A week built that way is easier to repeat than one hard workout") → end on the concrete fact, number, or next step — the last sentence carries information, not philosophy |
 | Formulaic attribution | "[Page/posting/listing/schedule — any document, the record, or its org] says/notes/describes/shows/lists/frames/points to/covers..." as any sentence's or heading's actor, opener or mid-sentence, and "According to [Org]..." → state the fact in your own sentence — the source's name may ride as an anchor in a sentence about the subject, never as its subject or speaker; a claim that cannot be stated bare in plain words drops |
 | Lazy extremes | every, always, never, everyone, nobody without specifics → use real numbers or "most"/"many"/"few" |
 | Off-subject narration | Any sentence or section whose subject is the website, its pages, its link strategy or search performance ("stays fresh for local search", a "Why This Fits Local Search" H2), or its audience in the third person ("for readers who follow…"), or the record's genre or category in general as the sentence's subject, or that mentions the site or its furniture in any position ("on this site", "the site's", "the calendar fills with...") instead of the topic — the tell: the post's own voice could not have said it (the employer or organizer for listing-type posts; an outside writer sharing this find for articles) — a sentence or section about reading or interpreting the source document always fails → rewrite about the subject |
@@ -939,13 +940,14 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 ### Body structure (universal across formats)
 
 1. **Direct-answer opening.** Two intro `<p>`s, 6-8 sentences split unevenly between them (never an even split): the first `<p>` answers what the headline promises in fresh words — its first ~100 words making clear what the article covers and why it matters — never re-typing the title as the first sentence; the second widens with the article's context and stakes. No throat-clearing ("Here's the thing"), no preamble — in either.
-2. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; neither shape runs the whole page. Questions capture long-tail queries and AI-Overview citations.
-3. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
-4. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
-5. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
-6. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
-7. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-8. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
+2. **At-a-glance block** — when the topic's facts tabulate (targets, doses, tiers, steps): directly after the intro, one `<ul>` of plain key-value facts ("Weekly target: 150 minutes moderate"), each under ~10 words. A topic without tabulating facts skips the block.
+3. **Mix statement-shaped and question-shaped H2s** — shapes to riff on, never strings to reuse: "The Real Cost of X", "Choosing Y in 2026" beside "How does Y work?" — a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not; neither shape runs the whole page. Questions capture long-tail queries and AI-Overview citations.
+4. **Answer-first paragraph per H2.** Every H2 opens with a 40-60 word direct answer to what its heading promises. Then expand with detail, examples, lists.
+5. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
+6. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
+7. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
+8. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
+9. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
 
