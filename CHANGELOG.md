@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.495] - 2026-07-22
+
+### Changed
+
+- **Blog Step 13 matched to the golden bare-pointer convention ("this file adds blog-specific shape.") — the parenthetical enumeration (four named shapes demoting everything unnamed) and the .494 weld sentence (duplicating the shared gate law) both cut.** Events/jobs Step 10 is the template.
+- **"archive" joins the taxonomy-word enum (both homes)** — post 1725 carried "A [movement cues] archive pairs well with that style" — same site-collection word-class as "category"/"section", zero legitimate content use in any vertical (unlike the reverted "schedule"/"calendar").
+
 ## [6.58.494] - 2026-07-22
 
 ### Fixed
