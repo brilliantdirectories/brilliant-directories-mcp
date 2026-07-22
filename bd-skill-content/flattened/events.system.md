@@ -190,7 +190,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
 5. **External links to sources, ticket/registration vendors, organizers' own pages** — with `rel="noopener" target="_blank"`.
 6. **Work through every depth dimension that fits the post type** — their material is the subject and its real world, never the site's own posts or pages, and a dimension's label never enters the prose or its headings — dimensions are lenses, not sections; headings rise from THIS record's own material — a fit section's heading names its participants, never the label; they separate a republished record from a destination page. Each one that source data + confident knowledge honestly support goes in — skipping a supported dimension is the failure; omit only one that would require guessing. The depth score: how many developed sections rise from the record's material — the fuller post wins; thinness is the risk, never length.
   - **Observable specifics** — the record's own, stated as settled knowledge.
-  - **Audience fit** — skill level, accessibility, life stage — for whom, and not for whom.
+  - **Audience fit** — skill level, accessibility, life stage — for whom.
   - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.523] - 2026-07-22
+
+### Changed
+
+- **Audience-fit dimension: ", and not for whom" cut per owner** — a not-for-whom prompt invites invented exclusions that cast out valid audiences.
+
 ## [6.58.522] - 2026-07-22
 
 ### Fixed
