@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.462] - 2026-07-21
+
+### Changed
+
+- **The .461 heading fix under-delivered (fresh post ~20 min after the push: all three body H2s still led What/What/How — the model classes "question without the question mark" as a statement) — three residual levers pulled, folded into the same two sentences.** Item 2: statements now lead the examples (the first-exampled class wins — word-order doctrine), one question example trimmed (examples now 2:1 underdog-weighted), the anti-verbatim seal inline ("shapes to riff on, never strings to reuse" — owner's directive after the Acme example-anchoring lesson), and the binary classifier appended to the cap-law ("a heading opening with What, How, Why, When, or Should is question-shaped, question mark or not" — the classification leaves the model's hands). Item 1: the last "implicit question" framing → "answers what the headline promises" (the row-5 symmetry fix previously skipped — wrongly). Also banked: the grading trap that misdated the specimen — the BD API returns post_live_date in SITE-LOCAL time wearing a false +00:00 suffix. Blog-only; events and jobs byte-identical.
+
 ## [6.58.461] - 2026-07-21
 
 ### Changed
