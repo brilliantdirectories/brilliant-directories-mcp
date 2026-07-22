@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.522] - 2026-07-22
+
+### Fixed
+
+- **The once-and-for-all package, owner-ordered:** (1) the interrogative dimension names WERE the H2 poison — "What to expect"/"Who this is for" rendered as "What The Role Covers"/"Who It Serves" headings; renamed to noun-phrases from their own bodies ("Observable specifics", "Audience fit"); (2) the owner's requirement template canonized — jobs Voice example 1 is now "The position requires STOTT certification" (label widened: candidates, the employer, or the position hold the subject slot) — requirements get their legal asker and the posting loses the role; (3) listing H2 law, one sentence both homes: "Section `<h2>`s: record-material noun phrases, never questions"; (4) links re-opened — the safe-harbor counter-weight lands: "an unfilled slot with a qualifying noun standing is a failure too" — under-linking is no longer the refuge from carrier law.
+
 ## [6.58.521] - 2026-07-22
 
 ### Changed
