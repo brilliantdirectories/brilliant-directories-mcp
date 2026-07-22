@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.492] - 2026-07-22
+
+### Changed
+
+- **Blog dedup score widened to the whole message: "3 x N variants and N probes is full marks; a trimmed variant or skipped probe saves a token and ships a dupe."** The score line counted compound variants only, leaving the new subject probes outside the one line that grades turn 2. Owner's catch.
+
 ## [6.58.491] - 2026-07-22
 
 ### Fixed
