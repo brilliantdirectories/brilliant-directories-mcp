@@ -40,3 +40,4 @@ SCRATCH-*.json
 # Delete after the rewrite ships clean. Pattern: <name>.bak-v<X.Y.Z>
 *.bak-v*
 
+bd-skill-content/content-types/seolinks.md
