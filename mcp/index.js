@@ -6323,14 +6323,15 @@ async function main() {
       if (eavRoute) args = eavDirect;
 
       for (const [key, val] of Object.entries(args || {})) {
-        // EMPTY_STRING_CREATE_OMISSION (parity: hosted src/index.ts): on create*
-        // tools an optional numeric/boolean "" is omission intent (nothing to
-        // clear on INSERT; proven live) — dropped, never forwarded.
+        // EMPTY_STRING_CREATE_OMISSION (parity: hosted src/index.ts): on create* an
+        // optional numeric/boolean "" or any optional null is omission intent — dropped.
         if (
-          val === "" && name.startsWith("create") &&
-          toolDef.bodyProps[key] &&
-          ["integer", "number", "boolean"].includes(toolDef.bodyProps[key].type) &&
-          !toolDef.required.includes(key)
+          name.startsWith("create") && !toolDef.required.includes(key) &&
+          (val === null || (
+            val === "" &&
+            toolDef.bodyProps[key] &&
+            ["integer", "number", "boolean"].includes(toolDef.bodyProps[key].type)
+          ))
         ) continue;
         // Check if this is a path parameter (appears in URL template)
         if (urlPath.includes(`{${key}}`)) {

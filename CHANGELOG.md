@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.487] - 2026-07-22
+
+### Fixed
+
+- **Null create-omission: `post_expire_date: null` (and any optional field sent as null) no longer bounces `-32602` on create\* tools — aligned onto the empty-string create-omission rail (same flag, same preprocess, create-only).** A live jobs run lost a turn to the bounce; null is the model's other dialect of "omit". Updates keep the loud bounce (null there may be clear-intent, served by `clear_fields`); required-field null still bounces. Both engines: Worker zod preprocess + npm forwarding strip. CHECK 14 extended to guard the null clause per side; also restored the Worker's missing `EMPTY_STRING_CREATE_OMISSION` parity marker (pre-existing drift-check error). Battery 7/7.
+
 ## [6.58.486] - 2026-07-22
 
 ### Changed
