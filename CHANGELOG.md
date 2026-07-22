@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.524] - 2026-07-22
+
+### Changed
+
+- **Record-noun rotation cap (check 10): post-wide, one noun never holds the subject slot more than three times** — post 1744 wrote "the role" x5 (the jobs file's own register noun, transferred); generic and countable, covers "the event"/"the studio" equally.
+- **The short-close license, both listing homes: "A close that runs out of record facts ends short — filler about the site's own pages or search views never pads it."** Post 1744's "Xenia Hiring Context" close was manufactured link-narration (sentences about the site's own jobs views) under a six-sentence quota with zero facts left — the quota-vs-supply gun, now twice-specimened. Unfilled beats manufactured, applied to closes.
+
 ## [6.58.523] - 2026-07-22
 
 ### Changed
