@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.480] - 2026-07-22
+
+### Changed
+
+- **Blog Step 13's hard count dropped for dual-surface safety (owner's call): "ONE message, twelve calls" → "ONE message — the ten gate checks, the `poolImages` call when the tool list carries it, and the final-title check".** The flat twelve was a false quota on Claude/Codex runs where `poolImages` doesn't exist (a list degrades gracefully; a count becomes an arithmetic violation — the exactness gun-class, self-armed in .479). The conditional mirrors Image strategy's own "if not in your tool list" language; the anti-solo-call teeth survive in the three remaining clauses ("This turn's only job", "a member left to a later message is an incomplete batch", "No other calls ride this turn"). Net words down. Events/jobs deliberately untouched — validated 2-for-2 on the only surface they run; their latent count-assumption benched with the pre-existing getToolSchema dual-surface note.
+
 ## [6.58.479] - 2026-07-22
 
 ### Changed
