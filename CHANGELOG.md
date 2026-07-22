@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.479] - 2026-07-22
+
+### Changed
+
+- **Blog's pre-create batch compartmentalized into its own Step 13, events/jobs-form (owner-ordered, triple-checked: nothing lost, nothing invented).** The batch was a bolded tail inside Step 12 — weakest position in the family; the receipt-incident run fired its title check solo, proving the tail wasn't binding. Now a numbered step in the family shape with the call arithmetic ("ONE message, twelve calls — the ten gate checks, poolImages, and the final-title check, born to fire together; fewer only when the gate message's nouns run out"), "No other calls ride this turn", per-member specs, and the title WELD blog never had ("the checked title is the created title, verbatim" — events/jobs have carried it since .101). All five prior clauses mapped and kept (incl. "born to fire together", caught dropped in draft and recovered); every addition a named family import or existing-law echo. Create → Step 14 (range 7-13), Audit → 15; cross-refs swept (Step 10's batch pointer, the field-reference header). Blog's carve-outs intact: gate checks instead of geocode, the draft-stands anchor, the Steps 1-3 image path at Step 10. Events/jobs byte-identical (diff = 0).
+
 ## [6.58.478] - 2026-07-22
 
 ### Changed
