@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.539] - 2026-07-22
+
+### Changed
+
+- **Events' twin teachers swapped to the record-noun** ("summarize the record", "two paragraphs about the record", "the record's core facts") — the parallel of the .538 jobs sweep; the binding first-sentence law's object-position "the event" kept, blog verified clean. The draft-visible register audit is now complete across all three skills.
+
 ## [6.58.538] - 2026-07-22
 
 ### Changed
