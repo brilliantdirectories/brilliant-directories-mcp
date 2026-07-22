@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.505] - 2026-07-22
+
+### Changed
+
+- **False agency row trimmed per owner: third banned example and the fix-example cut; the legal boundary example ("The series runs through August") kept — it is what stops the row from over-banning inanimate subjects.**
+
 ## [6.58.504] - 2026-07-22
 
 ### Changed
