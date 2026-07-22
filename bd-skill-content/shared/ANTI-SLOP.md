@@ -18,8 +18,8 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 Every `Banned constructions` and `Banned patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure — except a payoff or gloss clause carrying no checkable fact (`False agency`, `Fact-gloss`): those drop.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
-- **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). The record or a person carries the fit ("perfect for anyone who...").
-- **False agency** — an attribute, setting, or format as benefactor: inanimate subject + causative verb + evaluative payoff ("The compact route leaves race day uncomplicated", "the pier setting lends the race a clear local draw"). The payoff is the test, anywhere in the sentence — a trailing ", which ..." clause included: a measurable fact rides any subject ("The series runs through August"); an evaluative payoff never does — state the bare fact or who does what.
+- **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone — any fit verb — or fit as the subject itself ("The best fit is..."). A person carries the fit, or the record in the commanded copula form only ("perfect for anyone who..."); the record never fit-verbs a person.
+- **False agency** — an attribute, setting, or format as benefactor: inanimate subject + causative verb + evaluative payoff ("The compact route leaves race day uncomplicated", "the pier setting lends the race a clear local draw"). The payoff is the test, anywhere in the sentence — a trailing ", which ..." clause included: a measurable fact rides any subject ("The position offers competitive wages with commissions"); an evaluative payoff never does — state the bare fact or who does what.
 - **Fact-gloss** — a sentence or clause re-describing a stated fact as its mood, ease, appeal, or reach ("starts at 8:00 a.m." → "a short runway before the course begins"), or asserting such a quality with no checkable fact under it. The test: strike the clause — if no checkable fact leaves the post, it was gloss; the sentence keeps its fact clauses. Commanded restatements — the core-facts `<ul>`, FAQ answers, audience fit in its commanded form — stand.
 - **Metaphoric locative predication** — a posture verb on anything but a physical place ("the race sits with", "the 5K sits alongside"), or any verb placing or positioning the record alongside or among other things ("which places it alongside other industry events"), or a simile filing it among a class ("openings like this one"). Places sit ("Park Center sits near the courts"); records and entries do not. State the relation literally.
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or the record's org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
@@ -83,7 +83,7 @@ Run every check below against the assembled body and every create-call field; a 
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
-10. Three same-length sentences in a row? Vary one.
+10. Three sentences in a row sharing length, or sharing a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
@@ -98,7 +98,7 @@ Run every check below against the assembled body and every create-call field; a 
 | Dimension | Question |
 |---|---|
 | Directness | Statements or announcements? |
-| Rhythm | Varied sentence length, or metronomic? |
+| Rhythm | Varied sentence length and sentence subjects, or metronomic — the same "The [noun] [verb]s" frame again and again? |
 | Trust | No sentence restating another sentence — in the same terms or summed into an abstract noun? |
 | Authenticity | Sounds human-typed? |
 | Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |

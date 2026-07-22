@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.519] - 2026-07-22
+
+### Fixed
+
+- **The source-narration autopsy (MUUV post 1738: ~12 of 14 sentence openers "The [abstraction] [verb]") — minion-converged package, owner's clue confirmed: the .512 vocabulary was the teacher.** (1) Draft-visible source-talk deleted — "as the source states them/it" (What to expect, Program/agenda), "source-backed specifics" -> "real specifics", "every fact the source holds" -> "every sourced fact" — instruction prose modeled the source as an active participant in the banned sentence-slot; (2) subject-monotony gets its instrument: check 10 and the Rhythm dimension now measure repeated "The [noun]" subjects (the disease no row could see — distributional, not sentential); (3) the Relational-clause row's record-carrier permission closed ("the record never fit-verbs a person" — it licensed "The role rewards..."); (4) the jobs close contradiction resolved (how-to-apply belonged to both the close and the CTA -> the model invented "Application Notes" and described the button; now CTA-only, and the close never mentions the button or its form); (5) the jobs Voice examples' subject choice labeled so it binds ("candidates and the employer holding the subject slot" — the file's one labeled theme-command produced its one good sentence); (6) ANTI-SLOP's legal exemplar swapped to the owner's blessed sentence ("The position offers competitive wages with commissions").
+
 ## [6.58.518] - 2026-07-22
 
 ### Changed
