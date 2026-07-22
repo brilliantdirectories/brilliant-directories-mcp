@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.475] - 2026-07-22
+
+### Changed
+
+- **The taxonomy-anchor ban — the third head of the link-announcement hydra (electrolytes post: "fits the [training tips] category", "sit squarely in [workouts and programs]").** Each prior fix taught a narrower dodge: .465 killed page-as-agent, .466 killed doc-as-sayer, and the residual frames the category as a classification OBJECT — the subject looks legal, the information is still site taxonomy. The Pattern 3 anchor rule already commanded concept-phrase anchors ("winter races in Austin" — the category's POSTS, never its label); nothing banned the label by name, so the model planted labels at draft time (the .465 loophole) and framed them with classification verbs. One edit at the decision point: "— never the category's own label, and taxonomy words ('category', 'section') never enter the prose."
+
 ## [6.58.474] - 2026-07-22
 
 ### Changed
