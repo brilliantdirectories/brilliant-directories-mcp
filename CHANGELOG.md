@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.489] - 2026-07-22
+
+### Fixed
+
+- **Blog `poolImages` always fired solo instead of riding the Step 13 pre-create batch: Step 10's run-now verb ("Run METHODOLOGY -> Image strategy") commanded execution three steps before the batch, and the "rides Step 13" clause was subordinate advice losing to the step's own imperative.** Events/jobs never fragment because image selection has no home outside their batch step (jobs 8a: "never its own turn"). Step 10 is now a pure gate — poolImages path: "nothing fires here — the call fires in the pre-create batch (Step 13), never its own turn" (the family idiom, borrowed verbatim); Steps 1-3 fallback path keeps its end-to-end run.
+
 ## [6.58.488] - 2026-07-22
 
 ### Reverted
