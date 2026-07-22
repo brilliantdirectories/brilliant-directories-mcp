@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.485] - 2026-07-22
+
+### Changed
+
+- **Question-H2 half-cap moved to the assembly point: blog's `post_content` field row now reads "mixed-shape H2s (question-led at or under half — recount here)".** Post 1711 shipped 6/6 question-led H2s on the same bytes that produced 1/6 and 0/7 — the law existed but generation ignored it stochastically; the field row is the spec with proven command authority at assembly (it caused the original all-question disease when it read "question H2s").
+- **Taxonomy-membership content-class ban (hydra head 4): "never a category's own label, and taxonomy membership never enters the prose in any wording ("sits inside fitness industry news", "training tips readers", "workouts coverage"), the words "category" and "section" included" — shared item 4 noun list + blog Pattern 3 row twin.** Banning the words "category"/"section" left the membership CLAIM legal in other grammar; post 1711 planted "sits inside fitness industry news", "training tips readers", "workouts and programs coverage" as category-link carriers. Label-anchors dying also kills the cross-post repeated-anchor fingerprint at the root.
+
 ## [6.58.484] - 2026-07-22
 
 ### Changed

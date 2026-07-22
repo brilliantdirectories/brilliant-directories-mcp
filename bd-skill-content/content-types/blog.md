@@ -174,7 +174,7 @@ Blog posts cite related coverage the way a journalist cites other outlets' piece
 - **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — a live row this run's dedup or list calls already returned needs no re-lookup; otherwise resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
-- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin") — never the category's own label, and taxonomy words ("category", "section") never enter the prose.
+- **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin") — never the category's own label, and taxonomy membership never enters the prose in any wording ("sits inside fitness industry news", "training tips readers", "workouts coverage"), the words "category" and "section" included.
 
 Pick targets by **contextual relevance to the body sentence**. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept another article already covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never a title-noun or ownership tag ("the knee injury guide", "the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists and is live (`post_status=1`). Never fabricate URLs.
 
@@ -219,7 +219,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Blog-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
+| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s (question-led at or under half — recount here) + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
 | `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and space needs for a small apartment."). |
 | `post_meta_keywords` | Same exact CSV as `post_tags`. |
