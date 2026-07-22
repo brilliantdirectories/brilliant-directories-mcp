@@ -139,7 +139,7 @@ User-specified default category in the request → every post in the run goes to
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
 
-**Voice:** this page IS the article. State the topic's facts as settled knowledge; a source document — or anything that publishes or displays a fact — is never a sentence's subject or sayer ("the page says", "it also says", "the guidance is just as direct") — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare.
+**Voice:** this page IS the article. State the topic's facts as settled knowledge; a source document — or anything that publishes, displays, or evidences a fact — is never a sentence's subject or sayer ("the page says", "it also says", "the guidance is just as direct") — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare.
 
 ### Post format → target length
 

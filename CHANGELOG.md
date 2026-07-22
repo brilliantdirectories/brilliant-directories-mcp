@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.527] - 2026-07-22
+
+### Fixed
+
+- **The evidential subject (post 1745: "The address and map point place the studio in Wynwood") — the hydra's data step: documents -> parts -> now the run's own data as sentence actors.** One word widens the role-class forever: "anything that publishes, displays, **or evidences** a fact" (all three voice homes). Boundary stays clean: record material stating itself ("The schedule runs Monday-Saturday") is legal; a datum inferring a DIFFERENT fact ("the address places the studio...") is not.
+- **The taught metaphor cut: "lat/lon carry the map pin" -> "lat/lon are the map coordinates" (both field rows)** — the plumbing vocabulary became the prose noun ("map point").
+- **Dimension labels barred from H2s at the point of action: "never questions, never a dimension's label" (both listing homes)** — post 1307's fossil H2s ("What The Role Covers"/"Who This Fits Best") prove the label-literalism mechanism; line 137's existing ban gets its H2-law echo.
+
 ## [6.58.526] - 2026-07-22
 
 ### Changed
