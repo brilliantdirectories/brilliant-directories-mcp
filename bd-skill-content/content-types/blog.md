@@ -167,7 +167,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives. Links are placed by Stage 5's linking pass onto the finished draft — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote (FAQ answer text may include a link).
+Links are placed by Stage 5's linking pass onto the finished draft — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote (FAQ answer text may include a link).
 
 **Link targets — all valid for blog posts:**
 

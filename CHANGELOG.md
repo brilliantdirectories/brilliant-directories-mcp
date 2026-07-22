@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.497] - 2026-07-22
+
+### Changed
+
+- **Blog's body-linking lesson no longer teaches the disease vocabulary: the framing sentence "Blog posts cite related coverage the way a journalist cites other outlets' pieces — this is where the SEO compounding lives." cut.** It modeled "coverage" as the noun for site content inside the very lesson about body links (worked-example gun, the Metro-DMV mechanism) and carried no law — the operative sentence follows it. All other corpus "coverage"/"archive" hits are operational contexts that don't transfer to body prose; audited and left. No .496 twin needed in blog.md — its rows never restate the anchor sentence.
+
 ## [6.58.496] - 2026-07-22
 
 ### Fixed
