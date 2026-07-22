@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.477] - 2026-07-22
+
+### Changed
+
+- **Two blog-shape alignments (owner's design).** (1) The FAQ H2 gains its opening paragraph — "a 2-3 sentence `<p>` stating a fact the questions share, never an announcement ('Here are common questions')" — fixing the visual heading-stack AND retiring a silent exception: item 4 commands every H2 to open with a paragraph, and the FAQ H2 had been exempting itself. The content spec + quoted anti-announcement guard keep the new slot from filling with filler. (2) The conclusion takes the family's two-paragraph form: "Conclusion — two `<p>`s, 100-150 words total, split unevenly between them (never an even split)" — the events/jobs closing shape ported with blog's own word count and its existing laws intact (no-restate, next-step, the ONE closing internal link).
+
 ## [6.58.476] - 2026-07-22
 
 ### Changed

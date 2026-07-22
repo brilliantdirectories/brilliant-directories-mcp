@@ -946,8 +946,8 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 5. **Paragraph cap: 40-80 words typical, 150 hard max.** Long walls of text fail mobile readability and AI-Overview extraction.
 6. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 7. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
-8. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-9. **Conclusion 100-150 words.** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
+8. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — opening with a 2-3 sentence `<p>` stating a fact the questions share, never an announcement ("Here are common questions") — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
+9. **Conclusion — two `<p>`s, 100-150 words total, split unevenly between them (never an even split).** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with ONE internal link riding a sentence the conclusion already needs — never a "go browse X" line.
 
 ### Internal-link strategy
 
