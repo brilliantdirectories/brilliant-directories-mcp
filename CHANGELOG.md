@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.465] - 2026-07-22
+
+### Changed
+
+- **`?q=` erased from the universe + the link-density engine softened (two live blog posts: one minted six explicitly-banned `?q=` links with formulaic carrier sentences; the next carried 16 links — and was 100% LAW-COMPLIANT, exposing that the two budgets sum by design).** (1) URL-PATTERNS' `q` param-table row DELETED — a mention-to-ban that taught the pattern's existence (the example-teaches gun-class); skills never need to recognize tag links, so `?q=` now simply doesn't exist in the corpus; the whitelist framing survives via the remaining param rows. METHODOLOGY's external-citation `?q=` mention kept (different context: bans citing search-results pages — real work). (2) The internal floor was the density engine AND the carrier-sentence engine: "one internal link per ~125 words" COMMANDED ~10 internal links on a 1,300-word post (the model hit it exactly; +6 externals at their own cap = the 16). Floor softened to "one per ~200 words" with floor-derived examples recomputed ("a ~500-word post carries 2-3; a 1,200-word post carries 6"); cap 10 stands as the long-post ceiling; external budget untouched (his levers b/c benched). Prediction on record: the softer floor also starves the per-section link-carrier template.
+
 ## [6.58.464] - 2026-07-22
 
 ### Changed
