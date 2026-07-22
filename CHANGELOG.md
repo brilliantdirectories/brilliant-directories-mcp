@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.532] - 2026-07-22
+
+### Changed
+
+- **"an oasis in the city" restored to the Metaphoric-identification trio per owner.**
+
 ## [6.58.531] - 2026-07-22
 
 ### Changed

@@ -482,7 +482,7 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 - **Reportative evidentiality** — a document (the posting, the listing, the page, the source) as a sentence's subject in any role ("the posting shows", "the posting centers on"), or the record's org or the record itself as sayer of a speech verb ("the club says", "identifies itself as"). A document is never a subject; state the facts bare as settled knowledge.
 - **Metadiscursive importance predication** — announcing relevance ("X matters") instead of stating the relevant fact, headings included ("Why The Setting Matters").
 - **Unglossed jargon transfer** — a source's opaque self-label carried verbatim. Translate to what the thing does, or drop.
-- **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
+- **Metaphoric identification** — the record or its parts equated with an image ("a hub for tech", "an oasis in the city", "a haven for..."). The thing is what it literally is: name the building, the room, the program.
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles or differs from others of its kind ("the same style shows up in...", "but this one stays focused on..."). Each record stands alone.
