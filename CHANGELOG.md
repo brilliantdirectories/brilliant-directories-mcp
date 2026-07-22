@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.490] - 2026-07-22
+
+### Changed
+
+- **Closing-maxim row hardened with the portability test: "a closer that could end a different post is the maxim."** Post 1723 closed on "lists stay useful because they do not ask the body to pay for last week twice" — figurative wisdom in topic nouns, same shape as the row's own examples, self-graded concrete. Concrete closers are welded to this post's facts; maxims fit any post — one clause, no example growth.
+
 ## [6.58.489] - 2026-07-22
 
 ### Fixed
