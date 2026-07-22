@@ -1005,7 +1005,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Blog-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s + answer-first paragraphs + FAQ + conclusion. Inline body images only when user explicitly requested. |
+| `post_content` | Assembled HTML body per "Content manufacture" — direct-answer opening + mixed-shape H2s (question-led at or under half — recount here) + answer-first paragraphs + FAQ (its fact-paragraph before the first H3) + conclusion. Inline body images only when user explicitly requested. |
 | `post_meta_title` | Type-specific example: `"Reformer Pilates vs Mat Pilates for Beginners Working Out at Home in a Small Apartment"` — audience qualifier (beginners) + use case (home workouts) + scenario (small apartment) expanded from the shorter `post_title`. |
 | `post_meta_description` | Blog-specific flavor: one-sentence value proposition for the decision-stage situation (e.g. "Comparing reformer and mat Pilates for beginners working out at home: calorie burn per 45-minute session, equipment cost, and space needs for a small apartment."). |
 | `post_meta_keywords` | Same exact CSV as `post_tags`. |

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.510] - 2026-07-22
+
+### Changed
+
+- **Blog assembly row gains two point-of-action welds: "mixed-shape H2s (question-led at or under half — recount here)" and "FAQ (its fact-paragraph before the first H3)".** Post 1732: 5/5 question-led H2s (Arnold 6/6 and 4/5 before it — the half-cap loses every figure-news draw from body-structure distance) and an FAQ opening straight into its first H3, its H2 announcement-flavored. Both laws live and violated; both now restated where the body is composed against the spec (.461 lever). The recount weld is the .485 re-ship — reverted in .488 as collateral, never convicted.
+
 ## [6.58.509] - 2026-07-22
 
 ### Changed
