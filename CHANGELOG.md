@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.538] - 2026-07-22
+
+### Changed
+
+- **The remaining draft-visible "role"/"job" teachers swapped to the record-noun**: the load-bearing checklist ("summarize the record...", "the title and employment type", "two paragraphs about the record"), the Voice's "Record and company context", the bullets law ("the record's core facts"), and the shared Standout-fact dimension ("sets the record apart"). Kept: the binding first-sentence law's "who's hiring and the role" (object position, the drilled law), operational/meta uses, and the anchor-noun inventories (they license link nouns, not sentence subjects).
+
 ## [6.58.537] - 2026-07-22
 
 ### Changed

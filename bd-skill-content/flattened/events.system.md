@@ -196,7 +196,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
   - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 in the same Fifth Street building").
   - **Industry insight / players** — real peers and market leaders from the wider market, named with their facts.
-  - **Standout fact** — a verifiable fact that sets the role or event apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
+  - **Standout fact** — a verifiable fact that sets the record apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
   - **The program / agenda** — the published run of show: day-by-day or hour-by-hour flow, itinerary, speakers or session lineup; a start time alone is logistics, a flow is a section.
 
 
