@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.466] - 2026-07-22
+
+### Changed
+
+- **Blog gains the family Voice paragraph — the root fix for link-announcement disease (4 live posts: "A trainer practice updates page helps with the search…", "The Arthritis Foundation page says…", "It also says…", "The ACR guidance is just as direct").** The autopsy: every specimen already violated ANTI-SLOP's closed subject set and the Reportative-evidentiality row — but blog was the ONE skill with no local Voice block (events/jobs each carry theirs), and position beats content. Minion-quizzed (13 probes) and owner-converged to the lean set: (1) blog's Voice paragraph at the family position — source documents never subject or sayer; the fact holds the sentence, citations ride wrapped nouns ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare); a named outside authority may hold a speech verb ONLY stating its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row, most facts bare (permit-with-shape: banning org-sayers would force "…, per Mayo" template monotony and bare-restatement overclaiming); (2)+(3) two-home reconciliation so shared law doesn't contradict the permit: line 23 "an org" → "the record's org" (listings keep their self-praise ban), row 61's bracket → "[Page/posting/listing/schedule — any document, the record, or its org]". REJECTED as whack-a-mole (owner): the parenthetical widening + example additions — enum-growth on a law the closed subject set already states.
+
 ## [6.58.465] - 2026-07-22
 
 ### Changed
