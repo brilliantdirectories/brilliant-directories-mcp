@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.529] - 2026-07-22
+
+### Changed
+
+- **Evidential-subject row: the borderline second example swapped for the razor case** — "the schedule suggests early mornings" -> "the ZIP code puts the gym on the east side" (unambiguous datum, unambiguous inference, "puts" already banned in the locative row).
+
 ## [6.58.528] - 2026-07-22
 
 ### Changed
