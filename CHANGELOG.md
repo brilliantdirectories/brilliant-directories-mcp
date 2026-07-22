@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.508] - 2026-07-22
+
+### Changed
+
+- **"no href twice" welded into the linking pass's distribution series (item 4) — the uniqueness law moves to the point of action.** It lived only as an assembly-checklist question ("Same href twice?"), the weakest enforcement position; post 1731 duplicated a deep-link with varied anchors ("recovery habits"/"recovery habit"). The checklist line stays as the belt; the pass now owns the law.
+
 ## [6.58.507] - 2026-07-22
 
 ### Changed
