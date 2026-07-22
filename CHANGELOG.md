@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.493] - 2026-07-22
+
+### Changed
+
+- **Blog dedup completes the golden-convention sweep — the three events/jobs elements it still lacked, in one pass: the worked arithmetic instance ("a five-topic pool, six calls"), the census weld ("every candidate probes here"), the re-probe law ("a subject that shifts at research re-probes"), and the no-substitution guard ("v1 riding the compound never substitutes for the probe").** The guard kills the predictable dodge — v1 already rides the compound, so a lazy read calls the probe redundant; the standalone probe is the belt that survives compound-CSV malformation (fused commas silently kill compound needles — observed live on a jobs run).
+
 ## [6.58.492] - 2026-07-22
 
 ### Changed
