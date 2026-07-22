@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.496] - 2026-07-22
+
+### Fixed
+
+- **Internal-link carrier sentences: the anchor law gains the destination-sentence ban externals always had — "a sentence about the topic, never about the linked destination."** Item 3 bans sentences about the source; item 4 had no equivalent, so the model narrated internal destinations freely ("A [movement cues] archive pairs well with that style", "sits inside fitness industry news") — the whole carrier family walked through that one asymmetry. One clause inside the existing sentence, shared home, all three skills.
+
 ## [6.58.495] - 2026-07-22
 
 ### Changed
