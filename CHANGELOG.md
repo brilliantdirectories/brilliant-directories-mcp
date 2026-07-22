@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.481] - 2026-07-22
+
+### Changed
+
+- **"Ten" dropped from Step 13's gate-check mention (owner's call): "the linking pass's gate checks" — the count's home is item 4's own law ("exactly ten checks... fewer only when nouns run out"); echoing the number in Step 13 was a twin-copy (the .445 drift class). Also confirmed on the record: Claude/Codex runs do NOT skip images — the Steps 1-3 path fires per Image strategy's own conditional at Step 10, untouched by any of this week's edits; the batch's "no getImageDimensions, no image dedup" clause is poolImages-path-scoped and never banned the alternate path's checks.**
+
 ## [6.58.480] - 2026-07-22
 
 ### Changed
