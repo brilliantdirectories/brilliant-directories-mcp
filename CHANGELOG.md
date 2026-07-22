@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.506] - 2026-07-22
+
+### Fixed
+
+- **Jobs `post_start_date` per owner: apply-by, application close, deadline, and listed start dates are one family — all fill this field; `post_live_date` fallback only when none is listed.** Live specimen: Morgan State's known July 30 close date went unmapped while the fallback stamped creation time.
+- **CTA law, both homes: "never an action or login-gated path — public pages only (a login page only when it is itself the destination)."** Live specimen: the CTA shipped `pre_apply` — a 302-to-login action endpoint. No public-pages law existed anywhere; now it lives at the failure site.
+- **URL-PATTERNS external-anchor example swapped: ("the NSCA guidelines", not "the guidelines") — was ("the IATBP member portal", not "member portal").** The old example taught org+page-furniture anchors; page-noun anchors force displayer-actor sentences — the chain behind three straight runs of "the [page] lists/opens/points to". The law (source's name in anchor) unchanged; the teacher stops modeling the disease.
+
 ## [6.58.505] - 2026-07-22
 
 ### Changed
