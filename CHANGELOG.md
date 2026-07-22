@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.515] - 2026-07-22
+
+### Changed
+
+- **"a cleared check keeps its one link — one check, one placement" — the internal-uniqueness law tied to the gate artifact.** Post 1737 (settled .508/.509 bytes) quadruple-violated the placement-series uniqueness pair: local members of the series (one-per-sentence, two-per-paragraph) have never been violated; the global-memory members (no href/anchor twice) failed — local constraints bind mid-draft, global ones need an artifact. The gate message enumerates each target as a visible check; one-check-one-placement makes uniqueness a property of the artifact instead of a memory test. If dupes persist past this, the next escalation is per-href enumeration in the gate list.
+
 ## [6.58.514] - 2026-07-22
 
 ### Fixed
