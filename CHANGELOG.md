@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.533] - 2026-07-22
+
+### Fixed
+
+- **Single-location law, both listing homes: "A multi-city source pins the post to ONE city — the source's primary or first-listed — for the title, location, and geocode; the other cities are body facts only."** Live specimen: the Playworks coach post shipped seven cities in the location field, no lat/lon (a list cannot geocode), and a state-level title — every symptom downstream of the one missing rule. The long-benched multi-location item, finally specimened and shipped.
+
 ## [6.58.532] - 2026-07-22
 
 ### Changed
