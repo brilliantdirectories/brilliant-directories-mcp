@@ -118,7 +118,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Section headings**: natural search phrasing — category, place, or intent words as a reader would search them; never forced or stuffed, never a dimension label.
 
-**Depth**: an event page is a destination, not a stub — every fact the source holds enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
+**Depth**: an event page is a destination, not a stub — every available fact enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
 **Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote.
 

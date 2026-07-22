@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.545] - 2026-07-22
+
+### Fixed
+
+- **"The posting lists..." / "The posting stays centered on..." / "the role belongs with the site's coaching roles" (rugby-coach job post): the document-or-record as a sentence's subject — an enforcement failure where the corpus modeled the very register it bans.** Two moves: (1) widened the Reportative-evidentiality ban from two sampled verbs to the escaping class (lists, centers on, stays centered on, belongs with, lines up with, gives) and folded in the record-as-subject variant (the role/job/event), so "the posting lists" and "gives the role a local anchor" can no longer escape as unbanned verbs; (2) scrubbed three instruction sentences that themselves made a document/record the active subject ("every fact the source holds" -> "every available fact"; "the source supports" -> "the source data supports"; "let the source returns drive it" -> "let the returned data drive it", also a grammar fix). Left legitimate data-provenance mentions ("source-supplied", location-pick mechanics) untouched — those name a data origin, not an output-prose subject.
+
 ## [6.58.544] - 2026-07-22
 
 ### Fixed
