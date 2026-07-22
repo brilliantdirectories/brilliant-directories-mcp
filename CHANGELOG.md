@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.537] - 2026-07-22
+
+### Changed
+
+- **Pin rule generalized city -> location per owner: "A multi-location source pins the post to ONE location"** — inherits the row's specificity ladder (street when given, else city/state) instead of flattening to city.
+
 ## [6.58.536] - 2026-07-22
 
 ### Changed
