@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.528] - 2026-07-22
+
+### Changed
+
+- **Evidential subject becomes an official banned construction** — the canonical row beside Fact-gloss, self-quarantined examples (the banned side rides "places"/"suggests", both already banned elsewhere), the legal form modeled ("The studio sits in Wynwood"). The .527 voice-clause widening ("or evidences") stays as the point-of-action echo; the registry now owns the definition.
+
 ## [6.58.527] - 2026-07-22
 
 ### Fixed
