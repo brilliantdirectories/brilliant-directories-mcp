@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.491] - 2026-07-22
+
+### Fixed
+
+- **Blog dedup gains the family's per-candidate second net: one subject probe per pool line, batched in the pool-print message — variant 1 (now law: the topic's 1-2 word head noun) against `post_title`, verdict line citing it (`no match (variants + subject: Personal Trainer) - survives`), N+1 call arithmetic matching events' date probes and jobs' venue probes.** A live run drafted a full post for "Choosing the Right Personal Trainer" while "How to Choose a Personal Trainer Who Fits Your Goals" (1214) sat live — the 4-5-word title-shaped variants substring-missed it; only the final-title belt saved the dupe, at a ~4-turn cost. Head-noun probes ride a wider recall curve; the verdicts do precision. Blog was the only skill without a second net.
+
 ## [6.58.490] - 2026-07-22
 
 ### Changed
