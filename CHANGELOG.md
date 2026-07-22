@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.534] - 2026-07-22
+
+### Changed
+
+- **The no-re-introduction principle, both listing Voices: "the role/event needs no re-introduction: facts carry their own subjects ('Pay runs $22 to $29 an hour' / 'Doors open at 6'), the record-noun a rare exception."** Owner's insight: the page IS the record — re-naming it as subject restates the implied context (Playworks post: "the role" x4). Sets the default (fact's own subject); the .524 rotation cap remains the ceiling; the canonized requirement template stays legal.
+
 ## [6.58.533] - 2026-07-22
 
 ### Fixed
