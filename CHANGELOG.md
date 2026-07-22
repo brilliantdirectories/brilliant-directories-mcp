@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.473] - 2026-07-22
+
+### Changed
+
+- **Two owner-review touches on .472.** (1) The maxim row's principle-echo trimmed ("— the last sentence carries information, not philosophy" restated the arrow's own command; nine words). (2) The at-a-glance block sealed HEADLESS: "— no heading, no label: the bare `<ul>` sits between the intro and the first `<h2>`" — without it, the item's own bolded name risked becoming an emitted `<h2>At a Glance</h2>` (the stock-FAQ-title lesson: a quoted label becomes output), and a site-wide labeled block is a structural fingerprint. The block is a silent structural element: hook → bare key-value list → first H2.
+
 ## [6.58.472] - 2026-07-22
 
 ### Changed
