@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.525] - 2026-07-22
+
+### Changed
+
+- **The fullness permission qualified at its site: "the fuller post wins on record material alone."** Post 1744's Xenia close violated three clauses of the dimension law's own sentence (site's-own-pages material, label-in-heading, unsupported dimension) — all overridden by the sentence's unqualified tail ("the fuller post wins; thinness is the risk"). Four words bind fullness to facts; the gates it was overriding stand unchanged.
+
 ## [6.58.524] - 2026-07-22
 
 ### Changed
