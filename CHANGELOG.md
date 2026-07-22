@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.470] - 2026-07-22
+
+### Changed
+
+- **The link-math stress test (owner-ordered, 10 word-counts computed as the obedient model) found the system formally unsatisfiable above 2,000 words — and four of blog's five formats live in the broken zone.** The table: coherent ≤1,000w; the cap silently trimmed externals at 1,200; item 3's own worked example ("a ~1,500-word post 6") was arithmetically unreachable; externals hit exactly ZERO at 2,000 (floor ate the whole cap — anti-EEAT); floor 12-20 vs cap 10 above 2,500 = "the internal floor holds" commanding the impossible. Owner's numbers, verified at every row: **internal floor plateaus at 8** (binds from ~1,600w; examples: 500→2-3, 1,200→6, 1,600+→8), **externals cap 4** (ratio tops at ~1,000w), **combined cap 12** — 8+4=12 exact at every long length, and the 1,200-1,500 silent-trim zone dissolves entirely (10-11 ≤ 12, both ratios fully satisfied). Precedence clause untouched and now true everywhere. Also sealed (minion S6): the events/jobs CTA button — an external commanded "right after the intro" — collided with Link order rule 1 ("an external never before an internal"), forcing intro link-smuggling; now "(the CTA button block exempt)". Supply-side sanity holds: 8 wrapped + 2 spares fit the ten-check gate; URL-PATTERNS' 6 filtered-link cap leaves room via Patterns 1/4/5.
+
 ## [6.58.469] - 2026-07-22
 
 ### Changed
