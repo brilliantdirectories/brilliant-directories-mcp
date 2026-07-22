@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.544] - 2026-07-22
+
+### Fixed
+
+- **The intro nut-graf order (events + jobs): "summarize the record" -> "state the record's facts".** "Summarize" across six sentences on a thin source is the order to write a news lede — the significance-frame the announcer-voice fix targets. "State the facts" points at the facts directly. Blog intros already say "answers what the headline promises" (no change). A final synthesis/framing-verb sweep of all five files found no other announcer-authorizing word in prose; the per-H2 "direct answer" rule (blog) is held for the next QA run rather than edited blind.
+
 ## [6.58.543] - 2026-07-22
 
 ### Fixed
