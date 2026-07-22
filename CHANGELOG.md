@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.547] - 2026-07-22
+
+### Fixed
+
+- **Presentation-noun subjects in roundup posts (San Jose events post: "This roundup keeps to three upcoming San Jose events", "The San Jose view shows the local cluster clearly", "The October expo window keeps that timing visible" — 6 container-noun subjects + keep x5 / show x4 in ~200 words).** The construction is a container-noun subject (a view, window, listing, roundup) taking a display/scannability verb — narrating the interface instead of stating the fact. Not a missing ban (ANTI-SLOP closed-subject rule already forbids abstract subjects): the blog Voice's subject prohibition named only the source document, so presentation-nouns slipped between "not a source" and "not a fact". Fix folds them into the existing prohibition, swapping the abstract "anything that publishes, displays, or evidences a fact" (too vague to catch "the view") for the concrete named class, and replaces two source-only examples with the actual specimens. Same clause length; no new ban, no shared change.
+
 ## [6.58.546] - 2026-07-22
 
 ### Fixed
