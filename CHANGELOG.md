@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.521] - 2026-07-22
+
+### Changed
+
+- **The prior-override package (three transitional-bytes runs showed the requester-frame and the-monotony surviving the cause-removals):** (1) the epistemic license, jobs+events Voice — "a fact from the fetched source IS the role's/event's fact; bare assertion is the accurate report" — inverts the risk-gradient that made attribution feel safer than bare assertion (source-refs cluster on soft facts and requirements: the model hedges when it doubts); (2) syntactic variety modeled and labeled in the Voice examples — "time or place free to lead a sentence" with a fronted example each ("On weekends, sessions run one-on-one" / "On Saturday, the meet runs 9 to noon at Pearl Park") — the null-space fix: every prior example was subject-first, teaching that facts have one shape; (3) check 10 gains "an opening word" (string-countable) and the fronted-lead option — the enforceable core of the owner's vary-structure instinct (the absolute per-paragraph form rejected: judgment-shaped, over-bans parallelism).
+
 ## [6.58.520] - 2026-07-22
 
 ### Changed

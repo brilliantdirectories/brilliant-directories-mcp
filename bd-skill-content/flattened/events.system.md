@@ -539,7 +539,7 @@ Run every check below against the assembled body and every create-call field; a 
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
-10. Three sentences in a row sharing length, or sharing a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place.
+10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
@@ -945,7 +945,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the event page. State the event's facts as settled knowledge: "The meet takes place Saturday at Pearl Park", "Tickets cost $25." Never make a source document — or anything that publishes or displays a fact — a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out, attribution is never a third door; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details as real specifics — informative, never puffery.
+**Voice:** this page IS the event page. State the event's facts as settled knowledge, time or place free to lead a sentence: "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25." Never make a source document — or anything that publishes or displays a fact — a sentence's actor, quoting or analyzing ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time") — state each fact bare or leave it out — a fact from the fetched source IS the event's fact; bare assertion is the accurate report — attribution is never a third door; an unannounced fact is stated as its own fact ("Start time TBA") or silently absent, never reported as the page's gap. Local context and scene details as real specifics — informative, never puffery.
 
 **Events-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them (never an even split), summarize the event in any natural flowing order: what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured); the first sentence leads with the event and what it is. The post closes with two paragraphs about the event, at least six sentences split unevenly between them (never an even split) — the close advances: day-of practicalities, the deadline, the next step — never a restatement of the body.
 

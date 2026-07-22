@@ -539,7 +539,7 @@ Run every check below against the assembled body and every create-call field; a 
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
-10. Three sentences in a row sharing length, or sharing a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place.
+10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
@@ -980,7 +980,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, voice via ANTI-SLOP, self-check before posting.
 
-**Voice:** this page IS the job posting. State the role's facts as settled knowledge, candidates and the employer holding the subject slot: "Candidates need STOTT certification", "Sessions are one-on-one." Never make a source document — or anything that publishes or displays a fact — a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out, attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work is, told straightforward — informative, never puffery. Ground market context in real specifics: employer type, pay bands, schedule shape; related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
+**Voice:** this page IS the job posting. State the role's facts as settled knowledge, candidates and the employer holding the subject slot, time or place free to lead a sentence: "Candidates need STOTT certification", "On weekends, sessions run one-on-one." Never make a source document — or anything that publishes or displays a fact — a sentence's actor, quoting or analyzing ("the posting says", "the posting frames the work around", "the pay band is not shown on the page") — state each fact bare or leave it out — a fact from the fetched source IS the role's fact; bare assertion is the accurate report — attribution is never a third door; a fact the source omits is silently absent, never reported missing. Role context, company context, what the work is, told straightforward — informative, never puffery. Ground market context in real specifics: employer type, pay bands, schedule shape; related openings appear only as links riding nouns the finished draft already wrote, never sentences written to carry them.
 
 **Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them (never an even split), summarize the role in any natural flowing order: the role and employment type, who's hiring, the city, pay when published, what the work is, and who it's for; the first sentence leads with who's hiring and the role. The post closes with two paragraphs about the role, at least six sentences split unevenly between them (never an even split) — the close advances: the deadline, the next step — never a restatement of the body, never the button or its form (how to apply belongs to the CTA, or to the plain-link close when there is no URL).
 
