@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.467] - 2026-07-22
+
+### Changed
+
+- **Combined link cap + blog's two-paragraph intro (owner's design; the .466-era specimen graded 6.5/7 — best yet: zero q=, zero page-as-agent [starvation prediction confirmed], mixed H2s, Pattern 1 deep-links — but 2 internal + 6 external showed the balance loss).** (1) The linking pass's cap is now the TOTAL: "cap 10 internal and external combined (a ~500-word post carries 2-3 internal; a 1,200-word post carries 6)" — the internal floor drives presence, the external sub-cap 6 stands, and the combined bound squeezes short posts the external ratio alone wasn't holding (6 externals on 700 words). Enforcement point = the linking pass, the last placement step, which can count what citations already used. (2) Blog item 1 rewritten in place: "Two intro `<p>`s, 6-8 sentences split unevenly (never an even split): the first answers what the headline promises in 40-100 words…; the second widens with the article's context and stakes" — the AEO direct-answer survives untouched as paragraph 1; the family's asymmetric-split construction arrives verbatim. Voice's two residual leaks ("the same guide says", "guidelines point") deliberately UNTOUCHED — likely .465-byte artifacts; check 17's any-wording sweep + one clean .466 specimen decide; pre-named touch if they survive: the guide/guidelines word-class joins the quoted examples.
+
 ## [6.58.466] - 2026-07-22
 
 ### Changed
