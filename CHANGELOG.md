@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.512] - 2026-07-22
+
+### Fixed
+
+- **The gloss package — seven edits closing the four demand-legs behind the 12-hit false-agency run (minion-converged, evidence-cited):** (1) events+jobs closes get blog's clamp ("the close advances ... never a restatement of the body" — the unclamped >=6-sentence closes were a standing gloss order); (2) "What to expect" reworded from sensory demand to "the record's observable specifics as the source states them" (sensory material a 5K source never supplies produced non-falsifiable vibe-claims); (3) the affect-tax removed ("welcoming and positive"/"and positive" — positivity with every legal carrier banned was paid in gloss, the only coin left); (4) ANTI-SLOP line 18's restate-the-thought law gains the no-fact exception (the buried permission that neutered the False agency row: a gloss restated legally is still a gloss — marked payoff/gloss clauses now DROP); (5) new Fact-gloss row with the strike-the-clause test + commanded-restatement exemptions; (6) False agency row: payoff test extended to trailing clauses, example verbs varied off keeps/gives (11 of 12 live specimens used the row's own example verbs — the worked-example teacher); (7) events title row: "and why it matters" deleted (banned vocabulary in a field table).
+
 ## [6.58.511] - 2026-07-22
 
 ### Fixed
