@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.507] - 2026-07-22
+
+### Changed
+
+- **"future" restored on the jobs apply-by family head — guards stale postings from importing past dates.**
+- **The login-page carve-out cut from both CTA homes ("public pages only." now unqualified)** — a content run never legitimately links a login page; the parenthetical was a buried permission and a ready-made dodge.
+- **"never a login-gated page" added to item 3's citation never-list** — the public-pages law now covers ALL external links (CTA both homes + citations), not just buttons.
+
 ## [6.58.506] - 2026-07-22
 
 ### Fixed
