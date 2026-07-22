@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.535] - 2026-07-22
+
+### Changed
+
+- **The pin-city rule re-anchored to the objective fact: "the city the post's own apply/registration URL's posting names" decides first; "primary or first-listed" demoted to the fallback.** Owner's sharpening: the shipped URL IS a specific posting — its city is the record's city.
+
 ## [6.58.534] - 2026-07-22
 
 ### Changed
