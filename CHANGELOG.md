@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.498] - 2026-07-22
+
+### Changed
+
+- **"Acme Corp" swapped to `Bramblewood` (jobs.md's own established fictional employer) in the four field-reference examples — name-only swap, zero law text.** A live jobs run pooled "Acme Personal Trainer" as a candidate: the worked-example employer leaking into discovery (the Metro-DMV gun; "Metro DMV" itself has zero corpus hits and is plausibly a genuine DC-metro SERP term). Real-name examples (Equinox, Loudoun County Government) that have never leaked stay untouched.
+
 ## [6.58.497] - 2026-07-22
 
 ### Changed

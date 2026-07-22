@@ -1008,7 +1008,7 @@ What `createSingleImagePost` receives.
 |---|---|
 | `data_type` | `20` (single-image classification, always for jobs) |
 | `data_id` | resolved jobs post-type id from runbook Step 3 |
-| `post_title` | **Graceful-degradation ladder, ~54 char cap.** Use a colon `:` as the primary separator (BD's slugifier handles colons cleanly — em dashes produce ugly `%E2%80%94` URL encoding). Never two colons in a single title — if the role name itself contains a colon, switch to "at"/"in" prose. Title+Company+City → Title+Company → Title+City → Title (+ employment type as fallback parenthetical). Adjust to fit the cap: drop city first, then company, then fall back to title-only. Examples: `"Marketing Manager: Acme Corp in Austin"` (full), `"Marketing Manager: Acme Corp"` (no city fits), `"Marketing Manager in Austin"` (no company source), `"Marketing Manager (Full-Time)"` (title-only fallback). Plain text, no HTML, no commas. |
+| `post_title` | **Graceful-degradation ladder, ~54 char cap.** Use a colon `:` as the primary separator (BD's slugifier handles colons cleanly — em dashes produce ugly `%E2%80%94` URL encoding). Never two colons in a single title — if the role name itself contains a colon, switch to "at"/"in" prose. Title+Company+City → Title+Company → Title+City → Title (+ employment type as fallback parenthetical). Adjust to fit the cap: drop city first, then company, then fall back to title-only. Examples: `"Marketing Manager: Bramblewood in Austin"` (full), `"Marketing Manager: Bramblewood"` (no city fits), `"Marketing Manager in Austin"` (no company source), `"Marketing Manager (Full-Time)"` (title-only fallback). Plain text, no HTML, no commas. |
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `user_id` | resolved author from runbook Step 4 |
 
@@ -1019,7 +1019,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | Field | Jobs-specific note |
 |---|---|
 | `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
-| `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Acme Corp"`, `"Loudoun County Government"`, `"Equinox"`. |
+| `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Bramblewood"`, `"Loudoun County Government"`, `"Equinox"`. |
 | `post_start_date` | Required. The source's future start date if listed, else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). A start date listed without a clock time → `000000`. |
 | `post_url` | Never sent — the application URL lives in post_content's CTA; only an explicit user request fills it. |
 | `post_promo` | Salary or hourly rate as shown in the source — a plain decimal number, no currency symbol, no commas. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high, rounded to two decimals. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing — never fabricate. |
@@ -1030,8 +1030,8 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
 | `country_sn` | ISO country code from Nominatim. |
 | `state_sn` | State code from Nominatim. |
-| `post_meta_title` | Type-specific example: `"Senior Marketing Manager Full-Time Position at Acme Corp in Downtown Austin, Texas"` — occupation + employment type + company + city, plus a searcher's pairing term (salary, hiring, apply) where natural, expanded from the shorter `post_title`. |
-| `post_meta_description` | Descriptive prose: role + key responsibility + location + employment type, one sentence (e.g. "Acme Corp is hiring a Senior Marketing Manager in Austin, TX to lead B2B SaaS brand strategy. Full-time, hybrid."). Apply URL/email/phone stays in the body's `How to apply` section, NOT in the meta description — Google strips URLs from SERP snippets and meta descriptions should read as natural prose. |
+| `post_meta_title` | Type-specific example: `"Senior Marketing Manager Full-Time Position at Bramblewood in Downtown Austin, Texas"` — occupation + employment type + company + city, plus a searcher's pairing term (salary, hiring, apply) where natural, expanded from the shorter `post_title`. |
+| `post_meta_description` | Descriptive prose: role + key responsibility + location + employment type, one sentence (e.g. "Bramblewood is hiring a Senior Marketing Manager in Austin, TX to lead B2B SaaS brand strategy. Full-time, hybrid."). Apply URL/email/phone stays in the body's `How to apply` section, NOT in the meta description — Google strips URLs from SERP snippets and meta descriptions should read as natural prose. |
 | `post_meta_keywords` | Same exact CSV as `post_tags`. |
 
 ### Do NOT pass
