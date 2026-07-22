@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.542] - 2026-07-22
+
+### Fixed
+
+- **The play-by-play announcer voice (NYC-events post: 20 of 29 sentences a gloss-verb — "gives" x8, "keeps" x4, "feel" x4 — each fact bolted to a significance-tag).** Root was an enforcement failure, not a missing ban: the specimen shipped against three existing bans (abstract-subject, False agency, Fact-gloss) because a top-of-hierarchy PERMISSION overrode them. The permission was the identity "independent service journalist sharing something they just found" — a trade whose craft IS the significance-tag and nut-graf. Three surgical changes, minimal sufficient set: (1) ANTI-SLOP voice-target identity replaced with a knowledgeable-friend frame that states facts plainly and connects two only when one explains another, never previewing or framing (connection clause kept); (2) METHODOLOGY "deeper insights" -> "deeper facts" (kills the manufacture-word); (3) a concrete connected-fact exemplar with a zero-payoff joint added to the blog/events/jobs Voice blocks, supplying the plain multi-fact model the journalist frame was the only source of. Left untouched (watch, not cut): dimension-coverage pressure and "useful context".
+
 ## [6.58.541] - 2026-07-22
 
 ### Fixed

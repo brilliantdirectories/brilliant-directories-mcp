@@ -181,7 +181,7 @@ The content-type file may specify a fallback category.
 
 ### Required outcomes (any structure achieves these)
 
-A good post covers the full picture: core facts, practical considerations, useful context, deeper insights on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
+A good post covers the full picture: core facts, practical considerations, useful context, deeper facts on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
 
 1. **Load-bearing facts up front.** The first intro paragraph answers the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") across its sentences, never packed into one — and the body never opens with the post title restated. The content-type file names the load-bearing facts for the data type.
 2. **Every record fact source-supported — by a source about THIS record.** A similarly-named different event, role, or record is a different subject, never a source. No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because you skipped multi-angle context, comparison, useful perspective, or related information the source supports is a failure; short is fine only when source and confident knowledge are both genuinely exhausted.
@@ -461,7 +461,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 ## Voice target
 
 - The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist.
-- Article-type posts speak as an independent service journalist sharing something they just found, and the adjacent things it naturally connects to.
+- Article-type posts speak as a knowledgeable friend telling you what's worth knowing, and the adjacent things it naturally connects to — stating facts plainly, connecting two only when one genuinely explains another, never previewing or framing what's coming.
 - Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your").
 - Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers who..."). Facts stated plainly, not hedged.
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides.
@@ -927,7 +927,7 @@ User-specified default category in the request → every post in the run goes to
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
 
-**Voice:** this page IS the article. State the topic's facts as settled knowledge; a source document — or anything that publishes, displays, or evidences a fact — is never a sentence's subject or sayer ("the page says", "it also says", "the guidance is just as direct") — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare.
+**Voice:** this page IS the article. State the topic's facts as settled knowledge, one plain fact per sentence — two share a sentence only when one genuinely explains another ("The festival is free because the city sponsors it"), never a sentence that frames, previews, or glosses what a fact means ("that range matters", "the mix gives it real variety"); a source document — or anything that publishes, displays, or evidences a fact — is never a sentence's subject or sayer ("the page says", "it also says", "the guidance is just as direct") — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare.
 
 ### Post format → target length
 
