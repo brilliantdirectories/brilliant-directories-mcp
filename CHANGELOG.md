@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.482] - 2026-07-22
+
+### Changed
+
+- **Step 13's gate-check pointer converted from position to name: "item 4" → "'s linking pass" (item 4's own coinage, grep-able).** Positional refs break silently on list renumbering — a live event class (.472 renumbered blog's body list days ago) — and the no-spatial-cross-refs doctrine already bans them; "item 4" had slipped in against it in .479. Same target, immune to renumbering.
+
 ## [6.58.481] - 2026-07-22
 
 ### Changed
