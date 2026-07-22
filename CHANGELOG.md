@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.488] - 2026-07-22
+
+### Reverted
+
+- **Corpus restored to the v6.58.484 state (METHODOLOGY.md + blog.md checked out from the tag, byte-identical): .485 and .486 corpus changes undone per owner.** Clean-bytes referees convicted them: blog post 1719 (44 min post-push) opened with a lowercase first sentence that was also a wrapped link (first-sentence link ban + assembly mangling) and carried a duplicate href; the jobs run never emitted the draft message (shared-prose process law, ignored) while its pre-create batch fragmented across three turns; blog post 1715 shipped zero links. Undone: the linkless-draft artifact + wrap-only diff + "chosen" gate wording, the question-H2 assembly recount, and the "calendar"/"schedule" enum additions. Kept: everything through .484 (the .483 title-probe supply + Pattern distribution included) and the .487 null-omission plumbing (infrastructure, live-verified, not corpus).
+
 ## [6.58.487] - 2026-07-22
 
 ### Fixed
