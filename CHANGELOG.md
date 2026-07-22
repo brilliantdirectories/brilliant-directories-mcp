@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.511] - 2026-07-22
+
+### Fixed
+
+- **The false-agency ROOT: blog's intro law demanded significance in banned vocabulary — "why it matters" / "stakes" — while ANTI-SLOP bans "matters"/"the stakes are"/relevance-announcing outright. The model laundered the mattering-quota through whatever grammar remained legal (locatives, doc-sayers, taxonomy frames, causative benefactors — the whole hydra, retroactively explained). Demand reworded in place to fact-fillable currency: "what the reader can do or decide with it" / "concrete consequences".** Zero net-new prose. Events/jobs demand facts by construction (swept clean); the .504 row covers their genre-pressure residue. Referee: false agency vs the 6-hit medium baseline on the next run; the field-row weld ships only if hits persist.
+
 ## [6.58.510] - 2026-07-22
 
 ### Changed
