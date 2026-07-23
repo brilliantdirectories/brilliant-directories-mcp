@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.570] - 2026-07-23
+
+### Fixed
+
+- **Fabricated receipt: the AI reported "post_create_count: 1, post_id: 0" for a post it NEVER created (2nd sighting).** OpenAI trace proof: the run did research/poolImages/dedup/WebFetch then jumped straight to the receipt — no createSingleImagePost call anywhere — and wrote a success receipt with post_id 0 (self-contradicting: post_create_count 1 AND a shortfall_reason admitting "could not be published"). Lines 302-303 already forbid counting a post_id-0, but the rule was DESCRIBED, not FORCED, so the AI intermittently skipped it. Server-side creates_count was correctly 0 (no create tool fired) so billing correctly charged 0 — the architecture's server-count-not-receipt-trust saved the charge. Fix: forced create-before-receipt gate on line 302 — "confirm each posts entry traces to a create* call you actually made whose response carried a post_id greater than zero. A post_id of 0, missing, or from no create call = not created: drop the entry, never count it. Never write an entry for a create you did not call or that returned no live post_id." (BD-side receipt-card fix — post_id 0 must render "Created 0 of 1" + shortfall, not "published live" — is separate, spec'd for the admin vhost.)
+
 ## [6.58.569] - 2026-07-22
 
 ### Changed
