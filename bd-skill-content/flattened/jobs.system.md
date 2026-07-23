@@ -590,7 +590,7 @@ Prose and sentence law, including how link-bearing sentences read. URL construct
 
 Read before generating any internal link. Universal across post types.
 
-**Never fabricate an internal URL.** If you can't verify the target exists, omit the link or section. Any URL placed in a post — internal or external — is character-for-character from its source (a fetched result, a cached row, or a slug built from cached values), never retyped from memory.
+**Never fabricate an internal URL.** If you can't verify the target exists, omit the link or section. Any URL placed in a post — internal or external — is character-for-character from its source (a fetched result, a cached row, or a slug built per URL-PATTERNS), never retyped from memory.
 
 ## Patterns
 
@@ -659,7 +659,7 @@ Invalid combinations:
 
 Every slug segment MUST come from a live list-tool return. LIKE wildcards: `X%` or `%X` only, never `%X%` — BD's WAF strips one `%`.
 
-**Categories — once per run, both levels.** Fire these two calls only when the draft has produced a place-or-category noun that wants a Pattern 6 member-directory link, and fire them once — in the same message as that link's member-count check (per METHODOLOGY's Pattern 6/4 gate). Never in Turn 1; the Turn-1 `listTopCategories limit=25` is the site-flavor sample, not this taxonomy tree.
+**Categories — both levels.** Fire these two calls together, one time per run — only when the draft has produced a noun that wants a Pattern 6 member-directory link, in the same message as that link's member-count check (per METHODOLOGY's Pattern 6/4 gate). Never in Turn 1.
 
 ```
 listTopCategories limit=100
@@ -682,7 +682,7 @@ Location-bearing URLs (`searchUsers` cannot filter location):
 listUsers property=[<location fields>(, profession_id)] limit=1
 ```
 
-Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code`; state URLs `state_code`; country URLs `country_code`. Filter values come from the cached discovery rows: `city` = `city_ln`, `state_code` = `state_sn`, `country_code` = the row's `country_code`. Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment passes only on a hard HTTP 200 from a direct fetch of the assembled path (404, 403, 429, timeout, WAF, or a search-string confirmation is not a pass for an internal directory URL — a slug existing never proves the page is seeded); unverified → drop to Pattern 5. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or another Pattern (a Pattern 3 listing in any filter shape, a run-verified post URL, or Pattern 5). Cache verdicts per run. Gate rows verify counts only — never recycle a returned member row as a Pattern 4 link target.
+Location fields per `Rule: Compound filters`: city URLs filter `city` + `state_code`; state URLs `state_code`; country URLs `country_code`. Filter values come from the cached discovery rows: `city` = `city_ln`, `state_code` = `state_sn`, `country_code` = the row's `country_code`. Add `profession_id` when the URL has a category segment. This proves the top only — a location URL with a sub segment verifies the same way — `listUsers` with the location fields plus `profession_id` for the sub, `limit=1`; a combination that cannot be counted drops the sub segment and re-counts the top, or drops to Pattern 5. Link only when the count is `>= 1` — BD serves unseeded directory pages with a 404 status by design. Otherwise pick a different category or another Pattern (a Pattern 3 listing in any filter shape, a run-verified post URL, or Pattern 5). Cache verdicts per run. Gate rows verify counts only — never recycle a returned member row as a Pattern 4 link target.
 
 **Country:**
 
@@ -773,7 +773,7 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety
 
-In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) riding nouns the draft already wrote, to run-verified rows in hand. At most 6 filtered-listing links per post — a ceiling the draft's own nouns fill or fall short of, never a count to reach — within the overall internal-link budget in METHODOLOGY `Required outcomes`, distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
+In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) riding nouns the draft already wrote, to run-verified rows in hand. At most 6 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes`, distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
 
 ## Link shape priority (universal)
 
@@ -987,7 +987,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Jobs-specific load-bearing facts** — two intro paragraphs, at least six sentences split unevenly between them (never an even split), state the record's facts in any natural flowing order: the title and employment type, who's hiring, the city, pay when published, what the work is, and who it's for; the first sentence leads with who's hiring and the role. The post closes with two paragraphs about the record, at least six sentences split unevenly between them (never an even split) — the close advances: the deadline, the next step — never a restatement of the body, never the button or its form (how to apply belongs to the CTA, or to the plain-link close when there is no URL). A close that runs out of record facts ends short — filler sentences about the site's own pages or search views never pad it; links riding the close's real sentences stand. Section `<h2>`s: record-material noun phrases, never questions, never a dimension's label.
 
-**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, place this block right after the intro — all three parts in order, none skipped: (1) a short record-material `<h2>`, (2) a 2-3 sentence third-person `<p>` on how to apply (the steps, what to have ready — never commands, never the button, link, or form described, never what they open), (3) `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character per URL-PATTERNS>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only.
+**Application CTA** — unless the user requests otherwise: when an application or official job information URL is known, place this block right after the intro — all three parts in order, none skipped: (1) a short record-material `<h2>`, (2) a 2-3 sentence third-person `<p>` on how to apply (the steps, what to have ready — never commands, never the button, link, or form described, never what they open), (3) `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only.
 
 **Bullets** — the record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA): the role, employer, location, pay, and employment type at a glance. A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate — responsibilities, qualifications, formats, benefits — presents them as its own `<ul>`.
 
