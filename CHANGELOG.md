@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.573] - 2026-07-23
+
+### Changed
+
+- **Trimmed the v572 sequencing gate ~90->~50 words.** Dropped the middle sentence that duplicated the receipt schema at lines 302-304 (entry-mechanics: created=entry, unmade=no entry + lowers count + shortfall_reason — already stated there). Kept only the moot-proof new rule: "each candidate is either created (a create* returned a post_id > 0) or explained in shortfall_reason (dedup, unresolvable, no live post_id) — a candidate that is neither still owes its create* call; never write a posts entry for a create you did not call." Same teeth: forces created-or-explained, catches the never-called-create fabrication, does not force a create.
+
 ## [6.58.572] - 2026-07-23
 
 ### Fixed
