@@ -13,9 +13,9 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content; a participant described by the content they follow ("attendees following wellness talks") is the follower form.
 - The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
-## Banned constructions (the construction itself, in every wording)
+## Forbidden constructions (the construction itself, in every wording)
 
-Every `Banned constructions` and `Banned patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure — except a payoff or gloss clause carrying no checkable fact (`False agency`, `Fact-gloss`): those drop.
+Every `Forbidden constructions` and `Forbidden patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure — except a payoff or gloss clause carrying no checkable fact (`False agency`, `Fact-gloss`): those drop.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone or something — any fit verb — or fit as the subject itself ("The best fit is..."). A person carries the fit, or the record in the commanded copula form only ("perfect for anyone who..."); the record never fit-verbs a person or a thing.
@@ -33,7 +33,7 @@ Every `Banned constructions` and `Banned patterns` entry kills the wording, neve
 - **Offer / navigation** — any sentence, bullet, statement, callout, or clause whose function is offering, orienting, pointing, or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "For a related warm up...", "for people who want...", "If X is the better match..."), a classification lead-in slotting the record into a group to host a link ("It belongs with...", "It joins other...", "This is one of several..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
 - **Link-carrier sentence** — a sentence, bullet, or clause that exists for the link it holds; remove the link and it loses its reason. Every sentence, bullet, and clause stands linkless.
 
-## Banned patterns
+## Forbidden patterns
 
 | Pattern | Examples / fix |
 |---|---|
@@ -92,7 +92,7 @@ Run every check below against the assembled body and every create-call field; a 
 14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
-17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
+17. Any sentence instantiating a `Forbidden constructions` or `Forbidden patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
 18. Every depth dimension that source data or confident knowledge supports — grown into developed material? A mention is a seed, not coverage; skipping one is the failure.
 19. Count the internal links (relative `<a href="/...">`). Zero while a body noun still has a verified internal target → that noun went unlinked; link it per METHODOLOGY item 4. Zero only because no draft noun had a verified internal target → correct; add no noun and bend no sentence.
 
@@ -108,7 +108,7 @@ Run every check below against the assembled body and every create-call field; a 
 
 ## Drift triggers (stop and rewrite)
 
-Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence. Any `Banned constructions` entry surfacing mid-draft.
+Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence. Any `Forbidden constructions` entry surfacing mid-draft.
 
 ## Wrong-example reference
 
