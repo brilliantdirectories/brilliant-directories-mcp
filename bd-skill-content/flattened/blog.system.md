@@ -295,7 +295,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link not carrying exactly `rel="noopener" target="_blank"`? Fix it.
 - Citation on a search/query URL? Replace with the static source page, or drop.
-- Anchor under 2 or over 4 words? Resize to the sentence's own 2-4 word noun phrase; move the description to `title` as a descriptive noun phrase, never an instruction ("Browse...").
+- Count each anchor's words: any anchor over 4 words is wrong — resize to the sentence's own 2-to-4-word noun phrase; move the description to `title` as a descriptive noun phrase, never an instruction ("Browse...").
 - Same href twice? Re-derive one under a different Pattern, or cite a different source's static page for an external; drop only if none fits.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Re-read that ledger line — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
 - Section present without source data or confident knowledge to support it? Remove. Source-supported material with no section carrying it? Add the section.
