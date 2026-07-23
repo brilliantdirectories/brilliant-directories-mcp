@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.558] - 2026-07-22
+
+### Fixed
+
+- **Line-10 light-verb blacklist contradicted line-22's own good example (internal-consistency audit).** Line 10 (v556) listed "offers" as a banned light verb, but line 22 (False agency) ships "The position offers competitive wages with commissions" as a MODEL-worthy positive example — a reader obeying line 10 literally would reject it. Unlike "sits at"/"gives a role"/"brings", "offers" has a large legitimate fact-carrying use ("offers competitive wages", "the gym offers childcare"); it was the wrong verb to blacklist by name. Dropped "offers" from line 10's example set — the light-verb principle ("standing in for is") still catches empty "offers" uses without contradicting the good example. Audit otherwise clean: the four scoring dimensions are distinct (Trust owns restatement, Density owns filler-count, Rhythm owns length/subject variation), and the remaining rule overlaps (26/65 document-as-subject, the inanimate-subject cluster) are harmless — every overlapping pair's fix converges on the same rewrite.
+
 ## [6.58.557] - 2026-07-22
 
 ### Fixed
