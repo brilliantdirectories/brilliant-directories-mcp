@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.563] - 2026-07-22
+
+### Fixed
+
+- **Manufactured link-carrier sentences ("it belongs on the site's workshops page", "The August 22 date also fits the site's August 22 day filter") — sentences invented solely to host an internal link, describing the site's own pages instead of the event.** Root (two independent minions converged): the link-budget FLOOR, not the "rides" wording. "a floor of one internal link per ~125 words (a ~500-word post carries 4...)" read as a hard quota with promise-shaped per-length counts. On a thin post lacking enough real link-nouns, the quota forced the model to manufacture host sentences; the only targets left were Pattern 3/6 filter URLs, so the manufactured sentence narrated a site filter-page (output already banned 3 ways in ANTI-SLOP = pressure overriding a ban, not a permission). The existing yield clause ("the budget never outranks the prose") was the soft voice losing to the hard "floor... carries 4" voice. Fix: "floor" -> "up to", "carries N" -> "up to N" (cap, not mandate; kills the manufacture pressure without "ceiling" which would over-rotate into under-linking), bound to real-noun supply at the number, "never a reason to add a sentence". Universal (METHODOLOGY item 4 — all skills inherit). "rides" (URL-PATTERNS 195/197) left untouched — a pre-existence constraint, not the culprit.
+
 ## [6.58.562] - 2026-07-22
 
 ### Fixed
