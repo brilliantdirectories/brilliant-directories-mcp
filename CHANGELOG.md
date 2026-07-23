@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.562] - 2026-07-22
+
+### Fixed
+
+- **Invented synonym-nouns for the record (oblique phrasing: "The August weekend starts Friday", "The boardwalk setting is partly outdoors", "The competition weekend puts a meet on the shore" — instead of "The event starts Friday" / "The boardwalk is partly outdoors").** Root (two-minion converged): a three-rule collision, NOT the restatement or aside bans. Self-check 10 said "rotate its synonyms" when a noun over-repeats — a literal license to invent a new noun for the event; and the events/jobs Voice called the record-noun "a rare exception" — scarcity that pushed the model to a synonym instead of the plain noun. So it manufactured concrete-part synonyms ("the August weekend"). Fix (tightened by a second reviewer): self-check 10 "rotate its synonyms or hand the sentence elsewhere" -> "repeat it plainly or hand the sentence elsewhere -- never invent a synonym for it" (kills the invention license, restores plain repetition, reuses the existing "hand elsewhere", keeps the 3x monotony cap); events + jobs Voice "the record-noun a rare exception" -> "the record-noun an ordinary subject" (neutral flip, not "freely" which would fight the cap). Disproven as fixes: "no fact entering twice" (line 12, load-bearing vs slabs, not the cause) and "no asides" (line 11, not firing, bans real Fact-gloss).
+
 ## [6.58.561] - 2026-07-22
 
 ### Changed

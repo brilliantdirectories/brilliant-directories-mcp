@@ -540,7 +540,7 @@ Run every check below against the assembled body and every create-call field; a 
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
-10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it. Post-wide, one noun never holds the subject slot more than three times — rotate its synonyms or hand the sentence elsewhere.
+10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it. Post-wide, one noun never holds the subject slot more than three times — repeat it plainly or hand the sentence elsewhere — never invent a synonym for it.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
