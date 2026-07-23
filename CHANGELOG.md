@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.550] - 2026-07-22
+
+### Added
+
+- **12 high-signal AI-tell words to the vocabulary-fingerprint list** (cross-checked against a public anti-AI-slop word list): pivotal, crucial, paramount, meticulous, intricate, utilize, facilitate, cutting-edge, groundbreaking, transformative, unprecedented. Pure coverage extension of the existing comma-list — no new structure. Deliberately excluded borderline words that can name a real listing fact (comprehensive, robust, remarkable, nuanced) to avoid forcing awkward rewrites, and corporate-meeting jargon that never appears in event/job/blog copy (synergy, value-add, circle back).
+
 ## [6.58.549] - 2026-07-22
 
 ### Changed
