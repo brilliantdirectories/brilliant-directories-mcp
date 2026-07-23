@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.565] - 2026-07-22
+
+### Fixed
+
+- **Events dropped institutional/org/landmark venues from post_venue (a school, a base, "Department of the Navy", a government building).** No rule banned them — the example set was too narrow: both examples ("Stubb's BBQ", "Delta Hotels Toronto") were commercial, and "the named place where the event happens" leaned physical-building, so the model pattern-matched "venue = commercial spot" and omitted valid institutional hosts. (Jobs already handles this right — its post_venue examples include "Loudoun County Government".) Fix: widened the class to "named place or organization hosting the event — a venue, park, school, university, base, or government body" and swapped one commercial example for two institutional ones ("Naval Station Norfolk", "Lincoln High School"). No restriction removed (there was none); the narrow example set was the teacher.
+
 ## [6.58.564] - 2026-07-22
 
 ### Changed
