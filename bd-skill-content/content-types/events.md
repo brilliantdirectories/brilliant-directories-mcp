@@ -120,7 +120,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala
 
 **Depth**: an event page is a destination, not a stub — every available fact enters the post as settled knowledge: its story, program or speakers, tiers and inclusions, venue and day-of specifics; a fetched fact left unused is the failure. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known registration or tickets URL is fetched before drafting, its prompt asking for that same cargo alongside the logistics.
 
-**Internal links:** placed by Stage 5's linking pass onto the finished draft, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote.
+**Internal links:** placed from the internal-link inventory by Stage 5's linking pass, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote.
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them). A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row.
 
