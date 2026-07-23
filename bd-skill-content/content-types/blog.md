@@ -163,11 +163,11 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 6. **Sentence cap: ~15-20 words typical.** Tighter sentences read cleaner.
 7. **List shape.** Numbered for sequence (how-to steps), bulleted for parallel items (listicle entries, comparison criteria).
 8. **FAQ block before conclusion.** H2 named in the topic's own words — never the stock "Frequently Asked Questions" — opening with a 2-3 sentence `<p>` stating a fact the questions share, never an announcement ("Here are common questions") — with 3-5 H3 questions, each answered in 40-60 words. High AI-citation density per word.
-9. **Conclusion — two `<p>`s, 6-8 sentences split unevenly between them (never an even split).** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with an internal link only when the conclusion's own sentences already contain a noun with a verified internal target; otherwise the conclusion carries no link — never a "go browse X" line.
+9. **Conclusion — two `<p>`s, 6-8 sentences split unevenly between them (never an even split).** Advance to a next step or a fresh specific that wasn't in the body — never restate the body's load-bearing answer. Close with an internal link only when the conclusion's own sentences already contain a phrase with a verified internal target; otherwise the conclusion carries no link — never a "go browse X" line.
 
 ### Internal-link strategy
 
-Links are placed from the internal-link inventory by Stage 5's linking pass — no per-section quotas: the density law alone places them, riding only nouns the body writes (FAQ answer text may include a link).
+Links are placed from the internal-link inventory by Stage 5's linking pass — no per-section quotas: the density law alone places them, riding only phrases the body writes (FAQ answer text may include a link).
 
 **Link targets — all valid for blog posts:**
 
@@ -176,7 +176,7 @@ Links are placed from the internal-link inventory by Stage 5's linking pass — 
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — a live row this run's dedup or list calls already returned needs no re-lookup; otherwise resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject noun phrase ("winter races in Austin") — never the category's own label, and taxonomy words ("category", "section", "archive") never enter the prose.
 
-Every noun the draft already wrote that has a verified internal target takes its link (per METHODOLOGY's linking pass), not just the first. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept another article already covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never a title-noun or ownership tag ("the knee injury guide", "the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists and is live (`post_status=1`). Never fabricate URLs.
+Every phrase the draft already wrote that has a verified internal target takes its link (per METHODOLOGY's linking pass), not just the first. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept another article already covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never a title-noun or ownership tag ("the knee injury guide", "the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists and is live (`post_status=1`). Never fabricate URLs.
 
 ### Inline body images
 
