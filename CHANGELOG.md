@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.557] - 2026-07-22
+
+### Fixed
+
+- **A positive exemplar was teaching a construction our own rules ban.** The Metaphoric-locative row's good-example "Park Center sits near the courts" licensed "sits" as a locative verb — which the v556 light-verb ban ("never 'sits at' standing in for 'is at'") forbids. A model reading the positive "sits" example could re-authorize "the venue sits at 700 Drive". Swapped to a plain locative: "Park Center is next to the courts". Keeps the row's point (a physical place has real locative relationships, a record does not) without demonstrating the banned reflex. Corpus-wide light-verb sweep otherwise clean — every other light-verb example is ban-side.
+
 ## [6.58.556] - 2026-07-22
 
 ### Fixed
