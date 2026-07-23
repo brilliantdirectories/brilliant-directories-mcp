@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.558] - 2026-07-22
+## [6.58.559] - 2026-07-22
+
+### Fixed
+
+- **Unfamiliar named tools shipped unglossed ("the schedule moves into Sched" — reads like a typo to anyone who doesn't know the Sched.com scheduling platform).** The Unglossed-jargon-transfer ban only covered a source's opaque self-LABEL (fluffy self-description), not a third-party tool/platform proper noun, so brand names like "Sched" walked through — the model assumed reader-knowledge of the source's named tools. Widened the ban to cover "an unfamiliar named tool" with the Sched example, and named the two fixes: say what it is on first mention, or drop the name and state the function.
+
+## [6.58.559] - 2026-07-22
 
 ### Fixed
 
