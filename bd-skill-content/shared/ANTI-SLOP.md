@@ -102,7 +102,7 @@ Run every check below against the assembled body and every create-call field; a 
 | Rhythm | Varied sentence length and sentence subjects, or metronomic — the same "The [noun] [verb]s" frame again and again? |
 | Trust | No sentence restating another sentence — in the same terms or summed into an abstract noun? |
 | Authenticity | Sounds human-typed? |
-| Density | Padding cut, substance kept? A short shallow post fails this — depth from specifics, examples, and useful context is not padding. |
+| Density | Filler count: sentences a reader could delete without losing a concrete event fact (name/date/time/price/place/person/count). Score = 10 − (2 × filler count), floored at 1. Catalog- or position-commentary sentences ("keeps the same lane," "sits beside local trainers") are filler. A short post of only real facts scores 10 for the facts it had; padding to length fails the gate. Coverage of supported depth is item 18's gate, not this one. |
 
 ## Drift triggers (stop and rewrite)
 

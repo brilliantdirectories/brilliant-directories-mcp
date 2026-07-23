@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.555] - 2026-07-22
+
+### Fixed
+
+- **The Density scoring dimension was the scoring-layer twin of the padding permission — it PENALIZED shortness ("a short shallow post fails this"), so a padded post outscored an honest thin one on the very dimension meant to catch padding.** Replaced with a countable filler metric (minion-reviewed): filler = a sentence a reader could delete without losing a concrete event fact (name/date/time/price/place/person/count); Score = 10 − (2 × filler count), floored at 1; catalog-/position-commentary sentences are filler by definition. The 2× multiplier makes realistic padding actually fail the ≥40/50 ship gate (at 1× it still shipped — the old defect restated numerically). Cross-ref clause "Coverage of supported depth is item 18's gate, not this one" keeps Density scoped to padding so it does not reward lazy stubs (short-because-lazy still fails item 18). Converts the rubric's first vibe-dimension into a countable one, per the binary/countable law.
+
 ## [6.58.554] - 2026-07-22
 
 ### Fixed
