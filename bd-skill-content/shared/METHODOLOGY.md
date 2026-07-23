@@ -233,14 +233,16 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
 Every `ANTI-SLOP.md` rule is a pass/fail gate the post must clear — a single rule it fails is a failed post.
 
-### Final checklist — clear every item before posting
+### Self-check before posting
 
-Check every item below against the assembled body and every create-call field. A hit is fixed in place before posting, and the rewrite re-passes the sweep — a single unfixed hit is a failed post.
+Scan the assembled body AND the create-call field values. Fix anything that fires:
 
 - Any en/em-dash outside code? Rewrite.
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link not carrying exactly `rel="noopener" target="_blank"`? Fix it.
 - Citation on a search/query URL? Replace with the static source page, or drop.
+- Any fabricated detail? Remove.
+- Unsourced record fact presented as fact? Hyperlink it to its source or rewrite — naming the source in prose is not sourcing, and a source-naming sentence still rewrites after the link.
 - Same href twice? Re-derive one under a different Pattern, or cite a different source's static page for an external; drop only if none fits.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Re-read that ledger line — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
