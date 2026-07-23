@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.551] - 2026-07-22
+
+### Fixed
+
+- **Vocabulary-fingerprint escape hatch: "replace with a concrete verb or adjective" licensed synonym-swapping.** The instruction told the model to swap a slop word for another word ("seamless" -> "smooth", "cutting-edge" -> "advanced"), dodging the detector while keeping the disease (the empty evaluative adjective itself). Aligned with its sibling rows (Adverb crutches -> "delete", Business jargon -> "plain language"): now "cut it, or state the concrete fact it gestures at" — kills the synonym-swap license and the adjective-slot-preservation.
+
 ## [6.58.550] - 2026-07-22
 
 ### Added
