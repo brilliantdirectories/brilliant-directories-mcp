@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.574] - 2026-07-23
+
+### Fixed
+
+- **Closed a hole in the v573 receipt gate: it only covered candidates that REACHED creation.** But most shortfalls happen BEFORE a candidate reaches creation — no candidate found (empty search), conflicting user input, or a failed gate (source-research/dedup/date-sanity) drop the slot earlier. The v573 wording "a candidate that is neither still owes its create* call — make it now" was also WRONG for these: you cannot create from a candidate that does not exist. Reframed to cover every GOAL SLOT, not just reached-creation candidates: each slot ends created (a create* returned a post_id > 0 -> posts entry) or not, for a stated reason (no candidate found, conflicting input, a failed gate, dedup, or no live post_id) counted in the shortfall + named in shortfall_reason. No "go create it" mandate. So "1 of 3 created, 2 no candidate found" now reports correctly.
+
 ## [6.58.573] - 2026-07-23
 
 ### Changed
