@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.584] - 2026-07-23
+
+### Fixed
+
+- **Geocode: the REAL bug (OpenAI trace) — the model SKIPPED the venue tiers and jumped straight to tier 4 (city-center).** IYOGA Fest geocoded via "Botley, Hampshire, UK" (tier 4, city) then "Hampshire, UK" — it never queried "Fairthorne Manor" (the venue) at all, so the post got Botley TOWN coordinates (50.919) instead of the manor (50.907). The v577 "Park suffix" retry was aimed at the wrong failure (assumed it tried the venue and the suffix broke it — it never tried the venue). Root: the ladder LISTED 4 tiers but never forced the ORDER, so the model went for tier 4's guaranteed hit. Fix (the described->forced pattern): "4 tiers, tried IN ORDER starting at tier 1; the first hit wins and stops the ladder. Never jump to tier 4 (city-center) first — it always resolves but loses venue accuracy, so it is the last resort, only after 1-3 miss." v577 suffix-retry kept (valid once the venue tiers actually run).
+
 ## [6.58.583] - 2026-07-23
 
 ### Fixed
