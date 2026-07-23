@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.553] - 2026-07-22
+
+### Fixed
+
+- **The "authority" persona word in the listing Voice invited the promoter-action cadence ("brings runners to", "welcomes athletes", "draws crowds").** "Speak with the employer's or organizer's authority" told the model to sound active and commanding like a promoter — a soft cousin of the killed "journalist" permission — which contradicted the v552 "a record exists, never acts" principle and could override it. Swapped for "state the record's facts as the organizer knows them — settled, not promoted": keeps third-person + organizer-knowledge confidence, strips the sound-authoritative license, and "not promoted" directly counters the sell-it cadence. Same length, no new rule; third-person ban ("we/our/you/your") untouched.
+
 ## [6.58.552] - 2026-07-22
 
 ### Fixed

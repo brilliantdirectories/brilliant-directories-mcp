@@ -462,7 +462,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 - The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist.
 - Article-type posts speak as a knowledgeable friend sharing what's worth knowing, and the adjacent things it naturally connects to — stating facts plainly, connecting two only when one genuinely explains another, never previewing or framing what's coming.
-- Listing-type posts (a job, an event, any post that IS the thing) speak with the employer's or organizer's authority, stating the record's facts as settled knowledge — third person throughout, never first or second ("we", "our", "you", "your").
+- Listing-type posts (a job, an event, any post that IS the thing) state the record's facts as the organizer knows them — settled, not promoted — third person throughout, never first or second ("we", "our", "you", "your").
 - Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers"), or stating what a thing is: a record exists — it is, runs, opens, costs — never acting on people or places. Facts stated plainly, not hedged.
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides.
 - Generous with specifics, no press-release tone. Name specific things. No re-explaining, no fact entering twice. Vary sentence length.
