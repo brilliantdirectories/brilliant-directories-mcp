@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.564] - 2026-07-22
+
+### Changed
+
+- **Trimmed the v563 link-count clause — cut the explanatory fat.** "a count short of the figure because the nouns ran out is the correct result" (the "because" reason is a human reassurance, nothing the AI needs) -> "a short count is correct". Load-bearing pieces kept intact: the "up to" cap, noun-bound count, short-is-correct permission, "never a reason to add a sentence" (the defect kill). 11 words lighter, same teeth.
+
 ## [6.58.563] - 2026-07-22
 
 ### Fixed
