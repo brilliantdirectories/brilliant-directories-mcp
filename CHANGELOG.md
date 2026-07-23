@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.560] - 2026-07-22
+
+### Fixed
+
+- **The ROOT of the light-verb reflex: the Voice-target opened "declarative and active", forcing action verbs and pathologizing the plain "is" sentence.** "Active" is redundant with the separate passive-voice ban (line 50) and contributes nothing but pressure toward action verbs — so the model treated a stative "the venue is on the boardwalk" as violating "active" and reached for a transitive verb ("brings teams to", "puts a meet on the shore", "gives teams a place", "sits at"). Compounded by burial: the copula permission was clause 6 of 9 in a 90-word line, behind "active" in the headline slot, so the headline command won. Fix (minion-reviewed, structural not word-swap): cut "active"; lead with the copula permission ("A plain copula fact stands as fully as any doing-sentence"); keep the runs/opens/costs whitelist so legit event actions ("gates open at 4") are untouched; scope the ban precisely to the substitution ("swap in a light or transitive verb to make a fact look like an action") rather than banning all actions; add "brings teams to" to the example set. Line 11 (load-bearing) left alone — it targets empty sentences, not stativeness; the owner's second hypothesis was disproven.
+
 ## [6.58.559] - 2026-07-22
 
 ### Fixed
