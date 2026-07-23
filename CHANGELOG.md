@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.575] - 2026-07-23
+
+### Fixed
+
+- **The deepest layer of the fabricated receipt: entry fields built from MEMORY/prediction, not the create response.** The Toomey receipt's post_url ("...tia-clair-toomey-orr-sets-the-tone...") was PREDICTED from the title, and post_id was the placeholder 0 — because line 303 only pinned post_id "copied from the response", leaving post_url free to be guessed. Tightened 303: "one object per create response that returned a post_id greater than zero, with post_id AND post_url copied verbatim from that response — never predicted from the title, never filled from the fields you sent. No such response = no entry (never a placeholder post_id of 0)." Now the entry can only be built FROM the create response, so a run that never got one cannot fabricate an entry. Pairs with v574's Stage-7 gate (293 = WHEN the receipt fires: created-or-explained; 303 = HOW an entry is built: from the response only).
+
 ## [6.58.574] - 2026-07-23
 
 ### Fixed
