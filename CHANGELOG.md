@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.571] - 2026-07-23
+
+### Changed
+
+- **Trimmed the v570 create-before-receipt gate from ~70 words to ~40, and confirmed it forces HONESTY not a create.** Cut the three-way restatement to one clause: "Every posts entry must trace to a create* call you actually made; a post_id of 0 or missing is not created — drop it, never fabricate an entry for a create you never called." Crucially it does NOT force a create — a dedup hit / unresolvable candidate / shortfall correctly yields an empty-or-partial posts array + post_create_count 0-or-partial + shortfall_reason (line 304, untouched). Only forbids the fabrication: listing a post_id-0 as created. The Toomey case now correctly reports "Created 0 of 1, shortfall: already covered".
+
 ## [6.58.570] - 2026-07-23
 
 ### Fixed
