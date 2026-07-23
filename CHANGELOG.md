@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.568] - 2026-07-22
+
+### Changed
+
+- **Trimmed a redundant clause from the v567 link-count rule.** "and stop only when the cap is hit or those nouns run out" restated what the next clause already says ("a count under the cap is correct only once every such noun is linked"). Dropped; same teeth, tighter.
+
 ## [6.58.567] - 2026-07-22
 
 ### Fixed
