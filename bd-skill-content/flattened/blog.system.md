@@ -959,7 +959,7 @@ Pick one format per post; let topic shape decide. Apply the section + length gui
 
 ### Internal-link strategy
 
-Links are placed from the internal-link inventory by Stage 5's linking pass — no per-section quotas: the density law alone places them, riding only nouns the draft already wrote (FAQ answer text may include a link).
+Links are placed from the internal-link inventory by Stage 5's linking pass — no per-section quotas: the density law alone places them, riding only nouns the body writes (FAQ answer text may include a link).
 
 **Link targets — all valid for blog posts:**
 
