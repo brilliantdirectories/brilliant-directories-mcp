@@ -1,6 +1,6 @@
 # URL-PATTERNS: BD internal URL construction
 
-Read before generating any internal link. Universal across post types.
+Read before generating any internal link. Universal across post types. Every URL these patterns let the run construct is a usable target the post is expected to spend, not leave on the shelf.
 
 **Never fabricate an internal URL.** If you can't verify the target exists, omit the link or section. Any URL placed in a post — internal or external — is character-for-character from its source (a fetched result, a cached row, or a slug built per URL-PATTERNS), never retyped from memory.
 
