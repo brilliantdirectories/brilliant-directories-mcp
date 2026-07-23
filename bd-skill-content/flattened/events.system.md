@@ -550,6 +550,8 @@ Run every check below against the assembled body and every create-call field; a 
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
 18. Every depth dimension that source data or confident knowledge supports — grown into developed material? A mention is a seed, not coverage; skipping one is the failure.
+19. Internal links placed? The post names its city, its category's subject, and — for events — its date; each with a verified target carries its link. Zero internal links on a post that names a targetable city or category is a failure — go place them per METHODOLOGY item 4.
+20. CTA block complete (events/jobs with a known URL)? A record-material `<h2>`, then the how-to `<p>`, then the button — the `<h2>` is never skipped, and the `<p>` never describes or announces the button ("the button below opens...").
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)
 

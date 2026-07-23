@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.578] - 2026-07-23
+
+### Fixed
+
+- **Two recurring structural misses forced via new self-check items (the described->forced pattern).** (1) INTERNAL LINKS: the Laksa Marathon post named "Los Angeles" 5x, geocoded it, and its category/date — and linked ZERO of them. Root: the 18-item self-check had NO forced link check; the linking rule lived only in the dense METHODOLOGY item-4 paragraph (described, not enforced), so the model skipped even the trivial city link with no consequence. Added item 19: "Internal links placed? The post names its city, its category's subject, and — for events — its date; each with a verified target carries its link. Zero internal links on a post that names a targetable city or category is a failure." (2) CTA HEADING: 2nd sighting of the CTA block shipping without its <h2> (posts 1813, 1819). Added item 20: CTA block must have the record-material <h2>, then how-to <p>, then button — <h2> never skipped, <p> never describes/announces the button.
+
 ## [6.58.577] - 2026-07-23
 
 ### Fixed
