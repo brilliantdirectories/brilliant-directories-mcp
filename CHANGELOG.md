@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.549] - 2026-07-22
+
+### Changed
+
+- **Trimmed the v548 line-10 addition — cut the bloat, kept the fix.** The copula-existence model is the whole antidote to "brings a retreat to"; but v548 also kept a redundant second action-verb example and a three-verb ban list where the events Voice + Evidential ban already cover "lands in". Collapsed to one inline contrast: 'stating what a thing is ("Earthbound Yogi is a three-day retreat in Saratoga Springs", not "brings a retreat to")'. Net addition ~90 chars vs ~200.
+
 ## [6.58.548] - 2026-07-22
 
 ### Fixed
