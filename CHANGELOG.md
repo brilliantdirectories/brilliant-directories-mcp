@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.583] - 2026-07-23
+
+### Fixed
+
+- **CTA block dropped its <h2> heading (2 sightings: posts 1813, 1819).** The rule listed the parts as a flowing description ("a <h2>, a <p>, then <p><a>") which got skimmed and the heading skipped. No new prose — restructured the existing wording into an explicit required sequence: "all three parts in order, none skipped: (1) a short record-material <h2>, (2) the how-to <p>, (3) the button <p><a>". Same words, forced order + "none skipped" so the heading can't be dropped. Events + jobs.
+
 ## [6.58.582] - 2026-07-23
 
 ### Changed
