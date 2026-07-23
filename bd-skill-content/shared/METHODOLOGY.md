@@ -164,10 +164,10 @@ Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Rela
 
 Full `title=` requirement + composition examples in URL-PATTERNS.
 
-### Link order (universal — internal first, external later)
+### Link order (universal — internal links lead and run the whole post; externals interleave, never first)
 
 1. **An external link never appears before an internal one** (any internal Pattern per URL-PATTERNS.md).
-2. **Once an internal link has appeared**, external citations mix in among the continuing internal links — internals continue per the internal-link budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block. Internal and external links together cap 16. Internal links are placed first; externals fill only the remaining budget.
+2. **Once an internal link has appeared**, external citations mix in among the continuing internal links — internals keep being placed through the whole post per the internal-link budget, externals sprinkled through later sections, never two in the same or consecutive sentences, never clustered in one footer block. Writing an external link never closes the internal stream — an eligible draft noun later in the post still takes its internal link. Internal and external links together cap 16.
 3. **Unique href per post.** No URL repeats — the CTA's URL counts. If two anchors would target the same URL, re-derive one under a different Pattern (1-6); drop only if no Pattern variant fits.
 
 ### Image strategy
