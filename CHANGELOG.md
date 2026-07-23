@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.566] - 2026-07-22
+
+### Changed
+
+- **Restored "where the event happens" to the events post_venue rule** (v565 dropped it, losing the "venue = where it takes place" info). Final: "The named place where the event happens, or the organization hosting it — a venue, park, school, university, base, or government body". Keeps both ideas — where it happens AND that a hosting org qualifies — without the awkward graft.
+
 ## [6.58.565] - 2026-07-22
 
 ### Fixed
