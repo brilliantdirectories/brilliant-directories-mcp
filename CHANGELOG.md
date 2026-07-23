@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.548] - 2026-07-22
+
+### Fixed
+
+- **Cryptic reverse-order sentences in event/job posts — two constructions surviving existing bans (posts generated AFTER the current corpus, so a looseness overrode the bans).** (A) Abstract framing-noun as subject under a light verb: "The schedule gives the program a clear start", "The posted price keeps the entry point lower", "The setting lands in Saratoga Springs" — a light-verb-with-factual-payoff shape that slips between the closed-subject rule (too distant to fire at draft time) and False agency (scoped to evaluative payoff). (B) Fake-action existence: "Earthbound Yogi brings a three-day retreat to Saratoga Springs" (should be "is a three-day retreat in Saratoga Springs") — the corpus never modeled the plain identity copula, only action predicates, so the model faked a motion verb to state existence. Fix: (1) ANTI-SLOP closed-set exemplar extended to model plain existence ("Earthbound Yogi is a three-day retreat in Saratoga Springs") and name the fake-existence verbs — shared root, all three post types inherit; (2/3) events/jobs Voice gained one naming clause each for the framing-abstraction-under-light-verb shape, using the live specimens. Minion-reviewed: dropped the redundant enumerated-legal-subjects half (already at line 10), swapped "takes over" for "turns X into" to avoid nuking real action verbs. No new ban entries.
+
 ## [6.58.547] - 2026-07-22
 
 ### Fixed
