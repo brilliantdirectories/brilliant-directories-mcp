@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.579] - 2026-07-23
+
+### Changed
+
+- **Item-19 link self-check broadened from a target-type LIST to the pure outcome-check.** v578's wording only named city/category/date filter pages — under-scoping the real target set (member-search Pattern 6, related-post Pattern 1 the run found during dedup, etc.); any noun the model reads as "not on the list" gets skipped. Cut the catalog entirely: "Every draft noun with a verified target carries its link, up to the cap (METHODOLOGY item 4). Zero internal links on a post whose nouns have targets is a failure." References the "verified target" concept (defined in item 4) instead of enumerating types — covers all target kinds, no limiting list, item 4 keeps owning the catalog.
+
 ## [6.58.578] - 2026-07-23
 
 ### Fixed
