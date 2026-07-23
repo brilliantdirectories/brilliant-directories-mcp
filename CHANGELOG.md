@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.581] - 2026-07-23
+
+### Changed
+
+- **Item-19 link check reworded from a restated rule to a countable output test.** v579 restated item 4's "link every noun with a target" — restating a skipped rule is the trap that fails. Now a mechanical count (like item 1's em-dash count): "Count the internal links (relative <a href=\"/...\">). Zero on a post that names its own city or category means the linking pass never ran — run it per METHODOLOGY item 4." Tests the artifact, doesn't duplicate the rule.
+
 ## [6.58.580] - 2026-07-23
 
 ### Changed
