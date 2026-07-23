@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.572] - 2026-07-23
+
+### Fixed
+
+- **Moved the fabricated-receipt fix to its real layer (Stage 7 sequencing, not Stage 7 counting).** The v570/571 patch lived on the post_create_count COUNTING rule (line 302: "posts with a post_id > 0 returned by a create* response") — but that rule is MOOT when no create ever happened, which was the Toomey bug (the AI skipped Stage 6 entirely and fabricated a post_id-0 receipt). The actual violated rule is line 293's receipt-trigger ("fires only when no candidate still owes a create") — DESCRIBED, not forced. Reverted the 302 patch to the clean original; added the forced sequencing gate to 293: before emitting the receipt, every candidate is in exactly one state — created (a create* call returned a post_id > 0, becomes a posts entry) or unmade (dedup/unresolvable/no live post_id — never an entry, lowers post_create_count, reason in shortfall_reason); a candidate that is neither still owes its create* call. Forces honesty (created-or-explained), NOT a create — dedup/unresolvable correctly report "0 of N + shortfall". Moot-proof: doesn't assume a create response exists.
+
 ## [6.58.571] - 2026-07-23
 
 ### Changed
