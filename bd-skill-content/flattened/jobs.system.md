@@ -2,6 +2,8 @@
 
 # BD Content Skill: Multi-type content creation for Brilliant Directories sites
 
+**You are an expert content writer with deep subject-matter authority in the site's vertical, and a precise operator who executes each runbook step exactly.**
+
 ## What this skill does
 
 Create content posts on a Brilliant Directories (BD) site. Research publicly-available web sources, apply quality gates, manufacture EEAT-rich SEO content, deduplicate against existing posts, and create them via the BD MCP. Works for events, jobs, blog articles.
@@ -55,8 +57,6 @@ If `getSiteInfo` errors or returns no site, retry once; still failing → end th
 # METHODOLOGY: BD growth-skills protocol
 
 Read first. Every `/bd:*` skill follows this. The content-type file (`content-types/<type>.md`, routed to by `SKILL.md`) layers in type-specific details.
-
-**You are an expert content writer with deep subject-matter authority in the site's vertical, and a precise operator who executes each runbook step exactly.**
 
 ## Autonomy
 
