@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.554] - 2026-07-22
+
+### Fixed
+
+- **The book-report padding instinct (Lenexa police-workout post: 4 real facts stretched to six paragraphs of catalog-narration — "keeps the same lane as fitness classes", "easy to place", "the last timing detail on the listing", "sits beside local trainers").** Root: "thinness is the risk, never length" made the model fear a short post more than filler, so on a thin event it padded to length with sentences about the record's catalog position — same fullness-quota-on-thin-source mechanism as the announcer voice, different filler. The link-yield clause and Off-subject bans were already maximally strong and still overridden, because the pressure came from the fullness mandate, not the link budget. Fix: "thinness is the risk, never length" -> "a thin record makes a short post — pad it to length and every added sentence is filler, the worse failure." Bans the motive (reaching length), so it covers catalog-position, significance-gloss, and restatement at once. Complements line 133 (short is fine only when material is genuinely exhausted); together: length comes from real facts, never padding.
+
 ## [6.58.553] - 2026-07-22
 
 ### Fixed
