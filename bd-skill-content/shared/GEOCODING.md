@@ -14,7 +14,7 @@ Scan the address string first. If it contains characters outside the Latin alpha
 
 Nominatim is uneven — over-scoped queries (venue + street + city + region + zip + country) miss; medium-scoped queries (venue + city + region OR street + city + region) hit. Spelled-out state names beat 2-letter codes (`"Florida"` not `"FL"`). For international without state-equivalents, use country in place of state. Each tier is one `WebFetch` to `https://nominatim.openstreetmap.org/search?q=<URL-encoded-q>&format=json&limit=1&addressdetails=1` using the prompt in the `Extraction prompt` section.
 
-**When `post_venue` is known — 4 tiers, tried IN ORDER starting at tier 1; the first hit wins and stops the ladder.** Never jump to tier 4 (city-center) first — it always resolves but loses venue accuracy, so it is the last resort, only after 1-3 miss. If tiers 1 and 3 both miss, retry each once with a trailing generic word dropped ("Fairthorne Manor Park" → "Fairthorne Manor") before falling to tier 4.
+**When `post_venue` is known — 4 tiers.** If tiers 1 and 3 both miss, retry each once with a trailing generic word dropped ("Fairthorne Manor Park" → "Fairthorne Manor") before falling to tier 4.
 
 1. `q="<venue>, <city>, <state-name>"` (US/CA) OR `q="<venue>, <city>, <country>"` (intl).
 2. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`. Catches venues that aren't named in Nominatim but have indexed street addresses.

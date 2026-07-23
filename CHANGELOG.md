@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.585] - 2026-07-23
+## [6.58.586] - 2026-07-23
+
+### Reverted
+
+- **Reverted v6.58.584's "tried IN ORDER" geocode line — it serialized the batched ladder (regression).** v6.58.584 rewrote the venue-known ladder header to "4 tiers, tried IN ORDER starting at tier 1; the first hit wins and stops the ladder. Never jump to tier 4 first." That prose told the model to fire tier 1, wait, then tier 2 — one tier per turn — directly contradicting the section header ("fire the branch's tiers together in the pre-create step's ONE message; the lowest-numbered hit wins"). Serializing the ladder = more turns per run. It was also aimed at a misdiagnosis: the model was NOT skipping the venue tiers (the real bug, fixed in v6.58.585, was that it geocoded fine but dropped the valid lat/lon in hand). Restored to the clean v6.58.577 wording: "**When `post_venue` is known — 4 tiers.** If tiers 1 and 3 both miss, retry each once with a trailing generic word dropped..." — keeps the Park-suffix retry (valid), drops only the serializing clause. Line 17 now agrees with the batch header again.
 
 ### Fixed
 
