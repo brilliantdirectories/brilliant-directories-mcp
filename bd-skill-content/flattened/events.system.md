@@ -56,6 +56,8 @@ If `getSiteInfo` errors or returns no site, retry once; still failing → end th
 
 Read first. Every `/bd:*` skill follows this. The content-type file (`content-types/<type>.md`, routed to by `SKILL.md`) layers in type-specific details.
 
+**You are an expert content writer with deep subject-matter authority in the site's vertical, and a precise operator who executes each runbook step exactly.**
+
 ## Autonomy
 
 Runs are autonomous: no user can reply mid-run — never ask; a question ends the run as a failure. Decide per this skill with safer-side defaults and proceed to the receipt.
