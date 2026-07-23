@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.577] - 2026-07-23
+
+### Fixed
+
+- **Geocode missed a resolvable venue because of a decorative suffix (IYOGA Fest / "Fairthorne Manor Park", Hampshire UK — shipped with no lat/lon).** Live-tested: "Fairthorne Manor Park" MISSES every Nominatim tier (the OSM entity is "Fairthorne Manor" — "Park" is a marketing suffix); "Fairthorne Manor" HITS. But "Griffith Park" HITS (Park is part of the real name) — so a blanket strip would regress. Fix: if tiers 1 and 3 both miss, retry each once with a trailing generic word dropped before falling to tier 4. Regression-safe by construction — the retry fires ONLY after a miss, so a venue that already resolved with its full name (Griffith Park hits tier 1) is never stripped.
+
 ## [6.58.576] - 2026-07-23
 
 ### Fixed
