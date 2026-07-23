@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.58.584] - 2026-07-23
+## [6.58.585] - 2026-07-23
+
+### Fixed
+
+- **Geocode: the model dropped valid `lat`/`lon` it already had in hand (IYOGA Fest, live post).** The pre-create batch geocoded correctly — a tier-4 hit (`Botley, Hampshire` = 50.919, -1.276) came back HTTP 200 with real coords — but the create call passed `country_sn: "GB"` from that same result and OMITTED `lat`/`lon`. The skip clause keyed on **failure** ("skip if geocoding failed" / "skip lat/lon on failure" / "when applicable"), which is ambiguous when tiers disagree: one tier fails while another passes, and the model read that as "geocoding failed" and skipped — even though a tier had a valid hit. Fix (inversion, no new prose — in-place phrase swaps in 5 spots): the skip trigger is now "**skip only when EVERY tier came back empty**." A single passing tier makes the condition false and forces the coords onto the create. GEOCODING.md:47 "(when applicable)" → "from the lowest-numbered hit" (matches the file's existing ladder vocabulary); GEOCODING.md:29, events.md:25+156-157, jobs.md:32+194-195 all reworded from failure-keyed to every-tier-empty-keyed. Zero change to the ladder tiers, the one-message batch, the call counts, or "lowest-numbered hit wins" — no new calls, no serialization, run speed unchanged. The all-empty skip path is unchanged; only the mixed pass/fail case now correctly keeps the coords.
 
 ### Fixed
 

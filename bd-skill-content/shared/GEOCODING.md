@@ -26,7 +26,7 @@ Nominatim is uneven — over-scoped queries (venue + street + city + region + zi
 1. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`.
 2. `q="<city>, <state-name>"` OR `q="<city>, <country>"`.
 
-After all tiers empty → skip `lat`/`lon` on that post. Post still creates.
+Skip `lat`/`lon` on that post only when every tier came back empty. Post still creates.
 
 ## Extraction prompt
 
@@ -44,4 +44,4 @@ Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as
 1. **`country_sn`**: uppercase the Nominatim `country_code`. `"us"` → `"US"`, `"ca"` → `"CA"`, `"gb"` → `"GB"`.
 2. **`state_sn`**: map the Nominatim state name to its ISO-3166-2 2-letter code (US: `"New York"` → `"NY"`, `"California"` → `"CA"`; Canada: `"Ontario"` → `"ON"`, `"British Columbia"` → `"BC"`; Australia: `"New South Wales"` → `"NSW"`; etc.). Always uppercase. If the country has no state-equivalent (e.g. Malta, Luxembourg, Singapore) or Nominatim returned a sub-region that isn't a standard ISO-3166-2 subdivision, **OMIT `state_sn`** — pass `country_sn` alone.
 
-Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `auto_geocode`.
+Pass `lat`, `lon`, `country_sn`, and `state_sn` from the lowest-numbered hit. Do NOT pass `auto_geocode`.

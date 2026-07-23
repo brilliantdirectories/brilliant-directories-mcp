@@ -816,7 +816,7 @@ Nominatim is uneven — over-scoped queries (venue + street + city + region + zi
 1. `q="<street>, <city>, <state-name>"` OR `q="<street>, <city>, <country>"`.
 2. `q="<city>, <state-name>"` OR `q="<city>, <country>"`.
 
-After all tiers empty → skip `lat`/`lon` on that post. Post still creates.
+Skip `lat`/`lon` on that post only when every tier came back empty. Post still creates.
 
 ## Extraction prompt
 
@@ -834,7 +834,7 @@ Nominatim returns `country_code` lowercase (`"us"`, `"ca"`, `"gb"`) and state as
 1. **`country_sn`**: uppercase the Nominatim `country_code`. `"us"` → `"US"`, `"ca"` → `"CA"`, `"gb"` → `"GB"`.
 2. **`state_sn`**: map the Nominatim state name to its ISO-3166-2 2-letter code (US: `"New York"` → `"NY"`, `"California"` → `"CA"`; Canada: `"Ontario"` → `"ON"`, `"British Columbia"` → `"BC"`; Australia: `"New South Wales"` → `"NSW"`; etc.). Always uppercase. If the country has no state-equivalent (e.g. Malta, Luxembourg, Singapore) or Nominatim returned a sub-region that isn't a standard ISO-3166-2 subdivision, **OMIT `state_sn`** — pass `country_sn` alone.
 
-Pass `lat`, `lon`, `country_sn`, and `state_sn` (when applicable). Do NOT pass `auto_geocode`.
+Pass `lat`, `lon`, `country_sn`, and `state_sn` from the lowest-numbered hit. Do NOT pass `auto_geocode`.
 
 ===== FILE: content-types/jobs.md =====
 
@@ -869,7 +869,7 @@ The user invoked the skill with a request like "create job posts on my site" or 
 8. **Pre-create batch — the message right after verification completes for all survivors; this turn's only job: call 8a, 8b, and 8c in this ONE message.** One survivor = six calls — its `poolImages` call, its title check, and its four `Geocode ladder` tiers; a remote survivor with no location fires two — its `poolImages` call and title check; fewer is an incomplete turn. Each additional survivor adds its own six (or two) to this same message. No other calls ride this turn. The six are three tools' calls — `poolImages`, `listSingleImagePosts`, `WebFetch` — born to fire together.
     - **8a. Image selection.** The `poolImages` call fires in this batch message, never its own turn — per METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy`.
     - **8b. Final-title check (+ image dedup on the Steps 1-3 path).** Steps 1-3 image path: run METHODOLOGY `Stage 5: Content manufacture (universal)` → `Image strategy` dedup step here. `poolImages` path: the image is settled — title check only. Compose the final `post_title` once, to the field reference's title spec, then confirm it is unique with one `listSingleImagePosts property=post_title property_operator=eq property_value=<final title>` call before create (batched with the METHODOLOGY `Image strategy` Step 3 image-dedup when that path runs), never word-order variants. Run it exactly once — the checked title is the created title, verbatim.
-    - **8c. Geocode survivors only.** Nominatim every non-duplicate candidate's address — their `Geocode ladder` tiers batched together as backups. Skip lat/lon on failure.
+    - **8c. Geocode survivors only.** Nominatim every non-duplicate candidate's address — their `Geocode ladder` tiers batched together as backups. Skip lat/lon only when every tier was empty.
 9. **Category routing.** Run METHODOLOGY `Stage 4: Category routing`. Run the `Category routing` section for jobs-specific authorization.
 10. **Content manufacture.** Proceed straight from runbook Step 9 — no extra lookups. Follow METHODOLOGY `Stage 5: Content manufacture (universal)`; this file adds jobs-specific load-bearing facts.
 11. **Create the post** — fires ALONE in its own turn, after Steps 7-10 are complete for the candidate; nothing batches with a create. Via `createSingleImagePost` per METHODOLOGY `Stage 6: Post creation`, with the field set in the `BD Jobs field reference` section.
@@ -1031,8 +1031,8 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
 | `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon are the map coordinates. A multi-location source pins the post to ONE location — the location the post's own apply URL's posting names; else the source's primary or first-listed — for the title, location, and geocode; the other locations are body facts only. Do NOT prepend the company name (already in `post_venue`). Remote with no location: OMIT. |
-| `lat` | Latitude float (from Nominatim, skip if geocoding failed). |
-| `lon` | Longitude float (from Nominatim, skip if geocoding failed). |
+| `lat` | Latitude float (from Nominatim, skip only if every tier was empty). |
+| `lon` | Longitude float (from Nominatim, skip only if every tier was empty). |
 | `country_sn` | ISO country code from Nominatim. |
 | `state_sn` | State code from Nominatim. |
 | `post_meta_title` | Type-specific example: `"Senior Marketing Manager Full-Time Position at Bramblewood in Downtown Austin, Texas"` — occupation + employment type + company + city, plus a searcher's pairing term (salary, hiring, apply) where natural, expanded from the shorter `post_title`. |
