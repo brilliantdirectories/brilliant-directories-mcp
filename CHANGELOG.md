@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.569] - 2026-07-22
+
+### Changed
+
+- **Self-check 1b address example: "is at" -> "is located at"** for a street address ("LA FORME is located at 238 N. Citrus") — more natural than the clipped bare "is at". The whitelists (line 10, 1b) keep "is at" as the class marker; the example teaches the natural address form. City cases still use "is in" ("The studio is in Wynwood").
+
 ## [6.58.568] - 2026-07-22
 
 ### Changed
