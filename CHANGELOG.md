@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.576] - 2026-07-23
+
+### Fixed
+
+- **Recheck of the v574/575 receipt gate caught a real regression + duplication.** REGRESSION: v575's "post_id/post_url copied from that RESPONSE... no such response = no entry" contradicted Stage 6 line 289's legit path (a create returning no post_id, then a listSingleImagePosts probe confirms the row and its post_id "stands as the create response's for Stage 7") — a genuine create recovered by the probe would have been wrongly dropped. Fixed 303 to accept the post_id "from the create* response, or the Stage 6 confirming probe when the response lacked one". DUPLICATION: 293's trailing "Never write a posts entry for a create you did not call" duplicated 303's "no real post_id = no entry"; trimmed 293 to own slot-coverage only (created-or-explained + reasons), 303 owns entry-build. The three rules now divide cleanly: 293 = which slots, 302 = count (post_id > 0), 303 = build entry from real post_id (response or probe), never predicted.
+
 ## [6.58.575] - 2026-07-23
 
 ### Fixed
