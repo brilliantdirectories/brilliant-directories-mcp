@@ -72,6 +72,7 @@ Run every check below against the assembled body and every create-call field; a 
 
 1. Any `–` (U+2013) or `—` (U+2014) outside code? Rewrite.
 1a. Any curly quote (U+2018/2019/201C/201D), ellipsis (U+2026), or NBSP (U+00A0) outside code? Replace with straight ASCII.
+1b. Subject-and-verb scan — every sentence, before any other check below. (a) Subject a document (the page, posting, listing, site, address, schedule, source, role, job, event)? Rewrite so the fact stands alone: "The page asks for a resume" → "A resume is required"; "the address places the studio in Wynwood" → "The studio is in Wynwood". (b) Main verb a light stand-in for "is/is at" — sits, gives, holds, places, brings, keeps, offers, carries — where "is", "is at", "runs", "costs", or "opens" states the plain fact? Swap to the plain verb: "LA FORME sits at 238 N. Citrus" → "LA FORME is at 238 N. Citrus"; "Atlanta gives the Kroc Center a city anchor" → "The Kroc Center is in Atlanta". A light verb doing real, literal work stays: "the festival runs three days", "the gym offers childcare", "doors open at noon", "the pass costs $40".
 2. Throat-clearing opener? Cut.
 3. "Not X, it's Y" / negative listing / "not just X, it's Y" amplifier? State Y.
 3a. Invented tricolon ("X, Y, and Z" with no real third item)? Drop the third or rewrite.

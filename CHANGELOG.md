@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.567] - 2026-07-22
+
+### Fixed
+
+- **Three linking/enforcement fixes (each minion-converged), from live posts 1807-1810.**
+- **Under-linking regression from the v564 floor->up-to swing.** Posts shipped 0-1 internal links despite having real nouns (city, category, date) with valid filter-page targets — the model read "up to / a short count is correct" as "linking optional". Rebalanced item 4 to the narrow middle: "a ceiling, never a figure to reach: link every noun the frozen draft already contains that has a verified internal target... a count under the cap is correct only once every such noun is linked — a target-bearing noun left unlinked is a miss, not a short count". Forces linking real target-nouns; cannot manufacture (sealed frozen-draft set + "never a figure to reach" + the untouched "may not add/reshape a sentence"); reuses the already-defined "verified internal target", drops fuzzy "real noun". Guard tightened to match: "qualifying noun standing" -> "a draft noun with a verified internal target still stands unlinked".
+- **Document-subject + light-verb constructions kept shipping despite complete bans ("LA FORME sits at 238", "The page asks for", "Atlanta gives the Kroc Center a city anchor").** Root: the self-check enforced them only via item 17 ("any Banned construction, in any wording") — DESCRIBED abstract recognition, which a smaller model skims past, vs. the FORCED item-1 character scans that never miss. Added forced item 1b: a mechanical subject-and-verb scan run first, naming the document-noun list and light-verb list verbatim from the bans, with before/after pairs and explicit survivor examples (runs/offers/opens/costs stay).
+- **CTA button lost its URL to an inline citation on single-URL posts** (post 1810: the one official URL became a mid-sentence citation, so the "Register Now" button never rendered). The CTA rule already said "the URL is the button's first — never a body citation", but METHODOLOGY item 3's citation permission ("a listing's externals may all be the record's own pages") fired first and spent it. Reserved the CTA URL in item 3: "each page once, the CTA button's URL excepted — that one is the button's alone, never also a citation". Universal (covers events+jobs; inert for blogs, which have no CTA); no CTA-rule edit needed.
+
 ## [6.58.566] - 2026-07-22
 
 ### Changed
