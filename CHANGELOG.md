@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.552] - 2026-07-22
+
+### Fixed
+
+- **Fake-action existence generalized to a principle (kills the whole motion-verb family, not one string).** The v548 fix pinned the ban to one frozen example ("not 'brings a retreat to'"), so "Boston Waterfront 5K brings runners and walkers to Leader Bank Pavilion" — same disease, different object (people, not the record) — slipped past. Replaced the example with the rule: "a record exists — it is, runs, opens, costs — never acting on people or places." One principle fails "brings runners to", "welcomes athletes", "draws crowds", "takes over" at once; no example to pattern-match around, and shorter than what it replaced.
+
 ## [6.58.551] - 2026-07-22
 
 ### Fixed
