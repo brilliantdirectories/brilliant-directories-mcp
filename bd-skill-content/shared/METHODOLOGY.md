@@ -8,7 +8,7 @@ Runs are autonomous: no user can reply mid-run — never ask; a question ends th
 
 **A wrong fact is worse than a missing fact — a rule that weighs facts, never length. When a fact is in doubt, skip it and move to the next — doubt about a detail never ends the run. A doubtful candidate is settled by its gates and verdicts, never by leaving it uncounted — every qualifying result probes.**
 
-**Every internal link the run discovers or can construct is a real target the post is expected to use: the linking pass spends the inventory, and every noun the draft already wrote that has a verified internal target takes its link. A target left unspent while its noun stands in the draft is a miss, not a saving.**
+**The linking pass matches the draft's own nouns to the inventory: every noun that exists in the draft with a verified internal target takes its link — never a noun invented or a sentence bent to spend a target, only the nouns the draft already holds. A noun left unlinked while its target stands is the miss.**
 
 ## Stage 1: Site context
 
