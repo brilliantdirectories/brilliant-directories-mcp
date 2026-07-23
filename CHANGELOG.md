@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.580] - 2026-07-23
+
+### Changed
+
+- **Removed the v578 CTA-block self-check (item 20) from ANTI-SLOP — wrong file.** ANTI-SLOP is writing voice + slop patterns; a CTA HTML-structure check (heading + how-to + button) is structural, not slop, and bloated the wrong surface. Reverted. (The CTA-heading miss is real — 2 sightings — but its forced check belongs in the events/jobs content-type CTA section where the block is defined, not here.) Item 19 (internal-link placement) kept — link behavior sits with the existing link-adjacent self-check items.
+
 ## [6.58.579] - 2026-07-23
 
 ### Changed

@@ -551,7 +551,6 @@ Run every check below against the assembled body and every create-call field; a 
 17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
 18. Every depth dimension that source data or confident knowledge supports — grown into developed material? A mention is a seed, not coverage; skipping one is the failure.
 19. Internal links placed? Every draft noun with a verified target carries its link, up to the cap (METHODOLOGY item 4). Zero internal links on a post whose nouns have targets is a failure.
-20. CTA block complete (events/jobs with a known URL)? A record-material `<h2>`, then the how-to `<p>`, then the button — the `<h2>` is never skipped, and the `<p>` never describes or announces the button ("the button below opens...").
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)
 
