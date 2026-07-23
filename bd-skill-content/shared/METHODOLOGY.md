@@ -231,7 +231,7 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
 ### Voice
 
-Every word goes through `ANTI-SLOP.md`. Mandatory before posting.
+Every `ANTI-SLOP.md` rule is a hard pass/fail the post must clear before posting — not a document to consult but a gate every sentence passes; one firing rule left unfixed is a failed post.
 
 ### Self-check before posting
 
