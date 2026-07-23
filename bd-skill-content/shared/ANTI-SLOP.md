@@ -94,7 +94,7 @@ Run every check below against the assembled body and every create-call field; a 
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Banned constructions` or `Banned patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
 18. Every depth dimension that source data or confident knowledge supports — grown into developed material? A mention is a seed, not coverage; skipping one is the failure.
-19. Count the internal links (relative `<a href="/...">`). Zero while a draft noun still has a verified internal target → the linking pass was skipped; run it per METHODOLOGY item 4. Zero only because no draft noun had a verified internal target → correct; add no noun and bend no sentence.
+19. Count the internal links (relative `<a href="/...">`). Zero while a body noun still has a verified internal target → that noun went unlinked; link it per METHODOLOGY item 4. Zero only because no draft noun had a verified internal target → correct; add no noun and bend no sentence.
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)
 
