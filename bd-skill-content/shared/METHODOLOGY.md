@@ -233,26 +233,20 @@ Every run works the axes fresh in the table-defined order, batch by batch until 
 
 Every `ANTI-SLOP.md` rule is a pass/fail gate the post must clear — a single rule it fails is a failed post.
 
-### Self-check before posting
+### Final checklist — clear every item before posting
 
-Scan the assembled body AND the create-call field values. Fix anything that fires:
+Check every item below against the assembled body and every create-call field. A hit is fixed in place before posting, and the rewrite re-passes the sweep — a single unfixed hit is a failed post.
 
 - Any en/em-dash outside code? Rewrite.
-- Throat-clearing opener? Cut.
-- Unsourced record fact presented as fact? Hyperlink it to its source or rewrite — naming the source in prose is not sourcing, and a source-naming sentence still rewrites after the link.
 - Internal link with `rel="nofollow"` or `target="_blank"`? Strip those attributes.
 - External link not carrying exactly `rel="noopener" target="_blank"`? Fix it.
 - Citation on a search/query URL? Replace with the static source page, or drop.
-- An anchor's description belongs in `title` as a descriptive noun phrase, never in the anchor and never an instruction ("Browse...").
 - Same href twice? Re-derive one under a different Pattern, or cite a different source's static page for an external; drop only if none fits.
 - `post_category` and every Pattern 3 `category[]` value copied character-for-character from the **category ledger** (written at `Stage 1: Site context` step 3)? Re-read that ledger line — do not trust memory. A value not on it filters nothing — fix to the matching ledger category or drop the param.
-- Section present without source data or confident knowledge to support it? Remove. Source-supported material with no section carrying it? Add the section.
-- Any fabricated detail? Remove.
 - Does the body open with `<p>` intro paragraph(s)? It must — never start with `<h2>` or any heading.
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 introduces meaningfully different content. Vary section length naturally — some sections one paragraph, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - Are all headings (H2 and H3) in **title case**, not sentence case? `"Where to Fly a Kite"`, not `"Where to fly a kite"`.
 - Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no source notes, no skill-run identifiers.
-- Any sentence or heading about search value, SEO, or why the post links where it does — or existing only to carry a link? Cut — the page never explains its own strategy.
 - Pexels image picked (Steps 1-3 path only): does the search-result title name the post's primary subject AND match its defining context (activity vs generic scene, urban vs trail, indoor vs outdoor, season, beginner vs elite, etc.)? Generic title or wrong-context match = re-pick or WebFetch verify.
 
 
