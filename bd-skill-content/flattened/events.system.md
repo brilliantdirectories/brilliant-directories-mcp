@@ -463,7 +463,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - The page speaks as the thing it is, never as a report about its source — and the writer does not know the site or its pages exist.
 - Article-type posts speak as a knowledgeable friend sharing what's worth knowing, and the adjacent things it naturally connects to — stating facts plainly, connecting two only when one genuinely explains another, never previewing or framing what's coming.
 - Listing-type posts (a job, an event, any post that IS the thing) state the record's facts as the organizer knows them — settled, not promoted — third person throughout, never first or second ("we", "our", "you", "your").
-- Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers"), or stating what a thing is: a record exists — it is, runs, opens, costs — never acting on people or places. Facts stated plainly, not hedged.
+- Every voice: declarative and active. Every sentence's subject comes from a closed set — a person, an organization, a place, or the record and its concrete parts; nothing abstract ever holds the subject slot, under any verb — doing real things in literal verbs ("East Bank Club is looking for trainers"), or stating what a thing is with the plain verb — "is", "is at", "runs", "opens", "costs" — never a light verb standing in for it ("sits at", "gives a role", "holds", "offers", "brings"), never acting on people or places. Facts stated plainly, not hedged.
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides.
 - Generous with specifics, no press-release tone. Name specific things. No re-explaining, no fact entering twice. Vary sentence length.
 - Audience fit is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — fit names the thing's own participants, never readers or followers of content; a participant described by the content they follow ("attendees following wellness talks") is the follower form.
@@ -558,7 +558,7 @@ Run every check below against the assembled body and every create-call field; a 
 | Rhythm | Varied sentence length and sentence subjects, or metronomic — the same "The [noun] [verb]s" frame again and again? |
 | Trust | No sentence restating another sentence — in the same terms or summed into an abstract noun? |
 | Authenticity | Sounds human-typed? |
-| Density | Filler count: sentences a reader could delete without losing a concrete event fact (name/date/time/price/place/person/count). Score = 10 − (2 × filler count), floored at 1. Catalog- or position-commentary sentences ("keeps the same lane," "sits beside local trainers") are filler. A short post of only real facts scores 10 for the facts it had; padding to length fails the gate. Coverage of supported depth is item 18's gate, not this one. |
+| Density | Count filler — sentences deletable without losing a fact. Score = 10 − (2 × count), floored at 1. Coverage of supported depth is item 18's gate, not this one. |
 
 ## Drift triggers (stop and rewrite)
 

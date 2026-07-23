@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.556] - 2026-07-22
+
+### Fixed
+
+- **The light-verb (delexical-verb) reflex generalized — the root behind the whole copula-avoidance family.** "The venue sits at 700 Event Center Drive" (should be "is at"), "The public page gives a quick check", "The Backpack Drive gives the festival its strongest service role" — all the same move: the model treats plain "is/is at" as too flat, so it swaps in an empty light verb (sits/gives/holds/offers/brings) to sound active. The v552 principle only named motion verbs faking existence, so "sits at" (describes a place) and "gives a role" (abstract object) slipped past. Widened line 10 to name the class: state what a thing is with the plain verb — "is", "is at", "runs", "opens", "costs" — never a light verb standing in for it ("sits at", "gives a role", "holds", "offers", "brings").
+- **Trimmed the v555 Density cell — it was itself bloated** (a 7-item parenthetical, an inline example, and a restatement). Cut to the load-bearing three: the deletion test, the formula, the item-18 cross-ref. "Count filler — sentences deletable without losing a fact. Score = 10 − (2 × count), floored at 1. Coverage of supported depth is item 18's gate, not this one." Half the length, same teeth.
+
 ## [6.58.555] - 2026-07-22
 
 ### Fixed
