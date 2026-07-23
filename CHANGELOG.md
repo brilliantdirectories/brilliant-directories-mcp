@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.561] - 2026-07-22
+
+### Changed
+
+- **Trimmed the v560 line-10 fix to its tightest zero-regression form (minion-reconfirmed).** Dropped the abstract blessing "A plain copula fact ('the venue is on the boardwalk') stands as fully as any doing-sentence —": with "active" gone and the bare-verb whitelist now LEADING the line, the concrete whitelist already blesses the copula and defeats the burial root, so the abstract clause was restating what the leading example proves. The trim carries no copula preference (conditional "when you state what a thing is, use the bare verb", not "prefer copulas"), so it cannot produce slabs — self-check 10 + Rhythm scoring remain the anti-slab guards. Kept "light or transitive" (the transitive "brings teams to" is the headline defect, not a light verb) and both example lists (sanctioned set + banned substitution = the whole mechanism).
+
 ## [6.58.560] - 2026-07-22
 
 ### Fixed
