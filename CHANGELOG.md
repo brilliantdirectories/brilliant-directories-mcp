@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.582] - 2026-07-23
+
+### Changed
+
+- **Item-19 link check: dropped the "city or category" qualifier that re-narrowed the trigger.** Any post (blog/event/job) has many link targets — city, category, date, member-search, related posts, concepts — so zero internal links is the failure regardless of noun type. Now the pure test: "Count the internal links (relative <a href=\"/...\">). Zero means the linking pass never ran — run it per METHODOLOGY item 4." Item 4 owns which nouns get targets; item 19 just catches zero shipped.
+
 ## [6.58.581] - 2026-07-23
 
 ### Changed
