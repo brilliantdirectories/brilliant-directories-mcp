@@ -300,11 +300,11 @@ Two intro paragraphs, at least six sentences split unevenly between them (never 
 
 ### Action CTA (universal)
 
-Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The button opens the body right after the two intro paragraphs (no `<h2>` above it); the lead bullets follow it, then, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) after the lead bullets, a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only. On create, omit `post_url` unless the user requests it — the URL lives in this CTA. The content-type file supplies the act verb (register / apply).
+Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only. On create, omit `post_url` unless the user requests it — the URL lives in this CTA. The content-type file supplies the act verb (register / apply).
 
 ### Bullets (universal)
 
-The record's core facts as one scannable `<ul>` right after the CTA button (after the two intro paragraphs when there is no button), no `<h2>` above it (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
+The record's core facts as one scannable `<ul>` immediately after the two intro paragraphs — before the CTA button, no `<h2>` above it (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
 
 ### Section headings (universal)
 
