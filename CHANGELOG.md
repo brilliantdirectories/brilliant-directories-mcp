@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.587] - 2026-07-24
+
+### Fixed
+
+- **Broken `target="blank"` link attribute is auto-corrected to `target="_blank"` on every create/update.** Agents intermittently emit `target="blank"` (missing the leading underscore) in `post_content`/`group_desc` HTML — an invalid attribute that breaks new-tab behavior in the browser. The write-time content sanitizer (`stripAgentScaffolding`, which already runs on the HTML body fields before forwarding to BD) now rewrites `target="blank"` → `target="_blank"` for both quote styles, case-insensitively, on every occurrence. Correct `target="_blank"` never matches (it already has the underscore), and a `(?<![-\w])` guard leaves `data-target`/`aria-target` untouched. Deterministic server-side fix for all callers (Butler, Claude, Cursor, n8n). Applied identically in the npm package and the hosted Worker.
+
 ## [6.58.586] - 2026-07-23
 
 ### Reverted

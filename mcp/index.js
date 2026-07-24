@@ -2432,6 +2432,11 @@ function stripAgentScaffolding(value) {
       .replace(/&quot;/g, '"')
       .replace(/&#39;|&apos;/g, "'");
   }
+  // Broken link-target attribute: `target="blank"` is invalid (breaks new-tab
+  // behavior); the valid value is `_blank`. Fix the missing underscore, both
+  // quote styles. Correct `target="_blank"` never matches (has the underscore);
+  // the `(?<![-\w])` guard leaves `data-target` and similar attributes alone.
+  v = v.replace(/(?<![-\w])target=(["'])blank\1/gi, "target=$1_blank$1");
   return v;
 }
 
