@@ -328,6 +328,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Citation on a search/query URL? Replace with the static source page, or drop.
 - Any fabricated detail? Remove.
 - Each internal link: delete the `<a>` tag and read the bare sentence. It must still state a real fact and read naturally, with no dangling stub ("in this guide to", "this breakdown of", "which is where a", "can start by browsing"). A sentence that fragments without its link was written to carry it — cut the link, and the sentence too if nothing else holds it up.
+- Each link left the sentence intact — only `<a>` tags added, not one word dropped or changed. Re-read it: a subjectless or broken clause ("The opened on March 20...") means wrapping the link ate a word — restore it.
 - Any sentence bolted on or bent toward naming a related post to host its link ("this also fits X", "which pairs with Y")? Cut the link; keep the sentence only if it makes a point on its own.
 - Every link — internal AND external — has a 2-to-5-word anchor. Longer? Shrink it to the subject phrase; the rest stays unlinked text.
 - FORBIDDEN: an anchor as the first word of a sentence. Every anchor sits mid-sentence, non-negotiable. One that opens a sentence → move the link to a mid-sentence phrase, or drop it; capitalize the first letter only when no mid-sentence phrase exists (a sentence never opens lowercase).
