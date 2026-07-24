@@ -40,7 +40,7 @@ The user can invoke this skill with as little as a one-sentence goal ("create po
 1. Resolve the content type from the request.
 2. Run the content-type runbook end-to-end without prompting.
 
-**Bank internal-link candidates as you go:** at each step that returns their data — the directory landing, the post-type listing, deduped live posts, the resolved category and location, the member-directory ingredient — bank the candidate into the internal-link inventory (no new call, no new turn); spend the full inventory onto the draft at content-write time.
+**Bank internal-link candidates as you go:** at each step that exposes one, bank the candidate into the internal-link inventory (no new call, no new turn). You are forgetful, so reprint the full inventory — every candidate's bare URL, as a plain list — to yourself in every message from the first candidate until the post is created; a candidate missing from the reprint is lost. Spend the full inventory onto the draft at content-write time.
 
 **Hard gate, every post type:** image dedup per METHODOLOGY **Rule: Image dedup** MUST execute its `list*` call before any `create*Post` write. Never claim-without-executing.
 

@@ -185,15 +185,15 @@ Classify by host comparison against `getSiteInfo.full_url`. Relative URLs (start
 
 ## Internal-link variety
 
-In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) riding phrases the draft already wrote, to run-verified rows in hand. At most 6 filtered-listing links per post within the overall internal-link budget in METHODOLOGY `Required outcomes`, distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
+In the linking pass, vary the shape of filtered-listing links across posts so posts don't all point at the same pages. Per post, mix several of: (a) category-only, (b) location-only, (c) category+location combined, (d) direct post links (Pattern 1) riding phrases the draft already wrote, to run-verified rows in hand. Distributed, never clustered at the end. LLM-judged per post; no fixed rotation. Filtered-listing links use Pattern 3 (post listings) or Pattern 6 (member directory) per their respective construction rules. Link order rule (internal first, external later) lives in METHODOLOGY `Link order` subsection.
 
 ## Link shape priority (universal)
 
-Resolve each internal link to the most specific verifiable target the draft's own prose supports, top-down — drop a tier only when the one above has no target:
+A resolved combo also yields each of its dimensions solo as a separate candidate — the more filters resolved, the more distinct targets in hand. Bank the combo and its solos; each rides a different draft phrase. For any one phrase, match it to the most specific candidate that phrase supports (a phrase naming two dimensions takes the combo; a phrase naming one takes that solo), top-down:
 
 1. **Category + location combo.** Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
-2. **Single-filter category-only** OR **single-filter location-only.** Use when only one dimension is naturally relevant in the sentence. A specific related post (Pattern 1) counts at this tier when a draft phrase names its specific subject; a draft phrase inside a category's subject matter ("water workout" rides its category's listing page) or a city noun goes to that listing page — the anchor keeps the draft's own wording; the taxonomy label lives only in the URL, never planted into prose.
+2. **Single-filter category-only** OR **single-filter location-only.** A specific related post (Pattern 1) counts at this tier when a draft phrase names its specific subject; a draft phrase inside a category's subject matter ("water workout" rides its category's listing page) or a city noun goes to that listing page — the anchor keeps the draft's own wording; the taxonomy label lives only in the URL, never planted into prose.
 3. **Location + daterange** (events only). Combine with category for the tightest anchor.
 4. **Date-range alone** (events only). Rides a time mention the draft already has ("the July 19 race day"). Skip for non-time-bound post types.
 
-Combine across posts — every post doesn't need a combo link. Mix (1) and (2) shapes across a multi-post run so the run's posts don't all target the same pages.
+Vary shapes across a multi-post run too, so the run's posts don't all target the same pages.

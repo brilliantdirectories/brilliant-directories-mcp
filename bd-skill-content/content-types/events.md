@@ -118,7 +118,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Section headings:** the event's own facts, program, or specifics; banned dimension labels = Setting, Overview, Details, Background, Logistics, Location, Highlights, About.
 
-**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and day-of specifics; confident-knowledge dimensions = what the activity is, what to expect, why it is worth attending and what an attendee leaves with, who the organizer is and what they are about, the locale as context; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
+**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and day-of specifics; confident-knowledge dimensions = what the activity is, what to expect, why it is worth attending and what an attendee leaves with, who the organizer is and what they are about, and the locale as context; record specifics = times, prices, capacity; **one `<h2>` section is required for the local scene** — the city's wider scene of this kind of event, the activity's own category, and the people who lead it, each named in the draft's own words; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them). A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row.
 
@@ -141,7 +141,7 @@ What `createSingleImagePost` receives.
 
 ### Source-supported (a field whose data the source supplies is filled — leaving it empty is the failure)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: re-read the **category ledger** line and copy one value from it verbatim — as raw text with a literal `&`, never the `&amp;` entity form it takes inside a body href (a `Pattern 3 category[]` link URL-encodes it, but the `post_category` field value does not). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples:
 
 | Field | Events-specific note |
 |---|---|

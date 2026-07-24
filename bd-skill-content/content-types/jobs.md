@@ -153,7 +153,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Section headings:** the job's own facts, work, or requirements; banned dimension labels = Overview, Details, Background, Responsibilities, Requirements, Benefits, About.
 
-**Depth:** dimensions = the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; confident-knowledge dimensions = what the role involves, what the work is like and what the hire grows into, who the employer is and what they are about, the field as context; record specifics = pay, terms, this employer's numbers; fetch a known application or official listing URL before drafting for that cargo plus responsibilities and qualifications alongside the logistics.
+**Depth:** dimensions = the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; confident-knowledge dimensions = what the role involves, what the work is like and what the hire grows into, who the employer is and what they are about, and the field as context; record specifics = pay, terms, this employer's numbers; **one `<h2>` section is required for the local scene** — the city's wider market for this work, the role's own category, and the professionals who do it, each named in the draft's own words; fetch a known application or official listing URL before drafting for that cargo plus responsibilities and qualifications alongside the logistics.
 
 **How to apply** — a known URL rides the CTA and needs no `How to apply` section; application by email or phone surfaces as plain links in a closing `How to apply` section.
 
