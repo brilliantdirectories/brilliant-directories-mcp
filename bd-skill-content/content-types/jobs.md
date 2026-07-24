@@ -147,7 +147,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Intro fact list:** the title and employment type, who's hiring, the city, pay when published, what the work is, and who it's for. **First sentence:** never starts with the title but includes who's hiring and the role within it, woven naturally. **Close advances:** the deadline, the next step — never the button or its form (how to apply belongs to the CTA, or to the plain-link close when there is no URL).
 
-**CTA:** label "Application CTA", verb "apply"; when an application or official job information URL is known.
+**CTA:** button verb "apply"; when an application or official job information URL is known.
 
 **Bullets:** core facts = the role, employer, location, pay, and employment type; a later enumerating section's `<ul>` = responsibilities, qualifications, formats, benefits.
 

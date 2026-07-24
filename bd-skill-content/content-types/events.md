@@ -112,7 +112,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). **First sentence:** never starts with the title but includes the event's name within it, woven naturally, never the generic type alone ("the yoga workshop"). **Close advances:** day-of practicalities, the deadline, the next step.
 
-**CTA:** label "Registration CTA", verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
+**CTA:** button verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
 
 **Bullets:** core facts = the what, when, where, and cost; a later enumerating section's `<ul>` = inclusions, tiers, formats, requirements.
 

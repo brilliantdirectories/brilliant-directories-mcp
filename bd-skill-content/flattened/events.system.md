@@ -300,11 +300,11 @@ Two intro paragraphs, at least six sentences split unevenly between them (never 
 
 ### Action CTA (universal)
 
-Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA — place this block right after the intro — all three parts in order, none skipped: (1) a short record-material `<h2>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open), (3) `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only. On create, omit `post_url` unless the user requests it — the URL lives in this CTA. The content-type file supplies the block label and the act verb (register / apply).
+Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA block follows the lead bullets (no `<h2>` above it — facts and action come first for scanners and AI), in order, neither part skipped: (1) `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only. On create, omit `post_url` unless the user requests it — the URL lives in this CTA. The content-type file supplies the act verb (register / apply).
 
 ### Bullets (universal)
 
-The record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA), at a glance (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
+The record's core facts as one scannable `<ul>` immediately after the two intro paragraphs — the lead block, before the CTA button, no `<h2>` above it — so a scanner or AI hits the facts at a glance (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
 
 ### Section headings (universal)
 
@@ -987,7 +987,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). **First sentence:** never starts with the title but includes the event's name within it, woven naturally, never the generic type alone ("the yoga workshop"). **Close advances:** day-of practicalities, the deadline, the next step.
 
-**CTA:** label "Registration CTA", verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
+**CTA:** button verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
 
 **Bullets:** core facts = the what, when, where, and cost; a later enumerating section's `<ul>` = inclusions, tiers, formats, requirements.
 
