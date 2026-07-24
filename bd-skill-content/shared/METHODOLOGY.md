@@ -234,27 +234,27 @@ Every `ANTI-SLOP.md` rule is a pass/fail gate the post must clear — a single r
 
 For listing-type posts (events, jobs), this page IS the record's own page — the record needs no re-introduction: facts carry their own subjects, never a framing-abstraction under a light verb, the record-noun an ordinary subject. State the record's facts as settled knowledge, time, place, or a because-clause free to lead a sentence. Never make a source document — or anything that publishes, displays, or evidences a fact — a sentence's actor, quoting or analyzing — state each fact bare or leave it out — a fact from the fetched source IS the record's fact; bare assertion is the accurate report; two source facts may share a sentence, a because/while/so between them stating both, never inventing — the joint carries fact, never a mood or appeal — attribution is never a third door; a record fact the source omits is silently absent, never reported as a gap. This source-only rule binds record specifics alone; the subject's domain is yours to develop from confident knowledge as expected depth, its own section each, never puffery. The content-type file supplies the record's example set, its record-specifics scope, and its domain dimensions.
 
-### Body shape (universal — listing-type posts)
+### Body shape (universal)
 
 Two intro paragraphs, at least six sentences split unevenly between them (never an even split), state the record's facts in any natural flowing order (the content-type file supplies the fact list and the first-sentence naming rule). Between intro and close, at least four `<h2>` sections, each a fully-developed dimension section, rich in real content — never a two-sentence shell; at least one pairs its paragraphs with a scannable `<ul>` of its enumerable facts. The post closes with two paragraphs about the record, at least six sentences split unevenly between them (never an even split) — the close advances (the content-type file supplies what it advances to) — never a restatement of the body. Every sentence advances something new — a fact, dimension, or insight not already in the post; a restatement is filler, cut it. Out of new material, end short — never pad; links riding real sentences stand. Section `<h2>`s: record-material noun phrases, never questions, never a dimension's label.
 
-### Action CTA (universal — listing-type posts)
+### Action CTA (universal)
 
 Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA — place this block right after the intro — all three parts in order, none skipped: (1) a short record-material `<h2>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open), (3) `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`. The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — public pages only. On create, omit `post_url` unless the user requests it — the URL lives in this CTA. The content-type file supplies the block label and the act verb (register / apply).
 
-### Bullets (universal — listing-type posts)
+### Bullets (universal)
 
-The record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA), listing the record's core facts at a glance (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
+The record's core facts as one scannable `<ul>` immediately after the CTA (after the intro when there is no CTA), at a glance (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
 
-### Section headings (universal — listing-type posts)
+### Section headings (universal)
 
 Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label (the content-type file supplies the banned-label examples per type).
 
-### Depth (universal — listing-type posts)
+### Depth (universal)
 
 A listing page is a destination, not a stub nor a spec sheet — every sourced fact enters under its dimension as settled knowledge, and confident knowledge fills every dimension the subject supports (the content-type file supplies the dimension and knowledge lists); a fact or a dimension left unused is the failure — record specifics stay source-only, never invented. Self-praise and superlatives are not facts — they never enter, bare or attributed; the verifiable specifics they decorate enter bare. A known official URL is fetched before drafting, its prompt asking for that cargo alongside the logistics.
 
-### Internal links (universal — listing-type posts)
+### Internal links (universal)
 
 Placed from the internal-link inventory by Stage 5's linking pass, per **URL-PATTERNS `Pattern 3 filter params` and `Pattern 6 — Filtered member directory`** (member-count gate) and **Link shape priority** — no per-section quotas: the density law alone places them, riding only phrases the body writes. The content-type file supplies the filter dimensions available per type.
 
