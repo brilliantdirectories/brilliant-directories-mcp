@@ -110,7 +110,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a record fact the source omits is silently absent, never reported as the page's gap. Source-only scope: times, prices, capacity, who/what/where of this event. Domain to develop: what happens during the event and in what order, how to prepare and arrive, the venue's flow, who it suits, and what an attendee leaves with — the event and the attendee, never the wider industry.
 
-**Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
+**Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the event's own attendees, never the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
 **CTA:** button verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
 
