@@ -169,7 +169,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 Every external URL the post will link to — each exact path, a verified domain never clears its other paths — must be verified live before publish (internal URLs verify per their Pattern's own gate). Three outcomes by `WebFetch` response:
 
-- **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead. 200 whose body is a login, homepage, or generic index rather than this record's own page is a redirect — treat as dead.)
+- **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead. the action URL whose 200 body is a login, homepage, or generic index rather than the record's own page has redirected — drop it as the action URL, though the same page may still be a valid body citation.)
 - **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
 - **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in the results of at most ONE search — riding its message's pack per **Rule: Search discipline**; still unverified → drop.
 
