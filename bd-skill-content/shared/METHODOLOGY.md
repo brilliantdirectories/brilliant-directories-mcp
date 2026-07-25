@@ -246,7 +246,7 @@ Unless the user requests otherwise: when the official URL is known, it is reserv
 
 ### Bullets (universal)
 
-The record's core facts as one scannable `<ul>` immediately after the two intro paragraphs — before the CTA button, no `<h2>` above it (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>`.
+The record's core facts as one scannable `<ul>` immediately after the two intro paragraphs — before the CTA button, no `<h2>` above it (the content-type file supplies the field list). A slot the source doesn't fill is dropped, never written as missing. A later section whose facts enumerate presents them as its own `<ul>` — new facts only, never the lead bullets re-listed.
 
 ### Section headings (universal)
 
