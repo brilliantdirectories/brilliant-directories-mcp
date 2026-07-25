@@ -143,7 +143,7 @@ User-specified default category in the request → every job in the run goes to 
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `Body shape (universal)`, `Action CTA (universal)`, `Bullets (universal)`, `Section headings (universal)`, `Depth (universal)`, and `Internal links (universal)` — this is a job posting. Jobs-specific inserts:
 
-**Voice examples:** facts carry their own subjects ("Pay runs $22 to $29 an hour"), the record-noun an ordinary subject; light-verb bans ("the schedule keeps", "the posted price keeps"); the subject slot may be candidates, the employer, or the position holding it; settled-knowledge shape "The position requires STOTT certification", "On weekends, sessions run one-on-one."; never the source as actor ("the posting says", "the posting frames the work around", "the pay band is not shown on the page"); a joined pair "Sessions run one-on-one because the studio caps classes at four"; a record fact the source omits is silently absent, never reported missing. Source-only scope: pay, terms, this employer's numbers. Domain to develop: what the work is like, what the role grows into, how the industry works. Related openings appear only as links riding phrases the finished draft already wrote, never sentences written to carry them.
+**Voice examples:** facts carry their own subjects ("Pay runs $22 to $29 an hour"), the record-noun an ordinary subject; light-verb bans ("the schedule keeps", "the posted price keeps"); the subject slot may be candidates, the employer, or the position holding it; settled-knowledge shape "The position requires STOTT certification", "On weekends, sessions run one-on-one."; a joined pair "Sessions run one-on-one because the studio caps classes at four"; a record fact the source omits is silently absent, never reported missing. Source-only scope: pay, terms, this employer's numbers. Domain to develop: what the work is like, what the role grows into, how the industry works. Related openings appear only as links riding phrases the finished draft already wrote, never sentences written to carry them.
 
 **Intro fact list:** lead with the job title and role, then employment type, who's hiring, the city, pay (if known), what the work is, and who it's for.
 
@@ -175,7 +175,7 @@ What `createSingleImagePost` receives.
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `user_id` | resolved author from runbook Step 4 |
 
-### Source-supported (a field whose data the source supplies is filled — leaving it empty is the failure)
+### Source-supported (a field with data available in the source is filled — leaving it empty is the failure)
 
 Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 

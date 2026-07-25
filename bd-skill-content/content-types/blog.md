@@ -139,7 +139,7 @@ User-specified default category in the request → every post in the run goes to
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)`: EEAT goal, Froala-safe HTML per **Rule: Post-body formatting**, link policy, image strategy, voice via ANTI-SLOP, self-check. Blog posts additionally follow the per-format and per-section rules in this section.
 
-**Voice:** this page IS the article. State the topic's facts as settled knowledge, one plain fact per sentence — two share a sentence only when one genuinely explains another ("The festival is free because the city sponsors it"), never a sentence that frames, previews, or glosses what a fact means ("that range matters", "the mix gives it real variety"); a source document, or a presentation-noun (the view, the window, the roundup, the listing), is never a sentence's subject or sayer ("the page says", "the San Jose view shows the cluster", "this roundup keeps to three events") — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare. Domain to develop: past the topic's settled facts, any on-topic angle the subject's wider field supports, one per section, never those facts reworded.
+**Voice:** this page IS the article. State the topic's facts as settled knowledge, one plain fact per sentence — two share a sentence only when one genuinely explains another ("The festival is free because the city sponsors it"), never a sentence that frames, previews, or glosses what a fact means ("that range matters", "the mix gives it real variety"); a source document, or a presentation-noun (the view, the window, the roundup, the listing), is never a sentence's subject or sayer — the fact holds the sentence and the citation rides a wrapped noun inside it ("per the [ACR guidance]", "in a [PMC trial]", or the fact's own noun linked bare). A named outside authority may hold a speech verb only when the sentence states its full finding ("Mayo Clinic recommends stretch breaks every 30 to 45 minutes") — never its page as proxy, never two attributed sentences in a row; most facts stay bare. Domain to develop: past the topic's settled facts, any on-topic angle the subject's wider field supports, one per section, never those facts reworded.
 
 ### Post format → target length
 
@@ -213,7 +213,7 @@ What `createSingleImagePost` receives.
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `user_id` | resolved author from runbook Step 4 |
 
-### Source-supported (a field whose data the source supplies is filled — leaving it empty is the failure)
+### Source-supported (a field with data available in the source is filled — leaving it empty is the failure)
 
 Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: re-read the **category ledger** line and copy one value from it verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples:
 
