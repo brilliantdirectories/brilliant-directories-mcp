@@ -199,7 +199,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   **Dimension ideas — draw from these, not limited to them:**
   - **Observable specifics** — the record's own, stated as settled knowledge.
   - **Audience fit** — skill level, accessibility, life stage — for whom.
-  - **Practical considerations** — first-time/day-of detail rarely on the source page: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
+  - **Practical considerations** — first-time/day-of detail a quick listing rarely covers: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — neighborhood character, nearby landmarks and amenities, parking, transit/access. Skip when the post type has no place anchor.
   - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 in the same Fifth Street building").
