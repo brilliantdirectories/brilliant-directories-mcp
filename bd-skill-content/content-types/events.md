@@ -118,7 +118,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Section headings:** the event's own facts, program, or specifics; banned dimension labels = Setting, Overview, Details, Background, Logistics, Location, Highlights, About.
 
-**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and day-of specifics; confident-knowledge dimensions = what the activity is, what to expect, why it is worth attending and what an attendee leaves with, who the organizer is and what they are about, and the locale as context; record specifics = times, prices, capacity; **one `<h2>` section is required for the local scene** — the city's wider scene of this kind of event, the activity's own category, and the people who lead it, each named in the draft's own words; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
+**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and day-of specifics; confident-knowledge dimensions = what the activity is, what to expect, why it is worth attending and what an attendee leaves with, who the organizer is and what they are about, and the locale as context; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them). A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row.
 
