@@ -111,7 +111,7 @@ Always SKIP existing records — never update or delete any existing post.
 
 Every external URL the post will link to — each exact path, a verified domain never clears its other paths — must be verified live before publish (internal URLs verify per their Pattern's own gate). Three outcomes by `WebFetch` response:
 
-- **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead.)
+- **HTTP 200 with real body content** → use. (200 with "page not found" / "error" body text is a soft-404 — treat as dead. 200 whose body is a login, homepage, or generic index rather than this record's own page is a redirect — treat as dead.)
 - **404 / DNS fail** → drop the link, or skip the record entirely if it's the primary action URL.
 - **403 / 401 / 429 / timeout / WAF block** → **UNKNOWN, not verified.** A CDN is blocking the bot UA, not proof the page is dead. Never ship on the rationalization that it's "probably live." Confirm the exact URL string in the results of at most ONE search — riding its message's pack per **Rule: Search discipline**; still unverified → drop.
 
@@ -242,7 +242,7 @@ Two intro paragraphs, at least six sentences split unevenly between them (never 
 
 ### Action CTA (universal)
 
-Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — the button links a page any visitor can view that shows the record, and does not redirect away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
+Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — a page any visitor can view that shows the record, never one that redirects away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
 
 ### Bullets (universal)
 
