@@ -1,5 +1,7 @@
 # Official Brilliant Directories MCP Server — Setup Guide
 
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.brilliantdirectories%2Fbrilliant-directories-mcp.svg)](https://mcptoplist.com/server/io.github.brilliantdirectories%2Fbrilliant-directories-mcp)
+
 [![npm version](https://img.shields.io/npm/v/brilliant-directories-mcp?color=blue&label=npm)](https://www.npmjs.com/package/brilliant-directories-mcp)
 [![license](https://img.shields.io/github/license/brilliantdirectories/brilliant-directories-mcp?color=green)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io)
