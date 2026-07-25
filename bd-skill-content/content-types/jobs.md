@@ -145,7 +145,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Voice examples:** facts carry their own subjects ("Pay runs $22 to $29 an hour"), the record-noun an ordinary subject; light-verb bans ("the schedule keeps", "the posted price keeps"); the subject slot may be candidates, the employer, or the position holding it; settled-knowledge shape "The position requires STOTT certification", "On weekends, sessions run one-on-one."; never the source as actor ("the posting says", "the posting frames the work around", "the pay band is not shown on the page"); a joined pair "Sessions run one-on-one because the studio caps classes at four"; a record fact the source omits is silently absent, never reported missing. Source-only scope: pay, terms, this employer's numbers. Domain to develop: what the work is like, what the role grows into, how the industry works. Related openings appear only as links riding phrases the finished draft already wrote, never sentences written to carry them.
 
-**Intro fact list:** the title and employment type, who's hiring, the city, pay when published, what the work is, and who it's for. **Close advances:** the deadline, the next step — never the button or its form (how to apply belongs to the CTA, or to the plain-link close when there is no URL).
+**Intro fact list:** the title and employment type, who's hiring, the city, pay when published, what the work is, and who it's for.
 
 **CTA:** button verb "apply"; when an application or official job information URL is known.
 
@@ -181,7 +181,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Jobs-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets, `How to apply` close. |
+| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (role + employment type + company + location), responsibilities + qualifications bullets. |
 | `post_venue` | **Always pass the hiring employer's name; never OMIT** (BD helpText: "Company name"). Verbatim from source — the same employer named in the title. Examples: `"Bramblewood"`, `"Loudoun County Government"`. |
 | `post_start_date` | Required. The source's future apply-by date — application close date, deadline, start date, and similar are all this one date. Else identical to `post_live_date`. `YYYYMMDDHHmmss` (14 digits). A date listed without a clock time → `000000`. |
 | `post_url` | Never sent — the application URL lives in post_content's CTA; only an explicit user request fills it. |

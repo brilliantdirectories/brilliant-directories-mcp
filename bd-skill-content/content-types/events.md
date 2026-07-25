@@ -110,7 +110,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; never the source as actor ("the organizer's page says", "the page frames the weekend as", "the page does not publish a start time"); a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a record fact the source omits is silently absent, never reported as the page's gap. Source-only scope: times, prices, capacity, who/what/where of this event. Domain to develop: why it matters, what an attendee gains, how the activity works.
 
-**Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured). **Close advances:** day-of practicalities, the deadline, the next step.
+**Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the source's own audience, never projected from the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
 **CTA:** button verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
 
@@ -145,7 +145,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Events-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability + a close that lands the next step (how to attend or buy tickets). |
+| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability. |
 | `post_url` | Never sent — the registration URL lives in post_content's CTA; only an explicit user request fills it. |
 | `post_promo` | The published cost to attend — ticket, registration, entry, or booking fee — a plain decimal number ("59.30"), no currency symbol; tiers or a range → the lowest standard adult price. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT unless the source states a real dollar amount — a passed `0` renders as a literal `$0.00` price tag, so a free or unpriced event omits it and states "free" in `post_content`. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). The source's published end clock time fills the last six digits (10 AM conclusion → `100000`). For a single-day event, set to the same date as `post_start_date` with the actual end time. Source states no end at all: `post_start_date`'s date + `235959`. |
