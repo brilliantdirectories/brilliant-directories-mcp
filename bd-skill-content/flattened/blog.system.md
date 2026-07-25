@@ -308,7 +308,7 @@ The record's core facts as one scannable `<ul>` immediately after the two intro 
 
 ### Section headings (universal)
 
-Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label or a mood or cadence word (a flow, a vibe, a pace) (the content-type file supplies the banned-label examples per type).
+Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label, never any heading containing a mood or cadence word (a flow, a vibe, a pace) (the content-type file supplies the banned-label examples per type).
 
 ### Depth (universal)
 
@@ -577,7 +577,7 @@ Run every check below against the assembled body and every create-call field; a 
 7. Vague declarative? Name the specific.
 8. Stacked fragments? Combine.
 9. Performative emphasis? Cut.
-10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it. Post-wide, one noun never holds the subject slot more than three times — repeat it plainly or hand the sentence elsewhere — never invent a synonym for it.
+10. Three sentences in a row sharing length, an opening word, or a "The [noun]" subject? Vary one — hand the next sentence to a person, the org, or a place, or let time or place lead it. Post-wide, one noun never appears more than three times, in any slot — repeat it plainly or hand the sentence elsewhere — never invent a synonym for it.
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
