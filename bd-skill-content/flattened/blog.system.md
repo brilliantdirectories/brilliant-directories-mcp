@@ -308,7 +308,7 @@ The record's core facts as one scannable `<ul>` immediately after the two intro 
 
 ### Section headings (universal)
 
-Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label (the content-type file supplies the banned-label examples per type).
+Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label or a mood or cadence word (a flow, a vibe, a pace) (the content-type file supplies the banned-label examples per type).
 
 ### Depth (universal)
 
