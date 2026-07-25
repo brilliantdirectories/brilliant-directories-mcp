@@ -175,7 +175,7 @@ What `createSingleImagePost` receives.
 | `post_status` | `0` (draft, default) or `1` (publish, only if user explicitly authorized) |
 | `user_id` | resolved author from runbook Step 4 |
 
-### Source-supported (a field with data available in the source is filled — leaving it empty is the failure)
+### Source-supported (a field whose value the research established is filled — leaving it empty is the failure)
 
 Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 
@@ -188,7 +188,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_promo` | Salary or hourly rate as shown in the source — a plain decimal number, no currency symbol, no commas. Hourly source → `14.50`; annual source → `70000.00`. Do not convert between hourly and annual. On a salary range, use midpoint of low+high, rounded to two decimals. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT on "commensurate" / "DOE" / "competitive" / missing or a zero/`$0.00` range — never fabricate; a passed `0` renders as a literal `$0.00` tag. |
 | `post_job` | **Always pass a value; never OMIT.** Map source text case-insensitive against cached `post_job.choices` (Step 3). Pick the closest semantic match ("full time/FT" → live full-time choice; "intern" → internship; "contract/contractor" → contract-equivalent; etc.). On ambiguous or absent source, default to the live choice meaning "Full-Time". |
 | `post_category` | Pull from cached `getPostTypeCustomFields.post_category.choices` (Step 3). NOT from `getSingleImagePostFields` (returns stale fallback for jobs). Pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. |
-| `post_location` | The display address — full street when the source gives one, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon are the map coordinates. A multi-location source pins the post to ONE location — the location the post's own apply URL's posting names; else the source's primary or first-listed — for the title, location, and geocode; the other locations are body facts only. Do NOT prepend the company name (already in `post_venue`). Remote with no location: OMIT. |
+| `post_location` | The display address — full street when known, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon are the map coordinates. A multi-location source pins the post to ONE location — the location the post's own apply URL's posting names; else the source's primary or first-listed — for the title, location, and geocode; the other locations are body facts only. Do NOT prepend the company name (already in `post_venue`). Remote with no location: OMIT. |
 | `lat` | Latitude float (from Nominatim, skip only if every tier was empty). |
 | `lon` | Longitude float (from Nominatim, skip only if every tier was empty). |
 | `country_sn` | ISO country code from Nominatim. |
