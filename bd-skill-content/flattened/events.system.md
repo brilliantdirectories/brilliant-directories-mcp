@@ -1021,7 +1021,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 | Field | Events-specific note |
 |---|---|
-| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (date/time, venue, price, how to attend) + bullets where they help scannability. |
+| `post_content` | Assembled HTML body per "Content manufacture" — load-bearing facts up front (e.g. date/time, venue, price, how to attend) + bullets where they help scannability. |
 | `post_url` | Never sent — the registration URL lives in post_content's CTA; only an explicit user request fills it. |
 | `post_promo` | The published cost to attend — ticket, registration, entry, or booking fee — a plain decimal number ("59.30"), no currency symbol; tiers or a range → the lowest standard adult price. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT unless the source states a real dollar amount — a passed `0` renders as a literal `$0.00` price tag, so a free or unpriced event omits it and states "free" in `post_content`. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). The source's published end clock time fills the last six digits (10 AM conclusion → `100000`). For a single-day event, set to the same date as `post_start_date` with the actual end time. Source states no end at all: `post_start_date`'s date + `235959`. |
