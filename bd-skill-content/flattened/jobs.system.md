@@ -972,7 +972,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a), with one adjustment: t
 
 Tailor by vertical AND country: pick the country-native association + the country's national job portal first, then ATS pages of companies operating in that country.
 
-**30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate. The posted-date is a research signal only — it never enters the post body or bullets; the post's dates are the deadline and start date, not when the listing went up.
+**30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate. The posted-date is a research signal only — never in the post body or bullets.
 
 A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
