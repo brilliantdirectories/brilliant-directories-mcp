@@ -187,7 +187,7 @@ The content-type file may specify a fallback category.
 
 ### Required outcomes (any structure achieves these)
 
-A good post covers the full picture: core facts, practical considerations, useful context, deeper facts on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph rhythm; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
+A good post covers the full picture: core facts, practical considerations, useful context, deeper facts on the location/category/focus where the source or confident knowledge supports them. Read like a knowledgeable friend, not a press release. Bulleted lists where scannability helps; vary paragraph pacing; section length scales to source depth (expanded when source data + confident knowledge support more, tighter only when both are genuinely exhausted).
 
 1. **Load-bearing facts up front.** The first intro paragraph answers the core question for THIS post type ("what is it, when/where, how do I get it / attend / apply / use it") across its sentences, never packed into one — and the body's first sentence names the post's subject specifically, the event or role by name, without repeating the post title word-for-word. The content-type file names the load-bearing facts for the data type.
 2. **Every record fact source-supported — by a source about THIS record.** A similarly-named different event, role, or record is a different subject, never a source. No fabrication. Adaptive depth based on what source data + confident AI knowledge support. Source-supported depth beats both padding and stubs — short because you skipped multi-angle context, comparison, useful perspective, or related information the source data supports is a failure; short is fine only when source and confident knowledge are both genuinely exhausted. A thin source does not license a thin post: record specifics run out, but the subject's domain is knowledge you already hold and rarely exhaust — it carries the depth a sparse record cannot, its own dimension each, never invented record specifics.
@@ -531,7 +531,7 @@ Every `Forbidden constructions` and `Forbidden patterns` entry kills the wording
 |---|---|
 | En-dash (`–`, U+2013) and em-dash (`—`, U+2014) | Use commas, periods, parens, or "to" for ranges. Banned everywhere. |
 | Smart-punctuation drift | Curly single quotes (`'` `'`, U+2018/2019), curly double quotes (`"` `"`, U+201C/201D), ellipsis (`…`, U+2026), non-breaking space (U+00A0). Use straight `'`, straight `"`, three periods `...`, regular space. Auto-inserted by the model, near-perfect AI tell alongside em-dash. |
-| Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for rhythm ("vibrant, bustling, and stunning"). Use only when the content genuinely has three items. Never invent a third for cadence. |
+| Tricolon / forced triples | "X, Y, and Z" parallel stacks invented for cadence ("vibrant, bustling, and stunning"). Use only when the content genuinely has three items. Never invent a third for cadence. |
 | "Not just X, it's Y" amplifier | "It's not just a race, it's a community", "more than just a conference", "isn't merely a workshop" → state Y directly. Distinct from negative listing — this is the additive escalator. |
 | Participial/gerund openers | "Standing in the lobby...", "Looking ahead...", "Bringing together...", "Drawing on decades of experience..." Max one `-ing` participial opener per section. "Looking ahead", "Bringing together", "Drawing on" banned outright. |
 | Conclusion-recap reflex | "In short", "In summary", "Ultimately", "The takeaway", "The result is", "What this means", "All told", "At the end of the day" as section/post closers. Conclusions advance — name the next step, not a restatement. |
@@ -581,7 +581,7 @@ Run every check below against the assembled body and every create-call field; a 
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
-14. Paragraph rhythm: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
+14. Paragraph pacing: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Forbidden constructions` or `Forbidden patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
@@ -593,7 +593,7 @@ Run every check below against the assembled body and every create-call field; a 
 | Dimension | Question |
 |---|---|
 | Directness | Statements or announcements? |
-| Rhythm | Varied sentence length and sentence subjects, or metronomic — the same "The [noun] [verb]s" frame again and again? |
+| Cadence | Varied sentence length and sentence subjects, or metronomic — the same "The [noun] [verb]s" frame again and again? |
 | Trust | No sentence restating another sentence — in the same terms or summed into an abstract noun? |
 | Authenticity | Sounds human-typed? |
 | Density | Count filler — sentences deletable without losing a fact. Score = 10 − (2 × count), floored at 1. Coverage of supported depth is item 18's gate, not this one. |
