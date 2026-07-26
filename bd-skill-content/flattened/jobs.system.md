@@ -215,7 +215,7 @@ Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<
 
 ### Link policy (strict)
 
-Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Relative URLs (start with `/`) are always internal.
+Classify every `<a>` tag by host comparison against `getSiteInfo.full_url`. Relative URLs (start with `/`) are always internal. Every `<a>` carries a live `href` — an `<a>` without one is not a link and never exists; a phrase left unlinked stays plain text with no tag.
 
 
 | Type     | Format                                                                                |
