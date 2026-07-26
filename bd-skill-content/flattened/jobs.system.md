@@ -1079,5 +1079,5 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 - `post_expire_date` — BD job theme doesn't read it for auto-hide. Staleness discipline lives at the 30-day source-side gate.
 - `auto_geocode` — skill sets `lat`/`lon` itself; never pass this.
-- `post_url` — the URL lives in post_content's CTA; never pass this unless the user asks by name.
+- `post_url` — never pass unless the user requests it by name.
 - `revision_timestamp` — BD-managed.
