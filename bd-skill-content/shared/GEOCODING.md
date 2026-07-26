@@ -1,8 +1,10 @@
-# GEOCODING: Nominatim protocol for post types with a place anchor
+# GEOCODING: protocol for post types with a place anchor
 
 Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors (candidates that passed the runbook's `Duplicate detection` step).
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
+
+Never name the geocoder or mention that any location lookup ran — it exists only to fill `lat`/`lon`; the place facts stand as the record's own.
 
 ## MANDATORY: transliterate non-Latin scripts BEFORE any Nominatim query
 
