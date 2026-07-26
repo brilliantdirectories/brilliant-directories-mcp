@@ -4,7 +4,7 @@ Applies to content types that set `lat`/`lon` — their runbook's geocoding step
 
 BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via Nominatim (OpenStreetMap, free, no key).
 
-Never name the geocoder in the post, or mention that any location lookup ran — the place facts stand as the record's own.
+Never name the geocoder or the geocoding step in the post, or mention that any location lookup ran.
 
 ## MANDATORY: transliterate non-Latin scripts BEFORE any Nominatim query
 
