@@ -108,7 +108,7 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `Body shape (universal)`, `Action CTA (universal)`, `Bullets (universal)`, `Section headings (universal)`, `Depth (universal)`, and `Internal links (universal)` — this is an event page. Events-specific inserts:
 
-**Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a fact the record lacks is silently absent, never reported as a gap. Source-only scope: times, prices, capacity, who/what/where of this event. Domain to develop: what happens during the event and in what order, how to prepare and arrive, the venue's flow, who it suits, and what an attendee leaves with — the event and the attendee, never the wider industry.
+**Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a fact the record lacks is silently absent, never reported as a gap. Verified, never invented: times, prices, capacity, who/what/where of this event. Domain to develop: what happens during the event and in what order, how to prepare and arrive, the venue's flow, who it suits, and what an attendee leaves with — the event and the attendee, never the wider industry.
 
 **Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the event's own attendees, never the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
@@ -139,7 +139,7 @@ What `createSingleImagePost` receives.
 | `user_id` | resolved author from runbook Step 4 |
 | `post_start_date` | Event start datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock — see the `Date/time formats` section). Date AND time both live here. The event template renders its date from this field; a candidate that reached creation already cleared METHODOLOGY's Date-sanity gate, so it carries a confirmed future date — pass it. The published start clock time fills the last six digits (7:30 AM start → `073000`); no published clock time → `000000`. BD silently truncates other formats. |
 
-### Source-supported (a field whose value the research established is filled — leaving it empty is the failure)
+### Fields to fill (each from research, never invented — leaving it empty is the failure)
 
 Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: re-read the **category ledger** line and copy one value from it verbatim — as raw text with a literal `&`, never the `&amp;` entity form it takes inside a body href (a `Pattern 3 category[]` link URL-encodes it, but the `post_category` field value does not). Universal tags rule in **METHODOLOGY `Tags`**. Events-specific fields and examples:
 
