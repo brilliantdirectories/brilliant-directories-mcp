@@ -200,5 +200,5 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 ### Do NOT pass
 
 - `post_expire_date` — BD job theme doesn't read it for auto-hide. Staleness discipline lives at the 30-day source-side gate.
-- `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes itself.
+- `auto_geocode` — unreliable (most sites lack Google Maps key). Skill runs its own geocoder per `../shared/GEOCODING.md`.
 - `revision_timestamp` — BD-managed.

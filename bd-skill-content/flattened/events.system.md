@@ -1027,7 +1027,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 | `post_url` | Never sent — the registration URL lives in post_content's CTA; only an explicit user request fills it. |
 | `post_promo` | The published cost to attend — ticket, registration, entry, or booking fee — a plain decimal number ("59.30"), no currency symbol; tiers or a range → the lowest standard adult price. **Send `post_promo` (BD back-fills `post_price`); sending `post_price` alone leaves `post_promo` null.** OMIT unless a real dollar amount is stated — a passed `0` renders as a literal `$0.00` price tag, so a free or unpriced event omits it and states "free" in `post_content`. |
 | `post_expire_date` | Event end datetime `YYYYMMDDHHmmss` (14 digits, event-local wall-clock). The published end clock time fills the last six digits (10 AM conclusion → `100000`). For a single-day event, set to the same date as `post_start_date` with the actual end time. No end time stated at all: `post_start_date`'s date + `235959`. |
-| `post_venue` | The named place where the event happens, or the organization hosting it — a venue, park, school, university, base, or government body ("Stubb's BBQ", "Naval Station Norfolk", "Lincoln High School") — the name only, no city appended. No named place in the source → the geocode's named place when the geocoder returns one; else omit. |
+| `post_venue` | The named place where the event happens, or the organization hosting it — a venue, park, school, university, base, or government body ("Stubb's BBQ", "Naval Station Norfolk", "Lincoln High School") — the name only, no city appended. No named place in the source → the named place the geocoder returns, when it returns one; else omit. |
 | `post_location` | The display address — full street when known, else city/state (the string that geocoded, e.g. `"Denver, CO"`); lat/lon are the map coordinates. A multi-location record pins the post to ONE location — the location the post's own registration URL names; else the primary or first-listed — for the title, location, and geocode; the other locations are body facts only. Do NOT prepend the venue name (already in `post_venue`). |
 | `lat` | Latitude float (from the geocoder, skip only if every tier was empty). |
 | `lon` | Longitude float (from the geocoder, skip only if every tier was empty). |
@@ -1039,7 +1039,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 
 ### Do NOT pass
 
-- `auto_geocode` — unreliable (most sites lack Google Maps key). Skill geocodes itself.
+- `auto_geocode` — unreliable (most sites lack Google Maps key). Skill runs its own geocoder per `../shared/GEOCODING.md`.
 - `revision_timestamp` — BD-managed.
 
 ### Date/time formats
