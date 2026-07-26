@@ -1040,6 +1040,7 @@ Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, po
 ### Do NOT pass
 
 - `auto_geocode` — skill sets `lat`/`lon` itself; never pass this.
+- `post_url` — the URL lives in post_content's CTA; never pass this unless the user asks by name.
 - `revision_timestamp` — BD-managed.
 
 ### Date/time formats
