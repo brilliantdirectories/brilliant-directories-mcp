@@ -143,7 +143,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **Audience fit** — skill level, accessibility, life stage — for whom.
   - **Practical considerations** — the first-time and day-of specifics, stated as settled knowledge: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
-  - **Local context** — only checkable place facts: named landmarks, distances, parking counts, transit lines, cross-streets. Write it only when you hold such facts the lead did not spend; hold none and this dimension is skipped, never filled with how convenient, scenic, or well-placed the location is.
+  - **Local context** — only checkable place facts: named landmarks, distances, parking counts, transit lines, cross-streets, and only those the lead did not spend. Skipped when none remain, never filled with how convenient, scenic, or well-placed the location is.
   - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 in the same Fifth Street building").
   - **Industry insight / players** — for blogs, real peers and market leaders from the wider market, named with their facts; for jobs and events, only the local employer, venue, or governing standards and operational frameworks, never macro-market trends.
   - **Standout fact** — a verifiable fact that sets the record apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
