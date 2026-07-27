@@ -89,7 +89,7 @@ Run every check below against the assembled body and every create-call field; a 
 11. Unsourced authority claim? Cite or rewrite.
 12. Lazy extreme? Add specifics.
 13. Wh- sentence opener in prose? Restructure. (FAQ question labels exempt.)
-14. Paragraph pacing: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
+14. Paragraph length: 2-4 paragraphs between H2/H3 headings, 3-6 sentences each, varied — not metronomic. Back-to-back larger paragraphs encouraged when content supports it; asymmetrical sizing reads more human than uniform blocks.
 15. **Bullets rule.** The content-type file's commanded lists always stand. Beyond them: bullets as default structure or to break up every section? Cut. Use a short bulleted/numbered list only when content is genuinely parallel and scannable (specs, steps, options, criteria) — one or two such lists per post, max. Prose is primary; bullets are a tool, not a layout.
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Forbidden constructions` or `Forbidden patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
