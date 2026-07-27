@@ -205,7 +205,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
   - **The organizer and venue's story** — who runs it, their history, what they're known for; confident knowledge counts ("open since 1937 in the same Fifth Street building").
   - **Industry insight / players** — for blogs, real peers and market leaders from the wider market, named with their facts; for jobs and events, only the local employer, venue, or governing standards and operational frameworks, never macro-market trends.
   - **Standout fact** — a verifiable fact that sets the record apart in its real market ("the city's only weekday-morning session"). Never puffery, never praise of the post or its source.
-  - **The program / agenda** — the published run of show: day-by-day or hour-by-hour flow, itinerary, speakers or session lineup; a start time alone is logistics, a flow is a section.
+  - **The program / agenda** — the published run of show: the day-by-day or hour-by-hour schedule, itinerary, speakers or session lineup; a start time alone is logistics, the full schedule of what happens when is a section.
 
 
 
@@ -986,9 +986,9 @@ User-specified default category in the request → every event in the run goes t
 
 Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `Body shape (universal)`, `Action CTA (universal)`, `Bullets (universal)`, `Section headings (universal)`, `Depth (universal)`, and `Internal links (universal)` — this is an event page. Events-specific inserts:
 
-**Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a fact the record lacks is silently absent, never reported as a gap. Verified, never invented: times, prices, capacity, who/what/where of this event. Domain to develop: what happens during the event and in what order, how to prepare and arrive, the venue's flow, who it suits, and what an attendee leaves with — the event and the attendee, never the wider industry.
+**Voice examples:** facts carry their own subjects ("Doors open at 6"), the record-noun an ordinary subject; light-verb bans ("the schedule gives", "the setting lands"); settled-knowledge shape "On Saturday, the meet runs 9 to noon at Pearl Park", "Tickets cost $25."; a joined pair "The festival runs 10 to 4 because the park closes at dusk"; a fact the record lacks is silently absent, never reported as a gap. Verified, never invented: times, prices, capacity, who/what/where of this event. Domain to develop: what happens during the event and in what order, how to take part (arrive in person, or join online), how the setting is laid out or the session is run, who it suits, and what an attendee leaves with — the event and the attendee, never the wider industry.
 
-**Intro fact list:** what it is and its purpose, date + time, venue + city, who it's for (the event's own attendees, never the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
+**Intro fact list:** what it is and its purpose, date + time, where it happens (a place and city, or the online platform), who it's for (the event's own attendees, never the site's member professions), what will happen and what to expect, ticket price or "free", how to attend or buy tickets, and any known background or history (never manufactured).
 
 **CTA:** button verb "register"; when a registration or official information URL is known (the event's own page outranks any booking engine).
 
@@ -996,7 +996,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Section headings:** the event's own facts, program, or specifics; banned dimension labels = Setting, Overview, Details, Background, Logistics, Location, Highlights, About.
 
-**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and the event date's own logistics; confident-knowledge dimensions = what the activity is, what happens during it and in what order, how to prepare and arrive, the venue's setup and flow, who it suits and what an attendee leaves with, and who the organizer is and their local reputation — keep it on the event and the attendee, never a broad essay on the wider field or industry; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
+**Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and the event date's own logistics; confident-knowledge dimensions = what the activity is, what happens during it and in what order, how to take part (in person or online), how the setting is laid out or the session is run, who it suits and what an attendee leaves with, and who the organizer is and their reputation — keep it on the event and the attendee, never a broad essay on the wider field or industry; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics.
 
 Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them). A Pattern 1 event target needs a start date today or later — a past event is never linked, even when dedup returned its row.
 
