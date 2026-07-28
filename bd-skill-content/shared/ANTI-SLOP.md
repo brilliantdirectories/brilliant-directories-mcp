@@ -11,7 +11,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 - Every sentence is load-bearing information about the subject and earns its place — no filler, no asides.
 - Generous with specifics, no press-release tone. Name specific things. No re-explaining, no fact entering twice. Vary sentence length.
 - Who it's for is described in third person, plainly evaluative in a friend's everyday words, the thing itself as subject ("perfect for anyone who..."), never by addressing the reader — it names the thing's own participants, never readers or followers of content; a participant described by the content they follow ("attendees following wellness talks") is the follower form.
-- The telling's natural nouns — the city, the role, a thing a category page lists, the venue, and any related thing it names while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
+- The telling's natural nouns — the city, the role, a thing the category covers, the venue, and any related thing named while talking about the subject — are the only candidate anchors, linked in place with the sentence unchanged, never on a comparison, never as the host's inventory.
 
 ## Forbidden constructions (the construction itself, in every wording)
 
