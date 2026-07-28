@@ -140,7 +140,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
 
   **Dimension ideas — draw from these, not limited to them:**
   - **Observable specifics** — the record's own, stated as settled knowledge.
-  - **Audience fit** — skill level, accessibility, life stage — for whom.
+  - **Who it's for** — skill level, accessibility, life stage; the heading names them, not this label.
   - **Practical considerations** — the first-time and day-of specifics, stated as settled knowledge: prerequisites, logistics, exclusions, hidden costs, timing — pitfalls as if/then facts ("If X happens, Y is the fix").
   - **Historical / community context** — provenance, longevity, lineage, reputation.
   - **Local context** — only checkable place facts: named landmarks, distances, parking counts, transit lines, cross-streets, and only those the lead did not spend. Skipped when none remain, never filled with how convenient, scenic, or well-placed the location is.
