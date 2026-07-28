@@ -153,7 +153,7 @@ A good post covers the full picture: core facts, practical considerations, usefu
 
 ### Froala HTML safety
 
-Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open** `post_content` **with** `<p>` **intro paragraph(s); never start with** `<h2>` **or any heading.** `post_content` is public-facing only — never include HTML comments, source notes, machine-readable metadata, a software or API name (a geocoder, a fetch tool), or skill-run identifiers.
+Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open** `post_content` **with** `<p>` **intro paragraph(s); never start with** `<h2>` **or any heading.** `post_content` is public-facing only — never include HTML comments, source notes, machine-readable metadata, lat/lon coordinates as body text (keep them only inside a filter URL), a software or API name (a geocoder, a fetch tool), or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -282,7 +282,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 covers a dimension no other H2 covers. Vary section length naturally — some two paragraphs, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - A fact or point restated anywhere it was already given — in different words counts? Tells: "as noted above", "it is worth noting", "additionally", or prose repeating a lead bullet. Cut the repeat.
 - Are all headings (H2 and H3) in **title case**, not sentence case? `"Where to Fly a Kite"`, not `"Where to fly a kite"`.
-- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no software or API name (a geocoder, a fetch tool), no source notes, no skill-run identifiers.
+- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no lat/lon coordinates as body text (only inside a filter URL), no software or API name (a geocoder, a fetch tool), no source notes, no skill-run identifiers.
 - Pexels image picked (Steps 1-3 path only): does the search-result title name the post's primary subject AND match its defining context (activity vs generic scene, urban vs trail, indoor vs outdoor, season, beginner vs elite, etc.)? Generic title or wrong-context match = re-pick or WebFetch verify.
 
 
