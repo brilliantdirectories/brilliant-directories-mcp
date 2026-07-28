@@ -108,7 +108,7 @@ Run every check below against the assembled body and every create-call field; a 
 
 ## Drift triggers (stop and rewrite)
 
-Filler sentences carrying no fact while the source still holds unused facts. Three "and"s in one sentence. Any `Forbidden constructions` entry surfacing mid-draft.
+Filler sentences carrying no fact while unused facts remain. Three "and"s in one sentence. Any `Forbidden constructions` entry surfacing mid-draft.
 
 ## Wrong-example reference
 
