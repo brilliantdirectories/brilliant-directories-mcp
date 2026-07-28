@@ -420,7 +420,7 @@ No skill-run ID, no per-gate counts, no wall-clock.
 
 ## Hard rules (every BD growth skill, forever)
 
-- **Scrape facts, not wording.** Extract facts — and the record's story: background, history, named people, program or responsibility detail — from publicly-available avenues. Reword everything in BD-site voice — a source's self-label that means nothing concrete is translated into what the thing actually does, or dropped. Never paste source paragraphs, sentences, or phrases verbatim.
+- **Scrape facts, not wording.** Extract facts — and the record's story: background, history, named people, program or responsibility detail — from publicly-available avenues. Reword everything in BD-site voice — a source's self-label that means nothing concrete is translated into what the thing actually does, or dropped. Never paste source paragraphs, sentences, or phrases verbatim. A fact carries forward bare ("starts June 1"), never source-framed.
 - **No fabrication.** If source lacks a data point, omit it from the post. Never invent details to fill a template slot. Adaptive depth: omit the missing data point, never the depth around it — fabricated padding is the failure, not honest length.
 - **Source references are optional + casual, not forced attribution.** When natural, link the source inline in flowing prose (helps Google EEAT signals). Do not require a forced attribution footer.
 - **Publication default is draft unless the run's instructions explicitly authorize publishing live.**
@@ -1019,7 +1019,7 @@ User-specified default category in the request → every job in the run goes to 
 
 ## Content manufacture (runbook Step 10)
 
-Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `Body shape (universal)`, `Action CTA (universal)`, `Bullets (universal)`, `Section headings (universal)`, `Depth (universal)`, and `Internal links (universal)` — this is a job posting. Jobs-specific inserts:
+Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `Body shape (universal)`, `Action CTA (universal)`, `Bullets (universal)`, `Section headings (universal)`, `Depth (universal)`, and `Internal links (universal)` — this is a job post. Jobs-specific inserts:
 
 **Voice examples:** facts carry their own subjects ("Pay ranges from $22 to $29 an hour"), the record-noun an ordinary subject named — the employer or the role ("A US Soccer D license is required", "The head-coach role plans weekly training"); light-verb bans; the subject slot may be candidates, the employer, or the role by name; settled-knowledge shape "The Cloverdale coach role pays $3,500 a season", "Weekend classes begin at 9am."; a joined pair "The studio limits classes to four, so each player gets direct coaching time"; a fact the record lacks is silently absent, never reported missing. Verified, never invented: pay, terms, this employer's numbers. Domain to develop: what the work involves day to day as checkable operational facts (tasks, tools, reporting line, schedule shape), what the role grows into, the onboarding or certification steps it requires, and the local workplace setup and reporting structure — operational specifics, never market commentary. Related openings appear only as links riding phrases the finished draft already wrote, never sentences written to carry them.
 
