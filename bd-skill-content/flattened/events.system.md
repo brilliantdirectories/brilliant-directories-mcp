@@ -827,7 +827,7 @@ Vary shapes across a multi-post run too, so the run's posts don't all target the
 
 Applies to content types that set `lat`/`lon` — their runbook's geocoding step points here. Run on survivors (candidates that passed the runbook's `Duplicate detection` step).
 
-BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via the geocoder (OpenStreetMap, free, no key).
+BD's `auto_geocode=1` requires a Google Maps server-side API key most sites lack. Skill geocodes itself via the geocoder.
 
 Never name the geocoder or the geocoding step in the post.
 
