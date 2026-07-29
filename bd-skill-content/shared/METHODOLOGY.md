@@ -153,7 +153,7 @@ A good post covers the full picture: core facts, practical considerations, conte
 
 ### Froala HTML safety
 
-Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open** `post_content` **with** `<p>` **intro paragraph(s); never start with** `<h2>` **or any heading.** `post_content` is public-facing only — never include HTML comments, source notes, machine-readable metadata, lat/lon coordinates as body text (keep them only inside a filter URL), a software or API name (a geocoder, a fetch tool), or skill-run identifiers.
+Follow **Rule: Post-body formatting** and **Rule: No scaffolding tags**. Skip `<h1>` — reserved for the post title field. **Always open** `post_content` **with** `<p>` **intro paragraph(s); never start with** `<h2>` **or any heading.** `post_content` is public-facing only — never include HTML comments, source notes, machine-readable metadata, field arithmetic, lat/lon coordinates as body text (keep them only inside a filter URL), a software or API name (a geocoder, a fetch tool), or skill-run identifiers.
 
 ### Link policy (strict)
 
@@ -242,7 +242,7 @@ Two intro paragraphs, at least six sentences split unevenly between them (never 
 
 ### Action CTA (universal)
 
-Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank">Button Text In Title Case</a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — a page any visitor can view that shows the record, never one that redirects away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
+Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank"><the act verb phrase, Title Case></a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — a page any visitor can view that shows the record, never one that redirects away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
 
 ### Bullets (universal)
 
@@ -282,7 +282,7 @@ Scan the assembled body AND the create-call field values. Fix anything that fire
 - Are H2 headings marking topic shifts, not fact transitions? Each H2 covers a dimension no other H2 covers. Vary section length naturally — some two paragraphs, some several, some with a bulleted list. Do NOT trim source-supported depth just to keep sections compact.
 - A fact or point restated anywhere it was already given — in different words counts? Tells: "as noted above", "it is worth noting", "additionally", or prose repeating a lead bullet. Cut the repeat.
 - Are all headings (H2 and H3) in **title case**, not sentence case? `"Where to Fly a Kite"`, not `"Where to fly a kite"`.
-- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no lat/lon coordinates as body text (only inside a filter URL), no software or API name (a geocoder, a fetch tool), no source notes, no skill-run identifiers.
+- Any HTML comment (`<!-- ... -->`) in the body? Strip it. `post_content` is public-facing only — no machine-readable metadata, no field arithmetic, no lat/lon coordinates as body text (only inside a filter URL), no software or API name (a geocoder, a fetch tool), no source notes, no skill-run identifiers.
 - Pexels image picked (Steps 1-3 path only): does the search-result title name the post's primary subject AND match its defining context (activity vs generic scene, urban vs trail, indoor vs outdoor, season, beginner vs elite, etc.)? Generic title or wrong-context match = re-pick or WebFetch verify.
 
 
