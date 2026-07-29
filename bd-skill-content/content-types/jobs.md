@@ -96,8 +96,7 @@ Per METHODOLOGY `Stage 3: Source research` (sub-step 2a), with one adjustment: t
 
 Tailor by vertical AND country: pick the country-native association + the country's national job portal first, then ATS pages of companies operating in that country.
 
-**30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate. The posted-date is a research signal only — never in the post body or bullets.
-
+**30-day staleness gate.** During candidate harvest, read each candidate's source-page posted-date where the entry shows one, and reject candidates whose posted-date is >30 days old. A real on-topic listing in the correct location whose page shows no posted-date is valid — capture it and advance; the date orders the pool when present and never blocks a candidate.
 A single list-page `WebFetch` may return one job or dozens. Capture and print the pool per METHODOLOGY `Candidate pool discipline (universal pattern)`, take the top survivor after the verdicts, and drop-and-advance through the surviving list on failure — no re-fetch.
 
 Usable candidates pool per Step 6. No survivor after a round → return to Step 5 for the next five-query round, new angles each time. Only when every source is stale (>30 days), blocked, or wrong-location after the rounds → stop with the labelled verdict; a clean "no qualifying jobs found" run is a valid outcome (`shortfall_reason`). Pool 2 is for candidates that exist and fail per-candidate; a sweep-proven-dry market ends the run.
@@ -153,9 +152,9 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Section headings:** the job's own facts, work, or requirements; banned dimension labels = Setting, Overview, Details, Background, Responsibilities, Requirements, Benefits, About.
 
-**Depth:** dimensions = the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; confident-knowledge dimensions = what the role involves day to day, what the work is really like and what the hire grows into, who the employer is and what they are about, the onboarding, certification, or clearance steps the role requires, and the local workplace setup and reporting structure — develop down into operational specifics, never out into the national market or generic career paths; record specifics = pay, terms, this employer's numbers; fetch a known application or official listing URL before drafting for that cargo plus responsibilities and qualifications alongside the logistics; stated bare as the job's own fact.
+**Depth:** dimensions = the company's story, its own numbers, responsibilities, requirements, benefits, pay specifics, the workplace and team context; confident-knowledge dimensions = what the role involves day to day, what the work is really like and what the hire grows into, who the employer is and what they are about, the onboarding, certification, or clearance steps the role requires, and the local workplace setup and reporting structure — develop down into operational specifics, never out into the national market or generic career paths; record specifics = pay, terms, this employer's numbers — the source's posted or published date is a research signal only, never a body or bullet fact; fetch a known application or official listing URL before drafting for that cargo plus responsibilities and qualifications alongside the logistics; stated bare as the job's own fact.
 
-**How to apply** — a known URL rides the CTA and needs no `How to apply` section; application by email or phone surfaces as plain links in a closing `How to apply` section.
+**How to apply** — a known URL rides the CTA and needs no `How to apply` section; application by email or phone surfaces in a closing `How to apply` section as plain links riding the address or contact name in a sentence about applying.
 
 Jobs get category, location (`lat`+`lng`+`location_value`+`location_type=locality`) filter dimensions. No date filter for jobs.
 
