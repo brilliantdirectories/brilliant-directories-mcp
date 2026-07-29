@@ -242,7 +242,7 @@ Two intro paragraphs, at least six sentences split unevenly between them (never 
 
 ### Action CTA (universal)
 
-Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank"><the act verb phrase, Title Case></a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (the steps, what to have ready — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — a page any visitor can view that shows the record, never one that redirects away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
+Unless the user requests otherwise: when the official URL is known, it is reserved for this CTA. The CTA follows the lead bullets (no `<h2>` above it), in order, neither part skipped: (1) the button `<p><a class="btn btn-secondary btn-lg vmargin" href="<an official URL this run fetched, copied character-for-character from its source>" title="<descriptive phrase>" rel="noopener" target="_blank"><the act verb phrase, Title Case></a></p>`, (2) a 2-3 sentence third-person `<p>` on how to act (what to have ready and the choices to settle first — never commands, never the button, link, or form described, never what they open). The URL is the button's first — never a body citation; never the button alone; never an action or login-gated path — a page any visitor can view that shows the record, never one that redirects away from it. On create, `post_url` is never sent — the URL lives in this CTA; only an explicit user request fills it. The content-type file supplies the act verb (register / apply).
 
 ### Bullets (universal)
 
@@ -250,7 +250,7 @@ The record's core facts as one scannable `<ul>` immediately after the two intro 
 
 ### Section headings (universal)
 
-Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label, never any heading or sentence using a mood or cadence word — never "rhythm", "flow", "vibe", or "pace"; drop the whole phrase carrying it and keep the remaining facts ("Pay, Schedule, And Campus Rhythm" → "Pay And Schedule") (the content-type file supplies the banned-label examples per type).
+Record-material noun phrases — the record's own facts, work, program, or specifics; never the site's categories or an assembled search phrase, never forced or stuffed, never a dimension label, never any heading or sentence using a mood word; drop the whole phrase carrying it and keep the remaining facts ("Pay, Schedule, And Campus Rhythm" → "Pay And Schedule") (the content-type file supplies the banned-label examples per type).
 
 ### Depth (universal)
 
