@@ -150,7 +150,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Bullets:** core facts = the role, employer, location, pay, and employment type; a later enumerating section's `<ul>` = responsibilities, qualifications, formats, non-wage compensation.
 
-**Section headings:** the job's own facts, work, or requirements; banned dimension labels = Setting, Overview, Details, Background, Responsibilities, Requirements, Benefits, About.
+**Section headings:** the job's own facts, work, or requirements — a schedule section's heading names the days or hours themselves; banned dimension labels = Setting, Overview, Details, Background, Responsibilities, Requirements, Benefits, About.
 
 **Depth:** dimensions = the company's story, its own numbers, responsibilities, requirements, non-wage compensation, pay specifics, the workplace and team context; confident-knowledge dimensions = what the role involves, what the hire grows into, who the employer is and what they are about, the onboarding, certification, or clearance steps the role requires, and the local workplace setup and reporting structure — develop down into operational specifics, never out into the national market or generic career paths; record specifics = pay, terms, this employer's numbers — a posted or published date is a research signal only, never a body or bullet fact; fetch a known application or official listing URL before drafting for that cargo plus responsibilities and qualifications alongside the logistics; stated bare as the job's own fact.
 

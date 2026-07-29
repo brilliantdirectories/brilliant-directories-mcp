@@ -993,7 +993,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Bullets:** core facts = the what, when, where, and cost; a later enumerating section's `<ul>` = inclusions, tiers, formats, requirements.
 
-**Section headings:** the event's own facts, program, or specifics; banned dimension labels = Setting, Overview, Details, Background, Logistics, Location, Highlights, About.
+**Section headings:** the event's own facts, program, or specifics — a schedule or recurrence section's heading names the days or hours themselves; banned dimension labels = Setting, Overview, Details, Background, Logistics, Location, Highlights, About.
 
 **Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and the event date's own logistics; confident-knowledge dimensions = what the activity is, what happens during it and in what order, how to take part (in person or online), who it's for and what an attendee learns or leaves with, and who the organizer is and their reputation — keep it on the event and the attendee, never a broad essay on the wider field or industry; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics; stated bare as the event's own fact.
 
