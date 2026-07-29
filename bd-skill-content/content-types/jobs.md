@@ -132,7 +132,7 @@ For jobs, `post_venue` = company name, so `Geocode ladder` tier 1 (`q="<company>
 
 ## Category routing (runbook Step 9)
 
-Per METHODOLOGY `Stage 4: Category routing`. Jobs route via the **category ledger** (written at `Stage 1: Site context` step 3). For `post_category` specifically, use the cached `getPostTypeCustomFields.post_category.choices` (from Step 3) — pass the `key` VERBATIM including any leading whitespace from the BD CSV-split quirk. Append the choices keys to the **category ledger** as a second labeled line (`post_category choices: <keys>`); `post_category` copies from that line only — Pattern 3 `category[]` copies from the `categories:` line only.
+Per METHODOLOGY `Stage 4: Category routing`. Jobs route via the **category ledger** (written at `Stage 1: Site context` step 3) exactly as every type does — Stage 4 routing and the Pattern 3 `category[]` link both use the resolved ledger value. The `post_category` create field is the one exception: it sends the cached `getPostTypeCustomFields.post_category.choices` key matching that resolved value, VERBATIM including any leading whitespace from the BD CSV-split quirk.
 
 User-specified default category in the request → every job in the run goes to that category (must match a cached `post_category` `choices` key; else route per Stage 4).
 
@@ -176,7 +176,7 @@ What `createSingleImagePost` receives.
 
 ### Fields to fill (each from research, never invented — leaving it empty is the failure)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: copy one value from the ledger's `post_category choices:` line verbatim. Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: send the cached choices key matching the resolved ledger category, verbatim (keep any leading whitespace from the BD CSV split). Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 
 | Field | Jobs-specific note |
 |---|---|
