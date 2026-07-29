@@ -2,7 +2,7 @@
 
 Read before generating any internal link. Universal across post types. Every URL these patterns let the run construct is a usable target the post is expected to spend, not leave on the shelf.
 
-**Never fabricate an internal URL.** If you can't verify the target exists, omit the link or section. Any URL placed in a post — internal or external — is character-for-character from its source (a fetched result, a cached row, or a slug built per URL-PATTERNS), never retyped from memory.
+**Never fabricate an internal URL.** Any URL placed in a post — internal or external — is character-for-character from its source (a fetched result, a cached row, or a slug built per URL-PATTERNS), never retyped from memory.
 
 ## Patterns
 
@@ -130,7 +130,7 @@ Slug = `city_filename` from the return.
 
 - Every slug segment MUST come from a list-tool return.
 - Never invent slugs.
-- If ANY segment lookup returns zero matches, fall back to Pattern 5 (the bare directory landing) — at most once per post per METHODOLOGY `Link order` — or omit the link.
+- If ANY segment lookup returns zero matches, fall back to Pattern 5 (the bare directory landing).
 - A Pattern 5 link is always safer than a fabricated `/austin/running-coach` URL that 404s.
 
 ### Examples
