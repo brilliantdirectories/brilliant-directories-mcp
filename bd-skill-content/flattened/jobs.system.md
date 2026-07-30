@@ -733,7 +733,7 @@ Slug = lowercase country_name with hyphens (e.g. "United States" → `united-sta
 listStates property=state_ln property_value=<geocoded state name>% property_operator=like limit=10
 ```
 
-A returned row confirms the state exists; use its `state_filename` as the slug. No returned row: the state is not on the site — do not build any `/state` or `/state/city` member-directory slug; use a Pattern 3 filter or Pattern 5 instead.
+A returned row gives the verified `state_filename`; no row means the state is absent — build no `/state` or `/state/city` slug.
 
 **City:**
 
