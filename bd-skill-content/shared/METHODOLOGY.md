@@ -119,7 +119,7 @@ Every external URL the post will link to — each exact path, a verified domain 
 
 ## Stage 4: Category routing
 
-Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → SKIP the record (do NOT create categories). Bank every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The resolved category is also the Pattern 6 member-directory ingredient marked "pending gate" — the member-count gate in the pre-create batch verifies it (count >= 1 to link, per URL-PATTERNS).
+Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → SKIP the record (do NOT create categories). Bank every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The post's subject also seeds a Pattern 6 member-directory ingredient marked "pending gate" — the member top/sub category it matches (resolved at the gate from `listTopCategories`/`listSubCategories`, never the ledger value), standalone (`/top`, `/top/sub`) or combined with location; the member-count gate verifies it (count >= 1 to link, per URL-PATTERNS).
 
 The content-type file may specify a fallback category.
 
