@@ -188,7 +188,7 @@ In the linking pass, vary the shape of filtered-listing links across posts so po
 
 ## Link shape priority (universal)
 
-A resolved combo also yields each of its dimensions solo as a separate candidate — the more filters resolved, the more distinct targets in hand. Bank the combo and its solos; each rides a different draft phrase. For any one phrase, match it to the most specific candidate that phrase supports (a phrase naming two dimensions takes the combo; a phrase naming one takes that solo), top-down:
+A resolved combo also yields each of its dimensions solo as a separate candidate — the more filters resolved, the more distinct targets in hand. Bank the combo and its solos; each rides a different draft phrase. For any one phrase, match it to the most specific candidate that phrase supports (a phrase naming two dimensions takes the combo; a phrase naming one takes that solo):
 
 1. **Category + location combo.** Example for events: same category + same city. Example for jobs: same role + same city. Example for blogs: a Pattern 6 link to the member directory filtered to the member category the topic serves + the post's city (an article mentioning personal trainers in Los Angeles → `/california/los-angeles/personal-trainer`).
 2. **Single-filter category-only** OR **single-filter location-only.** A draft phrase inside a category's subject matter ("water workout" rides its category's listing page) or a city noun goes to that listing page — the anchor keeps the draft's own wording; the taxonomy label lives only in the URL, never planted into prose.
