@@ -71,7 +71,7 @@ Invalid combinations:
 
 Every slug segment MUST come from a live list-tool return. LIKE wildcards: `X%` or `%X` only, never `%X%` — BD's WAF strips one `%`.
 
-**Categories — both levels.** Fire these two calls together, one time per run — only when the draft has produced a phrase that wants a Pattern 6 member-directory link, in the same message as that link's member-count gate (per METHODOLOGY's Pattern 6/4 gate). Never in Turn 1.
+**Categories — both levels.** Fire these two calls together, one time per run — only when the draft has produced a phrase that wants a Pattern 6 member-directory link, in the same message as the member-count gates (per METHODOLOGY's Pattern 6/4 gate). Never in Turn 1. All Pattern 6 slug lookups (these, plus `listStates`/`listCities` for location) and every combo's count gate share that single message — never one combo or one lookup per turn.
 
 ```
 listTopCategories limit=100
