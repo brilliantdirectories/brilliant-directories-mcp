@@ -120,7 +120,7 @@ Follow METHODOLOGY `Stage 5: Content manufacture (universal)` — its `Voice`, `
 
 **Depth:** dimensions = story, program or speakers, tiers and inclusions, venue and the event date's own logistics; confident-knowledge dimensions = what the activity is, what happens during it and in what order, how to take part (in person or online), who it's for and what an attendee learns or leaves with, and who the organizer is and their reputation — keep it on the event and the attendee, never a broad essay on the wider field or industry; record specifics = times, prices, capacity; fetch a known registration or tickets URL before drafting for that same cargo alongside the logistics; stated bare as the event's own fact.
 
-Events get the full set of filter dimensions available — category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`). Date filters are events-only (other post types skip them).
+Events get category, location (`lat`+`lng`+`location_value`+`location_type=locality`), and date (`daterange`) filter dimensions. Date filters are events-only (other post types skip them).
 
 ---
 
