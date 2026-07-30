@@ -94,7 +94,7 @@ Run every check below against the assembled body and every create-call field; a 
 16. Could the post's own voice have said this sentence (the employer/organizer for listings; an outside writer sharing a find for articles)? No → rewrite it about the subject — its link moves to a noun the rewrite keeps, or drops.
 17. Any sentence instantiating a `Forbidden constructions` or `Forbidden patterns` entry, in any wording? Apply its arrow — restate legally, never drop.
 18. Every depth dimension that source data or confident knowledge supports — grown into developed material? A mention is a seed, not coverage; skipping one is a miss.
-19. Count the internal links. Any unplaced inventory URL whose matching phrase stands unlinked → that phrase went unlinked; link it per METHODOLOGY item 4. Add no phrase and bend no sentence.
+19. For every inventory URL, record one verdict: placed—quote the phrase it rides; no-phrase—quote the draft phrase searched and state "none fit"; or blocked—name the rule. A repeatedly named draft location qualifies for its filter; a draft members noun qualifies for its landing. Add no phrase; bend no sentence.
 
 ## Scoring (rate 1-10; revise the lowest-scoring dimension — revised sentences re-pass the self-check — then ship if ≥40/50)
 
