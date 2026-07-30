@@ -506,7 +506,7 @@ Mandatory before generating any user-facing prose. Applies to post bodies, FAQ, 
 
 ## Forbidden constructions (the construction itself, in every wording)
 
-Every `Forbidden constructions` and `Forbidden patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure — except a payoff or gloss clause carrying no checkable fact (`False agency`, `Fact-gloss`): those drop. These entries judge a sentence's own words, never its link's target — a listing, filter, or landing URL riding a phrase the draft already wrote is a wanted link, not furniture; the sentence answers to every entry exactly as it reads unlinked.
+Every `Forbidden constructions` and `Forbidden patterns` entry kills the wording, never the thought — restate it in a legal shape; dropping it is its own failure — except a payoff or gloss clause carrying no checkable fact (`False agency`, `Fact-gloss`): those drop.
 
 - **Shell-noun subject (discourse deixis)** — an abstract noun summing the writing's own prior sentence ("that context") as subject. State the next fact instead.
 - **Relational clause with abstract Carrier** — an abstraction suits/fits/works for/has/makes someone or something — any fit verb — or fit as the subject itself. A person carries the fit, or the record in the commanded copula form only ("perfect for anyone who..."); the record never fit-verbs a person or a thing.
@@ -521,7 +521,7 @@ Every `Forbidden constructions` and `Forbidden patterns` entry kills the wording
 - **Taxonomic self-classification** — the record filing itself into a catalog ("fits the [X] category"). Category is metadata, never prose.
 - **Scalar approximation** — placing the record on a degree scale between reference points ("more X than Y", "closer to X than Y"). Say what it is, not where it sits.
 - **Cross-record resemblance** — asserting this record resembles or differs from others of its kind. Each record stands alone.
-- **Offer / navigation** — any sentence, bullet, statement, callout, or clause whose function is offering, orienting, pointing, or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "For a related warm up...", "for people who want...", "If X is the better match..."), a classification lead-in slotting the record into a group to host a link ("It belongs with...", "It joins other...", "This is one of several..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; no sentence exists to offer or steer the reader.
+- **Offer / navigation** — any sentence, bullet, statement, callout, or clause whose function is offering, orienting, pointing, or steering rather than asserting: a reader-goal adjunct, fronted or trailing ("For a wider look...", "For a related warm up...", "for people who want...", "If X is the better match..."), a classification lead-in slotting the record into a group to host a link ("It belongs with...", "It joins other...", "This is one of several..."), plus a clause presenting a resource as available, or steering verbs (compare, browse, scan, open). Every sentence asserts a fact about the subject; the post never offers, never routes.
 - **Link-carrier sentence** — a sentence, bullet, or clause that exists for the link it holds; remove the link and it loses its reason. Every sentence, bullet, and clause stands linkless.
 
 ## Forbidden patterns
