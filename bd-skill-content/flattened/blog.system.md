@@ -122,7 +122,7 @@ Pool size — harvested pools: every qualifying candidate the round's results ex
 
 ## Stage 2: Duplicate detection
 
-Run all pool candidates together, in ONE turn — the same turn the pool prints. A candidate at any later point without its verdict line → run Stage 2 now for every verdict-less candidate, before their next call. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts. Print every live (`post_status=1`) row this stage returns into the internal-link inventory as a Pattern 1 candidate (`/<post_filename>`), non-duplicates included.
+Run all pool candidates together, in ONE turn — the same turn the pool prints. A candidate at any later point without its verdict line → run Stage 2 now for every verdict-less candidate, before their next call. A dupe drops for the cost of one dedup round, not a wasted research cycle. Never bulk-list a site's existing posts. Print every live (`post_status=1`) row this stage returns into the internal-link inventory as a Pattern 1 candidate (`/<post_filename>`), the dupes' rows included.
 
 With the pool printed per `Candidate pool discipline (universal pattern)`, one compound query (**Rule: Compound filters**) covers the titles; the content-type file adds any further retrieval keys as their own separate calls, batched in this same turn. `property_value` is exactly TWO elements — never one, never one per candidate — element 1: ALL candidates' variants (each 1-3 words — trim full names to their distinctive core) comma-joined into ONE string — 3 × N values, one string; element 2: the data_id alone:
 
