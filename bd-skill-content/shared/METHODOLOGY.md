@@ -34,7 +34,7 @@ Resolve the `user_id` that authors the post. This ladder is the whole resolution
   ```
     listSingleImagePosts property=data_id property_value=<resolved data_id> property_operator=eq order_column=revision_timestamp order_type=desc limit=1
   ```
-    Use the returned row's `user_id`, and bank its `post_filename` as a Pattern 1 candidate.
+    Use the returned row's `user_id`, and print its `post_filename` into the internal-link inventory as a Pattern 1 candidate.
 3. **Fallback A** (zero existing posts of this type on the site) → find a member whose subscription plan is authorized to publish this post type:
   1. `listMembershipPlans limit=25` — lean default returns `subscription_id`, `subscription_name`, `data_settings`, and 7 other identity/pricing fields. `data_settings` is a CSV of post-type IDs the plan can publish (e.g. `"4,2,1,15,8,10,0"`).
   2. Client-side filter: keep plans where `data_settings.split(',').includes(<resolved data_id>)` — these are the subscription_ids authorized to publish this post type.
@@ -49,7 +49,7 @@ Multiple candidates from post-type discovery resolve in order — never exit ove
 
 1. The run's instructions pre-specify a post-type id → use it.
 2. The run's wording names a flavor (e.g. "open house events", "internship listings") → single confident `data_name` match wins.
-3. The site's editorial pattern — one batched call: `listSingleImagePosts property=data_id property_value=<candidate id CSV> property_operator=in order_column=revision_timestamp order_type=desc limit=1`. The newest returned row's `data_id` wins; cache the row — Author resolution step 2 reuses it; bank its `post_filename` as a Pattern 1 candidate. No rows → step 4.
+3. The site's editorial pattern — one batched call: `listSingleImagePosts property=data_id property_value=<candidate id CSV> property_operator=in order_column=revision_timestamp order_type=desc limit=1`. The newest returned row's `data_id` wins; cache the row — Author resolution step 2 reuses it; print its `post_filename` into the internal-link inventory as a Pattern 1 candidate. No rows → step 4.
 4. No candidate has any posts → the lowest `data_id` (the site's oldest such type).
 
 
