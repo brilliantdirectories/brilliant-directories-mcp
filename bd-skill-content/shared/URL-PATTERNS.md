@@ -107,10 +107,10 @@ Slug = lowercase country_name with hyphens (e.g. "United States" → `united-sta
 **State:**
 
 ```
-listStates property=state_sn property_value=<2-letter-code> property_operator=eq
+listStates property=state_ln property_value=<geocoded state name>% property_operator=like limit=10
 ```
 
-Slug = `state_filename` from the return.
+A returned row confirms the state exists; use its `state_filename` as the slug. No returned row: the state is not on the site — do not build any `/state` or `/state/city` member-directory slug; use a Pattern 3 filter or Pattern 5 instead.
 
 **City:**
 
