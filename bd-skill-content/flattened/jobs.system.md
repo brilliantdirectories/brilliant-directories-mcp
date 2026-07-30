@@ -1053,7 +1053,7 @@ What `createSingleImagePost` receives.
 
 ### Fields to fill (each from research, never invented — leaving it empty is the failure)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: send the cached choices key matching the resolved ledger category, verbatim (keep any leading whitespace from the BD CSV split). Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: send the cached choices key matching the resolved ledger category, verbatim (keep any leading whitespace from the BD CSV split) — as raw text with a literal `&`, never the `&amp;` entity form it takes inside a body href (a `Pattern 3 category[]` link URL-encodes it, but the `post_category` field value does not). Universal tags rule in **METHODOLOGY `Tags`**. Jobs-specific fields and examples:
 
 | Field | Jobs-specific note |
 |---|---|
