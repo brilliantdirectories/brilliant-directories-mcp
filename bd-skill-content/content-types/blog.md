@@ -177,7 +177,7 @@ Links are placed from the internal-link inventory by Stage 5's linking pass — 
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject phrase ("winter races in Austin") — never the category's own label, and taxonomy words ("category", "section", "archive") never enter the prose.
 - **Post-type listing** (Pattern 2) **and directory landing** (Pattern 5) — both in the inventory from Stage 1, placed on a content phrase the draft already wrote per METHODOLOGY's linking pass.
 
-Every phrase the draft already wrote that has a verified internal target takes its link (per METHODOLOGY's linking pass), not just the first. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). Pattern 1 citation style per METHODOLOGY's linking pass. Never fabricate URLs.
+Every phrase the draft already wrote that has a verified internal target takes its link (per METHODOLOGY's linking pass), not just the first. If the paragraph mentions finding a local pro, link that mention to the matching category + city page (Pattern 6). If the paragraph touches a concept another article already covers, cite it like a journalist citing another outlet's piece: the concept phrase carries the link ("a solid warmup progression", "picking the right coach"), never a title-noun or ownership tag ("the knee injury guide", "the site's warmup plan") — via Pattern 1, only if the agent has confirmed the post exists and is live (`post_status=1`). Never fabricate URLs.
 
 ### Inline body images
 
