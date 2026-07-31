@@ -82,7 +82,7 @@ The content-type file specifies match criteria (semantic title overlap, date tol
 
 **On match → drop candidate per** `Candidate pool discipline (universal pattern)`**.** Don't repaint with a tweaked title or "refined angle" — same core topic = same candidate. Drop it. Never bulk-list or probe existing posts to find a gap. Never ask the user for a replacement topic.
 
-**Pre-create dupe gate.** The pre-create batch re-probes every survivor: the skill's `Dedup` re-probe call — events its date probe, jobs its venue probe, blog its subject probe — fired with the survivor's verified values, exactly once, even when the pool-print turn probed the same values. A returned row meeting the skill's `Dedup` criteria makes the survivor a dupe: DROP it — no create, no retitle; rows meeting none, or none returned — the survivor proceeds, its composed `post_title` created verbatim, never re-composed on any outcome. Live (`post_status=1`) returned rows print into the internal-link inventory as Pattern 1 candidates.
+**Pre-create dupe gate.** The pre-create batch re-probes every survivor: the skill's `Dedup` re-probe call, fired with the survivor's verified values, exactly once, even when the pool-print turn probed the same values. A returned row meeting the skill's `Dedup` criteria makes the survivor a dupe: DROP it — no create, no retitle; rows meeting none, or none returned — the survivor proceeds, its composed `post_title` created verbatim. Live (`post_status=1`) returned rows print into the internal-link inventory as Pattern 1 candidates.
 
 Always SKIP existing records — never update or delete any existing post.
 
