@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Content-post pre-check no longer authorizes rename-through on a title collision.** The `createSingleImagePost` / `createMultiImagePost` pre-check guidance previously resolved a taken title with "pick an alternate `post_title` and re-check" — for content records (events, jobs, articles) that instruction let an agent retitle a duplicate and create it anyway, and framed a free title as proof of a new record. The hit-consequence is now a record comparison: the same real-world record must NOT be created (reuse/update instead); only a genuinely different record sharing the name retitles. The pre-check also now states that a free title is not proof of a new record and points dated/venued post types at `post_start_date` (8-digit day, `contains`) / `post_venue` probes paired with `data_id`. Config resources (menus, templates, smart lists, tag groups, data types, categories) keep the alternate-name guidance — a name collision on config IS identity. The `Standard pre-check` rule in the instructions corpus carries the same content-vs-config split. Live incident: an agent created a third near-identical event draft under a parenthesized-year title variant after its exact-title check returned zero rows.
+
 ## [6.58.587] - 2026-07-24
 
 ### Fixed
