@@ -171,7 +171,7 @@ Links are placed from the internal-link inventory by Stage 5's linking pass — 
 
 **Link targets — all valid for blog posts:**
 
-- **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Rows returned by verification calls (dedup, member-count gates) are never link targets. No bulk-listing members.
+- **Specific member profile** (Pattern 4): `/<user.filename>` — resolve via `searchUsers` only, and only when the agent has a specific known person to deep-link to. Member rows returned by verification calls are never Pattern 4 targets. No bulk-listing members.
 - **Filtered member directory** (Pattern 6): slug-hierarchy paths by location and/or category — construction + member-count gate per URL-PATTERNS `Pattern 6 — Filtered member directory`.
 - **Specific post of any type** (Pattern 1): `/<post_filename>` — a live row this run's dedup or list calls already returned needs no re-lookup; otherwise resolve via title-filtered `listSingleImagePosts` when the agent has a specific known post to deep-link to. No bulk-listing.
 - **Post search results of any type** (Pattern 3): `/<post_type_data_filename>?category[]=<cat>&...` — anchor names the category's posts as a subject phrase ("winter races in Austin") — never the category's own label, and taxonomy words ("category", "section", "archive") never enter the prose.
