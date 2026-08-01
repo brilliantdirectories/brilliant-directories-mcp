@@ -979,40 +979,40 @@ GET /api/v2/user/get?order_column=last_name&order_type=ASC
 
 | Resource | Base Path | Operations |
 |----------|-----------|------------|
-| Users/Members | `/api/v2/user/` | list, get, create, update, delete, search, login, transactions, subscriptions, fields |
-| Reviews | `/api/v2/users_reviews/` | list, get, create, update, delete |
-| Clicks | `/api/v2/users_clicks/` | list, get, create, update, delete |
-| Leads | `/api/v2/leads/` | list, get, create, match, update, delete |
-| Lead Matches | `/api/v2/lead_matches/` | list, get, create, update, delete |
-| Single-Image Posts | `/api/v2/data_posts/` | listSingleImagePosts, getSingleImagePost, createSingleImagePost, updateSingleImagePost, deleteSingleImagePost, getSingleImagePostFields |
-| Multi-Image Posts | `/api/v2/users_portfolio_groups/` | listMultiImagePosts, getMultiImagePost, createMultiImagePost, updateMultiImagePost, deleteMultiImagePost, getMultiImagePostFields |
-| Multi-Image Post Photos | `/api/v2/users_portfolio/` | listMultiImagePostPhotos, getMultiImagePostPhoto, createMultiImagePostPhoto, updateMultiImagePostPhoto, deleteMultiImagePostPhoto |
-| Post Types | `/api/v2/data_categories/` | list, get, update, delete, custom_fields |
-| Top Categories | `/api/v2/list_professions/` | listTopCategories, getTopCategory, createTopCategory, updateTopCategory, deleteTopCategory |
-| Sub Categories | `/api/v2/list_services/` | listSubCategories, getSubCategory, createSubCategory, updateSubCategory, deleteSubCategory |
-| Member ↔ Sub Category Links | `/api/v2/rel_services/` | listMemberSubCategoryLinks, getMemberSubCategoryLink, createMemberSubCategoryLink, updateMemberSubCategoryLink, deleteMemberSubCategoryLink |
-| User Photos | `/api/v2/users_photo/` | list, get, create, update, delete |
-| User Metadata | `/api/v2/users_meta/` | list, get, update, delete |
-| Tags | `/api/v2/tags/` | list, get, create, update, delete |
-| Tag Groups | `/api/v2/tag_groups/` | list, get, create, update, delete |
-| Tag Types | `/api/v2/tag_types/` | list, get |
-| Tag Relationships | `/api/v2/rel_tags/` | list, get, create, update, delete |
-| Widgets | `/api/v2/data_widgets/` | list, get, create, update, delete, render |
-| Email Templates | `/api/v2/email_templates/` | list, get, create, update, delete |
-| Forms | `/api/v2/form/` | list, get, create, update, delete |
-| Form Fields | `/api/v2/form_fields/` | list, get, create, update, delete |
-| Forms Inbox | `/api/v2/form_inquiries/` | listFormInquiries, getFormInquiry |
-| Membership Plans | `/api/v2/subscription_types/` | list, get |
-| Menus | `/api/v2/menus/` | list, get, create, update, delete |
-| Menu Items | `/api/v2/menu_items/` | list, get, create, update, delete |
-| Unsubscribe | `/api/v2/unsubscribe_list/` | list, get, create, update, delete |
-| Smart Lists | `/api/v2/smart_lists/` | list, get, create, update, delete |
-| Web Pages (SEO/static) | `/api/v2/list_seo/` | listWebPages, getWebPage, createWebPage, updateWebPage, deleteWebPage |
-| Redirects (301) | `/api/v2/redirect_301/` | list, get, create, update, delete |
-| Data Types | `/api/v2/data_types/` | list, get, create, update, delete |
-| Website Settings | `/api/v2/website_settings/` | refreshSiteCache |
-| Site Info | `/api/v2/site_info/` | getSiteInfo |
 | Brand Kit | `/api/v2/website_design_settings/` | getBrandKit |
+| Clicks (Profile Analytics) | `/api/v2/users_clicks/` | list, get, create, update, delete |
+| Data Types | `/api/v2/data_types/` | list, get, create, update, delete |
+| Email Templates | `/api/v2/email_templates/` | list, get, create, update, delete |
+| Form Fields | `/api/v2/form_fields/` | list, get, create, update, delete |
+| Forms | `/api/v2/form/` | list, get, create, update, delete |
+| Forms Inbox | `/api/v2/form_inquiries/` | listFormInquiries, getFormInquiry |
+| Lead Matches | `/api/v2/lead_matches/` | list, get, create, update, delete |
+| Leads | `/api/v2/leads/` | list, get, create, match, update, delete |
+| Member ↔ Sub Category Links | `/api/v2/rel_services/` | listMemberSubCategoryLinks, getMemberSubCategoryLink, createMemberSubCategoryLink, updateMemberSubCategoryLink, deleteMemberSubCategoryLink |
+| Membership Plans | `/api/v2/subscription_types/` | list, get |
+| Menu Items | `/api/v2/menu_items/` | list, get, create, update, delete |
+| Menus | `/api/v2/menus/` | list, get, create, update, delete |
+| Multi-Image Post Photos | `/api/v2/users_portfolio/` | listMultiImagePostPhotos, getMultiImagePostPhoto, createMultiImagePostPhoto, updateMultiImagePostPhoto, deleteMultiImagePostPhoto |
+| Multi-Image Posts | `/api/v2/users_portfolio_groups/` | listMultiImagePosts, getMultiImagePost, createMultiImagePost, updateMultiImagePost, deleteMultiImagePost, getMultiImagePostFields |
+| Post Types | `/api/v2/data_categories/` | list, get, update, delete, custom_fields |
+| Redirects (301) | `/api/v2/redirect_301/` | list, get, create, update, delete |
+| Reviews | `/api/v2/users_reviews/` | list, get, create, update, delete |
+| Single-Image Posts | `/api/v2/data_posts/` | listSingleImagePosts, getSingleImagePost, createSingleImagePost, updateSingleImagePost, deleteSingleImagePost, getSingleImagePostFields |
+| Site Info | `/api/v2/site_info/` | getSiteInfo |
+| Smart Lists | `/api/v2/smart_lists/` | list, get, create, update, delete |
+| Sub Categories | `/api/v2/list_services/` | listSubCategories, getSubCategory, createSubCategory, updateSubCategory, deleteSubCategory |
+| Tag Groups | `/api/v2/tag_groups/` | list, get, create, update, delete |
+| Tag Relationships | `/api/v2/rel_tags/` | list, get, create, update, delete |
+| Tag Types | `/api/v2/tag_types/` | list, get |
+| Tags | `/api/v2/tags/` | list, get, create, update, delete |
+| Top Categories | `/api/v2/list_professions/` | listTopCategories, getTopCategory, createTopCategory, updateTopCategory, deleteTopCategory |
+| Unsubscribe | `/api/v2/unsubscribe_list/` | list, get, create, update, delete |
+| User Metadata | `/api/v2/users_meta/` | list, get, update, delete |
+| User Photos | `/api/v2/users_photo/` | list, get, create, update, delete |
+| Users/Members | `/api/v2/user/` | list, get, create, update, delete, search, login, transactions, subscriptions, fields |
+| Web Pages (SEO/static) | `/api/v2/list_seo/` | listWebPages, getWebPage, createWebPage, updateWebPage, deleteWebPage |
+| Website Settings | `/api/v2/website_settings/` | refreshSiteCache |
+| Widgets | `/api/v2/data_widgets/` | list, get, create, update, delete, render |
 
 ## Field Discovery
 
