@@ -579,6 +579,31 @@
             "minimum": 1,
             "maximum": 5
           },
+          "rating_service": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "rating_response": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "rating_expertise": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "rating_results": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "rating_language": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
           "recommend": {
             "type": "integer",
             "enum": [
@@ -2828,6 +2853,36 @@
                     "minimum": 1,
                     "maximum": 5
                   },
+                  "rating_service": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Omitted on create -> BD stores 5 (server default), not null - send every category score you have."
+                  },
+                  "rating_response": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Omitted on create -> BD stores 5 (server default), not null - send every category score you have."
+                  },
+                  "rating_expertise": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Omitted on create -> BD stores 5 (server default), not null - send every category score you have."
+                  },
+                  "rating_results": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Omitted on create -> BD stores 5 (server default), not null - send every category score you have."
+                  },
+                  "rating_language": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Omitted on create -> BD stores 5 (server default), not null - send every category score you have."
+                  },
                   "recommend": {
                     "type": "integer",
                     "enum": [
@@ -2895,7 +2950,34 @@
                     "type": "string"
                   },
                   "rating_overall": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "rating_service": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "rating_response": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "rating_expertise": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "rating_results": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "rating_language": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
                   },
                   "recommend": {
                     "type": "integer"

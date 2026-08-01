@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.588] - 2026-07-31
+
+### Fixed
+
+- **`createReview`/`updateReview` now expose the five per-category rating fields** — `rating_service`, `rating_response`, `rating_expertise`, `rating_results`, `rating_language` (integer 1-5, same shape as `rating_overall`) added to both request schemas and `components.schemas.Review`. Previously only `rating_overall` was documented, so schema-guided agents never sent the category scores and BD's server-side default stored `5` for every omitted rating — a review submitted with distinct category values silently published as all 5s. BD itself always accepted the fields (verified by direct REST call); they were dropped at tool-call construction. The create-side descriptions document the omit-defaults-to-5 server behavior so agents send every score they have. `updateReview.rating_overall` also gains the `1-5` bounds it was missing. The create/update response keep-sets (npm package + hosted Worker) now echo the five fields so a successful category write is visible in the tool result.
+
 ### Changed
 
 - **Content-post pre-check no longer authorizes rename-through on a title collision.** The `createSingleImagePost` / `createMultiImagePost` pre-check guidance previously resolved a taken title with "pick an alternate `post_title` and re-check" — for content records (events, jobs, articles) that instruction let an agent retitle a duplicate and create it anyway, and framed a free title as proof of a new record. The hit-consequence is now a record comparison: the same real-world record must NOT be created (reuse/update instead); only a genuinely different record sharing the name retitles. The pre-check also now states that a free title is not proof of a new record and points dated/venued post types at `post_start_date` (8-digit day, `contains`) / `post_venue` probes paired with `data_id`. Config resources (menus, templates, smart lists, tag groups, data types, categories) keep the alternate-name guidance — a name collision on config IS identity. The `Standard pre-check` rule in the instructions corpus carries the same content-vs-config split. Live incident: an agent created a third near-identical event draft under a parenthesized-year title variant after its exact-title check returned zero rows.

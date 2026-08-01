@@ -1860,8 +1860,8 @@ const WRITE_KEEP_SETS = {
   // record including bcrypt password, token, cookie, last_login) gets stripped
   // by omission. Security-relevant: review responses no longer leak member
   // password hashes.
-  createReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
-  updateReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","recommend","review_added","review_updated","revision_timestamp"],
+  createReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","rating_service","rating_response","rating_expertise","rating_results","rating_language","recommend","review_added","review_updated","revision_timestamp"],
+  updateReview: ["review_id","user_id","review_title","review_description","review_name","review_email","review_status","rating_overall","rating_service","rating_response","rating_expertise","rating_results","rating_language","recommend","review_added","review_updated","revision_timestamp"],
 
   // Multi-image post photos — return ~39 fields with ~16 null/empty
   // (product/marketplace columns, facebook_photo_id, photo_filename, etc.)
