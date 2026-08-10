@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.589] - 2026-08-10
+
+### Fixed
+
+- **A write to a site URL that redirects now returns a clear message instead of silently failing.** When the configured site URL redirects (e.g. a `www` host whose canonical is non-`www`), the redirect downgrades a write (`POST`/`PUT`/`DELETE`) to `GET`, so BD received a read on a write route and answered `Invalid Request Method` — every create/update/delete failed while reads passed, with no indication of the cause. Both transports now detect a 3xx on a write and return `Invalid domain URL for the MCP connection. Set your MCP site URL to your site's correct URL and reconnect.` The hosted Worker sets `redirect: "manual"` so a redirect is never followed (which would also carry the API key to the `Location` host); the npm package already used non-following requests and now reports the 3xx. Reads and every 2xx/4xx response are unchanged; remote image fetches (which legitimately follow redirects) are untouched.
+
 ## [6.58.588] - 2026-07-31
 
 ### Fixed

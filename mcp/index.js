@@ -4839,6 +4839,12 @@ function makeRequest(config, method, urlPath, queryParams, bodyParams, clearFiel
           console.error(`[debug] <- ${res.statusCode} ${method} ${fullUrl.href}`);
           console.error(`[debug]   body: ${data.length > 500 ? data.slice(0, 500) + "...[truncated]" : data}`);
         }
+        // A redirect on a write downgrades the method to GET, dropping the
+        // create/update/delete. Report it so the user fixes the site URL.
+        if (res.statusCode >= 300 && res.statusCode < 400 && method !== "GET") {
+          resolve({ status: res.statusCode, body: { status: "error", message: "Invalid domain URL for the MCP connection. Set your MCP site URL to your site's correct URL and reconnect." } });
+          return;
+        }
         const retryAfter = res.headers && res.headers["retry-after"];
         try {
           resolve({ status: res.statusCode, body: JSON.parse(data), retryAfter });
