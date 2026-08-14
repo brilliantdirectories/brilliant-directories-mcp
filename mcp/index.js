@@ -2822,6 +2822,11 @@ function _buildWidgetAdminEditUrl(websiteId, widgetId) {
   return `${_adminBase()}/formViewWidgets.php?website_id=${encodeURIComponent(websiteId)}&form_name=widgets&myid=${encodeURIComponent(String(widgetId))}&method=Edit`;
 }
 
+// formBuilder.php keys by form_name, not form_id.
+function _buildFormAdminEditUrl(websiteId, formName) {
+  return `${_adminBase()}/formBuilder.php?form_name=${encodeURIComponent(String(formName))}&newsite=${encodeURIComponent(websiteId)}`;
+}
+
 function _parseFeatureCategories(raw) {
   if (typeof raw !== "string" || raw === "") return [];
   return raw.split(",").map(s => s.trim()).filter(Boolean);
@@ -6663,6 +6668,41 @@ async function main() {
           if (websiteId) {
             for (const r of rows) {
               if (r && r.widget_id) r._admin_edit_url = _buildWidgetAdminEditUrl(websiteId, r.widget_id);
+            }
+          }
+        }
+      }
+      if (
+        (name === "createForm" || name === "updateForm") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const writtenFormName = (() => {
+          const m = result.body.message;
+          if (m && typeof m === "object" && !Array.isArray(m) && m.form_name) return m.form_name;
+          if (Array.isArray(m) && m[0] && m[0].form_name) return m[0].form_name;
+          return args.form_name;
+        })();
+        if (writtenFormName !== undefined && writtenFormName !== null && writtenFormName !== "") {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            result.body._admin_edit_url = _buildFormAdminEditUrl(websiteId, writtenFormName);
+          }
+        }
+      }
+      // Form reads carry the same admin deep-link, per row that has a form_name.
+      if (
+        (name === "getForm" || name === "listForms") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const m = result.body.message;
+        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
+        if (rows.some((r) => r && r.form_name)) {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            for (const r of rows) {
+              if (r && r.form_name) r._admin_edit_url = _buildFormAdminEditUrl(websiteId, r.form_name);
             }
           }
         }

@@ -472,6 +472,7 @@ const MIRROR_FUNCTIONS = [
   "getWebsiteInfoCached",
   "_buildAdminEditUrl",
   "_buildWidgetAdminEditUrl",
+  "_buildFormAdminEditUrl",
   "_parseFeatureCategories",
   "_readLinkedPostMeta",
   "_findPagesByLinkedPostType",

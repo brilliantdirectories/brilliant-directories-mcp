@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.590] - 2026-08-13
+
+### Added
+
+- **`_admin_edit_url` on Form reads and writes.** `createForm` / `updateForm` responses, and each `getForm` / `listForms` row with a `form_name`, now carry `_admin_edit_url` — a centralized-admin deep-link to the Form Builder editor (`formBuilder.php?form_name=<form_name>&newsite=<website_id>`). Same convention as the existing WebPage and Widget deep-links. Form Builder keys by `form_name`, not `form_id` — without a stamped link, agents asked "where do I edit this form" invented a plausible-looking `forms.php?form_id=` URL that doesn't exist (live incident). Spec `Returns` blocks for `createForm` / `updateForm` document the field. Applied identically in the npm package and the hosted Worker; drift-check `MIRROR_FUNCTIONS` adds `_buildFormAdminEditUrl`.
+
 ## [6.58.589] - 2026-08-10
 
 ### Fixed
