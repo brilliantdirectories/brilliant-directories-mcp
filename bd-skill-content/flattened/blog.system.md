@@ -179,7 +179,7 @@ Every external URL the post will link to — each exact path, a verified domain 
 
 ## Stage 4: Category routing
 
-Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → SKIP the record (do NOT create categories). The resolution emits one line — `Category verdict: <LEDGER value> - carry` or `Category verdict: SKIP` — a record with no emitted verdict line does not advance. Print every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The member top/sub taxonomy (from `listTopCategories`/`listSubCategories`, never the ledger value) is also a Pattern 6 member-directory ingredient marked "pending gate", standalone (`/top`, `/top/sub`) or combined with location; the member-count gate verifies each (count >= 1 to link, per URL-PATTERNS).
+Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → the record proceeds with no category (do NOT create categories). The resolution emits one line — `Category verdict: <LEDGER value> - carry` or `Category verdict: NONE - no category` — a record with no emitted verdict line does not advance. Print every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The member top/sub taxonomy (from `listTopCategories`/`listSubCategories`, never the ledger value) is also a Pattern 6 member-directory ingredient marked "pending gate", standalone (`/top`, `/top/sub`) or combined with location; the member-count gate verifies each (count >= 1 to link, per URL-PATTERNS).
 
 The content-type file may specify a fallback category.
 
@@ -1042,7 +1042,7 @@ What `createSingleImagePost` receives.
 
 ### Fields to fill (each from research, never invented — leaving it empty is the failure)
 
-Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: re-read the **category ledger** line and copy one value from it verbatim — as raw text with a literal `&`, never the `&amp;` entity form it takes inside a body href (a `Pattern 3 category[]` link URL-encodes it, but the `post_category` field value does not). Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples:
+Universal field rules in **METHODOLOGY `Universal post fields`** (post_image, post_live_date, post_meta_title length, post_meta_description length, post_meta_keywords). `post_category`: on `Category verdict: NONE` the create call carries no post_category field; otherwise re-read the **category ledger** line and copy one value from it verbatim — as raw text with a literal `&`, never the `&amp;` entity form it takes inside a body href (a `Pattern 3 category[]` link URL-encodes it, but the `post_category` field value does not). Universal tags rule in **METHODOLOGY `Tags`**. Blog-specific additions and examples:
 
 | Field | Blog-specific note |
 |---|---|

@@ -121,7 +121,7 @@ Every external URL the post will link to — each exact path, a verified domain 
 
 ## Stage 4: Category routing
 
-Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → SKIP the record (do NOT create categories). The resolution emits one line — `Category verdict: <LEDGER value> - carry` or `Category verdict: SKIP` — a record with no emitted verdict line does not advance. Print every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The member top/sub taxonomy (from `listTopCategories`/`listSubCategories`, never the ledger value) is also a Pattern 6 member-directory ingredient marked "pending gate", standalone (`/top`, `/top/sub`) or combined with location; the member-count gate verifies each (count >= 1 to link, per URL-PATTERNS).
+Fuzzy-match source category vs the **category ledger** list. ≥70% confidence → carry the LEDGER value forward, never the source's wording. <70% → the record proceeds with no category (do NOT create categories). The resolution emits one line — `Category verdict: <LEDGER value> - carry` or `Category verdict: NONE - no category` — a record with no emitted verdict line does not advance. Print every ledger category into the internal-link inventory as its own Pattern 3 filter candidate. The member top/sub taxonomy (from `listTopCategories`/`listSubCategories`, never the ledger value) is also a Pattern 6 member-directory ingredient marked "pending gate", standalone (`/top`, `/top/sub`) or combined with location; the member-count gate verifies each (count >= 1 to link, per URL-PATTERNS).
 
 The content-type file may specify a fallback category.
 

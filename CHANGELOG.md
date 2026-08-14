@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Content skills no longer drop a verified record when no category matches.** Stage 4 category routing previously ordered `<70% confidence → SKIP the record` — on sites whose post type still carries the platform's placeholder categories, every candidate died at this gate after passing all verification (live incident: an events run created 0 of 1 with the summary "the category-routing gate failed and no post was created"). The low-confidence branch is now `Category verdict: NONE - no category`: the record proceeds and the create call omits `post_category` (verified live that BD accepts category-less creates on event, blog, and job post types). The verdict-line machinery and the never-create-categories rule are unchanged; the per-type `post_category` fill instructions in events, blog, and jobs carry the matching omit-on-NONE clause.
+
 ## [6.58.592] - 2026-08-13
 
 ### Added
