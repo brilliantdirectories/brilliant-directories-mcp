@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.591] - 2026-08-13
+
+### Added
+
+- **`_admin_edit_url` on Menu reads and writes.** `createMenu` / `updateMenu` responses, and each `getMenu` / `listMenus` row with a `menu_id`, now carry `_admin_edit_url` — a centralized-admin deep-link to the Menu Builder editor (`menuBuilder.php?newsite=<website_id>&menu_id=<menu_id>&method=Edit&is_master=0`). Same convention as the WebPage, Widget, and Form deep-links. Spec `Returns` blocks for `createMenu` / `updateMenu` document the field. Applied identically in the npm package and the hosted Worker; drift-check `MIRROR_FUNCTIONS` adds `_buildMenuAdminEditUrl`.
+
 ## [6.58.590] - 2026-08-13
 
 ### Added

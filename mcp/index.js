@@ -2827,6 +2827,10 @@ function _buildFormAdminEditUrl(websiteId, formName) {
   return `${_adminBase()}/formBuilder.php?form_name=${encodeURIComponent(String(formName))}&newsite=${encodeURIComponent(websiteId)}`;
 }
 
+function _buildMenuAdminEditUrl(websiteId, menuId) {
+  return `${_adminBase()}/menuBuilder.php?newsite=${encodeURIComponent(websiteId)}&menu_id=${encodeURIComponent(String(menuId))}&method=Edit&is_master=0`;
+}
+
 function _parseFeatureCategories(raw) {
   if (typeof raw !== "string" || raw === "") return [];
   return raw.split(",").map(s => s.trim()).filter(Boolean);
@@ -6703,6 +6707,41 @@ async function main() {
           if (websiteId) {
             for (const r of rows) {
               if (r && r.form_name) r._admin_edit_url = _buildFormAdminEditUrl(websiteId, r.form_name);
+            }
+          }
+        }
+      }
+      if (
+        (name === "createMenu" || name === "updateMenu") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const writtenMenuId = (() => {
+          const m = result.body.message;
+          if (m && typeof m === "object" && !Array.isArray(m) && m.menu_id) return m.menu_id;
+          if (Array.isArray(m) && m[0] && m[0].menu_id) return m[0].menu_id;
+          return args.menu_id;
+        })();
+        if (writtenMenuId !== undefined && writtenMenuId !== null && writtenMenuId !== "") {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            result.body._admin_edit_url = _buildMenuAdminEditUrl(websiteId, writtenMenuId);
+          }
+        }
+      }
+      // Menu reads carry the same admin deep-link, per row that has a menu_id.
+      if (
+        (name === "getMenu" || name === "listMenus") &&
+        result.body && typeof result.body === "object" &&
+        result.body.status === "success"
+      ) {
+        const m = result.body.message;
+        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
+        if (rows.some((r) => r && r.menu_id)) {
+          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+          if (websiteId) {
+            for (const r of rows) {
+              if (r && r.menu_id) r._admin_edit_url = _buildMenuAdminEditUrl(websiteId, r.menu_id);
             }
           }
         }

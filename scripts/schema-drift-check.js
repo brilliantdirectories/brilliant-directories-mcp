@@ -473,6 +473,7 @@ const MIRROR_FUNCTIONS = [
   "_buildAdminEditUrl",
   "_buildWidgetAdminEditUrl",
   "_buildFormAdminEditUrl",
+  "_buildMenuAdminEditUrl",
   "_parseFeatureCategories",
   "_readLinkedPostMeta",
   "_findPagesByLinkedPostType",
