@@ -470,7 +470,7 @@ const MIRROR_FUNCTIONS = [
   "_formatNow19InTz",
   "getPostTypesCached",
   "getWebsiteInfoCached",
-  "_buildAdminEditUrl",
+  "_buildWebPageAdminEditUrl",
   "_buildWidgetAdminEditUrl",
   "_buildFormAdminEditUrl",
   "_buildMenuAdminEditUrl",
@@ -690,6 +690,7 @@ const MIRROR_CONSTANTS = [
   "MENU_ALWAYS_KEEP",
   "MENU_ITEM_LEAN_INCLUDE_FLAGS",
   "MENU_ITEM_ALWAYS_KEEP",
+  "ADMIN_EDIT_STAMPS",
 ];
 // Constants that exist top-level in one file and function-local (or differently
 // scoped) in the other. The check skips these; verify by hand if you change

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.592] - 2026-08-13
+
+### Added
+
+- **`_admin_edit_url` on WebPage reads.** `getWebPage` / `listWebPages` rows now carry the same centralized-admin deep-link that WebPage writes already stamp — pages were the only deep-linked resource missing read-side links (widgets, forms, and menus all had them).
+
+### Changed
+
+- **Admin deep-link stamping consolidated into one table-driven pass.** The seven per-resource stamp blocks (WebPage/Widget/Form/Menu, write + read) collapse into a single `ADMIN_EDIT_STAMPS` config table and one generic pass, byte-equivalent in behavior for every previously stamped response. Applied identically in the npm package and the hosted Worker; drift-check `MIRROR_CONSTANTS` adds `ADMIN_EDIT_STAMPS` so the table stays in parity across both transports. `_buildAdminEditUrl` renamed `_buildWebPageAdminEditUrl` for naming symmetry with its Widget/Form/Menu siblings.
+
 ## [6.58.591] - 2026-08-13
 
 ### Added

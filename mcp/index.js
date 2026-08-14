@@ -2814,7 +2814,7 @@ function _adminBase() {
   return `${scheme}://ww2.managemydirectory.com/admin`;
 }
 
-function _buildAdminEditUrl(websiteId, seoId) {
+function _buildWebPageAdminEditUrl(websiteId, seoId) {
   return `${_adminBase()}/contentManage.php?template_type=&faction=edittemplate&seo_id=${encodeURIComponent(String(seoId))}&newsite=${encodeURIComponent(websiteId)}`;
 }
 
@@ -2830,6 +2830,13 @@ function _buildFormAdminEditUrl(websiteId, formName) {
 function _buildMenuAdminEditUrl(websiteId, menuId) {
   return `${_adminBase()}/menuBuilder.php?newsite=${encodeURIComponent(websiteId)}&menu_id=${encodeURIComponent(String(menuId))}&method=Edit&is_master=0`;
 }
+
+const ADMIN_EDIT_STAMPS = [
+  { write: ["createWebPage", "updateWebPage"], read: ["getWebPage", "listWebPages"], id: "seo_id", build: _buildWebPageAdminEditUrl },
+  { write: ["createWidget", "updateWidget"], read: ["getWidget", "listWidgets"], id: "widget_id", build: _buildWidgetAdminEditUrl },
+  { write: ["createForm", "updateForm"], read: ["getForm", "listForms"], id: "form_name", build: _buildFormAdminEditUrl },
+  { write: ["createMenu", "updateMenu"], read: ["getMenu", "listMenus"], id: "menu_id", build: _buildMenuAdminEditUrl },
+];
 
 function _parseFeatureCategories(raw) {
   if (typeof raw !== "string" || raw === "") return [];
@@ -6620,128 +6627,30 @@ async function main() {
       ) {
         result.body._data_category_filename_generated = _dataCategoryFilenameGenerated;
       }
-      if (
-        (name === "createWebPage" || name === "updateWebPage") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const writtenSeoId = (() => {
+      // Best-effort — website_id via cached site_info probe (5min TTL); skipped silently when unresolved.
+      if (result.body && typeof result.body === "object" && result.body.status === "success") {
+        const stamp = ADMIN_EDIT_STAMPS.find((s) => s.write.includes(name) || s.read.includes(name));
+        if (stamp) {
           const m = result.body.message;
-          if (m && typeof m === "object" && !Array.isArray(m) && m.seo_id) return m.seo_id;
-          if (Array.isArray(m) && m[0] && m[0].seo_id) return m[0].seo_id;
-          return args.seo_id;
-        })();
-        if (writtenSeoId !== undefined && writtenSeoId !== null && writtenSeoId !== "") {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            result.body._admin_edit_url = _buildAdminEditUrl(websiteId, writtenSeoId);
-          }
-        }
-      }
-      if (
-        (name === "createWidget" || name === "updateWidget") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const writtenWidgetId = (() => {
-          const m = result.body.message;
-          if (m && typeof m === "object" && !Array.isArray(m) && m.widget_id) return m.widget_id;
-          if (Array.isArray(m) && m[0] && m[0].widget_id) return m[0].widget_id;
-          return args.widget_id;
-        })();
-        if (writtenWidgetId !== undefined && writtenWidgetId !== null && writtenWidgetId !== "") {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            result.body._admin_edit_url = _buildWidgetAdminEditUrl(websiteId, writtenWidgetId);
-          }
-        }
-      }
-      // Widget reads carry the same admin deep-link, per row. getWidget
-      // returns one record (object or single-row array); listWidgets an
-      // array. Resolve website_id once, stamp _admin_edit_url on each row
-      // that has a widget_id.
-      if (
-        (name === "getWidget" || name === "listWidgets") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const m = result.body.message;
-        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
-        if (rows.some((r) => r && r.widget_id)) {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            for (const r of rows) {
-              if (r && r.widget_id) r._admin_edit_url = _buildWidgetAdminEditUrl(websiteId, r.widget_id);
+          if (stamp.write.includes(name)) {
+            const writtenId = (m && typeof m === "object" && !Array.isArray(m) && m[stamp.id]) ? m[stamp.id]
+              : (Array.isArray(m) && m[0] && m[0][stamp.id]) ? m[0][stamp.id]
+              : args[stamp.id];
+            if (writtenId !== undefined && writtenId !== null && writtenId !== "") {
+              const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+              if (websiteId) {
+                result.body._admin_edit_url = stamp.build(websiteId, writtenId);
+              }
             }
-          }
-        }
-      }
-      if (
-        (name === "createForm" || name === "updateForm") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const writtenFormName = (() => {
-          const m = result.body.message;
-          if (m && typeof m === "object" && !Array.isArray(m) && m.form_name) return m.form_name;
-          if (Array.isArray(m) && m[0] && m[0].form_name) return m[0].form_name;
-          return args.form_name;
-        })();
-        if (writtenFormName !== undefined && writtenFormName !== null && writtenFormName !== "") {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            result.body._admin_edit_url = _buildFormAdminEditUrl(websiteId, writtenFormName);
-          }
-        }
-      }
-      // Form reads carry the same admin deep-link, per row that has a form_name.
-      if (
-        (name === "getForm" || name === "listForms") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const m = result.body.message;
-        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
-        if (rows.some((r) => r && r.form_name)) {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            for (const r of rows) {
-              if (r && r.form_name) r._admin_edit_url = _buildFormAdminEditUrl(websiteId, r.form_name);
-            }
-          }
-        }
-      }
-      if (
-        (name === "createMenu" || name === "updateMenu") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const writtenMenuId = (() => {
-          const m = result.body.message;
-          if (m && typeof m === "object" && !Array.isArray(m) && m.menu_id) return m.menu_id;
-          if (Array.isArray(m) && m[0] && m[0].menu_id) return m[0].menu_id;
-          return args.menu_id;
-        })();
-        if (writtenMenuId !== undefined && writtenMenuId !== null && writtenMenuId !== "") {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            result.body._admin_edit_url = _buildMenuAdminEditUrl(websiteId, writtenMenuId);
-          }
-        }
-      }
-      // Menu reads carry the same admin deep-link, per row that has a menu_id.
-      if (
-        (name === "getMenu" || name === "listMenus") &&
-        result.body && typeof result.body === "object" &&
-        result.body.status === "success"
-      ) {
-        const m = result.body.message;
-        const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
-        if (rows.some((r) => r && r.menu_id)) {
-          const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
-          if (websiteId) {
-            for (const r of rows) {
-              if (r && r.menu_id) r._admin_edit_url = _buildMenuAdminEditUrl(websiteId, r.menu_id);
+          } else {
+            const rows = Array.isArray(m) ? m : (m && typeof m === "object" ? [m] : []);
+            if (rows.some((r) => r && r[stamp.id])) {
+              const websiteId = await getWebsiteInfoCached(config.domain, config.apiKey);
+              if (websiteId) {
+                for (const r of rows) {
+                  if (r && r[stamp.id]) r._admin_edit_url = stamp.build(websiteId, r[stamp.id]);
+                }
+              }
             }
           }
         }
