@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.595] - 2026-08-19
+
+### Fixed
+
+- **npm transport: EAV keys now survive the write-echo keep-set.** `applyWriteLean`'s agent-sent merge only saw the post-split native keys, so a just-refreshed custom field was stripped from the echoed record on the npm transport (the hosted Worker already passed the pre-split arguments and was unaffected). The EAV keys now ride the sentKeys merge, completing the stale-echo fix from 6.58.594 on both transports.
+
 ## [6.58.594] - 2026-08-19
 
 ### Fixed

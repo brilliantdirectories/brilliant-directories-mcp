@@ -6510,7 +6510,7 @@ async function main() {
         else if (isMenuItemReadTool) result.body = applyMenuItemLean(result.body, includeFlags);
         else if (isPhotoReadTool) result.body = applyPhotoLean(result.body, includeFlags);
         else if (name === "getSiteInfo") result.body = alignSiteInfoScheme(applySiteInfoNow(result.body), config.apiUrl);
-        else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}));
+        else if (WRITE_KEEP_SETS[name]) result.body = applyWriteLean(name, result.body, Object.keys(bodyParams || {}).concat(Object.keys(eavQueued || {})));
         attachPublicUrl(result.body, name, config.apiUrl);
 
         // Default-deny reserved data_types on listPostTypes / getPostType.
