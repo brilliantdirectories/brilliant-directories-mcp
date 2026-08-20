@@ -19,6 +19,10 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 
 **Missing tool you'd expect (e.g. `createForm`, `createMenu`, `createWidget`, `listSingleImagePosts`)?** The API key doesn't have that endpoint enabled. Tell the user: *"In BD admin → Developer Hub → your API key → edit Permissions → enable the resource. Works immediately."* Don't work around the gap (e.g. writing to `users_meta` directly).
 
+### Rule: Permission denied at call time
+
+**A tool present in the catalog can still return HTTP 403 when called** — the API key's permission for that endpoint was removed or never seeded. Tell the user: *"In BD admin → Developer Hub → your API key → edit Permissions → enable the endpoint → Save. Works immediately."* Don't retry and don't work around it (same boundary as **Rule: Missing tool**).
+
 ### Rule: List-first
 
 **Prefer `list*` + client-side filter over per-record `get*` probing.** BD `list*` responses include the same fields as `get*` (post type markers, classification flags, status, etc.) — call list once, filter in-memory, hit `get*` only when you need the full record for a confirmed candidate. Per-record fishing burns the rate limit and the context window.
