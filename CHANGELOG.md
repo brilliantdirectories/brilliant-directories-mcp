@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.593] - 2026-08-19
+
 ### Added
 
 - **`Rule: Permission denied at call time` in the agent instructions.** A tool present in the catalog can still return HTTP 403 (the key's endpoint permission was removed or never seeded — the catalog is not permission-filtered). The rule directs the agent to relay the Developer Hub → Permissions fix and forbids retrying or working around the denial, closing the gap next to `Rule: Missing tool`. Pairs with the hosted Worker's new caller-aware 401/403 error messages.
