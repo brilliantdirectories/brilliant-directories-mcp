@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.594] - 2026-08-19
+
+### Fixed
+
+- **EAV writes no longer echo the pre-write value beside a success receipt.** The record BD returns on an inverse-EAV update (`updateUser`, `updateWebPage`) is fetched before the users_meta flush, so a just-written custom field echoed its old value while `eav_results` reported `success` — agents misread the contradiction as a failed write and retried. Successfully `created`/`updated` keys are now refreshed in the echoed record with the stored value; `no_change` results keep the old echo because the database genuinely still holds it. Live-verified on both transports.
+
 ## [6.58.593] - 2026-08-19
 
 ### Added

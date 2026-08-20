@@ -6419,6 +6419,16 @@ async function main() {
         if (parentId) {
           const eavResults = await writeEavFields(config, eavRoute, parentId, eavQueued);
           result.body.eav_results = eavResults;
+          // BD fetches the echoed record BEFORE the EAV flush — refresh written
+          // keys so agents don't misread the stale echo as a failed write.
+          // `no_change` keeps the old echo: the DB really does still hold it.
+          if (result.body.message && typeof result.body.message === "object") {
+            for (const r of eavResults) {
+              if (r && r.status === "success" && (r.action === "created" || r.action === "updated") && eavQueued[r.key] !== undefined) {
+                result.body.message[r.key] = String(eavQueued[r.key]);
+              }
+            }
+          }
           // Partial-write surfacing: if any individual EAV write failed (e.g.
           // BD rate-limited mid-bundle with HTTP 429), the top-level response
           // is still "success" but the hero/EAV state is half-written.
