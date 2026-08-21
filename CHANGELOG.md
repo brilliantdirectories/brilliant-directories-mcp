@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.601] - 2026-08-21
+
+### Fixed
+
+- **`createCategoryTree` silently dropped `sub_categories` when passed as a comma-separated string** — the shape BD's own CSV-import documentation uses for the `services` column, so a caller reaching for it is likely. The call returned `success` with only the top category created and the sub-categories missing from the site. A string is now split on commas, matching that convention; the embedded-comma rejection still applies to array entries, where a comma is unambiguous.
+- Non-object entries in `groups` now return an error naming the expected shape instead of a bare "needs a top_category".
+
 ## [6.58.600] - 2026-08-21
 
 ### Fixed

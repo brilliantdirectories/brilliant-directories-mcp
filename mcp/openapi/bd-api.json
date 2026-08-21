@@ -11775,7 +11775,7 @@
                         },
                         "sub_categories": {
                           "type": "array",
-                          "description": "Sub-category names under this top. Use `Parent=>Child` (exactly one `=>`) to nest a third level; an existing `Parent` is reused. No commas in names.",
+                          "description": "Sub-category names under this top, as an array (a comma-separated string is also accepted). Use `Parent=>Child` (exactly one `=>`) to nest a third level; an existing `Parent` is reused. No commas inside a name.",
                           "items": {
                             "type": "string"
                           }

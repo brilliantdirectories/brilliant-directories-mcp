@@ -339,14 +339,19 @@ async function buildCategoryTree(config, args) {
   const plan = [];
   for (const g of groups) {
     const top = g && typeof g === "object" ? String(g.top_category === undefined ? "" : g.top_category).trim() : "";
-    if (!top) return { status: "error", message: "every group needs a non-empty top_category." };
-    const raw = g && Array.isArray(g.sub_categories) ? g.sub_categories : [];
+    if (!top) return { status: "error", message: 'every group must be an object with a non-empty top_category, e.g. { "top_category": "Surf Shops", "sub_categories": ["Surfboards"] }.' };
+    // A CSV string is BD's own `services` convention, so models pass one; dropping it
+    // would report success with the sub-categories silently missing.
+    const rawField = g ? g.sub_categories : undefined;
+    const raw = Array.isArray(rawField)
+      ? rawField
+      : (typeof rawField === "string" ? rawField.split(",") : []);
     const subs = [];
     for (const item of raw) {
       const s = String(item).trim();
       if (s === "") continue;
       // `services` is comma-separated: an embedded comma silently splits one name into two.
-      if (s.indexOf(",") !== -1) {
+      if (Array.isArray(rawField) && s.indexOf(",") !== -1) {
         return { status: "error", message: 'sub-category "' + s + '" contains a comma, which BD treats as a separator between names. Remove the comma, or list the parts as separate entries.' };
       }
       const parts = s.split("=>");
