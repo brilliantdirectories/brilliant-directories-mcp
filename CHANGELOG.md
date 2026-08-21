@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.607] - 2026-08-21
+
+### Fixed
+
+- **A long non-Latin category name produced a slug the browser cannot decode.** The percent-encoded fallback was truncated at 120 characters of *encoded* text, which cuts a multi-byte UTF-8 sequence in half — an 18-character Chinese name yielded a slug ending in a partial sequence that fails `decodeURIComponent` outright, so the category's public URL was broken. The slug is now built one source character at a time and stops before the limit, so every emitted slug decodes. Verified live end to end.
+
 ## [6.58.606] - 2026-08-21
 
 ### Fixed
