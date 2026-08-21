@@ -338,6 +338,10 @@ async function buildCategoryTree(config, args) {
   if (!groups || groups.length === 0) {
     return { status: "error", message: "groups is required and must be a non-empty array of { top_category, sub_categories }." };
   }
+  // A run killed for exceeding the request budget never reaches the temp-member cleanup.
+  if (groups.length > 25) {
+    return { status: "error", message: `groups has ${groups.length} entries; 25 is the maximum per call. Send the first 25, wait for the response, then send the rest — top categories already created are matched by name and reused.` };
+  }
   // Validate every name before the first write — a rejected call must leave nothing behind.
   const plan = [];
   for (const g of groups) {
@@ -346,6 +350,9 @@ async function buildCategoryTree(config, args) {
     // A CSV string is BD's own `services` convention, so models pass one; dropping it
     // would report success with the sub-categories silently missing.
     const rawField = g ? g.sub_categories : undefined;
+    if (rawField !== undefined && rawField !== null && !Array.isArray(rawField) && typeof rawField !== "string") {
+      return { status: "error", message: `sub_categories for "${top}" must be an array of names; received ${typeof rawField}. Nothing was created.` };
+    }
     const raw = Array.isArray(rawField)
       ? rawField
       : (typeof rawField === "string" ? rawField.split(",") : []);

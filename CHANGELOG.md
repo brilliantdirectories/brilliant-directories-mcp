@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.605] - 2026-08-21
+
+### Fixed
+
+- **`sub_categories` of any type other than array or string was silently dropped.** `sub_categories: 123` or an object returned `success` with `sub_status: none requested` and created only the top category — the same silent-loss shape as the comma-separated-string case fixed in 6.58.601, which the earlier fix did not close. Anything that is not an array or a string is now rejected, naming the received type, before any write. `null` still means "no sub-categories", unchanged.
+- **`groups` is capped at 25 entries per call.** A run long enough to exceed the hosted Worker's request budget is killed before the temporary member is deleted, leaving it behind — the one path that could orphan one. The cap bounds the work instead of trusting the caller to; the rejection tells the caller to send the rest in a later call, where existing top categories are matched by name and reused. Measured headroom: 10 groups with 40 sub-categories completes in 8 seconds.
+
 ## [6.58.604] - 2026-08-21
 
 ### Fixed
