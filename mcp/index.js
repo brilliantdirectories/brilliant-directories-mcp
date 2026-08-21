@@ -277,102 +277,157 @@ async function fetchImageDimensionsForUrl(url) {
   }
 }
 
-// BD creates categories only as a side effect of a member write (profession_name →
-// top, services CSV → subs, `Sub=>SubSub` → third tier), so this borrows a temp member
-// and deletes it; the categories survive. Per-row createTopCategory/createSubCategory
-// each cost 5 slug probes, tripping BD's 100/60s limit on a large taxonomy.
+// Top categories are created directly (BD returns the new profession_id), then all of a
+// group's sub-categories are created in ONE write through a temporary member — BD's only
+// bulk path (services CSV auto-creates; `Sub=>SubSub` nests a third tier). The temp member
+// is deleted afterwards; the categories survive.
+// Never resolve a category by NAME mid-run: BD list reads don't see rows written moments
+// earlier, so same-name calls in quick succession silently duplicate. Ids are read once, up
+// front, and reused.
 // Mirrored in the Worker — keep in step.
+function aicSlugify(name) {
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "category";
+}
+
 async function buildCategoryTree(config, args) {
   const groups = args && Array.isArray(args.groups) ? args.groups : null;
   if (!groups || groups.length === 0) {
     return { status: "error", message: "groups is required and must be a non-empty array of { top_category, sub_categories }." };
   }
-  // Validate before the first write — a bad name must not leave a half-built tree.
+  // Validate every name before the first write — a rejected call must leave nothing behind.
   const plan = [];
   for (const g of groups) {
     const top = g && typeof g === "object" ? String(g.top_category === undefined ? "" : g.top_category).trim() : "";
     if (!top) return { status: "error", message: "every group needs a non-empty top_category." };
-    const subs = g && Array.isArray(g.sub_categories)
-      ? g.sub_categories.map((s) => String(s).trim()).filter((s) => s !== "")
-      : [];
-    // `services` is comma-separated: an embedded comma silently splits one name into two.
-    const comma = subs.find((s) => s.indexOf(",") !== -1);
-    if (comma) {
-      return { status: "error", message: `sub-category name "${comma}" contains a comma, which BD's services parameter treats as a separator. Rename it, or add that one afterwards with createSubCategory.` };
+    const raw = g && Array.isArray(g.sub_categories) ? g.sub_categories : [];
+    const subs = [];
+    for (const item of raw) {
+      const s = String(item).trim();
+      if (s === "") continue;
+      // `services` is comma-separated: an embedded comma silently splits one name into two.
+      if (s.indexOf(",") !== -1) {
+        return { status: "error", message: 'sub-category "' + s + '" contains a comma, which BD treats as a separator between names. Remove the comma, or list the parts as separate entries.' };
+      }
+      const parts = s.split("=>");
+      if (parts.length > 2) {
+        return { status: "error", message: 'sub-category "' + s + '" chains more than one "=>". BD nests exactly two levels here ("Sub=>SubSub"); add the deeper level in a second call as "SubSub=>Deeper".' };
+      }
+      if (parts.some((x) => x.trim() === "")) {
+        return { status: "error", message: 'sub-category "' + s + '" has an empty name on one side of "=>". Write it as "Sub=>SubSub".' };
+      }
+      subs.push(parts.map((x) => x.trim()).join("=>"));
     }
     plan.push({ top, subs });
   }
 
-  let planId = args.subscription_id;
-  if (!planId) {
-    const plans = await makeRequest(config, "GET", "/api/v2/subscription_types/get", { limit: 1 }, null);
-    const rows = plans && plans.body && Array.isArray(plans.body.message) ? plans.body.message : [];
-    planId = rows.length && rows[0] ? rows[0].subscription_id : null;
-    if (!planId) return { status: "error", message: "Could not resolve a membership plan for the temporary member. Pass subscription_id explicitly." };
+  // One read, up front: existing tops by name (case-insensitive, as BD matches) + taken slugs.
+  const idByName = {};
+  const takenSlugs = {};
+  try {
+    const tops = await makeRequest(config, "GET", "/api/v2/list_professions/get", { limit: 100 }, null);
+    const rows = tops && tops.body && Array.isArray(tops.body.message) ? tops.body.message : [];
+    for (const r of rows) {
+      if (!r) continue;
+      if (r.name) idByName[String(r.name).toLowerCase()] = r.profession_id;
+      if (r.filename) takenSlugs[String(r.filename).toLowerCase()] = true;
+    }
+  } catch {
+    return { status: "error", message: "Could not read the site's existing top categories; nothing was created. Retry." };
   }
 
-  const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const results = [];
-  let muleId = null;
-  let created = 0;
-  try {
-    for (const step of plan) {
-      const fields = { profession_name: step.top, services: step.subs.join(","), create_new_categories: 1 };
-      let resp;
-      if (muleId === null) {
+  for (const step of plan) {
+    const key = step.top.toLowerCase();
+    if (idByName[key] !== undefined) {
+      results.push({ top_category: step.top, profession_id: idByName[key], sub_categories: step.subs, top_status: "existing" });
+      continue;
+    }
+    let slug = aicSlugify(step.top);
+    if (takenSlugs[slug]) {
+      let n = 1;
+      while (n <= 20 && takenSlugs[slug + "-" + n]) n++;
+      slug = slug + "-" + n;
+    }
+    const resp = await makeRequest(config, "POST", "/api/v2/list_professions/create", null, { name: step.top, filename: slug });
+    const id = resp && resp.body && resp.body.message ? resp.body.message.profession_id : null;
+    if (!id) {
+      results.push({ top_category: step.top, sub_categories: step.subs, top_status: "error", message: resp && resp.body ? String(resp.body.message) : "top category create failed" });
+      continue;
+    }
+    idByName[key] = id;
+    takenSlugs[slug] = true;
+    results.push({ top_category: step.top, profession_id: id, sub_categories: step.subs, top_status: "created" });
+  }
+
+  const needSubs = results.filter((r) => r.profession_id !== undefined && r.sub_categories.length > 0);
+  let cleanup = "";
+  if (needSubs.length > 0) {
+    let planId = args.subscription_id;
+    if (!planId) {
+      const plans = await makeRequest(config, "GET", "/api/v2/subscription_types/get", { limit: 1 }, null);
+      const rows = plans && plans.body && Array.isArray(plans.body.message) ? plans.body.message : [];
+      planId = rows.length && rows[0] ? rows[0].subscription_id : null;
+    }
+    if (!planId) {
+      for (const r of needSubs) { r.sub_status = "error"; r.message = "no membership plan available for the temporary member; pass subscription_id"; }
+    } else {
+      const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      let muleId = null;
+      try {
         // active=1 is BD's "Not Active" — the temp member is never publicly visible.
-        resp = await makeRequest(config, "POST", "/api/v2/user/create", null, Object.assign({
-          email: `mcp-taxonomy-${stamp}@example.invalid`,
-          password: `Tx${stamp}!9z`,
+        const mk = await makeRequest(config, "POST", "/api/v2/user/create", null, {
+          email: "mcp-taxonomy-" + stamp + "@example.invalid",
+          password: "Tx" + stamp + "!9z",
           subscription_id: planId,
           first_name: "Taxonomy",
           last_name: "Builder",
           active: 1,
-        }, fields));
-        const body = resp && resp.body;
-        muleId = body && body.message && body.message.user_id ? body.message.user_id : null;
+        });
+        muleId = mk && mk.body && mk.body.message ? mk.body.message.user_id : null;
         if (!muleId) {
-          return { status: "error", message: `Could not create the temporary member used to build categories: ${body && body.message ? JSON.stringify(body.message) : "unknown error"}`, groups_created: 0 };
+          for (const r of needSubs) { r.sub_status = "error"; r.message = "could not create the temporary member used to add sub-categories"; }
+        } else {
+          for (const r of needSubs) {
+            const up = await makeRequest(config, "PUT", "/api/v2/user/update", null, {
+              user_id: muleId,
+              profession_id: r.profession_id,
+              services: r.sub_categories.join(","),
+              create_new_categories: 1,
+            });
+            const ok = !!(up && up.body && up.body.status === "success");
+            r.sub_status = ok ? "created" : "error";
+            if (!ok) r.message = up && up.body ? String(up.body.message) : "sub-category write failed";
+          }
         }
-      } else {
-        resp = await makeRequest(config, "PUT", "/api/v2/user/update", null, Object.assign({ user_id: muleId }, fields));
+      } finally {
+        if (muleId !== null) {
+          let removed = false;
+          try {
+            const del = await makeRequest(config, "DELETE", "/api/v2/user/delete", null, { user_id: muleId });
+            removed = !!(del && del.body && del.body.status === "success");
+          } catch { removed = false; }
+          // A surviving temp member is the only artifact this can leave — never swallow it.
+          cleanup = removed ? "temporary member deleted" : "TEMPORARY MEMBER NOT DELETED (user_id=" + muleId + ") — remove it with deleteUser; the categories are unaffected.";
+        }
       }
-      const ok = resp && resp.body && resp.body.status === "success";
-      if (ok) created++;
-      results.push({ top_category: step.top, sub_categories: step.subs, status: ok ? "created" : "error", message: ok ? undefined : (resp && resp.body ? String(resp.body.message) : "write failed") });
-    }
-  } finally {
-    if (muleId !== null) {
-      let removed = false;
-      try {
-        const del = await makeRequest(config, "DELETE", "/api/v2/user/delete", null, { user_id: muleId });
-        removed = !!(del && del.body && del.body.status === "success");
-      } catch { removed = false; }
-      // A surviving temp member is the only artifact this can leave — never swallow it.
-      results.cleanup = removed
-        ? "temporary member deleted"
-        : `TEMPORARY MEMBER NOT DELETED (user_id=${muleId}) — delete it with deleteUser; the categories are unaffected.`;
     }
   }
 
-  // Resolve ids so the caller can assign members without re-listing.
-  let idByName = {};
-  try {
-    const tops = await makeRequest(config, "GET", "/api/v2/list_professions/get", { limit: 100 }, null);
-    const rows = tops && tops.body && Array.isArray(tops.body.message) ? tops.body.message : [];
-    // Keyed lower-case: BD matches an existing category name case-insensitively, so a
-    // caller's casing can differ from the stored row.
-    for (const r of rows) if (r && r.name) idByName[String(r.name).toLowerCase()] = r.profession_id;
-  } catch { idByName = {}; }
-  for (const r of results) if (idByName[r.top_category.toLowerCase()] !== undefined) r.profession_id = idByName[r.top_category.toLowerCase()];
-
+  const failed = results.filter((r) => r.top_status === "error" || r.sub_status === "error");
   return {
-    status: created === plan.length ? "success" : "error",
+    status: failed.length === 0 ? "success" : "error",
     message: {
-      groups_created: created,
       groups_requested: plan.length,
-      temp_member: results.cleanup,
-      groups: results.map((r) => ({ top_category: r.top_category, profession_id: r.profession_id, sub_categories: r.sub_categories, status: r.status, message: r.message })),
+      groups_completed: results.length - failed.length,
+      temp_member: cleanup || "not needed (no sub-categories requested)",
+      groups: results.map((r) => ({
+        top_category: r.top_category,
+        profession_id: r.profession_id,
+        top_status: r.top_status,
+        sub_categories: r.sub_categories,
+        sub_status: r.sub_categories.length ? (r.sub_status || "not attempted") : "none requested",
+        message: r.message,
+      })),
     },
   };
 }

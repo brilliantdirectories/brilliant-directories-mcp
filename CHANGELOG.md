@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.599] - 2026-08-21
+
+### Changed
+
+- **`createCategoryTree` resolves category ids explicitly instead of by name mid-run.** Top categories are now created directly (BD returns the new `profession_id`) and existing ones are matched from a single up-front read, so a group naming an existing top reuses it — reported as `top_status: existing`. Sub-categories still ride one bulk write per group. Verified live: adding a sub under an existing top, and nesting a sub-sub under an *existing* sub, both reuse their parents instead of duplicating.
+- **Malformed nesting is rejected before any write.** `A=>B=>C` (more than one arrow) and an empty name on either side of `=>` previously created literal garbage rows such as `BB Dangling=>`, or silently dropped the third level. Both now return an explicit error naming the offending entry, and nothing is written.
+- Response now reports `top_status` (`created` / `existing`) and `sub_status` per group, plus `groups_completed`.
+
 ## [6.58.598] - 2026-08-21
 
 ### Changed
