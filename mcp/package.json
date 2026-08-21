@@ -2,7 +2,7 @@
   "name": "brilliant-directories-mcp",
   "mcpName": "io.github.brilliantdirectories/brilliant-directories-mcp",
   "version": "6.58.602",
-  "description": "Official MCP server for Brilliant Directories — manage members, posts, leads, reviews, and more.",
+  "description": "Official MCP server for Brilliant Directories \u2014 manage members, posts, leads, reviews, and more.",
   "main": "index.js",
   "bin": {
     "brilliant-directories-mcp": "index.js"
@@ -55,5 +55,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "overrides": {
+    "fast-uri": "4.1.2"
   }
 }
