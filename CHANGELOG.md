@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.608] - 2026-08-21
+
+### Fixed
+
+- **Accented names lost the accented letter entirely in their slug.** "Restaurants, Cafés & Nightlife" became `restaurants-caf-s-nightlife` because the diacritic was stripped as a non-Latin character, splitting the word. Diacritics are now folded to their base letter first, so it becomes `restaurants-cafes-nightlife` (also `Zürich` → `zurich`, `Résumé` → `resume`). Observed on a real taxonomy build.
+
+### Added
+
+- **`sub_categories_created` in the response** — the total across all groups. The response listed every name but no count, so a caller summarising the result had to add them up by hand; a live run created 44 sub-categories and reported 43 to the customer. The number is now supplied rather than derived.
+
 ## [6.58.607] - 2026-08-21
 
 ### Fixed

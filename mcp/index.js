@@ -327,7 +327,8 @@ async function _takenSlugsFor(config, slugs) {
 // front, and reused.
 // Mirrored in the Worker — keep in step.
 function aicSlugify(name) {
-  const ascii = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  // Fold diacritics first: stripping them outright turns "Cafés" into "caf-s".
+  const ascii = String(name).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
   if (ascii) return ascii;
   // A name with no Latin characters percent-encodes, which is what BD itself stores
   // for sub-category slugs — a shared generic fallback would collide across every name.
@@ -400,8 +401,14 @@ async function buildCategoryTree(config, args) {
     return { status: "error", message: "Could not read the site's existing top categories; nothing was created. Retry." };
   }
   // Cross-namespace collision check for the tops we may have to create.
+  // Probe the suffix variants too: a collision is resolved by appending -1..-3, and those
+  // variants can themselves be taken by a web page, plan or member profile.
   const candidateSlugs = [];
-  for (const step of plan) if (idByName[step.top.toLowerCase()] === undefined) candidateSlugs.push(step.wantSlug || aicSlugify(step.top));
+  for (const step of plan) {
+    if (idByName[step.top.toLowerCase()] !== undefined) continue;
+    const base = step.wantSlug || aicSlugify(step.top);
+    candidateSlugs.push(base, base + "-1", base + "-2", base + "-3");
+  }
   if (candidateSlugs.length) {
     const foreign = await _takenSlugsFor(config, candidateSlugs);
     for (const k in foreign) takenSlugs[k] = true;
@@ -417,7 +424,11 @@ async function buildCategoryTree(config, args) {
     let slug = step.wantSlug || aicSlugify(step.top);
     if (takenSlugs[slug]) {
       let n = 1;
-      while (n <= 20 && takenSlugs[slug + "-" + n]) n++;
+      while (n <= 3 && takenSlugs[slug + "-" + n]) n++;
+      if (n > 3) {
+        results.push({ top_category: step.top, sub_categories: step.subs, top_status: "error", message: `the URL slug "${slug}" and its -1, -2 and -3 variants are all in use elsewhere on this site. Give this category a more distinct name, or pass a filename for it.` });
+        continue;
+      }
       slug = slug + "-" + n;
     }
     const resp = await makeRequest(config, "POST", "/api/v2/list_professions/create", null, { name: step.top, filename: slug });
@@ -491,6 +502,7 @@ async function buildCategoryTree(config, args) {
     message: {
       groups_requested: plan.length,
       groups_completed: results.length - failed.length,
+      sub_categories_created: results.reduce((n, r) => n + (r.sub_status === "created" ? r.sub_categories.length : 0), 0),
       temp_member: cleanup || (needSubs.length ? "no temporary member was created" : "not needed (no sub-categories requested)"),
       groups: results.map((r) => ({
         top_category: r.top_category,
