@@ -277,6 +277,104 @@ async function fetchImageDimensionsForUrl(url) {
   }
 }
 
+// BD creates categories only as a side effect of a member write (profession_name →
+// top, services CSV → subs, `Sub=>SubSub` → third tier), so this borrows a temp member
+// and deletes it; the categories survive. Per-row createTopCategory/createSubCategory
+// each cost 5 slug probes, tripping BD's 100/60s limit on a large taxonomy.
+// Mirrored in the Worker — keep in step.
+async function buildCategoryTree(config, args) {
+  const groups = args && Array.isArray(args.groups) ? args.groups : null;
+  if (!groups || groups.length === 0) {
+    return { status: "error", message: "groups is required and must be a non-empty array of { top_category, sub_categories }." };
+  }
+  // Validate before the first write — a bad name must not leave a half-built tree.
+  const plan = [];
+  for (const g of groups) {
+    const top = g && typeof g === "object" ? String(g.top_category === undefined ? "" : g.top_category).trim() : "";
+    if (!top) return { status: "error", message: "every group needs a non-empty top_category." };
+    const subs = g && Array.isArray(g.sub_categories)
+      ? g.sub_categories.map((s) => String(s).trim()).filter((s) => s !== "")
+      : [];
+    // `services` is comma-separated: an embedded comma silently splits one name into two.
+    const comma = subs.find((s) => s.indexOf(",") !== -1);
+    if (comma) {
+      return { status: "error", message: `sub-category name "${comma}" contains a comma, which BD's services parameter treats as a separator. Rename it, or add that one afterwards with createSubCategory.` };
+    }
+    plan.push({ top, subs });
+  }
+
+  let planId = args.subscription_id;
+  if (!planId) {
+    const plans = await makeRequest(config, "GET", "/api/v2/subscription_types/get", { limit: 1 }, null);
+    const rows = plans && plans.body && Array.isArray(plans.body.message) ? plans.body.message : [];
+    planId = rows.length && rows[0] ? rows[0].subscription_id : null;
+    if (!planId) return { status: "error", message: "Could not resolve a membership plan for the temporary member. Pass subscription_id explicitly." };
+  }
+
+  const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const results = [];
+  let muleId = null;
+  let created = 0;
+  try {
+    for (const step of plan) {
+      const fields = { profession_name: step.top, services: step.subs.join(","), create_new_categories: 1 };
+      let resp;
+      if (muleId === null) {
+        // active=1 is BD's "Not Active" — the temp member is never publicly visible.
+        resp = await makeRequest(config, "POST", "/api/v2/user/create", null, Object.assign({
+          email: `mcp-taxonomy-${stamp}@example.invalid`,
+          password: `Tx${stamp}!9z`,
+          subscription_id: planId,
+          first_name: "Taxonomy",
+          last_name: "Builder",
+          active: 1,
+        }, fields));
+        const body = resp && resp.body;
+        muleId = body && body.message && body.message.user_id ? body.message.user_id : null;
+        if (!muleId) {
+          return { status: "error", message: `Could not create the temporary member used to build categories: ${body && body.message ? JSON.stringify(body.message) : "unknown error"}`, groups_created: 0 };
+        }
+      } else {
+        resp = await makeRequest(config, "PUT", "/api/v2/user/update", null, Object.assign({ user_id: muleId }, fields));
+      }
+      const ok = resp && resp.body && resp.body.status === "success";
+      if (ok) created++;
+      results.push({ top_category: step.top, sub_categories: step.subs, status: ok ? "created" : "error", message: ok ? undefined : (resp && resp.body ? String(resp.body.message) : "write failed") });
+    }
+  } finally {
+    if (muleId !== null) {
+      let removed = false;
+      try {
+        const del = await makeRequest(config, "DELETE", "/api/v2/user/delete", null, { user_id: muleId });
+        removed = !!(del && del.body && del.body.status === "success");
+      } catch { removed = false; }
+      // A surviving temp member is the only artifact this can leave — never swallow it.
+      results.cleanup = removed
+        ? "temporary member deleted"
+        : `TEMPORARY MEMBER NOT DELETED (user_id=${muleId}) — delete it with deleteUser; the categories are unaffected.`;
+    }
+  }
+
+  // Resolve ids so the caller can assign members without re-listing.
+  let idByName = {};
+  try {
+    const tops = await makeRequest(config, "GET", "/api/v2/list_professions/get", { limit: 100 }, null);
+    const rows = tops && tops.body && Array.isArray(tops.body.message) ? tops.body.message : [];
+    for (const r of rows) if (r && r.name) idByName[String(r.name)] = r.profession_id;
+  } catch { idByName = {}; }
+  for (const r of results) if (idByName[r.top_category] !== undefined) r.profession_id = idByName[r.top_category];
+
+  return {
+    status: created === plan.length ? "success" : "error",
+    message: {
+      groups_created: created,
+      groups_requested: plan.length,
+      temp_member: results.cleanup,
+      groups: results.map((r) => ({ top_category: r.top_category, profession_id: r.profession_id, sub_categories: r.sub_categories, status: r.status, message: r.message })),
+    },
+  };
+}
+
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
 // each resolving independently — a 404/timeout/parse failure is isolated as that
 // URL's own error entry, the rest of the batch unaffected.
@@ -2015,6 +2113,7 @@ const PARENT_TABLE_NATIVE_COLUMNS = {
     "nationwide", "cv", "work_experience", "rep_matters", "gmap",
     "listing_type", "lat", "lon", "no_geo", "user_consent", "search_description",
     "services", // passthrough write-param (BD expands CSV → rel_services links); native so it isn't EAV-diverted
+    "profession_name", // same class as services: BD resolves/creates the top category from the name; EAV-diverting it orphaned the categories
 
   ]),
   data_posts: new Set([
@@ -5213,6 +5312,15 @@ async function main() {
     // whichever layout_group row comes back. We match that behavior: N parallel calls
     // (one per slot in our mapping), each filtered by setting_name only.
     // Rate limit: 20 parallel reads is comfortably under BD's 100 req/60s default.
+    // Synthetic tool: createCategoryTree — wrapper-native, orchestrates BD writes.
+    if (name === "createCategoryTree") {
+      const tree = await buildCategoryTree(config, args || {});
+      return {
+        content: [{ type: "text", text: JSON.stringify(tree, null, 2) }],
+        isError: tree.status === "error",
+      };
+    }
+
     // Synthetic tool: getImageDimensions — wrapper-native, does NOT proxy to BD.
     if (name === "getImageDimensions") {
       if (args && args.urls !== undefined) {

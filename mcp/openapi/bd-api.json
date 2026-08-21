@@ -11746,6 +11746,70 @@
         },
         "description": "Permanently delete a TOP-level member category by `profession_id`. Destructive - cannot be undone via API.\n\n**Use when:** removing an unused top-level category. Any members with matching `profession_id` become orphaned - reassign them first. Any Sub Categories (`list_services` rows) under this top also orphan - delete or re-parent them.\n\n**Required:** `profession_id`.\n\n**Destructive:** confirm intent with the user. Members who referenced this `profession_id` will have orphan references. Sub Categories under this top (with matching `profession_id` in `list_services`) also become orphaned - consider reassigning or deleting them first.\n\n**Bound-page caveat:** if this category's `filename` has a `seo_type=profile_search_results` web page bound to it, deleting the category orphans that page (it'll render empty — no category to query). The wrapper rejects deletes that would orphan a bound page — delete or repurpose the bound page first.\n\n**See also:** `updateTopCategory` (modify without removing).\n\n**Returns:** `{ status: \"success\", message: \"list_professions record was deleted\" }`.\n\n\n\n**How a member gets classified on their public profile:**\n\n- `users_data.profession_id` -> points at a single Top Category (the member's primary classification; shown in URL slug)\n\n- `users_data.services` -> CSV of Sub Category IDs the member is tagged with (multiple allowed; simpler than the join table)\n\n- `rel_services` rows (Member ↔ Sub Category links) -> used when you need per-link metadata like `avg_price`, `specialty`, `num_completed`. Optional; most sites use just the CSV field.\n\n**Sub-sub-categories:** `createSubCategory` with `master_id=<parent service_id>` creates a Sub Category nested under another Sub Category (a \"sub-sub\"). `master_id=0` (default) means the Sub Category sits directly under a Top Category (the `profession_id`).\n\n**There is NO `createProfession` or `createService` tool in this MCP** — those are BD's internal table names. Use `createTopCategory` / `createSubCategory` instead (BD's table-name → tool-name mapping is documented in **Rule: Table to endpoint**).\n\n\n"
       }
+    },
+    "/_synthetic/category_tree": {
+      "post": {
+        "operationId": "createCategoryTree",
+        "summary": "Create a full category taxonomy (tops + subs + sub-subs) in one call.",
+        "description": "Wrapper-native synthetic tool. Creates a whole member-category taxonomy — top categories, their sub-categories, and optional sub-sub-categories — in ONE call.\n\n**Use when:** building or extending a site's category structure, especially more than one or two rows (new-site setup, a customer pasting a category list). Prefer this over looping `createTopCategory` / `createSubCategory`: those fire five slug-namespace probe reads before each write, so a 55-category taxonomy costs ~330 BD calls and trips BD's 100-requests-per-60-seconds site limit part-way through, leaving a half-built tree. This tool builds the same taxonomy in a handful of calls.\n\n**Required:** `groups` — an array of `{ top_category, sub_categories }`.\n\n**Nesting a third tier:** write a sub-category as `Parent=>Child`; `Child` is created underneath `Parent`. Example: `sub_categories: [\"Surf Lessons\", \"Surf Camps=>Kids Camps\"]`.\n\n**Sub-category names must not contain commas** (BD's underlying parameter is comma-separated, so a comma splits one category into two). The call is rejected before any write if one does — rename it, or add that single category afterwards with `createSubCategory`. Top category names may contain commas.\n\n**How it works:** BD only creates categories as a side effect of writing a member, so the wrapper borrows one temporary member (created Not Active, never publicly visible), builds every group through it, then deletes it. The categories are unaffected by that deletion. If the cleanup ever fails, the response says so and names the `user_id` to remove — it is never silent.\n\n**Existing names are reused, not duplicated:** BD matches an existing top category by name rather than creating a second one.\n\n**See also:** `createTopCategory` / `createSubCategory` (single category, when you need per-row control of `filename`, `keywords`, `sort_order`, `lead_price` or `image` — this tool sets names only), `listTopCategories`, `listSubCategories`.\n\n**Returns:** `{ status, message: { groups_created, groups_requested, temp_member, groups: [{ top_category, profession_id, sub_categories, status }] } }`. Each group carries the resolved `profession_id`, ready for `updateUser.profession_id` member assignment.",
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groups": {
+                    "type": "array",
+                    "description": "Category groups to create. Each item: `{ \"top_category\": \"Surf Shops & Equipment\", \"sub_categories\": [\"Surfboards\", \"Wetsuits\", \"Surfboards=>Longboards\"] }`. `sub_categories` is optional — omit or pass an empty array to create the top category alone.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "top_category": {
+                          "type": "string",
+                          "description": "Top-level category name. Reused if it already exists."
+                        },
+                        "sub_categories": {
+                          "type": "array",
+                          "description": "Sub-category names under this top. Use `Parent=>Child` to nest a third tier. No commas in names.",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "top_category"
+                      ]
+                    }
+                  },
+                  "subscription_id": {
+                    "type": "number",
+                    "description": "Membership plan id for the internal temporary member. Optional — the wrapper resolves the site's first plan when omitted."
+                  }
+                },
+                "required": [
+                  "groups"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Taxonomy created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.596] - 2026-08-21
+
+### Added
+
+- **`createCategoryTree` — build a whole member-category taxonomy in one call.** Top categories, their sub-categories, and optional third-tier nesting via `Parent=>Child`, from a single `groups` array. Looping `createTopCategory`/`createSubCategory` costs five slug-namespace probe reads per write, so a 55-category taxonomy ran ~330 BD calls and tripped BD's 100-requests-per-60-seconds site limit part-way, leaving a half-built tree (observed in production). BD only creates categories as a side effect of a member write, so the wrapper borrows one temporary member (created Not Active, never publicly visible), builds every group through it, and deletes it — the categories survive, verified live. A failed cleanup is reported with the `user_id` rather than left silent. Sub-category names containing commas are rejected before any write, since BD's underlying parameter is comma-separated.
+
+### Fixed
+
+- **`profession_name` reached `users_meta` instead of BD.** The inverse-EAV router treats any non-column name as a custom field; `services` was already exempted as a passthrough write-param but its sibling `profession_name` was not, so category assignment by name silently wrote a meta row and left the member at `profession_id 0` — categories created alongside it landed orphaned. Now exempted with `services`.
+
 ## [6.58.595] - 2026-08-19
 
 ### Fixed
