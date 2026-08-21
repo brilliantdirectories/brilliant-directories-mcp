@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.602] - 2026-08-21
+
+### Added
+
+- **Optional per-group `filename` on `createCategoryTree`.** A category name with no Latin letters cannot be slugified, so a Chinese or Arabic taxonomy previously received `category`, `category-1`, `category-2` … for every top category — unique and non-colliding, but useless as URLs. Callers can now supply the slug per group; Latin names still slugify automatically, and namespace collisions are still suffixed.
+
 ## [6.58.601] - 2026-08-21
 
 ### Fixed

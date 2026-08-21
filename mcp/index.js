@@ -363,7 +363,8 @@ async function buildCategoryTree(config, args) {
       }
       subs.push(parts.map((x) => x.trim()).join("=>"));
     }
-    plan.push({ top, subs });
+    const wantSlug = g && g.filename ? aicSlugify(g.filename) : "";
+    plan.push({ top, subs, wantSlug });
   }
 
   // One read, up front: existing tops by name (case-insensitive, as BD matches) + taken slugs.
@@ -381,7 +382,7 @@ async function buildCategoryTree(config, args) {
   }
   // Cross-namespace collision check for the tops we may have to create.
   const candidateSlugs = [];
-  for (const step of plan) if (idByName[step.top.toLowerCase()] === undefined) candidateSlugs.push(aicSlugify(step.top));
+  for (const step of plan) if (idByName[step.top.toLowerCase()] === undefined) candidateSlugs.push(step.wantSlug || aicSlugify(step.top));
   if (candidateSlugs.length) {
     const foreign = await _takenSlugsFor(config, candidateSlugs);
     for (const k in foreign) takenSlugs[k] = true;
@@ -394,7 +395,7 @@ async function buildCategoryTree(config, args) {
       results.push({ top_category: step.top, profession_id: idByName[key], sub_categories: step.subs, top_status: "existing" });
       continue;
     }
-    let slug = aicSlugify(step.top);
+    let slug = step.wantSlug || aicSlugify(step.top);
     if (takenSlugs[slug]) {
       let n = 1;
       while (n <= 20 && takenSlugs[slug + "-" + n]) n++;

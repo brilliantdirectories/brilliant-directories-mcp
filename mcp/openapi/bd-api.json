@@ -11779,6 +11779,10 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "filename": {
+                          "type": "string",
+                          "description": "URL slug for this top category. Optional — defaults to the name, lower-cased and hyphenated. **Supply one when the name has no Latin letters** (a name in Chinese, Arabic, etc. cannot be slugified and falls back to `category`, `category-1`, …). Collisions anywhere in the site URL namespace are suffixed automatically."
                         }
                       },
                       "required": [
