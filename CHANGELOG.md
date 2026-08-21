@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.604] - 2026-08-21
+
+### Fixed
+
+- **`temp_member` claimed "not needed (no sub-categories requested)" when sub-categories WERE requested but the temporary member could not be created** — the one case where every sub-category silently failed was reported as the case where nothing was needed. It now reads `no temporary member was created`, and the `Returns:` block documents all four states the field emits.
+- **The runtime rejection messages contradicted the documented prescriptions.** A comma in a name told the agent to "remove the comma, or list the parts as separate entries" while the description prescribed replacing it with a hyphen; the multi-arrow rejection omitted that the follow-up call must wait for this one to return. Both now match the description word for word.
+
+### Changed
+
+- Category routing prose reviewed across five adversarial passes: the boundary rule is byte-identical in all three tools and no longer vacuous (`filename` is required on `createTopCategory`, so "needs `filename`" was always true — it now reads "a `filename` other than the default slug", and the default slug is defined inside each tool); the retry rule enumerates statuses instead of saying "not `created` or `existing`", which would have re-sent successful top-only groups; `createTopCategory`'s worked example no longer instructs the per-row path the boundary rule forbids; and `Returns:` states that sub-category ids are not returned, routing to `listSubCategories` before member assignment.
+
 ## [6.58.603] - 2026-08-21
 
 ### Changed

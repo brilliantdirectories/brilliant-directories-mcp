@@ -355,11 +355,11 @@ async function buildCategoryTree(config, args) {
       if (s === "") continue;
       // `services` is comma-separated: an embedded comma silently splits one name into two.
       if (Array.isArray(rawField) && s.indexOf(",") !== -1) {
-        return { status: "error", message: 'sub-category "' + s + '" contains a comma, which BD treats as a separator between names. Remove the comma, or list the parts as separate entries.' };
+        return { status: "error", message: 'sub-category "' + s + '" contains a comma, which BD treats as a separator between names. Replace the comma with a hyphen. To create the parts as separate categories instead, send each as its own sub_categories entry.' };
       }
       const parts = s.split("=>");
       if (parts.length > 2) {
-        return { status: "error", message: 'sub-category "' + s + '" chains more than one "=>". BD nests exactly two levels here ("Sub=>SubSub"); add the deeper level in a second call as "SubSub=>Deeper".' };
+        return { status: "error", message: 'sub-category "' + s + '" chains more than one "=>". BD nests exactly two levels here ("Sub=>SubSub"); send the deeper level as "SubSub=>Deeper" in a second call, after this one returns.' };
       }
       if (parts.some((x) => x.trim() === "")) {
         return { status: "error", message: 'sub-category "' + s + '" has an empty name on one side of "=>". Write it as "Sub=>SubSub".' };
@@ -475,7 +475,7 @@ async function buildCategoryTree(config, args) {
     message: {
       groups_requested: plan.length,
       groups_completed: results.length - failed.length,
-      temp_member: cleanup || "not needed (no sub-categories requested)",
+      temp_member: cleanup || (needSubs.length ? "no temporary member was created" : "not needed (no sub-categories requested)"),
       groups: results.map((r) => ({
         top_category: r.top_category,
         profession_id: r.profession_id,
