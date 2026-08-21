@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.603] - 2026-08-21
+
+### Changed
+
+- **Category tool routing now reads identically in all three descriptions.** `createCategoryTree`'s "use for more than one category" and the per-row tools' "use for a SINGLE category" gave an agent two different answers for the same situation. One rule, byte-identical everywhere: the per-row tools are for a single category that needs `desc`, `keywords`, `icon`, `sort_order`, `lead_price`, `image`, or `master_id` at create time; everything else uses `createCategoryTree`.
+- **The concurrency rule is now testable rather than probabilistic.** "Splitting across rapid calls risks duplicates" became: a second call is safe once the first call's response has returned, and two concurrent calls naming the same new top create it twice. The `A=>B=>C` rejection now points at that sequential second call instead of contradicting the send-it-all-in-one-call instruction.
+- **The comma prohibition names its alternative** (separate entries, or a hyphen), and `temp_member` and `sub_status` are defined in the `Returns:` block instead of being returned undocumented.
+
+### Fixed
+
+- **A top category whose name has no Latin characters now percent-encodes its slug, matching what BD already stores for sub-categories** (verified: `冲浪课程` → `%e5%86%b2%e6%b5%aa%e8%af%be%e7%a8%8b`). The previous `category`, `category-1`, … fallback made every non-Latin name collide with every other.
+
 ## [6.58.602] - 2026-08-21
 
 ### Added

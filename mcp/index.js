@@ -327,7 +327,10 @@ async function _takenSlugsFor(config, slugs) {
 // front, and reused.
 // Mirrored in the Worker — keep in step.
 function aicSlugify(name) {
-  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "category";
+  const ascii = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  // A name with no Latin characters percent-encodes, which is what BD itself stores
+  // for sub-category slugs — a shared generic fallback would collide across every name.
+  return ascii || encodeURIComponent(String(name).trim()).toLowerCase().slice(0, 120) || "category";
 }
 
 async function buildCategoryTree(config, args) {
