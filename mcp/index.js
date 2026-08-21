@@ -277,6 +277,47 @@ async function fetchImageDimensionsForUrl(url) {
   }
 }
 
+// Every top category the site has. Paginated: a site with more than one page of
+// categories would otherwise look like it has none beyond the first, and a name
+// already in use would be created a second time.
+async function _allTopCategories(config) {
+  const out = [];
+  let page = null;
+  for (let i = 0; i < 20; i++) {
+    const q = { limit: 100 };
+    if (page) q.page = page;
+    const r = await makeRequest(config, "GET", "/api/v2/list_professions/get", q, null);
+    const body = r && r.body;
+    const rows = body && Array.isArray(body.message) ? body.message : [];
+    out.push.apply(out, rows);
+    page = body && body.next_page ? body.next_page : null;
+    if (!page || rows.length === 0) break;
+  }
+  return out;
+}
+
+// Slugs already taken anywhere in the site URL namespace. A top category shares its
+// URL space with web pages, sub categories, plans and member profiles, so a collision
+// makes which record answers at that path undefined. Probed with one `in` query per
+// table (slugs never contain commas), not one per candidate.
+async function _takenSlugsFor(config, slugs) {
+  const taken = {};
+  if (!slugs.length) return taken;
+  for (const t of SITE_NAMESPACE_TABLES) {
+    try {
+      const r = await makeRequest(config, "GET", "/api/v2/" + _tableEndpoint(t.table) + "/get", {
+        property: t.field,
+        property_value: slugs.join(","),
+        property_operator: "in",
+        limit: 100,
+      }, null);
+      const rows = r && r.body && Array.isArray(r.body.message) ? r.body.message : [];
+      for (const row of rows) if (row && row[t.field]) taken[String(row[t.field]).toLowerCase()] = true;
+    } catch { /* a probe outage must not block the build; suffixing still applies to what we did see */ }
+  }
+  return taken;
+}
+
 // Top categories are created directly (BD returns the new profession_id), then all of a
 // group's sub-categories are created in ONE write through a temporary member — BD's only
 // bulk path (services CSV auto-creates; `Sub=>SubSub` nests a third tier). The temp member
@@ -324,8 +365,7 @@ async function buildCategoryTree(config, args) {
   const idByName = {};
   const takenSlugs = {};
   try {
-    const tops = await makeRequest(config, "GET", "/api/v2/list_professions/get", { limit: 100 }, null);
-    const rows = tops && tops.body && Array.isArray(tops.body.message) ? tops.body.message : [];
+    const rows = await _allTopCategories(config);
     for (const r of rows) {
       if (!r) continue;
       if (r.name) idByName[String(r.name).toLowerCase()] = r.profession_id;
@@ -333,6 +373,13 @@ async function buildCategoryTree(config, args) {
     }
   } catch {
     return { status: "error", message: "Could not read the site's existing top categories; nothing was created. Retry." };
+  }
+  // Cross-namespace collision check for the tops we may have to create.
+  const candidateSlugs = [];
+  for (const step of plan) if (idByName[step.top.toLowerCase()] === undefined) candidateSlugs.push(aicSlugify(step.top));
+  if (candidateSlugs.length) {
+    const foreign = await _takenSlugsFor(config, candidateSlugs);
+    for (const k in foreign) takenSlugs[k] = true;
   }
 
   const results = [];

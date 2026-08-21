@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.600] - 2026-08-21
+
+### Fixed
+
+- **`createCategoryTree` could create a top category whose slug was already in use elsewhere in the site URL namespace.** Creating the category directly skipped the cross-namespace check that `createTopCategory` performs, so a new top named after an existing web page, sub category, plan or member profile slug would leave two records answering the same path. Candidate slugs are now probed against all five namespace tables in one batched query each, and suffixed on collision — verified live: a top named `Bouldering` became `bouldering-1` because sub-category 36 already held `bouldering`.
+- **Existing top categories beyond the first 100 were invisible,** so on a large site a category that already existed would be created a second time. The lookup now pages through the full list.
+
 ## [6.58.599] - 2026-08-21
 
 ### Changed
