@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.598] - 2026-08-21
+
+### Changed
+
+- **`createTopCategory` / `createSubCategory` now point at `createCategoryTree` for multi-category work,** naming the concrete failure (five slug probes per write trips BD's rate limit part-way and leaves a half-built taxonomy). `createSubCategory`'s `name` parameter warns that a comma-separated list creates ONE category literally named `A,B,C` — verified live.
+
+### Fixed
+
+- **`createCategoryTree` returned a null `profession_id` when the caller's casing differed from the stored category name.** BD matches existing categories case-insensitively, so `aa alpha` correctly reused `AA Alpha` but the id lookup missed. Lookup is now case-insensitive.
+
 ## [6.58.597] - 2026-08-21
 
 ### Fixed

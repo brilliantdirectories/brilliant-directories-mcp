@@ -360,9 +360,11 @@ async function buildCategoryTree(config, args) {
   try {
     const tops = await makeRequest(config, "GET", "/api/v2/list_professions/get", { limit: 100 }, null);
     const rows = tops && tops.body && Array.isArray(tops.body.message) ? tops.body.message : [];
-    for (const r of rows) if (r && r.name) idByName[String(r.name)] = r.profession_id;
+    // Keyed lower-case: BD matches an existing category name case-insensitively, so a
+    // caller's casing can differ from the stored row.
+    for (const r of rows) if (r && r.name) idByName[String(r.name).toLowerCase()] = r.profession_id;
   } catch { idByName = {}; }
-  for (const r of results) if (idByName[r.top_category] !== undefined) r.profession_id = idByName[r.top_category];
+  for (const r of results) if (idByName[r.top_category.toLowerCase()] !== undefined) r.profession_id = idByName[r.top_category.toLowerCase()];
 
   return {
     status: created === plan.length ? "success" : "error",
