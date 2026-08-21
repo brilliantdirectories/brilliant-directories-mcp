@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.606] - 2026-08-21
+
+### Fixed
+
+- **The EAV echo refresh did nothing when BD returned the record as a single-row array.** `typeof value === "object"` is true for arrays, so the refresh set a named property on the array rather than on the row inside it, and the pre-write value survived in the echo — the exact contradiction 6.58.594 set out to remove, silently unfixed for that response shape. The wrapper's own write-lean shaper documents that BD echoes this record "sometimes an object, sometimes a single-row array"; both shapes are now refreshed.
+
 ## [6.58.605] - 2026-08-21
 
 ### Fixed

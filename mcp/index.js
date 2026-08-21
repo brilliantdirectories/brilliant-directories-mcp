@@ -6650,10 +6650,12 @@ async function main() {
           // BD fetches the echoed record BEFORE the EAV flush — refresh written
           // keys so agents don't misread the stale echo as a failed write.
           // `no_change` keeps the old echo: the DB really does still hold it.
+          // BD echoes the record as an object or as a single-row array — refresh both shapes.
           if (result.body.message && typeof result.body.message === "object") {
+            const rows = Array.isArray(result.body.message) ? result.body.message : [result.body.message];
             for (const r of eavResults) {
               if (r && r.status === "success" && (r.action === "created" || r.action === "updated") && eavQueued[r.key] !== undefined) {
-                result.body.message[r.key] = String(eavQueued[r.key]);
+                for (const row of rows) if (row && typeof row === "object") row[r.key] = String(eavQueued[r.key]);
               }
             }
           }
