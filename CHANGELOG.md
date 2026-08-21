@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.597] - 2026-08-21
+
+### Fixed
+
+- **`createCategoryTree` declared its request body as `application/json`,** which neither transport reads — both build tool schemas from `application/x-www-form-urlencoded` only. The tool registered with an empty input schema, so an agent could see the tool but not its `groups` parameter. Declared under the content type both readers use.
+
 ## [6.58.596] - 2026-08-21
 
 ### Added
