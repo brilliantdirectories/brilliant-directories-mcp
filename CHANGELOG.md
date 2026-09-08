@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.609] - 2026-09-07
+
+### Fixed
+
+- **A redirected write now names the redirect target instead of blaming the site URL.** Both transports detected a 3xx on a write and returned `Invalid domain URL for the MCP connection. Set your MCP site URL to your site's correct URL and reconnect.`, which asserted a single cause. A site can also redirect an API path for reasons unrelated to the configured URL - for example a site that renames a reserved URL word and consequently rewrites `/api/v2/<table>/delete` - and in that case the advice was wrong, sending people to re-check a setting that was already correct. The message now reports the status code and the redirect target, and separates the two cases: a different host means the site URL should be changed, while the same host with a different path means the site is rewriting API URLs and should be reported. The query string is stripped from the reported target so a redirect carrying a token in the URL cannot leak it into a transcript or log. The message also states that retrying will not help, because a redirect is deterministic.
+
 ## [6.58.608] - 2026-08-21
 
 ### Fixed
