@@ -6729,6 +6729,17 @@ async function main() {
         }
       }
 
+      // BD sends this parameter error for a member with no billing account, even when user_id was passed.
+      if ((name === "getUserTransactions" || name === "getUserSubscriptions") && result.body && typeof result.body === "object") {
+        const m = result.body.message;
+        if (result.body.status === "error" && m === "user_id or client_id is required" && (args?.user_id || args?.client_id)) {
+          result.body.message = "No billing account for this member: 0 subscriptions, 0 transactions. An unknown user_id returns the same response; confirm the member with getUser.";
+        } else if (m && typeof m === "object") {
+          for (const s of m.subscriptions || []) if (s) delete s.password;
+          for (const i of m.invoices || []) if (i && i.subscription_details) delete i.subscription_details.password;
+        }
+      }
+
       // Strip BD's pagination metadata leak from single-record get* responses.
       // BD's REST returns total/current_page/total_pages/next_page on every
       // /get/{id} call — meaningless on a single-record fetch. Silent noise that

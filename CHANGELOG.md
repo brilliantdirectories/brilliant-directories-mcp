@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.610] - 2026-09-13
+
+### Fixed
+
+- **A member with no billing account read as a missing parameter.** `getUserTransactions` and `getUserSubscriptions` returned BD's `user_id or client_id is required` for any member without a billing client record (typically a free-plan member), even though `user_id` was sent. A customer's agent concluded the connector was dropping the parameter and halted a billing verification. When an identifier was sent, the message now reads `No billing account for this member: 0 subscriptions, 0 transactions`, and notes that an unknown `user_id` returns the same response. A call with no identifier still returns BD's original error.
+- **Billing reads no longer return the WHMCS service `password`.** The field is an encrypted provisioning value from the billing service record, is not a login credential, and nothing in BD uses it. Both tools now drop it.
+- **`getUserTransactions` documented a flat invoice shape.** Each entry is `{ invoice_details, subscription_details }`; the description now says so.
+
 ## [6.58.609] - 2026-09-07
 
 ### Fixed
