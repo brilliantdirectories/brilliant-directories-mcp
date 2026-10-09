@@ -907,7 +907,7 @@
               0,
               1
             ],
-            "description": "1=permanent unsubscribe"
+            "description": "No effect on sending."
           },
           "date": {
             "type": "string"
@@ -5364,7 +5364,7 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "Email address to unsubscribe from ALL site emails. BD unsubscribe is SITE-WIDE scope - no way to unsub from some lists but not others via this endpoint. Adds the email to the global unsubscribe table."
+                    "description": "Email address to add to the Unsubscribe List."
                   },
                   "definitive": {
                     "type": "integer",
@@ -5372,7 +5372,7 @@
                       0,
                       1
                     ],
-                    "description": "1=permanent unsubscribe"
+                    "description": "Always 0. No effect on sending."
                   }
                 }
               }
@@ -5391,7 +5391,7 @@
             }
           }
         },
-        "description": "Create a new unsubscribe record. Writes live data.\n\n**Use when:** programmatically opting a member out of emails (e.g., from an external unsubscribe form or CRM sync). BD adds entries itself when members click email unsubscribe links.\n\n**Required:** `email`.\n\n**Enums:** `definitive`: `0`, `1`.\n\n**See also:** `updateUnsubscribe` (modify existing).\n\n**`email` is the only meaningful input.** Pass the email address to opt out. BD adds unsubscribe records to its global unsubscribe list - this applies across all email campaigns for the site. There is no \"unsubscribe from some lists but not others\" granularity via this endpoint; it's all-or-nothing.\n\n"
+        "description": "Create a new unsubscribe record. Writes live data.\n\n**Use when:** programmatically adding an email address to the Unsubscribe List.\n\n**Required:** `email`.\n\n**`email` is the only meaningful input.** Unsubscribe List addresses are excluded from newsletters and automated email campaigns. Transactional template emails (welcome, verification, notification) still send. No per-list opt-out.\n\n**See also:** `updateUnsubscribe` (modify existing), `deleteUnsubscribe` (remove existing).\n\n"
       }
     },
     "/api/v2/unsubscribe_list/update": {
@@ -5448,7 +5448,7 @@
       "delete": {
         "operationId": "deleteUnsubscribe",
         "summary": "Remove email from unsubscribe list",
-        "description": "Permanently delete a unsubscribe record by ID. Destructive - cannot be undone via API.\n\n**Use when:** re-subscribing a member (remove their unsubscribe entry). Confirm the member's consent first - don't use to silently re-enable emails.\n\n**Required:** `id`.\n\n**See also:** `updateUnsubscribe` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API - records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n",
+        "description": "Permanently delete an unsubscribe record by ID. Destructive - cannot be undone via API.\n\n**Use when:** re-subscribing an email address to newsletters and automated email campaigns. Confirm the recipient's consent first.\n\n**Required:** `id`.\n\n**See also:** `updateUnsubscribe` (modify without removing).\n\n**Destructive:** confirm intent with the user before bulk use. No soft-delete via API - records removed are not recoverable.\n\n**Returns:** `{ status: \"success\", message: \"record was deleted\" }`. No body beyond the confirmation string.\n\n",
         "tags": [
           "Unsubscribe"
         ],

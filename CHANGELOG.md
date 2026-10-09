@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.611] - 2026-10-09
+
+### Fixed
+
+- **Unsubscribe List scope.** `createUnsubscribe` told agents the list blocks every email a site sends. Addresses on the Unsubscribe List are excluded from newsletters and automated email campaigns; transactional template emails (welcome, verification, notification) still send. `createUnsubscribe` (description + `email` field) and `deleteUnsubscribe` now say so.
+- **`definitive` described as "1=permanent unsubscribe".** No send path reads it; every listed address is excluded either way. Now "No effect on sending.", and `createUnsubscribe` tells agents to always pass `0`. Dropped its Enums line.
+
 ## [6.58.610] - 2026-09-13
 
 ### Fixed
