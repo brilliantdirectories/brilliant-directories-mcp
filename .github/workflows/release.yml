@@ -86,11 +86,21 @@ jobs:
         run: |
           curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
 
-      - name: Authenticate to MCP Registry
-        run: ./mcp-publisher login github-oidc
-
+      # The registry verifies the npm version exists; npm can take minutes to
+      # serve a just-published version, and the registry itself intermittently
+      # 504s. Wait for npm, then retry with a fresh OIDC login each attempt.
       - name: Publish to MCP Registry
-        run: ./mcp-publisher publish
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          for i in $(seq 1 30); do
+            [ "$(npm view "brilliant-directories-mcp@$VERSION" version 2>/dev/null)" = "$VERSION" ] && break
+            echo "npm does not serve $VERSION yet ($i/30)"; sleep 10
+          done
+          for i in 1 2 3 4 5; do
+            ./mcp-publisher login github-oidc && ./mcp-publisher publish && exit 0
+            echo "registry publish attempt $i failed"; sleep 60
+          done
+          exit 1
 
       # ---------------------------------------------------------------------
       # Step 3 — Build skill zip from bd-skill-content/ and attach to the

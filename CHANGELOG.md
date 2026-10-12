@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Maintenance
+
+- **Release workflow: MCP Registry publish no longer races npm.** It registered the new version seconds after the npm publish, before npm served it, so the registry rejected it ("version not found"). The step now waits for npm to serve the version, then retries the registry publish up to 5 times with a fresh OIDC login, riding out the registry's intermittent 504s.
+
 ## [6.58.611] - 2026-10-09
 
 ### Fixed
