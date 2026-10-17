@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.612] - 2026-10-16
+
+### Fixed
+
+- **`createWidget` rejected `bootstrap_enabled: 4`.** The MCP checked it as a 0/1 flag; it is the software version, and every customer site runs version 4. The field is no longer an input: `createWidget` and `updateWidget` always write `4`, whatever value an agent sends.
+- **`widget_viewport` removed.** No front-end rendering reads it, and BD sets `front` on create. It is no longer an input or in widget reads, and an agent-sent value is dropped. The `deleteWidget` hint to "hide" a widget with `widget_viewport=admin` is gone; that setting never hid anything.
+- **`bootstrap_enabled` removed from widget reads.** It is always `4` on a site's own widgets.
+
 ### Maintenance
 
 - **Release workflow: MCP Registry publish no longer races npm.** It registered the new version seconds after the npm publish, before npm served it, so the registry rejected it ("version not found"). The step now waits for npm to serve the version, then retries the registry publish up to 5 times with a fresh OIDC login, riding out the registry's intermittent 504s.

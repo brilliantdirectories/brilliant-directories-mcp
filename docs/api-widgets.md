@@ -24,11 +24,9 @@ Widgets are reusable HTML/CSS/JS components that power the BD front-end. Each wi
 | `widget_settings` | text | Configuration (JSON or serialized) |
 | `widget_values` | text | Widget variable values |
 | `widget_class` | string | CSS class names applied to the container |
-| `widget_viewport` | string | Where it appears: `front` (public), `admin` (admin panel only), `both` |
 | `widget_html_element` | string | HTML element wrapping the widget (default `div`) |
 | `div_id` | string | HTML id attribute for the container |
 | `short_code` | string | Shortcode reference for this widget |
-| `bootstrap_enabled` | integer | `1` if Bootstrap framework is required |
 | `ssl_enabled` | integer | `1` if SSL/HTTPS required |
 | `mobile_enabled` | integer | `1` if mobile viewport enabled |
 | `file_type` | string | File type of the widget |
@@ -39,7 +37,7 @@ Widgets are reusable HTML/CSS/JS components that power the BD front-end. Each wi
 ## Endpoints
 
 ### List Widgets
-`GET /api/v2/data_widgets/get` — paginated + filterable. Common filter: `widget_viewport=front` to get only public-facing widgets.
+`GET /api/v2/data_widgets/get` — paginated + filterable.
 
 ### Get One Widget (raw source)
 `GET /api/v2/data_widgets/get/{widget_id}` — returns the widget's source HTML/CSS/JS, not the rendered output.
@@ -47,7 +45,7 @@ Widgets are reusable HTML/CSS/JS components that power the BD front-end. Each wi
 ### Create Widget
 `POST /api/v2/data_widgets/create`
 - **Required:** `widget_name` (unique per site)
-- **Common:** `widget_data` (HTML), `widget_style` (CSS), `widget_javascript` (JS), `widget_viewport`, `bootstrap_enabled`
+- **Common:** `widget_data` (HTML), `widget_style` (CSS), `widget_javascript` (JS)
 
 ### Update Widget
 `PUT /api/v2/data_widgets/update`

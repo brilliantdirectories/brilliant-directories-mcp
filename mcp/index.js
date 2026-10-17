@@ -1557,7 +1557,7 @@ const WEB_PAGE_READ_TOOLS = new Set(["listWebPages", "getWebPage"]);
 const WIDGET_LEAN_INCLUDE_FLAGS = ["include_code"];
 const WIDGET_CODE_BUNDLE = ["widget_data", "widget_style", "widget_javascript"];
 const WIDGET_LEAN_ALWAYS_KEEP = [
-  "widget_id", "widget_name", "widget_type", "widget_viewport", "short_code",
+  "widget_id", "widget_name", "widget_type", "short_code",
   "date_updated", "revision_timestamp", "is_default",
   "widget_data", "widget_style", "widget_javascript",
   "tablesExists",
@@ -2064,8 +2064,8 @@ const WRITE_KEEP_SETS = {
   // which can be 200KB+ on large widgets (e.g. Admin - Froala Editor Scripts
   // is 204KB of widget_data alone). Strip the three heavy code fields and
   // echo only identity + classification + timestamps + shortcode.
-  createWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
-  updateWidget: ["widget_id","widget_name","widget_type","widget_viewport","short_code","date_updated","revision_timestamp"],
+  createWidget: ["widget_id","widget_name","widget_type","short_code","date_updated","revision_timestamp"],
+  updateWidget: ["widget_id","widget_name","widget_type","short_code","date_updated","revision_timestamp"],
   createEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
   updateEmailTemplate: ["email_id","email_name","email_subject","email_type","category_id","notemplate","revision_timestamp"],
 
@@ -3775,7 +3775,7 @@ function validateFilterOperatorInArgs(args) {
 // - post_status / group_status: 0, 1, OR 3 (3 = pending admin moderation)
 const BOOLEAN_INT_FIELDS = new Set([
   "auto_geocode", "auto_image_import", "auto_match",
-  "bootstrap_enabled", "category_active", "category_ignore_search_priority",
+  "category_active", "category_ignore_search_priority",
   "create_new_categories", "data_active", "definitive",
   "enable_search_results_map", "field_required", "form_email_on", "full",
   "hero_hide_banner_ad", "hero_link_target_blank",
@@ -6261,6 +6261,12 @@ async function main() {
         args.master_id = 0;         // unconditional overwrite — list_seo_template only
         args.updated_by = "API";    // unconditional overwrite — audit label, not agent-decision territory
         args.hide_from_menu = 0;    // unconditional overwrite — deprecated BD column, always 0
+      }
+
+      // Customer sites run software version 4 only; neither field is in the input schema.
+      if ((name === "createWidget" || name === "updateWidget") && args && typeof args === "object") {
+        args.bootstrap_enabled = 4;
+        delete args.widget_viewport;
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique

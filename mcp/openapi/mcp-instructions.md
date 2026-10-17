@@ -611,7 +611,7 @@ Flag this as a BD platform gap when reporting the 403 to the site admin.
 - `include_content=1` - restores `content` (body HTML).
 - `include_code=1` - restores `content_css`, `content_head`, `content_footer_html`. Needed before `updateWebPage` edits to CSS/head/footer JS so you have the current value to modify.
 
-**Widgets** (`listWidgets` / `getWidget`): identity + metadata always returned (`widget_id`, `widget_name`, `widget_type`, `widget_viewport`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`). Strips the three code fields (`widget_data`, `widget_style`, `widget_javascript`), which reach 200KB+ on template widgets. Flags:
+**Widgets** (`listWidgets` / `getWidget`): identity + metadata always returned (`widget_id`, `widget_name`, `widget_type`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`). Strips the three code fields (`widget_data`, `widget_style`, `widget_javascript`), which reach 200KB+ on template widgets. Flags:
 
 - `include_code=1` - restores `widget_data`, `widget_style`, `widget_javascript`. Needed before `updateWidget` edits to the code.
 
@@ -884,7 +884,6 @@ Common cases:
 
 - WebPage full-bleed - `content_layout=1`, NOT margin/padding hacks (see **Rule: WebPage full-bleed**)
 - Page chrome hiding - WebPage `hide_header` / `hide_footer` / `hide_top_right` / `hide_header_links` / `hide_from_menu`, NOT `display:none` in `content_css`
-- Widget render surface - `widget_viewport` (`front`/`admin`/`both`), NOT `@media` queries or `body.admin-panel` JS detection inside widget code
 - Unsubscribe footer suppression - EmailTemplate `unsubscribe_link=0`, NOT stripping the merge token out of `email_body`
 - Per-field visibility - FormField view-flag toggles (`field_input_view` / `field_display_view` / `field_search_view` / `field_email_view` / `field_grid_view`), NOT CSS or email-template surgery
 
