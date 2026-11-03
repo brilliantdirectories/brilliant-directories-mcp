@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.613] - 2026-11-03
+
+### Changed
+
+- **MCP Registry listing includes the hosted server.** `server.json` now lists `https://brilliantmcp.com/mcp` alongside the npm package.
+
 ## [6.58.612] - 2026-10-16
 
 ### Fixed

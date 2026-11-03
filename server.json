@@ -6,12 +6,32 @@
     "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
     "source": "github"
   },
-  "version": "6.58.612",
+  "version": "6.58.613",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://brilliantmcp.com/mcp",
+      "headers": [
+        {
+          "name": "X-Api-Key",
+          "description": "Your Brilliant Directories API key. Generate one in BD Admin → Developer Hub → Generate API Key.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "X-BD-Site-URL",
+          "description": "Your BD site URL, e.g. https://yoursite.com",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ]
+    }
+  ],
   "packages": [
     {
       "registryType": "npm",
       "identifier": "brilliant-directories-mcp",
-      "version": "6.58.612",
+      "version": "6.58.613",
       "transport": {
         "type": "stdio"
       },
