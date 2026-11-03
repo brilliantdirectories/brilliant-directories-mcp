@@ -6,7 +6,7 @@
     "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
     "source": "github"
   },
-  "version": "6.58.613",
+  "version": "6.58.614",
   "remotes": [
     {
       "type": "streamable-http",
@@ -20,7 +20,7 @@
         },
         {
           "name": "X-BD-Site-URL",
-          "description": "Your BD site URL, e.g. https://yoursite.com",
+          "description": "Your BD site URL exactly as it loads in a browser, including https:// and www if used, with no trailing slash.",
           "isRequired": true,
           "isSecret": false
         }
@@ -31,7 +31,7 @@
     {
       "registryType": "npm",
       "identifier": "brilliant-directories-mcp",
-      "version": "6.58.613",
+      "version": "6.58.614",
       "transport": {
         "type": "stdio"
       },
@@ -44,7 +44,7 @@
         },
         {
           "name": "BD_SITE_URL",
-          "description": "Your BD site URL, e.g. https://yoursite.com (BD_API_URL is also accepted as a legacy alias).",
+          "description": "Your BD site URL exactly as it loads in a browser, including https:// and www if used, with no trailing slash. BD_API_URL is also accepted as a legacy alias.",
           "isRequired": true,
           "isSecret": false
         }

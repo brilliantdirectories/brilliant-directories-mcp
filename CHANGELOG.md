@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.614] - 2026-11-03
+
+### Changed
+
+- **MCP Registry site URL guidance.** `X-BD-Site-URL` and `BD_SITE_URL` now say to use the URL exactly as it loads in a browser, including `www` if used. A URL that redirects blocks writes.
+
 ## [6.58.613] - 2026-11-03
 
 ### Changed
