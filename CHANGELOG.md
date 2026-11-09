@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.616] - 2026-11-09
+
+### Security
+
+- **MCP SDK 1.32.2.** The npm package now requires `@modelcontextprotocol/sdk` 1.32.2 or later, and the hosted server runs 1.32.2. Earlier versions carry published advisories, including oversized requests exhausting server memory. Locked transitive dependencies updated; `npm audit` reports 0 production vulnerabilities for the npm package. No change to tools or behavior.
+
 ## [6.58.615] - 2026-11-09
 
 ### Maintenance
