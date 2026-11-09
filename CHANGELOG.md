@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.58.615] - 2026-11-09
+
+### Maintenance
+
+- **Repository security hardening.** Release workflow actions pinned to commit SHAs; Dependabot added for npm and GitHub Actions; `SECURITY.md` added (report to security@brilliantdirectories.com). Removed two one-time migration scripts that used `eval`; nothing ran them and they were never in the npm package. No change to the MCP server.
+
 ## [6.58.614] - 2026-11-03
 
 ### Changed
