@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.620] - 2026-11-11
+
+### Changed
+- `updateWebPage`: on the home WebPage (`seo_type` home), a call that sets `h1`, `h2`, `enable_hero_section`, a `hero_*` field or an `h1_font_*` / `h2_font_*` field is refused and nothing is written, because the homepage never displays those fields. The refusal points to the design settings and, for `h1` / `h2`, gives the `updateDesignSettings` call to send instead (hero title `custom_130`, subtitle `custom_131`). Calls with other fields are unchanged.
+- `getWebPage` and `listWebPages`: the home WebPage carries a short `design_note`: the homepage is built from design settings, and which home WebPage fields the homepage displays. On `getWebPage` the note also says which homepage row displays `content` now, or which empty row to set to `Homepage Content`.
+- `getDesignSettings`: searching "hero title", "headline" or "hero heading" finds the hero title setting (`custom_130`).
+- Instructions: new rule "Homepage": which tool changes which part of the homepage (Design Settings, the home WebPage, `updatePageCss` for homepage-only CSS).
+
 ## [6.59.619] - 2026-11-11
 
 ### Added

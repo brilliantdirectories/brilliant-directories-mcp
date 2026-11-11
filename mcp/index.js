@@ -3099,6 +3099,7 @@ function applyWebPageLean(body, includeFlags) {
       const keep = new Set(WEB_PAGE_LEAN_ALWAYS_KEEP);
       for (const k of Object.keys(row)) if (!keep.has(k)) delete row[k];
     }
+    if (isHomeRecord(row)) row.design_note = HOME_DESIGN_NOTE;
 
     return row;
   };
@@ -4493,6 +4494,64 @@ function validateHeroEnumsInArgs(toolName, args) {
     }
   }
   return null;
+}
+
+// The home page record (seo_type "home"). The homepage never renders its h1, h2 or hero fields: the
+// homepage hero, titles and sections are design settings. Mirrored in Worker src/index.ts.
+const HOME_UNUSED_FIELD = /^(h1|h2|enable_hero_section|hero_.*|h1_font_.*|h2_font_.*)$/;
+const HOME_SETTING_FOR = { h1: "custom_130", h2: "custom_131" };
+const HOME_DESIGN_NOTE = "The homepage's visible content is built from Design Settings, not this WebPage: hero title `custom_130`, hero subtitle `custom_131`, sections and their order = homepage row settings; change them with updateDesignSettings. updateWebPage on the home WebPage changes only the SEO title / meta description / keywords, social share tags, page HEAD / footer JS and `content`. The homepage never displays the home WebPage's `h1`, `h2` or `hero_*` fields.";
+
+function isHomeRecord(row) {
+  return !!row && typeof row === "object" && String(row.seo_type) === "home";
+}
+
+// updateWebPage on the home record with any field the homepage does not show: the refusal text, or null.
+// For h1/h2 the text gives the one updateDesignSettings call that does what was asked.
+function homeRecordRefusal(toolName, args, currentRecord) {
+  if (toolName !== "updateWebPage" || !isHomeRecord(currentRecord) || !args || typeof args !== "object") return null;
+  const unused = Object.keys(args).filter((k) => args[k] !== undefined && HOME_UNUSED_FIELD.test(k));
+  if (!unused.length) return null;
+  const retry = {};
+  for (const k of unused) if (HOME_SETTING_FOR[k] && args[k] !== null) retry[HOME_SETTING_FOR[k]] = String(args[k]);
+  const instead = Object.keys(retry).length ? ` Send instead: updateDesignSettings ${JSON.stringify({ settings: retry })}.` : "";
+  return `Nothing was written. The homepage never displays the home WebPage's ${unused.join(", ")}.${instead} The homepage hero, titles, sections and layout are Design Settings (getDesignSettings blocks hero.*, home.*; updateDesignSettings); updateWebPage on the home WebPage changes only SEO tags, social share tags, page HEAD / footer JS and \`content\`.`;
+}
+
+// getWebPage on the home record: where its `content` shows now, from the design settings read cache or
+// one `context` call. Null on any failure or doubt: the note then stays static.
+async function homeContentPlacement(config) {
+  try {
+    const ds = dsLoad();
+    const hit = _dsCache.get(dsCacheKey(config));
+    let values = null;
+    if (hit && Date.now() - hit.at < DS_TTL_MS) {
+      const got = await hit.p;
+      if (got && !got.error && got.values) values = got.values;
+    }
+    const rb = ds.m.blocks.find((b) => b.rows);
+    if (!values) {
+      const r = await makeRequest(config, "GET", "/api/v2/website_design_settings/context", null, null);
+      const c = r && r.status === 200 && r.body && typeof r.body === "object" && r.body.status === "success" ? r.body.message : null;
+      if (!c || !c.values || typeof c.values !== "object") return null;
+      const dup = Array.isArray(c.duplicates) ? c.duplicates.map((d) => String(d && d.name)) : [];
+      if (rb.rows.some((n) => dup.includes(n))) return null;
+      values = c.values;
+    }
+    const cc1 = dsExpand(ds.m, "D:Custom Content 1");
+    const rows = rb.rows.map((n, i) => ({ n, N: rb.N[0] + i, v: dsRowValue(ds.m, values[n]) }));
+    return { shown: rows.filter((r) => r.v === cc1), empty: rows.find((r) => r.v === "") || null };
+  } catch {
+    return null;
+  }
+}
+
+function homeDesignNote(p) {
+  if (!p || !Array.isArray(p.shown)) return HOME_DESIGN_NOTE;
+  if (p.shown.length) return `${HOME_DESIGN_NOTE} Now the homepage displays \`content\` in homepage row ${p.shown.map((r) => `${r.N} (setting \`${r.n}\`)`).join(" and ")}.`;
+  const none = `${HOME_DESIGN_NOTE} Now the homepage does not display \`content\`: no homepage row setting has the value \`Homepage Content\`.`;
+  if (p.empty) return `${none} To display \`content\` in homepage row ${p.empty.N} (empty now): updateDesignSettings ${JSON.stringify({ settings: { [p.empty.n]: "Homepage Content" } })}.`;
+  return `${none} All 15 homepage rows hold a section; setting one row setting (block home.rows) to \`Homepage Content\` with updateDesignSettings replaces that row's section.`;
 }
 
 // Hero readability bundle. When `enable_hero_section` transitions from
@@ -7906,6 +7965,10 @@ async function main() {
             }
           } catch { /* fetch failed; validators fall open via existing paths */ }
         }
+        const homeRefusal = homeRecordRefusal(name, args, currentRecord);
+        if (homeRefusal) {
+          return { content: [{ type: "text", text: homeRefusal }], isError: true };
+        }
         const segGuard = await _validateProfileSearchResultsSegments(config, args, effectiveSeoType);
         if (segGuard && segGuard.error) {
           return { content: [{ type: "text", text: segGuard.error }], isError: true };
@@ -8375,6 +8438,10 @@ async function main() {
         // Default-deny reserved data_types on listPostTypes / getPostType.
         // Caller opts in via explicit data_type=<value> (single or comma-list).
         result.body = applyReservedDataTypeFilter(result.body, args, name);
+      }
+      if (name === "getWebPage" && result.body && typeof result.body === "object") {
+        const homeRow = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
+        if (isHomeRecord(homeRow) && homeRow.design_note) homeRow.design_note = homeDesignNote(await homeContentPlacement(config));
       }
 
       // Attach throttle warning if we lowered the limit. Visible to the agent

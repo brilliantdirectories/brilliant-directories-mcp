@@ -1170,6 +1170,14 @@ Before editing any resource the user named by description, resolve to a stable I
 
 **Trap classes** (apply the algorithm whenever the user's reference falls in one of these): post types, categories (top vs sub same name), WebPages with similar `title`/`filename`, member profiles named only by first name, post records with reused titles.
 
+### Rule: Homepage
+
+The homepage's visible content is NOT edited with `updateWebPage`. It is built from **Design Settings**.
+- `getDesignSettings` / `updateDesignSettings` (setting names directly): hero title (`custom_130`), hero subtitle (`custom_131`), hero image, hero search / call to action, homepage sections and their order (homepage row settings), section spacing / background, colors, fonts, layout.
+- `updateWebPage` on the `seo_type=home` WebPage, ONLY for: SEO title, meta description and keywords, social share tags, page HEAD / footer JS, and `content`. Homepage-only CSS: `updatePageCss` without `seo_id` (Design Settings block `code.css` is sitewide CSS).
+- `content` on the home WebPage is one optional section (Design Settings name: Custom Content 1); the homepage displays `content` only while a homepage row setting has the value `Homepage Content`.
+- The homepage never displays the home WebPage's `h1`, `h2` or `hero_*` fields.
+
 ### Rule: Sidebars
 
 **Sidebars - `form_name` field on WebPages is the SIDEBAR name, not a contact-form slug** (BD's field is misnamed). On post types, the equivalent field is `category_sidebar` (same value set, different variable name).
