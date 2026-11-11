@@ -9607,6 +9607,50 @@
         }
       }
     },
+    "/_synthetic/design_settings_update": {
+      "post": {
+        "operationId": "updateDesignSettings",
+        "summary": "Change a site's design settings by name in one all-or-nothing call; values are checked against what the Design Settings page accepts, and the result returns what changed and an undo.",
+        "tags": [
+          "Design"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "settings": {
+                    "type": "object",
+                    "description": "1 to 100 name: value pairs."
+                  },
+                  "dry_run": {
+                    "type": "boolean"
+                  },
+                  "undo": {
+                    "type": "object",
+                    "description": "An earlier result's undo, instead of settings; it restores each value as the page read it."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/location_cities/get": {
       "get": {
         "operationId": "listCities",

@@ -1001,12 +1001,15 @@ async function updatePageCss(config, args) {
 // rules) joined with the stored values. Sends GET requests only.
 // Mirrored in Worker `src/index.ts` (ds* functions). Keep in sync.
 // ---------------------------------------------------------------------------
+const nodeCrypto = require("crypto");
 const DS_TTL_MS = 60000;
 const DS_TYPES = { sel: "choice", text: "text", area: "multi-line text", html: "rich text", code: "code", embed: "embed", color: "color", font: "font", icon: "icon", img: "image", ids: "ids", hidden: "hidden" };
 const DS_SITE_TOOLS = { post_types: "listPostTypes", plans: "listMembershipPlans", sidebars: "listSidebars", top_categories: "listTopCategories", sub_categories: "listSubCategories", menus: "listMenus" };
 const DS_POST_KINDS = { single: "single-image", multi: "multi-image", digital: "digital product" };
-const DS_WHY = { refuse: "Never written as a design setting.", rows: "Written only as part of a homepage rows change, never on its own.", hero: "Written only as part of a hero type change, never on its own." };
+const DS_WHY = { refuse: "Never written as a design setting." };
 const DS_ADDON_NOTE = "Add-on status cannot be read through the API: a setting or option with needs_addon does nothing unless that add-on is active on the site.";
+const DS_ADDON_UNKNOWN = "The site does not report the status of an add-on marked unknown: a setting or option that needs it does nothing unless it is active.";
+const DS_PERMISSION = /does not have permission/i;
 const _dsCache = new Map();
 let _dsLoaded = null;
 
@@ -1039,8 +1042,26 @@ function dsExpand(m, v) {
   return v;
 }
 
+// A homepage row stores Custom Content 1 as "Homepage Content"; the option value is the widget name.
+function dsRowValue(m, v) {
+  const s = v === undefined || v === null ? "" : String(v);
+  return s === "Homepage Content" ? dsExpand(m, "D:Custom Content 1") : dsExpand(m, s);
+}
+
 function dsStrip(v) {
   return String(v).replace(/\\([\s\S]?)/g, (all, c) => (c === "0" ? "\0" : c));
+}
+
+// The admin's colour picker turns a hex default into rgb; show it in the form a write takes.
+function dsColourShown(f, v) {
+  const h = f.t === "color" && typeof v === "string" ? /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v) : null;
+  if (!h) return v;
+  const x = h[1].length === 3 ? h[1].split("").map((c) => c + c).join("") : h[1];
+  return `rgb(${parseInt(x.slice(0, 2), 16)}, ${parseInt(x.slice(2, 4), 16)}, ${parseInt(x.slice(4, 6), 16)})`;
+}
+
+function dsDupWhy(ids) {
+  return `Stored more than once on this site (ids ${ids.join(", ")}). Nothing can change it until the extra rows are removed: ask the site owner to have BD support keep one.`;
 }
 
 // Port of the map's gen/conditions.cjs with no facts supplied: a site:, addon: or visitor
@@ -1071,7 +1092,7 @@ function dsEvaluate(ds, clauses, values) {
     if (c[0] === "rows" && c[1] === "has") {
       const rb = m.blocks.find((b) => b.rows);
       const want = dsExpand(m, c[2]);
-      r = !!rb && rb.rows.some((n) => dsExpand(m, String(values[n] === undefined || values[n] === null ? "" : values[n])) === want);
+      r = !!rb && rb.rows.some((n) => dsRowValue(m, values[n]) === want);
     } else if (c[1] === "absent_or_contains") {
       r = null;
     } else if (c[0] === "any") {
@@ -1138,6 +1159,7 @@ function dsOptionsFrom(site) {
 
 // One setting. `values` holds the real stored names; `rv` is what the rules read (the rows
 // block maps its template names onto one row). `part`: "def" (no value), "val" (no options), or both.
+// `notes` collects the add-ons named and carries the stored-twice ids (`dupIds`).
 function dsSetting(ds, f, name, label, values, rv, notes, part) {
   const m = ds.m;
   const s = { name, label, type: f.r ? "number-choice" : DS_TYPES[f.t] || f.t };
@@ -1147,7 +1169,7 @@ function dsSetting(ds, f, name, label, values, rv, notes, part) {
       const e = [dsExpand(m, o[0]), o[1]];
       const meta = o[2] || {};
       const extra = {};
-      if (meta.addon) { extra.needs_addon = meta.addon; notes.addon = true; }
+      if (meta.addon) { extra.needs_addon = meta.addon; notes.addon.add(meta.addon); }
       const hid = meta.show && rv ? dsWhile(ds, meta.show, rv) : undefined;
       if (hid) extra.hidden_in_admin_while = hid;
       if (Object.keys(extra).length) e.push(extra);
@@ -1174,14 +1196,15 @@ function dsSetting(ds, f, name, label, values, rv, notes, part) {
       else if (f.dfrom) from = f.dfrom;
       if (from) shown = dsRead(ds, values, from);
       if (shown !== undefined && shown !== "") {
-        s.shows_as = shown;
+        s.shows_as = dsColourShown(f, shown);
         if (from) s.shows_as_from = from;
       }
     }
   }
   if (part !== "val") {
     if (f.t === "color") s.format = name === "post_image_bg_color" ? "rgba(R, G, B, A)" : "rgb(R, G, B)";
-    if (f.addon) { s.needs_addon = f.addon; notes.addon = true; }
+    if (f.t === "font") s.format = "one font family name, such as Open Sans";
+    if (f.addon) { s.needs_addon = f.addon; notes.addon.add(f.addon); }
   }
   if (part !== "def") {
     const hid = dsWhile(ds, f.show, rv);
@@ -1190,23 +1213,35 @@ function dsSetting(ds, f, name, label, values, rv, notes, part) {
     if (idle) s.no_visible_effect_while = idle;
   }
   if (part !== "val") {
-    if (f.refuse || f.through) { s.writable = false; s.why = f.refuse ? DS_WHY.refuse : DS_WHY[f.through] || `Written only through ${f.through}.`; }
+    if (f.refuse) { s.writable = false; s.why = DS_WHY.refuse; }
     if (f.note) s.note = f.note;
     if (f.h) s.help = f.h;
     if (f.who) s.visitors = f.who;
     if (f.max) s.max_length = f.max;
   }
+  if (part !== "def" && notes.dupIds[name]) { s.writable = false; s.why = dsDupWhy(notes.dupIds[name]); }
   return s;
 }
 
-function dsBlock(ds, b, values, dups) {
-  const notes = {};
+// Each add-on named in the block: "active" / "not active" from the site, "unknown" when the site does not report it.
+function dsAddons(out, notes, addons) {
+  if (!notes.addon.size) return;
+  if (!addons) { out.notes = [DS_ADDON_NOTE]; return; }
+  const st = {};
+  for (const e of notes.addon) for (const a of e.split(/[,|]/)) st[a] = addons[a] === true ? "active" : addons[a] === false ? "not active" : "unknown";
+  out.addons = st;
+  if (Object.values(st).includes("unknown")) out.notes = [DS_ADDON_UNKNOWN];
+}
+
+function dsBlock(ds, b, got) {
+  const values = got.values;
+  const notes = { addon: new Set(), dupIds: got.dupIds };
   const out = { block: b.id, title: b.title };
   if (b.note) out.note = b.note;
   const hid = dsWhile(ds, b.show, values);
   if (hid) out.hidden_in_admin_while = hid;
   const addon = !b.rows && b.fields.every((f) => f.addon && f.addon === b.fields[0].addon) ? b.fields[0].addon : null;
-  if (addon) { out.needs_addon = addon; notes.addon = true; }
+  if (addon) { out.needs_addon = addon; notes.addon.add(addon); }
   if (b.rows) {
     out.per_row = b.fields.map((f) => dsSetting(ds, f, f.n, f.l, values, null, notes, "def"));
     const full = (row) => values[row] !== undefined && values[row] !== null && values[row] !== "";
@@ -1243,15 +1278,16 @@ function dsBlock(ds, b, values, dups) {
     if (x.note && x.note === out.note) delete x.note;
     if (x.hidden_in_admin_while && x.hidden_in_admin_while === out.hidden_in_admin_while) delete x.hidden_in_admin_while;
   }
-  const dup = dsBlockNames(b).filter((n) => dups.includes(n));
+  const dup = dsBlockNames(b).filter((n) => got.dups.includes(n));
   if (dup.length) out.duplicate_names = dup;
-  if (notes.addon) out.notes = [DS_ADDON_NOTE];
+  dsAddons(out, notes, got.addons);
   return out;
 }
 
 // One setting, when `block` is exactly a stored name. The block's note and hide rule come along: they can matter for the value.
-function dsOne(ds, b, name, values, dups) {
-  const notes = {};
+function dsOne(ds, b, name, got) {
+  const values = got.values;
+  const notes = { addon: new Set(), dupIds: got.dupIds };
   let s;
   if (b.rows) {
     const i = dsBlockNames(b).indexOf(name);
@@ -1270,12 +1306,13 @@ function dsOne(ds, b, name, values, dups) {
   const hid = dsWhile(ds, b.show, values);
   if (hid && !out.hidden_in_admin_while) out.hidden_in_admin_while = hid;
   if (b.note) out.block_note = b.note;
-  if (dups.includes(name)) out.duplicate_names = [name];
-  if (notes.addon) out.notes = [DS_ADDON_NOTE];
+  if (got.dups.includes(name)) out.duplicate_names = [name];
+  dsAddons(out, notes, got.addons);
   return out;
 }
 
-function dsDirectory(ds, values, dups) {
+function dsDirectory(ds, got) {
+  const values = got.values;
   const m = ds.m;
   const blocks = {};
   const seen = new Set();
@@ -1304,14 +1341,14 @@ function dsDirectory(ds, values, dups) {
   rb.rows.forEach((n, i) => {
     const v = values[n];
     if (v === undefined || v === null || v === "") return;
-    const o = rowOpts.find((p) => dsExpand(m, p[0]) === v);
-    const sb = m.blocks.find((b) => b.widget && dsExpand(m, b.widget) === v);
+    const o = rowOpts.find((p) => dsExpand(m, p[0]) === dsRowValue(m, v));
+    const sb = m.blocks.find((b) => b.widget && dsExpand(m, b.widget) === dsRowValue(m, v));
     if (o && sb) rows.push({ row: rb.N[0] + i, label: o[1], block: sb.id });
     else if (o) rows.push({ row: rb.N[0] + i, section: v, label: o[1] });
     else rows.push({ row: rb.N[0] + i, section: v, known: false });
   });
   const out = { map_rev: m.rev, blocks, homepage: { hero_type: hero, rows } };
-  const dup = ["custom_30"].concat(rb.rows).filter((n) => dups.includes(n));
+  const dup = ["custom_30"].concat(rb.rows).filter((n) => got.dups.includes(n));
   if (dup.length) out.duplicate_names = dup;
   return out;
 }
@@ -1334,18 +1371,22 @@ function dsFind(ds, q) {
   return part.sort((a, c) => c.score - a.score).map((x) => x.b);
 }
 
+// A 403 is a missing permission only when the body is BD's own permission message; anything else is a firewall block.
 function dsHttpError(result) {
+  if (result && result.status === 403 && !(result.body && typeof result.body === "object" && DS_PERMISSION.test(String(result.body.message)))) {
+    return "The site's firewall blocked the request (HTTP 403). Try again later, or ask the site owner to check the firewall.";
+  }
   if (result && (result.status === 403 || (result.status === 404 && (!result.body || typeof result.body !== "object")))) {
     return `Permission denied for getDesignSettings (HTTP ${result.status}). In BD Admin → Developer Hub → your API key → edit Permissions → enable the website_design_settings get endpoint → Save. Works immediately.`;
   }
   return pcssHttpError(result);
 }
 
-// Every stored row once (cursor paging), kept per site for DS_TTL_MS. Only names in the map are
-// kept: the site also stores unrelated values (cookies, sessions) in this table.
-async function dsFetchValues(config, ds) {
+// Every stored row once (cursor paging). Only names in the map are kept: the site also stores
+// unrelated values (cookies, sessions) in this table.
+async function dsFetchPaged(config, ds) {
   const best = {};
-  const count = {};
+  const ids = {};
   let page = null;
   for (let i = 0; i < 50; i++) {
     const q = { limit: 100 };
@@ -1362,8 +1403,8 @@ async function dsFetchValues(config, ds) {
     for (const row of rows) {
       const n = String(row.setting_name);
       if (n === "0" || !ds.names.has(n)) continue;
-      count[n] = (count[n] || 0) + 1;
       const id = Number(row.setting_id);
+      (ids[n] = ids[n] || []).push(id);
       if (!best[n] || id > best[n].id) best[n] = { id, v: dsStrip(row.setting_value === undefined || row.setting_value === null ? "" : row.setting_value) };
     }
     page = body.next_page || null;
@@ -1371,11 +1412,46 @@ async function dsFetchValues(config, ds) {
   }
   const values = {};
   for (const n of Object.keys(best)) values[n] = best[n].v;
-  return { values, dups: Object.keys(count).filter((n) => count[n] > 1) };
+  const dupIds = {};
+  for (const n of Object.keys(ids)) if (ids[n].length > 1) dupIds[n] = ids[n].sort((a, c) => a - c);
+  return { values, dups: Object.keys(dupIds), dupIds, addons: null };
+}
+
+// One `context` call returns every stored value and the add-on status. A key or server without it
+// (400/403/404 or no settings in the answer) falls back to the paged list. A name stored twice has
+// no value in `context`, so then the paged list supplies the values.
+async function dsFetchValues(config, ds) {
+  const result = await makeRequest(config, "GET", "/api/v2/website_design_settings/context", null, null);
+  const body = result.body;
+  const c = body && typeof body === "object" && body.status === "success" && body.message && typeof body.message === "object" ? body.message : null;
+  if (!c || !c.values || typeof c.values !== "object") {
+    if ([400, 403, 404].includes(result.status) || (result.status === 200 && body && typeof body === "object")) return dsFetchPaged(config, ds);
+    const httpErr = dsHttpError(result);
+    return { error: httpErr || `The site answered HTTP ${result.status} without the settings list.` };
+  }
+  const addons = c.addons && typeof c.addons === "object" ? c.addons : null;
+  const dupIds = {};
+  for (const d of Array.isArray(c.duplicates) ? c.duplicates : []) {
+    if (d && ds.names.has(String(d.name))) dupIds[String(d.name)] = (Array.isArray(d.ids) ? d.ids : []).map(Number).sort((a, x) => a - x);
+  }
+  if (Object.keys(dupIds).length) {
+    const paged = await dsFetchPaged(config, ds);
+    if (paged.error) return paged;
+    for (const n of Object.keys(paged.dupIds)) dupIds[n] = paged.dupIds[n];
+    return { values: paged.values, dups: Object.keys(dupIds), dupIds, addons };
+  }
+  const values = {};
+  for (const n of Object.keys(c.values)) if (n !== "0" && ds.names.has(n)) values[n] = String(c.values[n] === null || c.values[n] === undefined ? "" : c.values[n]);
+  return { values, dups: [], dupIds, addons };
+}
+
+// Per site and per key: a key without the permission must not read another key's cached values.
+function dsCacheKey(config) {
+  return String(config.apiUrl || "") + "|" + nodeCrypto.createHash("sha256").update(String(config.apiKey || "")).digest("hex").slice(0, 16);
 }
 
 function dsValues(config, ds) {
-  const key = String(config.apiUrl || "");
+  const key = dsCacheKey(config);
   const hit = _dsCache.get(key);
   if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
   const p = dsFetchValues(config, ds).catch((err) => ({ error: `Network error: ${(err && err.message) || String(err)}` }));
@@ -1406,8 +1482,601 @@ async function getDesignSettings(config, args) {
   }
   const got = await dsValues(config, ds);
   if (got.error) return { status: "error", message: got.error };
-  if (one) return dsOne(ds, one, q, got.values, got.dups);
-  return b ? dsBlock(ds, b, got.values, got.dups) : dsDirectory(ds, got.values, got.dups);
+  if (one) return dsOne(ds, one, q, got);
+  return b ? dsBlock(ds, b, got) : dsDirectory(ds, got);
+}
+
+// ---------------------------------------------------------------------------
+// Synthetic tool: updateDesignSettings — writes design settings by name. Every value is checked
+// against the map (and the site's own option lists) before anything is sent; the write is one
+// call to the core `apply` endpoint, all or nothing, each entry guarded by `expect`.
+// Mirrored in Worker `src/index.ts` (uds* functions). Keep in sync.
+// ---------------------------------------------------------------------------
+const UDS_MAX = 100;
+const UDS_NOTE_PAGE = "A Design Settings page already open in a browser puts back the values it loaded on its next save: reload it before saving there.";
+const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send [widget=Name].";
+const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send [widget=Name].";
+const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and point the row at that Custom Content option.";
+const UDS_UNSIGNED = "This undo was not issued by this tool for this site; send settings instead.";
+const UDS_LOST = "The site's response was lost; the result was confirmed by reading the settings back.";
+const UDS_HERO_FORCED = ["HS:Hero Message with Button Links", "HS:Hero Message with Link"];
+const UDS_LISTS = { post_types: "/api/v2/data_categories/get", plans: "/api/v2/subscription_types/get", sidebars: "/api/v2/sidebars/get", menus: "/api/v2/menus/get" };
+const UDS_NEED = { post_types: "Post Types GET", plans: "Membership Plans GET", sidebars: "Sidebars GET", menus: "Menus GET" };
+const UDS_VOID = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"];
+const UDS_PERM = "Design Settings GET, POST, PUT and DELETE";
+let _udsIdx = null;
+
+// Every stored name the map knows, with its field, label and (for the 15 homepage rows) its row number.
+function udsIndex(ds) {
+  if (_udsIdx) return _udsIdx;
+  const idx = new Map();
+  for (const b of ds.m.blocks) {
+    if (!b.rows) {
+      for (const f of b.fields) idx.set(f.n, { f, label: f.l, N: null, opts: ds.idx.get(f.n).opts });
+      continue;
+    }
+    b.rows.forEach((row, i) => {
+      const N = String(b.N[0] + i);
+      for (const f of b.fields) idx.set(f.n === "{row}" ? row : f.n.split("{N}").join(N), { f, label: f.l.split("{N}").join(N), N, opts: ds.idx.get(f.n).opts });
+    });
+  }
+  _udsIdx = idx;
+  return idx;
+}
+
+function udsRowsBlock(ds) {
+  return ds.m.blocks.find((b) => b.rows);
+}
+
+// The values a row field's rules read: the row block's template names mapped onto that row.
+function udsRuleValues(ds, x, R) {
+  if (!x.N) return R;
+  const rb = udsRowsBlock(ds);
+  const rv = Object.assign({}, R);
+  for (const g of rb.fields) rv[g.n] = R[g.n === "{row}" ? rb.rows[Number(x.N) - rb.N[0]] : g.n.split("{N}").join(x.N)];
+  return rv;
+}
+
+function udsClauseNames(ds, clauses, N, out) {
+  if (!Array.isArray(clauses)) return;
+  const rb = udsRowsBlock(ds);
+  for (const c of clauses) {
+    if (c[0] === "any") udsClauseNames(ds, c[1], N, out);
+    else if (c[0] === "rows") for (const n of rb.rows) out.add(n);
+    else if (typeof c[0] === "string") {
+      const n = c[0] === "{row}" && N ? rb.rows[Number(N) - rb.N[0]] : N ? c[0].split("{N}").join(N) : c[0];
+      if (ds.names.has(n)) out.add(n);
+    }
+  }
+}
+
+// Names the cross-field checks read, whatever the call changes.
+function udsCheckNames(ds) {
+  const rb = udsRowsBlock(ds);
+  const out = ["custom_30", "postIdCategorySelected", "digitalCategorySelected", "search_box_placement", "custom_216", "custom_25", "HL-HSOO-top_level-display"];
+  rb.rows.forEach((row, i) => {
+    const N = String(rb.N[0] + i);
+    out.push(row, `section_${N}_background_enabled`, `section_${N}_background`);
+  });
+  return out;
+}
+
+function udsShow(v) {
+  return JSON.stringify(v.length > 60 ? v.slice(0, 57) + "..." : v);
+}
+
+function udsCap(list) {
+  return list.length > 20 ? `${list.slice(0, 20).join(", ")} … and ${list.length - 20} more; see getDesignSettings` : list.join(", ");
+}
+
+function udsYes(v) {
+  return v === true || v === 1 || v === "1" || v === "true";
+}
+
+// `a,b` needs every add-on, `a|b` any one. Only a definite "off" from core counts; an add-on core does not report is not refused.
+function udsAddonOff(expr, addons) {
+  const off = (a) => !!addons && addons[a] === false;
+  return expr.includes("|") ? expr.split("|").every(off) : expr.split(",").some(off);
+}
+
+function udsColour(v, name) {
+  const m = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/.exec(v)
+    || (name === "post_image_bg_color" ? /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+|1\.0+)\s*\)$/.exec(v) : null);
+  return !!m && [m[1], m[2], m[3]].every((n) => Number(n) <= 255);
+}
+
+// Rich text: no script, style or PHP, and every opened tag closed in order.
+function udsHtmlBad(v) {
+  if (/<\s*\/?\s*(script|style)\b/i.test(v) || v.includes("<?")) return true;
+  const stack = [];
+  const re = /<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*?(\/?)\s*>/g;
+  let m;
+  while ((m = re.exec(v))) {
+    const tag = m[2].toLowerCase();
+    if (UDS_VOID.includes(tag) || m[3] === "/") continue;
+    if (m[1]) {
+      if (stack.pop() !== tag) return true;
+    } else stack.push(tag);
+  }
+  return stack.length > 0 || /<\s*\/?\s*[a-zA-Z]/.test(v.replace(re, ""));
+}
+
+function udsPostKind(r, p) {
+  if (p === "single") return ["20", "9"].includes(String(r.data_type));
+  if (p === "multi") return String(r.data_type) === "4";
+  return p === "digital" && String(r.is_digital_product) === "1";
+}
+
+// A 403 is a missing permission only when the body is BD's own permission message; anything else is a firewall block.
+function udsAnswer(status, body, need) {
+  if (status >= 300 && status < 400) return { error: `Blocked by an HTTP ${status} redirect. Set your MCP site URL to the site's final host and reconnect.` };
+  if (status === 429) return { error: "Rate limit exceeded (HTTP 429). Wait 60 seconds before retrying." };
+  if (status === 401) return { error: "API key error (HTTP 401). Verify the key in BD Admin → Developer Hub, then retry." };
+  if (status === 403 && !(body && typeof body === "object" && DS_PERMISSION.test(String(body.message)))) {
+    return { error: "The site's firewall blocked the request (HTTP 403); nothing was written. Rich text or code in a value can trigger it: change the value, or ask the site owner to check the firewall." };
+  }
+  if (status === 403 || (status === 404 && (!body || typeof body !== "object"))) {
+    return { error: `Permission denied for updateDesignSettings (HTTP ${status}). In BD Admin → Developer Hub → your API key → edit Permissions → enable ${need} → Save. Works immediately.` };
+  }
+  return { status, body };
+}
+
+async function udsFetch(config, method, p, query, form, need) {
+  let result;
+  try {
+    result = await makeRequest(config, method, p, query, form);
+  } catch (err) {
+    return { error: `Network error: ${(err && err.message) || String(err)}`, lost: true };
+  }
+  return udsAnswer(result.status, result.body, need);
+}
+
+// One list endpoint, every page, fetched at most once per call (`lists` memoises by path and query).
+function udsRows(config, lists, p, query, need) {
+  const key = p + JSON.stringify(query || {});
+  if (!lists[key]) {
+    lists[key] = (async () => {
+      const rows = [];
+      let page = null;
+      for (let i = 0; i < 10; i++) {
+        const q = Object.assign({ limit: "100" }, query || {});
+        if (page) q.page = page;
+        const r = await udsFetch(config, "GET", p, q, null, need);
+        if (r.error) return { error: r.error };
+        const body = r.body;
+        if (!body || typeof body !== "object" || body.status !== "success") {
+          if (body && typeof body === "object" && / not found$/.test(String(body.message))) break;
+          return { error: `The site answered HTTP ${r.status} without the list.` };
+        }
+        const got = Array.isArray(body.message) ? body.message : body.message && typeof body.message === "object" ? [body.message] : [];
+        for (const row of got) rows.push(row);
+        page = body.next_page || null;
+        if (!page || got.length === 0) break;
+      }
+      return { rows };
+    })();
+  }
+  return lists[key];
+}
+
+// A value for a field whose options come from the site. Returns the problem, or null.
+async function udsSiteProblem(config, lists, site, v, R, label) {
+  const k = site.split(":")[0];
+  const rest = site.slice(k.length + 1);
+  const not = (choices) => `${udsShow(v)} is not an option for ${label}.` + (choices ? ` This site's choices: ${udsCap(choices)}.` : "");
+  if (k === "top_categories" || k === "sub_categories") {
+    if (!/^\d+$/.test(v)) return not(null);
+    const top = k === "top_categories";
+    const got = await udsRows(config, lists, top ? "/api/v2/list_professions/get" : "/api/v2/list_services/get", { property: top ? "profession_id" : "service_id", property_value: v }, top ? "Top Categories GET" : "Sub Categories GET");
+    if (got.error) return `${label} could not be checked: ${got.error}`;
+    const parent = String(R["HL-HSOO-top_level-display"] === undefined ? "" : R["HL-HSOO-top_level-display"]);
+    return got.rows.some((r) => String(top ? r.profession_id : r.service_id) === v && (top || String(r.profession_id) === parent)) ? null : not(null);
+  }
+  if (!UDS_LISTS[k]) return null;
+  const got = await udsRows(config, lists, UDS_LISTS[k], null, UDS_NEED[k]);
+  if (got.error) return `${label} could not be checked: ${got.error}`;
+  let choices;
+  if (k === "post_types") {
+    const kinds = rest.split("|");
+    choices = got.rows.filter((r) => kinds.some((p) => udsPostKind(r, p))).map((r) => [String(r.data_id), `${r.data_id} (${r.data_name})`]);
+  } else if (k === "plans") {
+    choices = got.rows.map((r) => [String(r.subscription_id), `${r.subscription_id} (${r.subscription_name})`]);
+  } else if (k === "sidebars") {
+    choices = [["", "\"\" (no sidebar)"]].concat(got.rows.map((r) => [String(r.name), JSON.stringify(String(r.name))]));
+  } else {
+    const m = /^(name|title) contains (.+)$/.exec(rest);
+    const want = m ? m[2].toLowerCase() : "";
+    choices = got.rows.filter((r) => m && String(r.menu_active) === "1" && (String(m[1] === "name" ? r.menu_name : r.menu_title).toLowerCase().includes(want) || String(r.menu_name).toLowerCase().includes(want.split(" ").join("_"))))
+      .map((r) => [String(r.menu_name), JSON.stringify(String(r.menu_name))]);
+  }
+  return choices.some((c) => c[0] === v) ? null : not(choices.map((c) => c[1]));
+}
+
+function udsRefused(x, name, label) {
+  if (name === "homepage_content_1") return `${label} is tied to the Home page record and is not changed by this tool.`;
+  if (x.f.t === "code") return `\`${name}\` holds site-wide code and is not changed by this tool.`;
+  if (x.f.t === "embed") return `${label} takes embed code and is not changed by this tool yet.`;
+  if (x.f.t === "hidden") return "This divider setting is copied into its row by the settings page; change the row instead.";
+  return `${label} is never written as a design setting.` + (x.f.note ? ` ${x.f.note.split(". ")[0].replace(/\.$/, "")}.` : "");
+}
+
+// The form the admin would store: ids as "1,2"; a number equal to exactly one option (".9" for "0.9",
+// "080" for "80") becomes that option; a whole number in a range loses its leading zeros.
+function udsNormal(ds, x, v) {
+  if (x.f.t === "ids") return /^\d+(\s*,\s*\d+)*$/.test(v) ? v.split(",").map((s) => s.trim()).join(",") : v;
+  if (x.f.t !== "sel" || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(v)) return v;
+  const opts = (x.opts || []).map((o) => dsExpand(ds.m, o[0]));
+  if (opts.includes(v)) return v;
+  const same = opts.filter((o) => /^[+-]?(\d+\.?\d*|\.\d+)$/.test(o) && Number(o) === Number(v));
+  if (same.length === 1) return same[0];
+  return x.f.r && /^\d+$/.test(v) ? String(Number(v)) : v;
+}
+
+// One setting against the map. Returns the problem, or null.
+async function udsCheck(config, ds, idx, e, R, addons, lists) {
+  const x = idx.get(e.name);
+  if (!x) return `\`${e.name}\` is not a design setting this tool knows. Call getDesignSettings for the block you want.`;
+  const f = x.f;
+  const v = e.value;
+  const label = `${x.label} (\`${e.name}\`)`;
+  const cc = /^homepage_content_([2-9]|10)$/.test(e.name);
+  if (f.refuse && !cc) return udsRefused(x, e.name, label);
+  if (v.includes("\\")) return `${label}: backslashes are removed when the page prints this value.`;
+  if (cc) {
+    if (v === "") return null;
+    const w = /^\[widget=([^[\]%<>]+)\]$/.exec(v) || /^<p>\[widget=([^[\]%<>]+)\]<\/p>$/.exec(v);
+    if (!w) return /^\s*</.test(v) ? UDS_CC_HTML : UDS_CC;
+    if (/^Bootstrap Theme - Display - Custom Content \d+$/.test(w[1])) return `${label}: a Custom Content block cannot show a Custom Content block.`;
+    const got = await udsRows(config, lists, "/api/v2/data_widgets/get", { property: "widget_name", property_value: w[1] }, "Widgets GET");
+    if (got.error) return `${label} could not be checked: ${got.error}`;
+    return got.rows.some((r) => r.widget_name === w[1] && r.widget_id && !udsYes(r.is_default)) ? null : `No site widget named ${w[1]}. Create it first.`;
+  }
+  if (f.t === "code" || f.t === "embed") return `${label} is not changed by this tool yet.`;
+  if (f.addon && udsAddonOff(f.addon, addons)) return `${x.label} needs the ${f.addon} add-on, which is not active on this site.`;
+  if (f.t === "color") {
+    if (v === "" || udsColour(v, e.name)) return null;
+    return `${label} takes a colour as rgb(R, G, B)${e.name === "post_image_bg_color" ? " or rgba(R, G, B, A)" : ""}, each 0 to 255, such as rgb(255, 0, 0).`;
+  }
+  if (f.t === "html" || f.t === "area") {
+    return udsHtmlBad(v) ? `${label} takes simple HTML: closed tags, no script, style or PHP. Put a design in a site widget and reference it.` : null;
+  }
+  if (f.t === "ids") {
+    if (v === "") return null;
+    const got = await udsRows(config, lists, UDS_LISTS.plans, null, UDS_NEED.plans);
+    if (got.error) return `${label} could not be checked: ${got.error}`;
+    const plans = got.rows.map((r) => String(r.subscription_id));
+    if (/^\d+(,\d+)*$/.test(v) && v.split(",").every((id) => plans.includes(id))) return null;
+    return `${label} takes plan ids from this site, comma-separated: ${udsCap(got.rows.map((r) => `${r.subscription_id} (${r.subscription_name})`))}.`;
+  }
+  if (f.t === "font") return v === "" || /^[A-Za-z0-9 ]{1,60}$/.test(v) ? null : `${label} takes one font family name, such as Open Sans: letters, digits and spaces.`;
+  if (f.t === "icon") return /^[A-Za-z0-9 _-]*$/.test(v) ? null : `${label} takes a Font Awesome class such as fa-heart: letters, digits, spaces, - and _.`;
+  if (f.t === "img") return v === "" || /^(https?:\/\/[A-Za-z0-9.-]+)?\/[A-Za-z0-9._~%\/+-]*$/.test(v) ? null : `${label} takes an image path such as /images/photo.webp, or "" for none.`;
+  if (f.t !== "sel" && /[<"`]|\$\{/.test(v)) return `${label} takes plain text: no <, ", backtick or \${.`;
+  const opts = (x.opts || []).map((o) => [dsExpand(ds.m, o[0]), o[1], o[2] || {}]);
+  const want = f.n === "{row}" && v === "Homepage Content" ? dsExpand(ds.m, "D:Custom Content 1") : v;
+  const hit = opts.find((o) => o[0] === want);
+  if (hit) return hit[2].addon && udsAddonOff(hit[2].addon, addons) ? `${hit[1]} (${label}) needs the ${hit[2].addon} add-on, which is not active on this site.` : null;
+  if (f.r) {
+    const n = /^(0|[1-9]\d*)$/.test(v) ? Number(v) : NaN;
+    if (n >= f.r[0] && n <= f.r[1] && (n - f.r[0]) % f.r[2] === 0) return null;
+    return `${label} takes ${f.r[0]} to ${f.r[1]} in steps of ${f.r[2]}${opts.length ? ", or " + opts.map((o) => JSON.stringify(o[0])).join(", ") : ""}.`;
+  }
+  if (f.site && f.site.startsWith("menus") && f.d !== undefined && v === dsExpand(ds.m, f.d)) return null;
+  if (f.site) return f.t === "hidden" && v === "" ? null : udsSiteProblem(config, lists, f.site, v, R, label);
+  if (opts.length) return `${udsShow(v)} is not an option for ${label}. Options: ${udsCap(opts.map((o) => JSON.stringify(o[0])))}.` + (f.n === "{row}" ? ` ${UDS_ROW_WIDGET}` : "");
+  return null;
+}
+
+// Checks on the state after this call (stored values overlaid with it). Each runs only when the call
+// touches one of the settings it reads, so a call is never refused for a state it leaves alone.
+async function udsCross(config, ds, entries, R, lists, refused) {
+  const m = ds.m;
+  const out = [];
+  const touched = new Set(entries.map((e) => e.name));
+  const add = (name, problem) => { if (!refused.has(name)) out.push({ name, problem }); };
+  const heroVal = dsRead(ds, R, "custom_30");
+  const hero = ds.idx.get("custom_30").opts.find((o) => dsExpand(m, o[0]) === heroVal);
+  const meta = hero && hero[2] ? hero[2] : {};
+  if (meta.pt && ["custom_30", "postIdCategorySelected", "digitalCategorySelected"].some((n) => touched.has(n))) {
+    const idName = meta.pt === "digital" ? "digitalCategorySelected" : "postIdCategorySelected";
+    const id = String(R[idName] === undefined ? "" : R[idName]);
+    const got = await udsRows(config, lists, UDS_LISTS.post_types, null, UDS_NEED.post_types);
+    if (got.error) add(touched.has("custom_30") ? "custom_30" : idName, `${hero[1]} could not be checked: ${got.error}`);
+    else {
+      const ok = got.rows.filter((r) => udsPostKind(r, meta.pt));
+      if (!ok.some((r) => String(r.data_id) === id)) {
+        add(touched.has("custom_30") ? "custom_30" : idName, `${hero[1]} needs ${idName} set to a ${DS_POST_KINDS[meta.pt]} post type id. This site's choices: ${udsCap(ok.map((r) => `${r.data_id} (${r.data_name})`))}.`);
+      }
+    }
+  }
+  const searchKind = ["member_search", "post_search"].includes(meta.kind) || (meta.kind === "cta" && !UDS_HERO_FORCED.some((h) => dsExpand(m, h) === heroVal));
+  if (searchKind && ["search_box_placement", "custom_216", "custom_25", "custom_30"].some((n) => touched.has(n))) {
+    if (dsRead(ds, R, "search_box_placement") === "inside_secondary" && (dsRead(ds, R, "custom_216") === "12" || dsRead(ds, R, "custom_25") === "center")) {
+      add("search_box_placement", `With this layout the hero would print no search box: it is placed in the second column, which ${dsRead(ds, R, "custom_216") === "12" ? "Content Area Width 100%" : "Content Alignment center"} removes.`);
+    }
+  }
+  const rb = udsRowsBlock(ds);
+  const cc1 = [dsExpand(m, "D:Custom Content 1"), "Homepage Content"];
+  const ccRows = rb.rows.filter((n) => cc1.includes(R[n]));
+  if (ccRows.length > 1 && ccRows.some((n) => touched.has(n))) {
+    add(ccRows.find((n) => touched.has(n)), `Custom Content 1 can be shown once; rows ${ccRows.map((n) => rb.N[0] + rb.rows.indexOf(n)).join(" and ")} hold it.`);
+  }
+  rb.rows.forEach((row, i) => {
+    const N = String(rb.N[0] + i);
+    const on = `section_${N}_background_enabled`;
+    const bg = `section_${N}_background`;
+    if ((touched.has(on) || touched.has(bg)) && R[on] === "1" && !udsColour(String(R[bg] === undefined ? "" : R[bg]), bg)) {
+      add(bg, `Section ${N}: a background switched on needs a colour here, as rgb(R, G, B).`);
+    }
+  });
+  return out;
+}
+
+// Advisory notes on the planned state: add-on status, and a section placed in more than one row (the page shows it in each).
+function udsAdvice(ds, idx, plan, R, addons) {
+  const m = ds.m;
+  const notes = [];
+  const rb = udsRowsBlock(ds);
+  for (const e of plan) {
+    const x = idx.get(e.name);
+    const need = [];
+    if (x.f.addon) need.push(x.f.addon);
+    const o = (x.opts || []).find((p) => dsExpand(m, p[0]) === e.value);
+    if (o && o[2] && o[2].addon) need.push(o[2].addon);
+    for (const a of need.join(",").split(/[,|]/).filter(Boolean)) {
+      if (!addons || addons[a] === undefined) notes.push(`${x.label} needs the ${a} add-on; the site does not report whether it is active.`);
+      else if (addons[a] === true) notes.push(`${x.label} needs the ${a} add-on, which is active on this site.`);
+    }
+    if (x.f.n === "{row}" && e.value !== "" && e.value !== "Homepage Content") {
+      const also = rb.rows.filter((n) => n !== e.name && dsRowValue(m, R[n]) === dsRowValue(m, e.value)).map((n) => rb.N[0] + rb.rows.indexOf(n));
+      if (also.length) notes.push(`${x.label}: the same section is also in row ${also.join(" and ")}; the page shows it in each row.`);
+    }
+  }
+  return notes;
+}
+
+// The undo's signature: first 24 hex of HMAC-SHA256(API key, site host + "\n" + canonical restore JSON).
+async function udsSign(config, restore) {
+  const host = String(config.domain || "").toLowerCase();
+  const canon = JSON.stringify(restore.map((e) => ({ name: e.name, value: e.value, expect: e.expect })));
+  return nodeCrypto.createHmac("sha256", String(config.apiKey || "")).update(host + "\n" + canon).digest("hex").slice(0, 24);
+}
+
+function udsSame(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+
+function udsInput(ds, args) {
+  const problems = [];
+  const add = (name, problem) => problems.push({ name, problem });
+  const parse = (v) => {
+    if (typeof v !== "string") return v;
+    try {
+      return JSON.parse(v);
+    } catch (err) {
+      return v;
+    }
+  };
+  for (const k of Object.keys(args)) if (!["settings", "undo", "dry_run"].includes(k)) add(k, "Unknown key. Send settings (or undo) and dry_run.");
+  const settings = parse(args.settings);
+  const undo = parse(args.undo);
+  const hasS = settings !== undefined && settings !== null;
+  const hasU = undo !== undefined && undo !== null;
+  if (args.dry_run !== undefined && args.dry_run !== null && typeof args.dry_run !== "boolean") add("dry_run", "Send true or false.");
+  if (hasS && hasU) add("settings", "Send settings or undo, not both.");
+  if (!hasS && !hasU) add("settings", "Send settings as {name: value}, or undo from an earlier result.");
+  if (problems.length) return { problems };
+  if (hasU) {
+    const ok = undo && typeof undo === "object" && !Array.isArray(undo) && Array.isArray(undo.restore) && Object.keys(undo).every((k) => k === "restore" || k === "sig");
+    const list = ok ? undo.restore : null;
+    if (!list || list.length < 1 || list.length > UDS_MAX) {
+      add("undo", `Send undo as an earlier result returned it: {"restore": [1 to ${UDS_MAX} entries], "sig": "..."}.`);
+      return { problems };
+    }
+    const entries = [];
+    const seen = new Set();
+    for (const e of list) {
+      const good = e && typeof e === "object" && !Array.isArray(e) && Object.keys(e).length === 3 && typeof e.name === "string"
+        && (typeof e.value === "string" || e.value === null) && (typeof e.expect === "string" || e.expect === null);
+      if (!good) add("undo", "Each restore entry is {name, value, expect}, as returned.");
+      else if (!ds.names.has(e.name)) add(e.name, `\`${e.name}\` is not a design setting this tool knows. Call getDesignSettings for the block you want.`);
+      else if (seen.has(e.name)) add(e.name, "Named more than once.");
+      else {
+        seen.add(e.name);
+        entries.push({ name: e.name, value: e.value, expect: e.expect });
+      }
+    }
+    return { problems, undo: entries, sig: undo.sig, dry_run: args.dry_run === true };
+  }
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+    add("settings", "Send settings as {name: value}.");
+    return { problems };
+  }
+  const names = Object.keys(settings);
+  if (names.length < 1 || names.length > UDS_MAX) {
+    add("settings", `Send 1 to ${UDS_MAX} settings in one call.`);
+    return { problems };
+  }
+  const entries = [];
+  for (const n of names) {
+    const v = settings[n];
+    if (typeof v === "string") entries.push({ name: n, value: v.trim() });
+    else if (typeof v === "number" && Number.isFinite(v)) entries.push({ name: n, value: String(v) });
+    else add(n, "Send the value as a string.");
+  }
+  return { problems, settings: entries, dry_run: args.dry_run === true };
+}
+
+// One GET of `context` for the named settings: { cur, dups (name -> ids), addons } or { error }.
+async function udsContext(config, names) {
+  const ctx = await udsFetch(config, "GET", "/api/v2/website_design_settings/context", { names: names.join(",") }, null, UDS_PERM);
+  if (ctx.error) return { error: ctx.error };
+  const c = ctx.body && typeof ctx.body === "object" && ctx.body.status === "success" ? ctx.body.message : null;
+  if (!c || !c.values || typeof c.values !== "object") return { error: `The site answered HTTP ${ctx.status} without the current settings.` };
+  const dups = {};
+  for (const d of Array.isArray(c.duplicates) ? c.duplicates : []) if (d && typeof d.name === "string") dups[d.name] = (Array.isArray(d.ids) ? d.ids : []).map(Number).sort((a, x) => a - x);
+  return { cur: c.values, dups, addons: c.addons && typeof c.addons === "object" ? c.addons : null };
+}
+
+// One POST to core. Core refusals come back in this tool's refusal shape. A lost response
+// (network error, timeout, 5xx, a body that is not JSON) is marked `lost`: the write may have landed.
+async function udsApply(config, changes) {
+  const r = await udsFetch(config, "POST", "/api/v2/website_design_settings/apply", null, { changes: JSON.stringify(changes) }, UDS_PERM);
+  if (r.error) return r.lost ? { status: "error", message: r.error, lost: true } : { status: "error", message: r.error };
+  const body = r.body;
+  if (body && typeof body === "object" && body.status === "success" && body.message && body.message.status === "applied") return { core: body.message };
+  if (body && typeof body === "object" && Array.isArray(body.refused)) {
+    return { status: "refused", problems: body.refused.map((x) => ({ name: String(x.item), problem: String(x.reason) })) };
+  }
+  const out = { status: "error", message: body && typeof body === "object" && body.message ? String(body.message).slice(0, 300) : `The site answered HTTP ${r.status} without a result.` };
+  if (body && typeof body === "object" && body.rolled_back !== undefined) {
+    out.rolled_back = body.rolled_back;
+    out.not_restored = body.not_restored;
+  } else if (!body || typeof body !== "object" || r.status >= 500) out.lost = true;
+  return out;
+}
+
+async function udsResult(config, idx, status, changedIn, unchanged, notes) {
+  const changed = changedIn.map((c) => {
+    const x = idx.get(c.name);
+    const out = { name: c.name, label: x ? x.label : c.name, before: c.before, after: c.after, created: !!c.created };
+    if (c.deleted) out.deleted = true;
+    return out;
+  });
+  const res = { status, changed };
+  if (unchanged.length) res.unchanged = unchanged;
+  res.notes = notes;
+  const restore = changed.map((c) => ({ name: c.name, value: c.created ? null : c.before, expect: c.deleted ? null : c.after }));
+  res.undo = { restore, sig: await udsSign(config, restore) };
+  return res;
+}
+
+// After a lost response: read the planned names back. Every one at its new value: applied; every one
+// at its old value: not applied; anything else: unknown, and the planned undo comes with the error.
+async function udsConfirm(config, idx, plan, lost, unchanged, notes) {
+  const back = await udsContext(config, plan.map((p) => p.name));
+  const at = (p, v) => (back.dups[p.name] ? false : v === null ? !Object.prototype.hasOwnProperty.call(back.cur, p.name) : back.cur[p.name] === v);
+  if (!back.error && plan.every((p) => at(p, p.after))) {
+    notes.push(UDS_LOST, "The site's settings cache may not have been refreshed; call refreshSiteCache.");
+    return udsResult(config, idx, "applied", plan.map((p) => ({ name: p.name, before: p.before, after: p.after, created: p.before === null, deleted: p.after === null })), unchanged, notes);
+  }
+  if (!back.error && plan.every((p) => at(p, p.before))) {
+    return { status: "error", message: `${lost.message} Not applied: reading the settings back shows the previous values.` };
+  }
+  const may = await udsResult(config, idx, "unknown", plan.map((p) => ({ name: p.name, before: p.before, after: p.after, created: p.before === null, deleted: p.after === null })), [], []);
+  return { status: "error", message: `${lost.message} The write may have landed: ${back.error ? "the settings could not be read back" : "reading them back shows neither the old nor the new values everywhere"}. Read the settings before changing them again; the undo below puts back what was there.`, undo: may.undo };
+}
+
+// An undo: signed by this tool for this site, then applied (or previewed) under the same expect guards.
+async function udsUndo(config, ds, idx, input) {
+  if (!udsSame(input.sig, await udsSign(config, input.undo))) return { status: "refused", problems: [{ name: "undo", problem: UDS_UNSIGNED }] };
+  const stale = (name) => `${idx.get(name).label} (\`${name}\`) was changed after that call; the undo was not applied. Ask the user before changing it.`;
+  const plan = input.undo.map((e) => ({ name: e.name, value: e.value, expect: e.expect }));
+  if (input.dry_run) {
+    const c = await udsContext(config, plan.map((e) => e.name));
+    if (c.error) return { status: "error", message: c.error };
+    const has = (n) => Object.prototype.hasOwnProperty.call(c.cur, n);
+    const problems = [];
+    const changed = [];
+    const unchanged = [];
+    for (const e of plan) {
+      const now = has(e.name) ? c.cur[e.name] : null;
+      if (c.dups[e.name]) problems.push({ name: e.name, problem: `${idx.get(e.name).label} (\`${e.name}\`): ${dsDupWhy(c.dups[e.name])}` });
+      else if (now !== e.expect) problems.push({ name: e.name, problem: stale(e.name) });
+      else if (now === e.value || (now === null && e.value === "")) unchanged.push(e.name);
+      else changed.push({ name: e.name, before: now, after: e.value, created: now === null, deleted: e.value === null });
+    }
+    if (problems.length) return { status: "refused", problems };
+    if (!changed.length) return { status: "unchanged", unchanged };
+    return udsResult(config, idx, "dry_run", changed, unchanged, [UDS_NOTE_PAGE]);
+  }
+  const slot = await acquireMutateSlot(config.apiKey);
+  if (slot.error) return { status: "error", message: slot.error };
+  const set = plan.filter((e) => e.value !== null).map((e) => ({ name: e.name, value: e.value, expect: e.expect }));
+  const del = plan.filter((e) => e.value === null).map((e) => ({ name: e.name, expect: e.expect }));
+  const done = await udsApply(config, { set, delete: del, refresh: true });
+  _dsCache.delete(dsCacheKey(config));
+  const notes = [UDS_NOTE_PAGE];
+  if (done.lost) return udsConfirm(config, idx, plan.map((e) => ({ name: e.name, before: e.expect, after: e.value })), done, [], notes);
+  if (done.status === "refused") return { status: "refused", problems: done.problems.map((p) => (idx.has(p.name) && / changed since it was read\./.test(p.problem) ? { name: p.name, problem: stale(p.name) } : p)) };
+  if (!done.core) return done;
+  if (!done.core.changed.length) return { status: "unchanged", unchanged: done.core.unchanged };
+  if (done.core.cache !== "success") notes.push(`The site's settings cache was not refreshed (${done.core.cache}); call refreshSiteCache.`);
+  return udsResult(config, idx, "applied", done.core.changed, done.core.unchanged, notes);
+}
+
+async function updateDesignSettings(config, args) {
+  let ds;
+  try {
+    ds = dsLoad();
+  } catch (err) {
+    return { status: "error", message: `The design settings map could not be read: ${(err && err.message) || String(err)}` };
+  }
+  const idx = udsIndex(ds);
+  const input = udsInput(ds, args);
+  if (input.problems.length) return { status: "refused", problems: input.problems };
+  if (input.undo) return udsUndo(config, ds, idx, input);
+  const entries = input.settings.map((e) => {
+    const x = idx.get(e.name);
+    if (!x) return e;
+    const v = udsNormal(ds, x, e.value);
+    return { name: e.name, value: x.f.n === "{row}" && v === dsExpand(ds.m, "D:Custom Content 1") ? "Homepage Content" : v };
+  });
+  const want = new Set(udsCheckNames(ds));
+  for (const e of entries) {
+    const x = idx.get(e.name);
+    if (!x) continue;
+    want.add(e.name);
+    udsClauseNames(ds, x.f.used, x.N, want);
+  }
+  const c = await udsContext(config, Array.from(want));
+  if (c.error) return { status: "error", message: c.error };
+  const cur = c.cur;
+  const has = (n) => Object.prototype.hasOwnProperty.call(cur, n);
+  const R = Object.assign({}, cur);
+  for (const e of entries) if (idx.has(e.name)) R[e.name] = e.value;
+  const problems = [];
+  for (const e of entries) if (idx.has(e.name) && c.dups[e.name]) problems.push({ name: e.name, problem: `${idx.get(e.name).label} (\`${e.name}\`): ${dsDupWhy(c.dups[e.name])}` });
+  // A mapped value equal to the stored one is unchanged and skips the value rules: sending back what is stored never fails.
+  const unchanged = [];
+  const plan = [];
+  for (const e of entries) {
+    if (idx.has(e.name) && c.dups[e.name]) continue;
+    if (idx.has(e.name) && (has(e.name) ? cur[e.name] === e.value : e.value === "")) unchanged.push(e.name);
+    else plan.push(e);
+  }
+  const lists = {};
+  for (const e of plan) {
+    const p = await udsCheck(config, ds, idx, e, R, c.addons, lists);
+    if (p) problems.push({ name: e.name, problem: p });
+  }
+  const cross = await udsCross(config, ds, plan.filter((e) => idx.has(e.name)), R, lists, new Set(problems.map((p) => p.name)));
+  for (const p of cross) problems.push(p);
+  if (problems.length) return { status: "refused", problems };
+  if (!plan.length) return { status: "unchanged", unchanged };
+  const notes = [UDS_NOTE_PAGE];
+  for (const e of plan) {
+    const x = idx.get(e.name);
+    const idle = dsWhile(ds, x.f.used, udsRuleValues(ds, x, R));
+    if (idle) notes.push(`${x.label} has no visible effect while ${x.N ? idle.split("{N}").join(x.N) : idle}.`);
+  }
+  for (const n of udsAdvice(ds, idx, plan, R, c.addons)) notes.push(n);
+  if (input.dry_run) {
+    return udsResult(config, idx, "dry_run", plan.map((e) => ({ name: e.name, before: has(e.name) ? cur[e.name] : null, after: e.value, created: !has(e.name) })), unchanged, notes);
+  }
+  const slot = await acquireMutateSlot(config.apiKey);
+  if (slot.error) return { status: "error", message: slot.error };
+  const set = plan.map((e) => ({ name: e.name, value: e.value, expect: has(e.name) ? cur[e.name] : null }));
+  const done = await udsApply(config, { set, refresh: true });
+  _dsCache.delete(dsCacheKey(config));
+  if (done.lost) return udsConfirm(config, idx, plan.map((e) => ({ name: e.name, before: has(e.name) ? cur[e.name] : null, after: e.value })), done, unchanged, notes);
+  if (!done.core) return done;
+  if (!done.core.changed.length) return { status: "unchanged", unchanged: unchanged.concat(done.core.unchanged) };
+  if (done.core.cache !== "success") notes.push(`The site's settings cache was not refreshed (${done.core.cache}); call refreshSiteCache.`);
+  return udsResult(config, idx, "applied", done.core.changed, unchanged.concat(done.core.unchanged), notes);
 }
 
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
@@ -1584,7 +2253,8 @@ function getToolAnnotations(toolName) {
   if (toolName.startsWith("delete")) {
     return { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true };
   }
-  if (toolName.startsWith("update")) {
+  // updateDesignSettings is not idempotent: a repeated undo is refused as stale.
+  if (toolName.startsWith("update") && toolName !== "updateDesignSettings") {
     return { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true };
   }
   // create*, matchLead, refreshSiteCache, createClick, createUnsubscribe, etc.
@@ -6371,6 +7041,15 @@ async function main() {
       return {
         content: [{ type: "text", text: JSON.stringify(settings) }],
         isError: settings.status === "error",
+      };
+    }
+
+    // Synthetic tool: updateDesignSettings — checks every value against the map, then one all-or-nothing write.
+    if (name === "updateDesignSettings") {
+      const changed = await updateDesignSettings(config, args || {});
+      return {
+        content: [{ type: "text", text: JSON.stringify(changed) }],
+        isError: changed.status === "error" || changed.status === "refused",
       };
     }
 

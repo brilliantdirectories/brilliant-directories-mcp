@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.619] - 2026-11-11
+
+### Added
+- `updateDesignSettings`: change a site's design settings by name, 1 to 100 per call, all or nothing. Values are checked first against what the Design Settings page accepts and against a few cross-setting rules; every problem comes back at once and nothing is written. A value equal to the stored one is reported as unchanged. `dry_run` checks only, and also previews an `undo`. The result lists what changed and a signed `undo` to send back as-is; an undo this tool did not issue for the site is refused, and an undo whose settings changed since is refused rather than overwriting the newer value. Custom Content 2 to 10 take an empty value, `[widget=Name]` or `<p>[widget=Name]</p>` for a site widget. A name stored more than once on the site is refused before anything is sent. If the site's answer to a write is lost, the settings are read back to report whether it landed. Needs the API key's Design Settings GET, POST, PUT and DELETE permissions.
+
+### Changed
+- `getDesignSettings`: homepage row, hero type and Custom Content 2 to 10 settings are no longer marked as not writable.
+- `getDesignSettings`: reads all values in one request where the site allows it (falls back to the paged list); shows add-on status (active, not active or unknown) for blocks that need an add-on; marks a name stored more than once as not writable; shows the Custom Content 1 homepage row as Custom Content 1; shows colour defaults as `rgb(R, G, B)` and the font format; a 403 that is not a permission message is reported as a firewall block.
+- Design settings map: the six sidebar fields list the empty (no sidebar) option; clearer labels for Menu Behavior (sticky menu) and Main Menu Bar Background; notes on showing a site widget as a homepage section and on row numbers.
+- Hosted server: `updatePageCss` refusals and errors now carry the error flag, as in the npm package.
+
 ## [6.59.618] - 2026-11-11
 
 ### Added
