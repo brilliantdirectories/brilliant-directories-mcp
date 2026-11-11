@@ -516,6 +516,485 @@ async function buildCategoryTree(config, args) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Synthetic tool: updatePageCss — edits individual CSS rules in a page's
+// `content_css` by selector. BD's API only takes the whole field, so the tool
+// reads it, changes the named rules by character offset, and writes it back;
+// every other character is sent back exactly as it was read.
+// Mirrored in Worker `src/index.ts` (pcss* functions). Keep in sync.
+// ---------------------------------------------------------------------------
+const PCSS_MAX_RULES = 40;
+const PCSS_MAX_SELECTOR = 300;
+const PCSS_NOTES = [
+  "This CSS loads on that page only. A custom section's own CSS belongs in its widget's CSS field.",
+  "Target a homepage section by its own class, never by .homepage-section-<number>: the number changes when sections are reordered.",
+];
+const _pcssQueues = new Map();
+
+// Matching form of a selector or an at-rule prelude. Case is kept: class names are case-sensitive.
+function pcssNorm(s, isAt) {
+  let v = String(s).replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").replace(/\s*([>+~,])\s*/g, "$1").trim();
+  if (isAt) v = v.replace(/\(\s+/g, "(").replace(/\s+\)/g, ")").replace(/\s*:\s*/g, ":").replace(/^(@[\w-]+)\s*\(/, "$1 (");
+  return v;
+}
+
+// One pass over the field. Returns { rules, groups } with character offsets, or { error, pos }.
+// A rule inside @media/@supports carries that prelude in `at`. @font-face, @page and
+// @keyframes blocks are skipped whole. A rule whose body holds a nested `{` is flagged.
+function pcssScan(css) {
+  const rules = [];
+  const groups = [];
+  const stack = [];
+  const n = css.length;
+  let i = 0;
+  let segStart = 0;
+  while (i < n) {
+    const c = css[i];
+    if (c === "/" && css[i + 1] === "*") {
+      const e = css.indexOf("*/", i + 2);
+      if (e < 0) return { error: "unclosed comment", pos: i };
+      i = e + 2;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < n && css[j] !== c) {
+        if (css[j] === "\\") j++;
+        j++;
+      }
+      if (j >= n) return { error: "unclosed string", pos: i };
+      i = j + 1;
+      continue;
+    }
+    if (c === "{") {
+      const top = stack[stack.length - 1];
+      const prelude = css.slice(segStart, i);
+      const lead = prelude.length - prelude.replace(/^(\s|\/\*[\s\S]*?\*\/)+/, "").length;
+      const p = pcssNorm(prelude, false);
+      if (top && (top.kind === "rule" || top.kind === "opaque" || top.kind === "inner")) {
+        if (top.kind === "rule") top.nested = true;
+        stack.push({ kind: "inner" });
+      } else if (p.charAt(0) === "@") {
+        if (/^@(font-face|page|(-[a-z]+-)?keyframes)\b/i.test(p)) {
+          stack.push({ kind: "opaque" });
+        } else {
+          const own = pcssNorm(prelude, true);
+          const chain = stack.filter((s) => s.kind === "group").map((s) => s.at).concat(own).join(" ");
+          const g = { kind: "group", at: own, chain, preStart: segStart + lead, bodyStart: i + 1, bodyEnd: -1, end: -1 };
+          g.index = groups.push(g) - 1;
+          stack.push(g);
+        }
+      } else {
+        stack.push({ kind: "rule", sel: p, selStart: segStart + lead, bodyStart: i + 1, nested: false });
+      }
+      i++;
+      segStart = i;
+      continue;
+    }
+    if (c === "}") {
+      const top = stack.pop();
+      if (!top) return { error: "unexpected }", pos: i };
+      if (top.kind === "rule") {
+        const parents = stack.filter((s) => s.kind === "group");
+        rules.push({
+          at: parents.map((s) => s.at).join(" "),
+          group: parents.length ? parents[parents.length - 1].index : -1,
+          sel: top.sel,
+          selStart: top.selStart,
+          bodyStart: top.bodyStart,
+          bodyEnd: i,
+          end: i + 1,
+          nested: top.nested,
+        });
+      } else if (top.kind === "group") {
+        top.bodyEnd = i;
+        top.end = i + 1;
+      }
+      i++;
+      segStart = i;
+      continue;
+    }
+    if (c === ";" && (stack.length === 0 || stack[stack.length - 1].kind === "group")) segStart = i + 1;
+    i++;
+  }
+  if (stack.length) return { error: "unclosed {", pos: n };
+  return { rules, groups };
+}
+
+// Declarations as a list, split on `;` outside quotes and parentheses. Comments are dropped.
+function pcssDecls(body) {
+  const src = String(body).replace(/\/\*[\s\S]*?\*\//g, " ");
+  const out = [];
+  let cur = "";
+  let depth = 0;
+  let q = "";
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (q) {
+      cur += c;
+      if (c === "\\") { cur += src[i + 1] || ""; i++; }
+      else if (c === q) q = "";
+      continue;
+    }
+    if (c === '"' || c === "'") { q = c; cur += c; continue; }
+    if (c === "(") depth++;
+    if (c === ")" && depth > 0) depth--;
+    if (c === ";" && depth === 0) { out.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out.map((d) => d.replace(/\s+/g, " ").trim()).filter((d) => d !== "");
+}
+
+function pcssQuotesBalanced(s) {
+  let q = "";
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) {
+      if (c === "\\") i++;
+      else if (c === q) q = "";
+    } else if (c === '"' || c === "'") q = c;
+  }
+  return q === "";
+}
+
+function pcssSplitCommas(sel) {
+  const parts = [];
+  let cur = "";
+  let depth = 0;
+  for (const c of sel) {
+    if (c === "(" || c === "[") depth++;
+    if ((c === ")" || c === "]") && depth > 0) depth--;
+    if (c === "," && depth === 0) { parts.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  parts.push(cur);
+  return parts;
+}
+
+// Checks 1 to 6 of the tool's contract. Returns { entries } or { refused: [messages] }.
+function pcssValidate(args) {
+  const refused = [];
+  const rulesIn = args && Array.isArray(args.rules) ? args.rules : null;
+  if (!rulesIn || rulesIn.length < 1 || rulesIn.length > PCSS_MAX_RULES) {
+    return { refused: [`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css.`] };
+  }
+  const entries = [];
+  const seen = new Set();
+  for (const r of rulesIn) {
+    if (!r || typeof r !== "object" || typeof r.selector !== "string" || r.selector.trim() === "" || typeof r.css !== "string") {
+      refused.push(`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css.`);
+      continue;
+    }
+    const selector = String(stripAgentScaffolding(r.selector)).replace(/\s+/g, " ").trim();
+    const css = String(stripAgentScaffolding(r.css));
+    const media = r.media === undefined || r.media === null ? "" : String(stripAgentScaffolding(String(r.media))).replace(/\s+/g, " ").trim();
+    const hasAfter = typeof r.after === "string";
+    const after = hasAfter ? pcssNorm(String(stripAgentScaffolding(r.after)), false) : "";
+    if (selector.length > PCSS_MAX_SELECTOR || /[{}<;@]/.test(selector) || selector.includes("/*")) {
+      refused.push(`\`${selector.slice(0, 120)}\` is not a plain selector.`);
+      continue;
+    }
+    const reserved = pcssSplitCommas(selector).some((part) =>
+      /(?<![\w-])\.(?:container|froala-table)(?:::?[\w-]+(?:\([^)]*\))?)*\s*$/.test(part)
+    ) || /\.image-placeholder|\[\s*(?:widget|form)/i.test(selector);
+    if (reserved) {
+      refused.push(`\`${selector}\` targets a platform-reserved class. Style a class of your own inside it.`);
+      continue;
+    }
+    if (media !== "" && (!/^@media\b/i.test(media) || /[{}<;]/.test(media))) {
+      refused.push(`\`${media.slice(0, 120)}\` is not a media query.`);
+      continue;
+    }
+    const bad = [];
+    for (const ch of ["{", "}", "<"]) if (css.includes(ch)) bad.push(ch);
+    if (css.includes("/*")) bad.push("/*");
+    if (css.includes("//")) bad.push("//");
+    if (/@import/i.test(css)) bad.push("@import");
+    if (!pcssQuotesBalanced(css)) bad.push("an unclosed quote");
+    if (bad.length) {
+      refused.push(`The css for \`${selector}\` contains ${bad.map((b) => "`" + b + "`").join(", ")}.` + (bad.includes("//") ? " Use a root-relative /path for images." : ""));
+      continue;
+    }
+    const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
+    if (seen.has(key)) {
+      refused.push(`\`${selector}\` appears twice in this call.`);
+      continue;
+    }
+    seen.add(key);
+    entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after });
+  }
+  if (refused.length) return { refused: Array.from(new Set(refused)) };
+  return { entries };
+}
+
+function pcssCutStart(css, pos) {
+  let p = pos;
+  while (p > 0 && (css[p - 1] === " " || css[p - 1] === "\t")) p--;
+  if (p >= 2 && css.slice(p - 2, p) === "\r\n") return p - 2;
+  if (p >= 1 && css[p - 1] === "\n") return p - 1;
+  return pos;
+}
+
+// White space a rule's line starts with, or null when the rule does not start its line.
+function pcssIndent(css, pos) {
+  let p = pos;
+  while (p > 0 && (css[p - 1] === " " || css[p - 1] === "\t")) p--;
+  return p === 0 || css[p - 1] === "\n" ? css.slice(p, pos) : null;
+}
+
+// Where an added rule with `after` goes: { pos, indent, lead } or null (append at the end).
+// `skip` holds the rules this call removes; they cannot anchor an insert.
+function pcssSpot(R, scan, e, skip) {
+  const scope = scan.rules.filter((r) => r.at === e.at && !skip.has(r));
+  if (e.after !== "") {
+    const anchors = scope.filter((r) => r.sel === e.after);
+    if (anchors.length !== 1) return null;
+    const ind = pcssIndent(R, anchors[0].selStart);
+    return { pos: anchors[0].end, indent: ind === null ? (e.at ? "  " : "") : ind, lead: true };
+  }
+  let first = scope[0];
+  if (e.at !== "") {
+    const blocks = scan.groups.filter((g) => g.chain === e.at);
+    if (blocks.length !== 1) return null;
+    first = scope.find((r) => r.group === blocks[0].index);
+  }
+  if (!first) return null;
+  const ind = pcssIndent(R, first.selStart);
+  if (ind === null) return null;
+  const cut = pcssCutStart(R, first.selStart);
+  return cut < first.selStart ? { pos: cut, indent: ind, lead: true } : { pos: first.selStart, indent: ind, lead: false };
+}
+
+// Applies the entries to the field text. Returns { next, results, undo } or { refused }.
+function pcssPlan(R, entries) {
+  if (R.includes("<?")) return { refused: ["This page's CSS contains PHP code. Edit it in the page editor."] };
+  const scan = pcssScan(R);
+  if (scan.error) {
+    return { refused: [`This page's CSS has a syntax problem near character ${scan.pos} (${scan.error}). Fix it in the page editor first.`] };
+  }
+  const nl = R.includes("\r\n") ? "\r\n" : "\n";
+  const refused = [];
+  const edits = [];
+  const results = [];
+  const undo = [];
+  const undoPos = [];
+  const inserts = new Map();
+  const removedByGroup = new Map();
+  const removing = new Set();
+  for (const e of entries) {
+    const hits = e.decls.length === 0 ? scan.rules.filter((r) => r.sel === e.sel && r.at === e.at) : [];
+    if (hits.length === 1 && !hits[0].nested) removing.add(hits[0]);
+  }
+  const ruleText = (sel, decls, ind) => ind + sel + " {" + nl + decls.map((d) => ind + "  " + d + ";").join(nl) + nl + ind + "}";
+  let appended = "";
+  for (const e of entries) {
+    const hits = scan.rules.filter((r) => r.sel === e.sel && r.at === e.at);
+    if (hits.length > 1) {
+      refused.push(`\`${e.selector}\` has ${hits.length} rules on this page. Merge them in the page editor first.`);
+      continue;
+    }
+    const base = { selector: e.selector, media: e.media };
+    const undoBase = e.media ? { selector: e.selector, media: e.media } : { selector: e.selector };
+    if (hits.length === 0) {
+      if (e.decls.length === 0) {
+        results.push({ ...base, action: "not_found" });
+        continue;
+      }
+      const spot = e.hasAfter ? pcssSpot(R, scan, e, removing) : null;
+      if (spot) {
+        const text = ruleText(e.selector, e.decls, spot.indent);
+        inserts.set(spot.pos, (inserts.get(spot.pos) || "") + (spot.lead ? nl + text : text + nl));
+        results.push({ ...base, action: "added" });
+      } else {
+        const rule = ruleText(e.selector, e.decls, e.media ? "  " : "");
+        const block = e.media ? e.media + " {" + nl + rule + nl + "}" : rule;
+        appended += (R === "" && appended === "" ? "" : nl) + block;
+        const emptyStart = e.after === "" && e.at === "" && scan.rules.length === 0 && scan.groups.length === 0;
+        results.push(e.hasAfter && !emptyStart ? { ...base, action: "added", placed: "end" } : { ...base, action: "added" });
+      }
+      undo.push({ ...undoBase, css: "" });
+      undoPos.push(-1);
+      continue;
+    }
+    const hit = hits[0];
+    if (hit.nested) {
+      refused.push(`\`${e.selector}\` holds nested rules on this page. Edit it in the page editor.`);
+      continue;
+    }
+    const oldDecls = pcssDecls(R.slice(hit.bodyStart, hit.bodyEnd));
+    if (e.decls.length === 0) {
+      edits.push({ start: pcssCutStart(R, hit.selStart), end: hit.end, text: "", group: hit.group, rule: hit });
+      if (hit.group >= 0) {
+        if (!removedByGroup.has(hit.group)) removedByGroup.set(hit.group, []);
+        removedByGroup.get(hit.group).push(hit);
+      }
+      if (oldDecls.length === 0) {
+        results.push({ ...base, action: "removed", note: "the previous rule was empty" });
+        continue;
+      }
+      const before = scan.rules.filter((r) => r.group === hit.group && r.end <= hit.selStart && !removing.has(r)).pop();
+      results.push({ ...base, action: "removed" });
+      undo.push({ ...undoBase, css: oldDecls.join("; ") + ";", after: before ? R.slice(before.selStart, before.bodyStart - 1).replace(/\s+/g, " ").trim() : "" });
+      undoPos.push(hit.selStart);
+      continue;
+    }
+    if (oldDecls.join(";") === e.decls.join(";")) {
+      results.push({ ...base, action: "unchanged" });
+      continue;
+    }
+    const inner = hit.group >= 0 ? "    " : "  ";
+    const close = hit.group >= 0 ? "  " : "";
+    edits.push({ start: hit.bodyStart, end: hit.bodyEnd, text: nl + e.decls.map((d) => inner + d + ";").join(nl) + nl + close });
+    if (oldDecls.length === 0) {
+      results.push({ ...base, action: "replaced", note: "the previous rule was empty" });
+      continue;
+    }
+    results.push({ ...base, action: "replaced" });
+    undo.push({ ...undoBase, css: oldDecls.join("; ") + ";" });
+    undoPos.push(-1);
+  }
+  if (refused.length) return { refused };
+  // A group left with nothing but white space after its rules are removed goes too.
+  for (const [gi, removed] of removedByGroup) {
+    const g = scan.groups[gi];
+    let rest = "";
+    let pos = g.bodyStart;
+    for (const r of removed.slice().sort((a, b) => a.selStart - b.selStart)) {
+      rest += R.slice(pos, r.selStart);
+      pos = r.end;
+    }
+    rest += R.slice(pos, g.bodyEnd);
+    if (rest.trim() !== "") continue;
+    for (let k = edits.length - 1; k >= 0; k--) if (edits[k].group === gi && edits[k].text === "") edits.splice(k, 1);
+    edits.push({ start: pcssCutStart(R, g.preStart), end: g.end, text: "" });
+  }
+  for (const [pos, text] of inserts) edits.push({ start: pos, end: pos, text });
+  // Last position first; where a cut and an insert share a start, the cut goes first.
+  edits.sort((a, b) => b.start - a.start || (b.end - b.start) - (a.end - a.start));
+  let next = R;
+  for (const ed of edits) next = next.slice(0, ed.start) + ed.text + next.slice(ed.end);
+  // A cut at the very start leaves the next rule's line break behind; it goes too.
+  if (edits.some((ed) => ed.start === 0 && ed.end > 0) && !/^[\r\n]/.test(R)) next = next.replace(/^\r?\n/, "");
+  next += appended;
+  // Removed rules are listed in field order, so sending the undo puts neighbours back in order.
+  const removedInOrder = undo.map((u, k) => ({ u, p: undoPos[k] })).filter((x) => x.p >= 0).sort((a, b) => a.p - b.p);
+  let ri = 0;
+  return { next, results, undo: undo.map((u, k) => (undoPos[k] >= 0 ? removedInOrder[ri++].u : u)) };
+}
+
+function pcssHttpError(result) {
+  if (!result) return "No response from the site.";
+  const raw = typeof result.body === "string" ? result.body : JSON.stringify(result.body);
+  if (result.status === 429) {
+    const retryHint = result.retryAfter
+      ? `Server asked you to wait at least ${result.retryAfter} seconds (Retry-After header).`
+      : `No Retry-After header - wait at least 60 seconds before retrying (BD's default window).`;
+    return `Rate limit exceeded (HTTP 429). ${retryHint} BD default is 100 req/60s per API key. Server response: ${raw}`;
+  }
+  if (result.status === 401 || result.status === 403) {
+    return `Authentication failed (HTTP ${result.status}). The API key is invalid, revoked, or lacks permission for this endpoint. Verify with: npx brilliant-directories-mcp --verify --api-key KEY --url URL. Server response: ${raw}`;
+  }
+  return null;
+}
+
+async function pcssReadPage(config, seoId) {
+  const result = seoId === null
+    ? await makeRequest(config, "GET", "/api/v2/list_seo/get", { property: "seo_type", property_value: "home" }, null)
+    : await makeRequest(config, "GET", `/api/v2/list_seo/get/${seoId}`, null, null);
+  const httpErr = pcssHttpError(result);
+  if (httpErr) return { error: httpErr };
+  if (result.status >= 500) return { error: `The site answered HTTP ${result.status}.` };
+  const body = result.body;
+  const rows = body && typeof body === "object" && body.status === "success"
+    ? (Array.isArray(body.message) ? body.message : (body.message && typeof body.message === "object" ? [body.message] : []))
+    : [];
+  if (seoId === null) {
+    if (rows.length === 0) return { error: "This site has no home page record." };
+    if (rows.length > 1) return { error: "This site has more than one home page record." };
+  } else if (rows.length !== 1 || String(rows[0].seo_id) !== String(seoId)) {
+    return { error: `No page with seo_id ${seoId}.` };
+  }
+  const css = rows[0].content_css;
+  return { seo_id: String(rows[0].seo_id), css: css === undefined || css === null ? "" : String(css) };
+}
+
+async function pcssWrite(config, seoId, css) {
+  const result = css === ""
+    ? await makeRequest(config, "PUT", "/api/v2/list_seo/update", null, { seo_id: seoId }, ["content_css"])
+    : await makeRequest(config, "PUT", "/api/v2/list_seo/update", null, { seo_id: seoId, content_css: css });
+  const httpErr = pcssHttpError(result);
+  if (httpErr) return { error: httpErr };
+  const body = result.body;
+  if (!body || typeof body !== "object" || body.status !== "success") {
+    return { error: `The site refused the write: ${typeof body === "string" ? body.slice(0, 300) : JSON.stringify(body && body.message !== undefined ? body.message : body).slice(0, 300)}` };
+  }
+  return { ok: true };
+}
+
+async function updatePageCss(config, args) {
+  const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
+  const checked = pcssValidate(args);
+  if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });
+  let seoId = null;
+  if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") {
+    if (!/^\d+$/.test(String(args.seo_id)) || Number(args.seo_id) < 1) {
+      return fail(`Nothing was written. No page with seo_id ${String(args.seo_id).slice(0, 40)}.`);
+    }
+    seoId = String(Number(args.seo_id));
+  }
+  const siteKey = String(config.apiUrl || "");
+  const prior = _pcssQueues.get(siteKey) || Promise.resolve();
+  const run = prior.catch(() => {}).then(async () => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const page = await pcssReadPage(config, seoId);
+      if (page.error) return fail("Nothing was written. " + page.error);
+      const R = page.css;
+      const plan = pcssPlan(R, checked.entries);
+      if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
+      const out = {
+        status: "success",
+        seo_id: Number(page.seo_id),
+        results: plan.results,
+        chars_before: R.length,
+        chars_after: plan.next.length,
+      };
+      if (plan.next === R) {
+        return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
+      }
+      const again = await pcssReadPage(config, page.seo_id);
+      if (again.error) return fail("Nothing was written. " + again.error);
+      if (again.css !== R) continue;
+      const slot = await acquireMutateSlot(config.apiKey);
+      if (slot.error) return fail("Nothing was written. " + slot.error);
+      const wrote = await pcssWrite(config, page.seo_id, plan.next);
+      if (wrote.error) return fail(wrote.error);
+      const stored = await pcssReadPage(config, page.seo_id).catch((err) => ({ error: String((err && err.message) || err) }));
+      if (!stored.error && stored.css !== plan.next) {
+        const back = await pcssWrite(config, page.seo_id, R);
+        const check = back.error ? { error: back.error } : await pcssReadPage(config, page.seo_id);
+        const restored = !check.error && check.css === R;
+        return fail(
+          "The site did not store the CSS as sent. " + (restored ? "The previous CSS was put back." : "Putting the previous CSS back FAILED - read the page's content_css and restore it by hand."),
+          { rolled_back: restored, stored_equals_sent: false }
+        );
+      }
+      const refresh = await autoRefreshCache(config, AUTO_REFRESH_SCOPE.updateWebPage);
+      out.written = true;
+      out.stored_equals_sent = stored.error ? "unverified" : true;
+      if (stored.error) out.message = "The site accepted the write, but the page could not be read again to confirm it. " + stored.error;
+      out.auto_cache_refreshed = refresh.ok;
+      if (!refresh.ok) out.auto_cache_refresh_error = refresh.message;
+      if (plan.undo.length) out.undo = { seo_id: Number(page.seo_id), rules: plan.undo };
+      out.notes = PCSS_NOTES;
+      return out;
+    }
+    return fail("Nothing was written. This page's CSS changed while it was being read. Call again.");
+  });
+  _pcssQueues.set(siteKey, run);
+  return run;
+}
+
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
 // each resolving independently — a 404/timeout/parse failure is isolated as that
 // URL's own error entry, the rest of the batch unaffected.
@@ -5459,6 +5938,15 @@ async function main() {
       return {
         content: [{ type: "text", text: JSON.stringify(tree, null, 2) }],
         isError: tree.status === "error",
+      };
+    }
+
+    // Synthetic tool: updatePageCss — reads, edits and rewrites one page's content_css.
+    if (name === "updatePageCss") {
+      const edited = await updatePageCss(config, args || {});
+      return {
+        content: [{ type: "text", text: JSON.stringify(edited, null, 2) }],
+        isError: edited.status === "error",
       };
     }
 

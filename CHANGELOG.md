@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.617] - 2026-11-11
+
+### Added
+- `updatePageCss`: add, replace or remove individual CSS rules in a web page's `content_css` by selector (optionally inside a media query), leaving every other character of the field as it is. Returns an `undo` input that puts the previous rules back.
+
 ## [6.58.616] - 2026-11-09
 
 ### Security

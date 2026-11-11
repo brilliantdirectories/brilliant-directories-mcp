@@ -11785,6 +11785,76 @@
           }
         }
       }
+    },
+    "/_synthetic/page_css": {
+      "put": {
+        "operationId": "updatePageCss",
+        "summary": "Add, replace or remove individual CSS rules in a web page's CSS field by selector",
+        "description": "every other character of the field is left as it is.\n\n**Returns:** `results` (one action per rule: `added`, `replaced`, `removed`, `unchanged`, `not_found`) and `undo`, which is this tool's own input for putting the previous rules back.",
+        "tags": [
+          "Pages"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "seo_id": {
+                    "type": "integer",
+                    "description": "The page. Omit for the site's Home page."
+                  },
+                  "rules": {
+                    "type": "array",
+                    "description": "1 to 40 rules.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "selector": {
+                          "type": "string",
+                          "description": "The rule's full selector, as written on the page."
+                        },
+                        "media": {
+                          "type": "string",
+                          "description": "Only for a rule inside a media query: the full prelude, e.g. `@media (max-width: 767px)`."
+                        },
+                        "css": {
+                          "type": "string",
+                          "description": "The rule's declarations, no braces. An empty string removes the rule."
+                        },
+                        "after": {
+                          "type": "string",
+                          "description": "Only when adding: the selector of the rule to place it after."
+                        }
+                      },
+                      "required": [
+                        "selector",
+                        "css"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "rules"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CSS rules updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
