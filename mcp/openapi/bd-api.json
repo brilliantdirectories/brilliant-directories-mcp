@@ -5606,7 +5606,7 @@
             }
           }
         },
-        "description": "Create a new widget (reusable HTML/CSS/JS component). Writes live data.\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** programmatically adding a new reusable block to embed via `[widget=Name]` shortcode on pages or email templates. Rare in practice - widgets are usually created via BD admin UI where the editor supports live preview. API creation is useful for bulk imports, cross-site migrations, or scripted widget generation.\n\n**Required:** `widget_name` (should be unique per site).\n\n**widget_name format:** alphanumeric + spaces + hyphens + plus + underscores only (`[A-Za-z0-9 -+_]+`). Special chars (slashes, dots, ampersands, quotes, brackets, etc.) break `[widget=Name]` shortcode resolution and are runtime-rejected by the wrapper. Examples: `Mortgage Calculator`, `Service-Card`, `Email_Validator_v2`, `C++ Course`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `widget_name`. Duplicates break `[widget=Name]` shortcode resolution - which widget renders at the shortcode is undefined. Do a **server-side filter-find**: `listWidgets property=widget_name property_value=<proposed> property_operator==`. Zero rows = name free; >=1 row = taken. **Do NOT paginate unfiltered lists looking for the name** - on sites with hundreds of custom widgets that burns rate limit for nothing.\n\n**On collision (auto-suffix flow):** if the proposed name is taken, append `-v2` and re-check. Still taken? Try `-v3`, `-v4`, ... up through `-v10`. First free suffix wins. Only if all 10 are taken, ask the user for a different base name. Never silently create a duplicate.\n\n**Route by type BEFORE writing values:** decide what each piece of code is, then put it in the matching field — HTML → `widget_data`, CSS → `widget_style`, JS → `widget_javascript`. A self-contained block with all three concatenated into `widget_data` will save successfully but silently break: `widget_data` strips backslashes on render, mangling regex literals (`\\d`, `\\s`), string escapes (`\\n`, `\\t`), and unicode escapes (`\\u0022`). The other two fields do not strip backslashes. Split by type from the start.\n\n**Common fields on create:**\n\n- `widget_data` - the HTML content\n\n- `widget_style` - CSS (scoped to the widget via `widget_class` or `div_id`)\n\n- `widget_javascript` - JS (runs when widget is rendered on a page)\n\n- `widget_html_element` - wrapper element (default `div`)\n\n**See also:** `updateWidget` (modify existing), `listWidgets` (check if name is taken first), `getWidget` (verify storage after create).\n\n**Writes live data:** the widget is available immediately but does nothing until referenced by a `[widget=Name]` shortcode on a page or email template.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }` including the new `widget_id`.\n\n**Post-create verification (recommended, especially when uncertain about routing):** call `getWidget` once to confirm `widget_data` contains only HTML, `widget_style` contains your CSS, and `widget_javascript` contains your JS wrapped in `<script>...</script>`. If anything landed in the wrong field, call `updateWidget` to relocate **before the user tests the widget**. Proactive relocation here is correct and does NOT violate the \"don't relocate without user-reported breakage\" rule on `updateWidget` — that rule applies to subsequent edits, not to self-correcting your own just-created record.\n\n\nFor the full field list, see `listWidgets`.\n\n"
+        "description": "Create a new widget (reusable HTML/CSS/JS component). Writes live data.\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** programmatically adding a new reusable block to embed via `[widget=Name]` shortcode on pages or email templates. Rare in practice - widgets are usually created via BD admin UI where the editor supports live preview. API creation is useful for bulk imports, cross-site migrations, or scripted widget generation.\n\n**Required:** `widget_name` (should be unique per site).\n\n**widget_name format:** alphanumeric + spaces + hyphens + plus + underscores only (`[A-Za-z0-9 -+_]+`). Special chars (slashes, dots, ampersands, quotes, brackets, etc.) break `[widget=Name]` shortcode resolution and are runtime-rejected by the wrapper. Examples: `Mortgage Calculator`, `Service-Card`, `Email_Validator_v2`, `C++ Course`.\n\n**Pre-check before create:** BD does NOT enforce uniqueness on `widget_name`. Duplicates break `[widget=Name]` shortcode resolution - which widget renders at the shortcode is undefined. Do a **server-side filter-find**: `listWidgets property=widget_name property_value=<proposed> property_operator==`. Zero rows = name free; a site row = taken. An `is_default` true row is BD's own widget: creating its exact name replaces it on this site, only to customise it (e.g. a hero hook getDesignSettings names). **Do NOT paginate unfiltered lists looking for the name** - on sites with hundreds of custom widgets that burns rate limit for nothing.\n\n**On collision (auto-suffix flow):** if the proposed name is taken, append `-v2` and re-check. Still taken? Try `-v3`, `-v4`, ... up through `-v10`. First free suffix wins. Only if all 10 are taken, ask the user for a different base name. Never silently create a duplicate.\n\n**Route by type BEFORE writing values:** decide what each piece of code is, then put it in the matching field — HTML → `widget_data`, CSS → `widget_style`, JS → `widget_javascript`. A self-contained block with all three concatenated into `widget_data` will save successfully but silently break: `widget_data` strips backslashes on render, mangling regex literals (`\\d`, `\\s`), string escapes (`\\n`, `\\t`), and unicode escapes (`\\u0022`). The other two fields do not strip backslashes. Split by type from the start.\n\n**Common fields on create:**\n\n- `widget_data` - the HTML content\n\n- `widget_style` - CSS (scoped to the widget via `widget_class` or `div_id`)\n\n- `widget_javascript` - JS (runs when widget is rendered on a page)\n\n- `widget_html_element` - wrapper element (default `div`)\n\n**See also:** `updateWidget` (modify existing), `listWidgets` (check if name is taken first), `getWidget` (verify storage after create).\n\n**Writes live data:** the widget is available immediately but does nothing until referenced by a `[widget=Name]` shortcode on a page or email template.\n\n**Returns:** `{ status: \"success\", message: {...createdRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }` including the new `widget_id`.\n\n**Post-create verification (recommended, especially when uncertain about routing):** call `getWidget` once to confirm `widget_data` contains only HTML, `widget_style` contains your CSS, and `widget_javascript` contains your JS wrapped in `<script>...</script>`. If anything landed in the wrong field, call `updateWidget` to relocate **before the user tests the widget**. Proactive relocation here is correct and does NOT violate the \"don't relocate without user-reported breakage\" rule on `updateWidget` — that rule applies to subsequent edits, not to self-correcting your own just-created record.\n\n\nFor the full field list, see `listWidgets`.\n\n"
       }
     },
     "/api/v2/data_widgets/update": {
@@ -5646,6 +5646,41 @@
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
+                  },
+                  "replace": {
+                    "type": "array",
+                    "description": "Change part of a code field: [{field, find, with}]. If find occurs more than once, add nth (1 = first) or all:true. All or nothing; returns an undo.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string",
+                          "enum": [
+                            "widget_data",
+                            "widget_style",
+                            "widget_javascript"
+                          ]
+                        },
+                        "find": {
+                          "type": "string"
+                        },
+                        "with": {
+                          "type": "string"
+                        },
+                        "nth": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "all": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "find",
+                        "with"
+                      ]
+                    }
                   }
                 }
               }
@@ -5664,7 +5699,7 @@
             }
           }
         },
-        "description": "Update an existing widget by `widget_id`. Fields omitted are untouched. Writes live data.\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** editing widget HTML (`widget_data`), CSS (`widget_style`), JS (`widget_javascript`), or metadata. Any page or email referencing this widget via `[widget=Name]` shortcode will render the updated content on next view.\n\n**Required:** `widget_id`.\n\n**Common edits:**\n\n- Content: `widget_data`, `widget_style`, `widget_javascript`\n\n- Framework: `mobile_enabled`, `ssl_enabled`\n\n**Renaming via `widget_name`:** **DO NOT pass `widget_name` unless the user explicitly asks to rename the widget.** Renaming a widget breaks every `[widget=Name]` shortcode reference to its old name on every page/email — silently. If the user does ask: same format rules as create (`[A-Za-z0-9 -+_]+`, runtime-rejected on bad chars); on collision follow the auto-suffix flow (`-v2`, `-v3`, ... up to `-v10`).\n\n**See also:** `createWidget` (add new), `deleteWidget` (remove).\n\n**Writes live data:** edits go live immediately for new page loads.\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }`.\n\n\nFor the full field list, see `listWidgets`.\n\n"
+        "description": "Update an existing widget by `widget_id`. Fields omitted are untouched. Writes live data. Small edit: `replace` (no need to read or resend the field).\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** editing widget HTML (`widget_data`), CSS (`widget_style`), JS (`widget_javascript`), or metadata. Any page or email referencing this widget via `[widget=Name]` shortcode will render the updated content on next view.\n\n**Required:** `widget_id`.\n\n**Common edits:**\n\n- Content: `widget_data`, `widget_style`, `widget_javascript`\n\n- Framework: `mobile_enabled`, `ssl_enabled`\n\n**Renaming via `widget_name`:** **DO NOT pass `widget_name` unless the user explicitly asks to rename the widget.** Renaming a widget breaks every `[widget=Name]` shortcode reference to its old name on every page/email — silently. If the user does ask: same format rules as create (`[A-Za-z0-9 -+_]+`, runtime-rejected on bad chars); on collision follow the auto-suffix flow (`-v2`, `-v3`, ... up to `-v10`).\n\n**See also:** `createWidget` (add new), `deleteWidget` (remove).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }`.\n\n\nFor the full field list, see `listWidgets`.\n\n"
       }
     },
     "/api/v2/data_widgets/delete": {
@@ -9579,7 +9614,7 @@
     "/_synthetic/design_settings": {
       "get": {
         "operationId": "getDesignSettings",
-        "summary": "Read a site's design settings one block at a time: each setting's label, allowed values and current value. Call with no block for the list of blocks and the homepage layout.",
+        "summary": "Read design settings one block at a time: labels, allowed and current values. No arguments: the block list and the homepage sections in order, each Custom Content row with its widget.",
         "tags": [
           "Design"
         ],
@@ -9588,6 +9623,15 @@
             "name": "block",
             "in": "query",
             "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "find",
+            "in": "query",
+            "required": false,
+            "description": "Homepage text the owner quotes (or a class, id, image, link): returns where it lives.",
             "schema": {
               "type": "string"
             }
@@ -9610,7 +9654,7 @@
     "/_synthetic/design_settings_update": {
       "post": {
         "operationId": "updateDesignSettings",
-        "summary": "Change a site's design settings by name in one all-or-nothing call; values are checked against what the Design Settings page accepts, and the result returns what changed and an undo.",
+        "summary": "Change design settings by name in one all-or-nothing call, checked like the Design Settings page; returns the changes and an undo.",
         "tags": [
           "Design"
         ],
@@ -9625,12 +9669,16 @@
                     "type": "object",
                     "description": "1 to 100 name: value pairs."
                   },
+                  "home_rows": {
+                    "type": "array",
+                    "description": "Homepage sections top to bottom (max 15): getDesignSettings block ids. A plain id keeps the section's spacing and background. Send {block, top_spacing, bottom_spacing, background} only to change them (others kept); background rgb(R, G, B) switches the row colour on, \"\" off. Unlisted sections leave the homepage; rows below are emptied."
+                  },
                   "dry_run": {
                     "type": "boolean"
                   },
                   "undo": {
                     "type": "object",
-                    "description": "An earlier result's undo, instead of settings; it restores each value as the page read it."
+                    "description": "An earlier result's undo, sent alone."
                   }
                 }
               }
@@ -10983,6 +11031,32 @@
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
+                  },
+                  "replace": {
+                    "type": "array",
+                    "description": "Change part of content: [{find, with}]. If find occurs more than once, add nth (1 = first) or all:true. All or nothing; returns an undo. Not with content.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "find": {
+                          "type": "string"
+                        },
+                        "with": {
+                          "type": "string"
+                        },
+                        "nth": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "all": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "find",
+                        "with"
+                      ]
+                    }
                   }
                 }
               }
