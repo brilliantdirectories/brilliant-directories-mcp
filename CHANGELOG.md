@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.618] - 2026-11-11
+
+### Added
+- `getDesignSettings` (read-only): reads a site's Design Settings one block at a time, with each setting's label, type, allowed values and current value. With no `block` it lists the blocks and the homepage layout; a `block` that is not an exact id is searched. Ships the map it reads from (`openapi/design-settings-map.json`). Values are kept in memory for 60 seconds per site; settings not in the map are never returned.
+
+### Changed
+- `updatePageCss`: the refusal for a rule without a selector or css now also says how to remove a rule (send its css as an empty string).
+
 ## [6.59.617] - 2026-11-11
 
 ### Added

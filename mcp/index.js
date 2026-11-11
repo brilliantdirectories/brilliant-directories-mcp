@@ -677,13 +677,13 @@ function pcssValidate(args) {
   const refused = [];
   const rulesIn = args && Array.isArray(args.rules) ? args.rules : null;
   if (!rulesIn || rulesIn.length < 1 || rulesIn.length > PCSS_MAX_RULES) {
-    return { refused: [`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css.`] };
+    return { refused: [`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css. To remove a rule, send its css as an empty string.`] };
   }
   const entries = [];
   const seen = new Set();
   for (const r of rulesIn) {
     if (!r || typeof r !== "object" || typeof r.selector !== "string" || r.selector.trim() === "" || typeof r.css !== "string") {
-      refused.push(`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css.`);
+      refused.push(`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css. To remove a rule, send its css as an empty string.`);
       continue;
     }
     const selector = String(stripAgentScaffolding(r.selector)).replace(/\s+/g, " ").trim();
@@ -993,6 +993,421 @@ async function updatePageCss(config, args) {
   });
   _pcssQueues.set(siteKey, run);
   return run;
+}
+
+// ---------------------------------------------------------------------------
+// Synthetic tool: getDesignSettings — read-only. Serves the site's design settings
+// one block at a time through `openapi/design-settings-map.json` (labels, options,
+// rules) joined with the stored values. Sends GET requests only.
+// Mirrored in Worker `src/index.ts` (ds* functions). Keep in sync.
+// ---------------------------------------------------------------------------
+const DS_TTL_MS = 60000;
+const DS_TYPES = { sel: "choice", text: "text", area: "multi-line text", html: "rich text", code: "code", embed: "embed", color: "color", font: "font", icon: "icon", img: "image", ids: "ids", hidden: "hidden" };
+const DS_SITE_TOOLS = { post_types: "listPostTypes", plans: "listMembershipPlans", sidebars: "listSidebars", top_categories: "listTopCategories", sub_categories: "listSubCategories", menus: "listMenus" };
+const DS_POST_KINDS = { single: "single-image", multi: "multi-image", digital: "digital product" };
+const DS_WHY = { refuse: "Never written as a design setting.", rows: "Written only as part of a homepage rows change, never on its own.", hero: "Written only as part of a hero type change, never on its own." };
+const DS_ADDON_NOTE = "Add-on status cannot be read through the API: a setting or option with needs_addon does nothing unless that add-on is active on the site.";
+const _dsCache = new Map();
+let _dsLoaded = null;
+
+function dsLoad() {
+  if (_dsLoaded) return _dsLoaded;
+  const m = JSON.parse(fs.readFileSync(path.join(__dirname, "openapi", "design-settings-map.json"), "utf8"));
+  const idx = new Map();
+  const names = new Set();
+  for (const b of m.blocks) {
+    for (const f of b.fields) idx.set(f.n, { f, opts: typeof f.o === "string" ? m.sets[f.o.slice(1)] : f.o });
+    for (const n of dsBlockNames(b)) names.add(n);
+  }
+  _dsLoaded = { m, idx, names };
+  return _dsLoaded;
+}
+
+// Stored names a block covers; the rows block expands {row} and section_{N}_* to all 15 rows.
+function dsBlockNames(b) {
+  if (!b.rows) return b.fields.map((f) => f.n);
+  const out = [];
+  b.rows.forEach((row, i) => {
+    for (const f of b.fields) out.push(f.n === "{row}" ? row : f.n.split("{N}").join(String(b.N[0] + i)));
+  });
+  return out;
+}
+
+function dsExpand(m, v) {
+  if (typeof v !== "string") return v;
+  for (const k of Object.keys(m.pre || {})) if (v.startsWith(k)) return m.pre[k] + v.slice(k.length);
+  return v;
+}
+
+function dsStrip(v) {
+  return String(v).replace(/\\([\s\S]?)/g, (all, c) => (c === "0" ? "\0" : c));
+}
+
+// Port of the map's gen/conditions.cjs with no facts supplied: a site:, addon: or visitor
+// clause is "cannot tell" (null). An empty value reads as d; a missing row as dnew, else d.
+function dsRead(ds, values, name) {
+  if (/^(site:|addon:|visitor)/.test(name)) return undefined;
+  const x = ds.idx.get(name);
+  let v = values[name];
+  if ((v === undefined || v === null) && x && x.f.dnew !== undefined) v = x.f.dnew;
+  else if ((v === undefined || v === null || v === "") && x && x.f.d !== undefined) v = x.f.d;
+  return dsExpand(ds.m, v === undefined || v === null ? "" : String(v));
+}
+
+function dsMeta(ds, values, name, key) {
+  const x = ds.idx.get(name);
+  if (!x || !x.opts) return undefined;
+  const cur = dsRead(ds, values, name);
+  const o = x.opts.find((p) => dsExpand(ds.m, p[0]) === cur);
+  return o && o[2] ? o[2][key] : undefined;
+}
+
+function dsEvaluate(ds, clauses, values) {
+  if (!Array.isArray(clauses)) return null;
+  const m = ds.m;
+  let unknown = false;
+  for (const c of clauses) {
+    let r;
+    if (c[0] === "rows" && c[1] === "has") {
+      const rb = m.blocks.find((b) => b.rows);
+      const want = dsExpand(m, c[2]);
+      r = !!rb && rb.rows.some((n) => dsExpand(m, String(values[n] === undefined || values[n] === null ? "" : values[n])) === want);
+    } else if (c[1] === "absent_or_contains") {
+      r = null;
+    } else if (c[0] === "any") {
+      const rs = c[1].map((x) => dsEvaluate(ds, [x], values));
+      r = rs.includes(true) ? true : rs.includes(null) ? null : false;
+    } else {
+      const op = c[1];
+      const cur = dsRead(ds, values, c[0]);
+      const list = (Array.isArray(c[2]) ? c[2] : [c[2]]).map((v) => dsExpand(m, v));
+      if (cur === undefined) r = null;
+      else if (op === "=") r = cur === list[0];
+      else if (op === "!=") r = cur !== list[0];
+      else if (op === "in") r = list.includes(cur);
+      else if (op === "not_in") r = !list.includes(cur);
+      else if (op === "kind") r = list.includes(dsMeta(ds, values, c[0], "kind"));
+      else if (op === "not_kind") r = !list.includes(dsMeta(ds, values, c[0], "kind"));
+      else if (op === "pt") r = list.includes(dsMeta(ds, values, c[0], "pt"));
+      else r = null;
+    }
+    if (r === false) return false;
+    if (r === null) unknown = true;
+  }
+  return unknown ? null : true;
+}
+
+function dsWording(ds, name, val) {
+  if (val === "") return "empty";
+  const x = ds.idx.get(name);
+  const o = x && x.opts ? x.opts.find((p) => dsExpand(ds.m, p[0]) === val) : null;
+  if (o) return o[1];
+  if (x && x.f.r) return x.f.unit ? `${val} ${x.f.unit}` : val;
+  return JSON.stringify(val);
+}
+
+function dsSay(ds, values, c) {
+  if (c[0] === "rows" && c[1] === "has") return `no homepage row holds ${dsWording(ds, "{row}", dsExpand(ds.m, c[2]))}`;
+  if (c[0] === "any") return c[1].map((x) => dsSay(ds, values, x)).join(" and ");
+  const x = ds.idx.get(c[0]);
+  if (!x || /^(site:|addon:|visitor)/.test(c[0])) return JSON.stringify(c);
+  return `${x.f.l} is ${dsWording(ds, c[0], dsRead(ds, values, c[0]))}`;
+}
+
+// A rule in words, only when it is a definite false: the clauses that fail, stated as the current values.
+function dsWhile(ds, clauses, values) {
+  if (!clauses || dsEvaluate(ds, clauses, values) !== false) return undefined;
+  const out = [];
+  for (const c of clauses) {
+    if (dsEvaluate(ds, [c], values) !== false) continue;
+    const s = dsSay(ds, values, c);
+    if (!out.includes(s)) out.push(s);
+  }
+  return out.join(" and ");
+}
+
+function dsOptionsFrom(site) {
+  const i = site.indexOf(":");
+  const k = i < 0 ? site : site.slice(0, i);
+  const rest = i < 0 ? "" : site.slice(i + 1);
+  const tool = DS_SITE_TOOLS[k] || k;
+  if (!rest) return tool;
+  if (k === "post_types") return `${tool}, ${rest.split("|").map((p) => DS_POST_KINDS[p] || p).join(" or ")} types`;
+  return `${tool}, ${rest}`;
+}
+
+// One setting. `values` holds the real stored names; `rv` is what the rules read (the rows
+// block maps its template names onto one row). `part`: "def" (no value), "val" (no options), or both.
+function dsSetting(ds, f, name, label, values, rv, notes, part) {
+  const m = ds.m;
+  const s = { name, label, type: f.r ? "number-choice" : DS_TYPES[f.t] || f.t };
+  if (part !== "val") {
+    const opts = typeof f.o === "string" ? m.sets[f.o.slice(1)] : f.o;
+    const list = opts ? opts.map((o) => {
+      const e = [dsExpand(m, o[0]), o[1]];
+      const meta = o[2] || {};
+      const extra = {};
+      if (meta.addon) { extra.needs_addon = meta.addon; notes.addon = true; }
+      const hid = meta.show && rv ? dsWhile(ds, meta.show, rv) : undefined;
+      if (hid) extra.hidden_in_admin_while = hid;
+      if (Object.keys(extra).length) e.push(extra);
+      else if (e[0] === e[1]) return e[0];
+      return e;
+    }) : null;
+    if (f.r) {
+      s.range = { min: f.r[0], max: f.r[1], step: f.r[2] };
+      if (f.unit) s.range.unit = f.unit;
+      if (list) s.range.also = list;
+    } else if (list) s.options = list;
+    if (f.site) s.options_from = dsOptionsFrom(f.site);
+  }
+  if (part !== "def") {
+    const has = Object.prototype.hasOwnProperty.call(values, name);
+    if (has) s.value = values[name];
+    else s.saved = false;
+    if (!has || values[name] === "") {
+      let shown;
+      let from;
+      if (!has && f.dnew !== undefined) shown = dsExpand(m, f.dnew);
+      else if (!has && f.dnewfrom) from = f.dnewfrom;
+      else if (f.d !== undefined) shown = dsExpand(m, f.d);
+      else if (f.dfrom) from = f.dfrom;
+      if (from) shown = dsRead(ds, values, from);
+      if (shown !== undefined && shown !== "") {
+        s.shows_as = shown;
+        if (from) s.shows_as_from = from;
+      }
+    }
+  }
+  if (part !== "val") {
+    if (f.t === "color") s.format = name === "post_image_bg_color" ? "rgba(R, G, B, A)" : "rgb(R, G, B)";
+    if (f.addon) { s.needs_addon = f.addon; notes.addon = true; }
+  }
+  if (part !== "def") {
+    const hid = dsWhile(ds, f.show, rv);
+    if (hid) s.hidden_in_admin_while = hid;
+    const idle = dsWhile(ds, f.used, rv);
+    if (idle) s.no_visible_effect_while = idle;
+  }
+  if (part !== "val") {
+    if (f.refuse || f.through) { s.writable = false; s.why = f.refuse ? DS_WHY.refuse : DS_WHY[f.through] || `Written only through ${f.through}.`; }
+    if (f.note) s.note = f.note;
+    if (f.h) s.help = f.h;
+    if (f.who) s.visitors = f.who;
+    if (f.max) s.max_length = f.max;
+  }
+  return s;
+}
+
+function dsBlock(ds, b, values, dups) {
+  const notes = {};
+  const out = { block: b.id, title: b.title };
+  if (b.note) out.note = b.note;
+  const hid = dsWhile(ds, b.show, values);
+  if (hid) out.hidden_in_admin_while = hid;
+  const addon = !b.rows && b.fields.every((f) => f.addon && f.addon === b.fields[0].addon) ? b.fields[0].addon : null;
+  if (addon) { out.needs_addon = addon; notes.addon = true; }
+  if (b.rows) {
+    out.per_row = b.fields.map((f) => dsSetting(ds, f, f.n, f.l, values, null, notes, "def"));
+    const full = (row) => values[row] !== undefined && values[row] !== null && values[row] !== "";
+    out.rows = b.rows.map((row, i) => (full(row) ? i : -1)).filter((i) => i >= 0).map((i) => {
+      const row = b.rows[i];
+      const N = String(b.N[0] + i);
+      const real = (f) => (f.n === "{row}" ? row : f.n.split("{N}").join(N));
+      const rv = Object.assign({}, values);
+      for (const f of b.fields) rv[f.n] = values[real(f)];
+      const settings = b.fields.map((f) => dsSetting(ds, f, real(f), f.l.split("{N}").join(N), values, rv, notes, "val"));
+      for (const s of settings) {
+        if (s.hidden_in_admin_while) s.hidden_in_admin_while = s.hidden_in_admin_while.split("{N}").join(N);
+        if (s.no_visible_effect_while) s.no_visible_effect_while = s.no_visible_effect_while.split("{N}").join(N);
+      }
+      return { row: Number(N), settings };
+    });
+    const empty = b.rows.map((row, i) => (full(row) ? 0 : b.N[0] + i)).filter((n) => n > 0);
+    if (empty.length) out.empty_rows = empty;
+  } else {
+    out.settings = b.fields.map((f) => dsSetting(ds, f, f.n, f.l, values, values, notes));
+    if (addon) for (const x of out.settings) delete x.needs_addon;
+  }
+  const idle = out.settings && out.settings.length > 1 ? out.settings[0].no_visible_effect_while : undefined;
+  if (idle && out.settings.every((x) => x.no_visible_effect_while === idle)) {
+    out.no_visible_effect_while = idle;
+    for (const x of out.settings) delete x.no_visible_effect_while;
+  }
+  const colours = (out.settings || []).filter((x) => x.format === "rgb(R, G, B)");
+  if (colours.length > 1) {
+    out.color_format = "rgb(R, G, B)";
+    for (const x of colours) delete x.format;
+  }
+  for (const x of out.settings || []) {
+    if (x.note && x.note === out.note) delete x.note;
+    if (x.hidden_in_admin_while && x.hidden_in_admin_while === out.hidden_in_admin_while) delete x.hidden_in_admin_while;
+  }
+  const dup = dsBlockNames(b).filter((n) => dups.includes(n));
+  if (dup.length) out.duplicate_names = dup;
+  if (notes.addon) out.notes = [DS_ADDON_NOTE];
+  return out;
+}
+
+// One setting, when `block` is exactly a stored name. The block's note and hide rule come along: they can matter for the value.
+function dsOne(ds, b, name, values, dups) {
+  const notes = {};
+  let s;
+  if (b.rows) {
+    const i = dsBlockNames(b).indexOf(name);
+    const k = Math.floor(i / b.fields.length);
+    const f = b.fields[i % b.fields.length];
+    const N = String(b.N[0] + k);
+    const rv = Object.assign({}, values);
+    for (const g of b.fields) rv[g.n] = values[g.n === "{row}" ? b.rows[k] : g.n.split("{N}").join(N)];
+    s = dsSetting(ds, f, name, f.l.split("{N}").join(N), values, rv, notes);
+    for (const key of ["hidden_in_admin_while", "no_visible_effect_while"]) if (s[key]) s[key] = s[key].split("{N}").join(N);
+  } else {
+    const f = b.fields.find((g) => g.n === name);
+    s = dsSetting(ds, f, name, f.l, values, values, notes);
+  }
+  const out = Object.assign({ block: b.id }, s);
+  const hid = dsWhile(ds, b.show, values);
+  if (hid && !out.hidden_in_admin_while) out.hidden_in_admin_while = hid;
+  if (b.note) out.block_note = b.note;
+  if (dups.includes(name)) out.duplicate_names = [name];
+  if (notes.addon) out.notes = [DS_ADDON_NOTE];
+  return out;
+}
+
+function dsDirectory(ds, values, dups) {
+  const m = ds.m;
+  const blocks = {};
+  const seen = new Set();
+  const content = m.blocks.filter((b) => /^content\.\d+$/.test(b.id)).length;
+  const slots = m.blocks.filter((b) => /^banners\.[a-z0-9-]*banner-ad/.test(b.id)).map((b) => b.id.slice(8)).join(", ");
+  for (const b of m.blocks) {
+    let e = `${b.id} ${b.title}`;
+    if (/^content\.\d+$/.test(b.id)) e = `content.1..${content} Custom Content 1 to ${content}`;
+    else if (Array.isArray(b.show) && b.show.length === 1 && b.show[0][0] === "rows") e = "section.<name> one per streaming section, see rows";
+    else if (/^banners\.[a-z0-9-]*banner-ad/.test(b.id)) e = `banners.<slot>: ${slots}`;
+    if (seen.has(e)) continue;
+    seen.add(e);
+    (blocks[b.tab] = blocks[b.tab] || []).push(e);
+  }
+  const rb = m.blocks.find((b) => b.rows);
+  const rowOpts = ds.idx.get("{row}").opts;
+  const heroOpts = ds.idx.get("custom_30").opts;
+  const hasHero = Object.prototype.hasOwnProperty.call(values, "custom_30");
+  const heroCur = dsRead(ds, values, "custom_30");
+  const heroOpt = heroOpts.find((p) => dsExpand(m, p[0]) === heroCur);
+  const hero = { value: hasHero ? values.custom_30 : "" };
+  if (!hasHero) hero.saved = false;
+  if (heroOpt) hero.label = heroOpt[1];
+  else hero.known = false;
+  const rows = [];
+  rb.rows.forEach((n, i) => {
+    const v = values[n];
+    if (v === undefined || v === null || v === "") return;
+    const o = rowOpts.find((p) => dsExpand(m, p[0]) === v);
+    const sb = m.blocks.find((b) => b.widget && dsExpand(m, b.widget) === v);
+    if (o && sb) rows.push({ row: rb.N[0] + i, label: o[1], block: sb.id });
+    else if (o) rows.push({ row: rb.N[0] + i, section: v, label: o[1] });
+    else rows.push({ row: rb.N[0] + i, section: v, known: false });
+  });
+  const out = { map_rev: m.rev, blocks, homepage: { hero_type: hero, rows } };
+  const dup = ["custom_30"].concat(rb.rows).filter((n) => dups.includes(n));
+  if (dup.length) out.duplicate_names = dup;
+  return out;
+}
+
+// Search when `block` is not an exact id: exact matches (id, title, label, name) win over partial ones.
+function dsFind(ds, q) {
+  const s = q.toLowerCase();
+  const exact = [];
+  const part = [];
+  for (const b of ds.m.blocks) {
+    const words = dsBlockNames(b).concat(b.fields.map((f) => f.l)).map((w) => String(w).toLowerCase());
+    const head = [b.id.toLowerCase(), b.title.toLowerCase()];
+    if (head.includes(s) || words.includes(s)) exact.push(b);
+    else {
+      const score = (head.some((w) => w.includes(s)) ? 2 : 0) + (words.some((w) => w.includes(s)) ? 1 : 0);
+      if (score) part.push({ b, score });
+    }
+  }
+  if (exact.length) return exact;
+  return part.sort((a, c) => c.score - a.score).map((x) => x.b);
+}
+
+function dsHttpError(result) {
+  if (result && (result.status === 403 || (result.status === 404 && (!result.body || typeof result.body !== "object")))) {
+    return `Permission denied for getDesignSettings (HTTP ${result.status}). In BD Admin → Developer Hub → your API key → edit Permissions → enable the website_design_settings get endpoint → Save. Works immediately.`;
+  }
+  return pcssHttpError(result);
+}
+
+// Every stored row once (cursor paging), kept per site for DS_TTL_MS. Only names in the map are
+// kept: the site also stores unrelated values (cookies, sessions) in this table.
+async function dsFetchValues(config, ds) {
+  const best = {};
+  const count = {};
+  let page = null;
+  for (let i = 0; i < 50; i++) {
+    const q = { limit: 100 };
+    if (page) q.page = page;
+    const result = await makeRequest(config, "GET", "/api/v2/website_design_settings/get", q, null);
+    const httpErr = dsHttpError(result);
+    if (httpErr) return { error: httpErr };
+    const body = result.body;
+    if (!body || typeof body !== "object" || body.status !== "success") {
+      if (i === 0 && body && typeof body === "object" && / not found$/.test(String(body.message))) break;
+      return { error: `The site answered HTTP ${result.status} without the settings list.` };
+    }
+    const rows = Array.isArray(body.message) ? body.message : [];
+    for (const row of rows) {
+      const n = String(row.setting_name);
+      if (n === "0" || !ds.names.has(n)) continue;
+      count[n] = (count[n] || 0) + 1;
+      const id = Number(row.setting_id);
+      if (!best[n] || id > best[n].id) best[n] = { id, v: dsStrip(row.setting_value === undefined || row.setting_value === null ? "" : row.setting_value) };
+    }
+    page = body.next_page || null;
+    if (!page || rows.length === 0) break;
+  }
+  const values = {};
+  for (const n of Object.keys(best)) values[n] = best[n].v;
+  return { values, dups: Object.keys(count).filter((n) => count[n] > 1) };
+}
+
+function dsValues(config, ds) {
+  const key = String(config.apiUrl || "");
+  const hit = _dsCache.get(key);
+  if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
+  const p = dsFetchValues(config, ds).catch((err) => ({ error: `Network error: ${(err && err.message) || String(err)}` }));
+  const entry = { at: Date.now(), p };
+  _dsCache.set(key, entry);
+  p.then((r) => { if (r.error && _dsCache.get(key) === entry) _dsCache.delete(key); });
+  return p;
+}
+
+async function getDesignSettings(config, args) {
+  let ds;
+  try {
+    ds = dsLoad();
+  } catch (err) {
+    return { status: "error", message: `The design settings map could not be read: ${(err && err.message) || String(err)}` };
+  }
+  const q = args.block === undefined || args.block === null ? "" : String(args.block).trim();
+  let b = null;
+  let one = null;
+  if (q) {
+    b = ds.m.blocks.find((x) => x.id === q) || null;
+    if (!b && ds.names.has(q)) one = ds.m.blocks.find((x) => dsBlockNames(x).includes(q));
+    if (!b && !one) {
+      const hits = dsFind(ds, q);
+      if (hits.length !== 1) return hits.length > 8 ? { matches: hits.slice(0, 8).map((x) => `${x.id} ${x.title}`), more: hits.length - 8 } : { matches: hits.map((x) => `${x.id} ${x.title}`) };
+      b = hits[0];
+    }
+  }
+  const got = await dsValues(config, ds);
+  if (got.error) return { status: "error", message: got.error };
+  if (one) return dsOne(ds, one, q, got.values, got.dups);
+  return b ? dsBlock(ds, b, got.values, got.dups) : dsDirectory(ds, got.values, got.dups);
 }
 
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
@@ -5947,6 +6362,15 @@ async function main() {
       return {
         content: [{ type: "text", text: JSON.stringify(edited, null, 2) }],
         isError: edited.status === "error",
+      };
+    }
+
+    // Synthetic tool: getDesignSettings — read-only, one block of design settings at a time.
+    if (name === "getDesignSettings") {
+      const settings = await getDesignSettings(config, args || {});
+      return {
+        content: [{ type: "text", text: JSON.stringify(settings) }],
+        isError: settings.status === "error",
       };
     }
 

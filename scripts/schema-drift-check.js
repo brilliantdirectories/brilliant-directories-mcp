@@ -866,6 +866,76 @@ try {
   }
 }
 
+// CHECK 15: Design settings map (mcp/openapi/design-settings-map.json, served by
+// getDesignSettings). Two parts:
+//   (a) always: the shipped file is public, so it must hold none of our receipts
+//       (widget ids with files or lines, source files, site ids, paths, internal
+//       names). Same BANNED list as check.cjs in the internal tooling: keep them equal.
+//   (b) only where the internal tooling folder exists (a Bitbucket checkout):
+//       run its check.cjs against the bd-widgets checkout. It fails when the map
+//       is no longer true to the admin widgets or the shipped file is not exactly
+//       the public build of the internal full map. On a GitHub-only checkout or
+//       CI the folder is absent and (b) is skipped with one line, not an error.
+let designMapStatus = "";
+{
+  const MAP_FILE = path.join(__dirname, "..", "mcp", "openapi", "design-settings-map.json");
+  const BANNED = [
+    ["a widget id with a file or line", /\b\d{4}\b[\s\/:]*(?:(?:html|javascript|style)\.php|\.js\b|lines?\b|:\d)/i],
+    ["a widget id", /\bwidget\s+\d{3,5}\b|\(ID\s*\d+\)/i],
+    ["a source file name", /(?:html|javascript|style)\.php|\.js\s+lines?\b|\.cjs\b|overlay\.json|sources\.json/i],
+    ["a line reference", /\blines?\s+\d/i],
+    ["a 5-digit site id", /(?<![\d.,#])\b\d{5}\b(?!\d|[.,]\d|px|%)/],
+    ["a proof or verification note", /PROOF|map-verify|USED-TRACE|\btraced\b|live proof/],
+    ["a Windows path", /\b[A-Za-z]:[\\\/]/],
+    ["a Unix path", /(?:^|[\s"'(=])(?:~|\/(?:home|Users|usr|var|tmp|etc|opt|mnt))\//],
+    ["a banned word", /butler|spectrum|bd-widgets|bd-core-files|bd-cursor-config|butler-probes|scratchpad|directoryup|managemydirectory|find-?fitness|claude|anthropic/i],
+  ];
+  const found = [];
+  const scan = (value, where) => {
+    if (typeof value === "string") {
+      // A string that is only a number is an option value (10000 milliseconds), not a site id in prose.
+      if (/^[\d.]+$/.test(value)) return;
+      for (const [what, re] of BANNED) {
+        const m = re.exec(value);
+        if (m) found.push(`holds ${what} at ${where}: "${value.slice(Math.max(0, m.index - 30), m.index + 40)}"`);
+      }
+    } else if (Array.isArray(value)) {
+      value.forEach((v) => scan(v, where));
+    } else if (value && typeof value === "object") {
+      for (const k of Object.keys(value)) {
+        scan(k, where + " (key)");
+        scan(value[k], value.n ? "field " + value.n + " " + k : value.id ? "block " + value.id + " " + k : where + "." + k);
+      }
+    }
+  };
+  let parsed = null;
+  try {
+    parsed = JSON.parse(fs.readFileSync(MAP_FILE, "utf8"));
+  } catch (e) {
+    err(`Design settings map: ${MAP_FILE} is missing or not JSON (${e.message}). getDesignSettings cannot work without it.`);
+  }
+  if (parsed) {
+    scan(parsed, "map");
+    for (const f of [...new Set(found)]) err(`Design settings map: the shipped public file ${f}. Fix the overlay in the internal tooling and regenerate; never edit the shipped file.`);
+  }
+  const TOOLING = path.join(__dirname, "..", "..", "brilliant-directories-mcp-internal", "design-settings-map", "check.cjs");
+  if (!fs.existsSync(TOOLING)) {
+    designMapStatus = "Design settings map: widget check skipped (the internal tooling is not present in this checkout); public-file scan ran.";
+  } else {
+    const widgets = process.env.BD_WIDGETS_DIR || path.join(__dirname, "..", "..", "..", "bd-widgets");
+    if (!fs.existsSync(widgets) || !fs.statSync(widgets).isDirectory()) {
+      err(`Design settings map: cannot verify the design settings map: no bd-widgets checkout at ${widgets}. Set BD_WIDGETS_DIR to the bd-widgets folder.`);
+    } else {
+      const { spawnSync } = require("child_process");
+      const res = spawnSync(process.execPath, [TOOLING, widgets], { encoding: "utf8", cwd: path.dirname(TOOLING) });
+      const out = ((res.stdout || "") + (res.stderr || "")).trim();
+      if (res.error) err(`Design settings map: check.cjs could not run: ${res.error.message}`);
+      else if (res.status !== 0) err(`Design settings map: ${out.replace(/\s*\n\s*/g, " | ")}`);
+      else designMapStatus = "Design settings map: " + out.split("\n")[0];
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
@@ -877,6 +947,7 @@ console.log("===================================================================
 console.log(`  Spec: ${SPEC_PATH}`);
 console.log(`  Operations in spec: ${toolCount}`);
 console.log(`  Hidden tools: ${HIDDEN_TOOLS.size}`);
+if (designMapStatus) console.log(`  ${designMapStatus}`);
 console.log("");
 
 if (errors.length === 0 && warnings.length === 0) {

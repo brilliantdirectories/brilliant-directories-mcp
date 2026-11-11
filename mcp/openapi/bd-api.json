@@ -9576,6 +9576,37 @@
         }
       }
     },
+    "/_synthetic/design_settings": {
+      "get": {
+        "operationId": "getDesignSettings",
+        "summary": "Read a site's design settings one block at a time: each setting's label, allowed values and current value. Call with no block for the list of blocks and the homepage layout.",
+        "tags": [
+          "Design"
+        ],
+        "parameters": [
+          {
+            "name": "block",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/location_cities/get": {
       "get": {
         "operationId": "listCities",
