@@ -1010,6 +1010,9 @@ const DS_WHY = { refuse: "Never written as a design setting." };
 const DS_ADDON_NOTE = "Add-on status cannot be read through the API: a setting or option with needs_addon does nothing unless that add-on is active on the site.";
 const DS_ADDON_UNKNOWN = "The site does not report the status of an add-on marked unknown: a setting or option that needs it does nothing unless it is active.";
 const DS_PERMISSION = /does not have permission/i;
+const DS_CC_REF = /^homepage_content_([2-9]|10)$/;
+const DS_CC_FORMAT = "[widget=<site widget name>] or empty; create the widget first with createWidget";
+const DS_NOT_STORED = "not yet; writing it creates it";
 const _dsCache = new Map();
 let _dsLoaded = null;
 
@@ -1163,6 +1166,10 @@ function dsOptionsFrom(site) {
 function dsSetting(ds, f, name, label, values, rv, notes, part) {
   const m = ds.m;
   const s = { name, label, type: f.r ? "number-choice" : DS_TYPES[f.t] || f.t };
+  if (DS_CC_REF.test(name)) {
+    s.type = "widget reference";
+    s.format = DS_CC_FORMAT;
+  }
   if (part !== "val") {
     const opts = typeof f.o === "string" ? m.sets[f.o.slice(1)] : f.o;
     const list = opts ? opts.map((o) => {
@@ -1185,8 +1192,19 @@ function dsSetting(ds, f, name, label, values, rv, notes, part) {
   }
   if (part !== "def") {
     const has = Object.prototype.hasOwnProperty.call(values, name);
-    if (has) s.value = values[name];
-    else s.saved = false;
+    if (has) {
+      s.value = values[name];
+      const tl = /^%%%([A-Za-z0-9_]+)(~[a-z]+)?%%%$/.exec(String(values[name]));
+      const lt = tl ? dsLabelText(notes && notes.labels, tl[1]) : null;
+      if (lt !== null && tl) {
+        s.shows = lt;
+        s.text_label = `${tl[1]}: literal text replaces it.`;
+      } else if (tl) s.text_label = `Shows the site's text label ${tl[1]} (no tool reads its text); literal text replaces it.`;
+    }
+    else {
+      s.value = "";
+      s.stored = DS_NOT_STORED;
+    }
     if (!has || values[name] === "") {
       let shown;
       let from;
@@ -1214,7 +1232,8 @@ function dsSetting(ds, f, name, label, values, rv, notes, part) {
   }
   if (part !== "val") {
     if (f.refuse) { s.writable = false; s.why = DS_WHY.refuse; }
-    if (f.note) s.note = f.note;
+    const note = f.note_by ? dsBy(ds, f.note_by, values) || f.note : f.note;
+    if (note) s.note = note;
     if (f.h) s.help = f.h;
     if (f.who) s.visitors = f.who;
     if (f.max) s.max_length = f.max;
@@ -1233,11 +1252,756 @@ function dsAddons(out, notes, addons) {
   if (Object.values(st).includes("unknown")) out.notes = [DS_ADDON_UNKNOWN];
 }
 
+// A text chosen by the current value of one setting (the hero type): {n, v: {value: text}, kind: {option kind: text}, else}.
+function dsBy(ds, by, values) {
+  const cur = dsRead(ds, values, by.n);
+  const key = Object.keys(by.v).find((k) => dsExpand(ds.m, k) === cur);
+  if (key) return by.v[key];
+  const opt = (ds.idx.get(by.n).opts || []).find((o) => dsExpand(ds.m, o[0]) === cur);
+  const kind = opt && opt[2] && by.kind ? by.kind[opt[2].kind] : undefined;
+  return kind || by.else;
+}
+
+// The block's selectors for the site's current state: per hero type (css_by), plus the inline title colour and the Card View photo.
+function dsCss(ds, b, values) {
+  let css = b.css_by ? dsBy(ds, b.css_by, values) : b.css || null;
+  if (!css) return null;
+  if (b.css_tc && values[b.css_tc]) css += ` Its title colour (${b.css_tc}) is an inline style: override it with !important.`;
+  if (b.css_pic) {
+    css += dsRead(ds, values, "streaming_info_display") === "card_view"
+      ? " Card View is on: the photo is .pic::before."
+      : " The photo is the inline background-image of .pic; a script sets its height, so a CSS height loses.";
+  }
+  if (b.markup_by) {
+    const t = dsBy(ds, b.markup_by, values);
+    if (t && typeof t === "object") css += ` Markup: ${String(values[b.markup_by.l] || "") === "horizontal" ? t.horizontal : t.vertical}`;
+  }
+  return css;
+}
+
+// Recent Events: the order visitors get. While the recurring_events add-on is off the widget reverses every date sort;
+// a value never saved sorts by start date, soonest first.
+const DS_EVENT_SORT = { ASC: ["posted", "ASC"], DESC: ["posted", "DESC"], "date-start-asc": ["start date", "ASC"], "date-start-desc": ["start date", "DESC"], "date-end-asc": ["end date", "ASC"], "date-end-desc": ["end date", "DESC"] };
+function dsEventsOrder(values, addons) {
+  const has = Object.prototype.hasOwnProperty.call(values, "custom_285");
+  if (!has) return "Soonest start date first (custom_285 has never been saved).";
+  const v = values.custom_285;
+  if (v === "RAND()") return "Random.";
+  const s = DS_EVENT_SORT[v];
+  if (!s) return null;
+  const say = (dir) => (s[0] === "posted" ? (dir === "ASC" ? "oldest posted first" : "newest posted first") : `${dir === "ASC" ? "earliest" : "latest"} ${s[0]} first`);
+  const flip = s[1] === "ASC" ? "DESC" : "ASC";
+  const on = addons ? addons.recurring_events : undefined;
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  if (on === true) return `${cap(say(s[1]))} (custom_285 ${v}, recurring_events add-on active).`;
+  if (on === false) return `${cap(say(flip))} (custom_285 ${v}: the recurring_events add-on is off, so the widget reverses it).`;
+  return `${cap(say(flip))} while the recurring_events add-on is off (the widget reverses date sorts), ${say(s[1])} while it is active; the site does not report that add-on.`;
+}
+
+// Hero extra content: the two site widgets the homepage prints inside the hero. One list request, kept as long as the read cache.
+const DS_EXTRA = ["Bootstrap Theme - Homepage Search - Extra Content Above", "Bootstrap Theme - Homepage Search - Extra Content Below"];
+const DS_EXTRA_LINE = "A site widget named exactly \"Bootstrap Theme - Homepage Search - Extra Content Above\" (or \"... Extra Content Below\") prints inside the hero for every hero type except Blank and the maps, in .homepage_settings > .col-md-12 after the title columns; a search box or call to action placed under sits between the two. Use it for hero markup no setting offers.";
+const _dsExtraCache = new Map();
+async function dsHeroExtra(config) {
+  const key = dsCacheKey(config);
+  const hit = _dsExtraCache.get(key);
+  let found = null;
+  if (hit && Date.now() - hit.at < DS_TTL_MS) found = hit.found;
+  else {
+    try {
+      const r = await makeRequest(config, "GET", "/api/v2/data_widgets/get", { property: "widget_name", property_value: "Bootstrap Theme - Homepage Search - Extra Content%", property_operator: "like", limit: 25 }, null);
+      const body = r && r.body;
+      if (r && r.status === 200 && body && typeof body === "object" && (body.status === "success" || / not found$/.test(String(body.message)))) {
+        const rows = Array.isArray(body.message) ? body.message : [];
+        found = DS_EXTRA.map((n) => {
+          const site = rows.find((w) => w && w.widget_name === n && w.widget_id && !udsYes(w.is_default));
+          if (site) return `site ${site.widget_id}`;
+          return rows.some((w) => w && w.widget_name === n) ? "bd" : "none";
+        });
+        _dsExtraCache.set(key, { at: Date.now(), found });
+      }
+    } catch {
+      found = null;
+    }
+  }
+  if (!found) return DS_EXTRA_LINE;
+  return `${DS_EXTRA_LINE} On this site: ${dsHookSay(found)}.`;
+}
+function dsHookSay(found) {
+  return DS_EXTRA.map((n, i) => {
+    const at = i ? "Below" : "Above";
+    const f = found[i];
+    if (/^site /.test(f)) return `${at}: site widget ${f.slice(5)}, edit it with updateWidget`;
+    if (f === "bd") return `${at}: only BD's empty placeholder, so createWidget with exactly that name (a site widget replaces BD's widget of the same name; not a name clash)`;
+    return `${at}: none, so createWidget with exactly that name`;
+  }).join("; ");
+}
+
+// A label's text from `context.labels`, or null when absent or still holding an unresolved %token%.
+function dsLabelText(labels, name) {
+  const t = labels && typeof labels === "object" ? labels[name] : undefined;
+  return typeof t === "string" && !/%[A-Za-z0-9_~]+%/.test(t) ? t : null;
+}
+
+// Homepage text lookup (getDesignSettings `find`) and the widgets the homepage rows name. Shared shape with the
+// Worker (`src/index.ts`): `get(path, query)` resolves to {status, body} and never throws.
+const DSF_WIDGET_REF = /\[widget=([^[\]%<>]+)\]/g;
+const DSF_CODE = ["widget_data", "widget_style", "widget_javascript"];
+const DSF_PAGE_FIELDS = ["content", "content_css", "content_head", "content_footer_html", "title", "meta_desc"];
+const DSF_MARKUP = new Set(["widget_data", "content", "content_footer_html", "menu_name", "html", "area", "text"]);
+const DSF_TEXT_TYPES = new Set(["text", "area", "html", "code", "embed", "img"]);
+const DSF_SETTING_BLOCKS = new Set(["general.header", "general.footer", "general.announcement"]);
+const DSF_MAX_HITS = 10;
+const DSF_ALL_SAY = " (several occurrences: add nth from the hit, or all:true for every one)";
+const DSF_MAX_WIDGETS = 20;
+const DSF_MAX_PAGES = 5;
+const DSF_HINT = "No editable text matched. Member, post and category text: their own tools. Section titles, buttons: that section's block. BD text labels (Search Now) and BD's default footer menu: admin only.";
+const DSF_SLIDE_76 = "As the hero image it shows when custom_77 = 1, the hero type is not Blank or a map, and the slideshow is off, set to 0, or set to 2 on phones (2 means desktop only).";
+const DSF_SLIDE_76_OFF = "As the hero image it shows when custom_77 = 1 and the hero type is not Blank or a map (the slideshow add-on is off).";
+const DSF_SLIDE_76_ON = "As the hero image it shows when custom_77 = 1, the hero type is not Blank or a map, and custom_78 is 0 (or 2, on phones).";
+const DSF_SLIDES_OFF = "The background slideshow add-on is off on this site: these settings have no effect.";
+const DSF_SLIDES_ON = "Add-on active: the slideshow runs while custom_78 is 1, or 2 on desktop (phones keep the single hero image), and replaces the single hero image.";
+const _dsfWidgetCache = new Map();
+
+function dsfRefs(text) {
+  const out = [];
+  const s = String(text || "");
+  let m;
+  DSF_WIDGET_REF.lastIndex = 0;
+  while ((m = DSF_WIDGET_REF.exec(s))) out.push(m[1].trim());
+  return out;
+}
+
+// The Custom Content value as the overview reports it: a widget reference, legacy HTML, or empty.
+function dsfCcRef(v) {
+  const s = v === undefined || v === null ? "" : String(v).trim();
+  if (!s) return { empty: true };
+  const m = /^(?:<p>)?\[widget=([^[\]%<>]+)\](?:<\/p>)?$/.exec(s);
+  return m ? { name: m[1].trim() } : { html: true };
+}
+
+// Every site widget (is_default false), name -> row with code. One request per 100 widgets, kept as long as the read cache.
+async function dsfSiteWidgets(key, get) {
+  const hit = _dsfWidgetCache.get(key);
+  if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
+  const p = (async () => {
+    const q = { property: "is_default", property_value: "false", limit: 100 };
+    const first = await get("/api/v2/data_widgets/get", Object.assign({ page: 1 }, q));
+    const ok = (r) => r && r.status === 200 && r.body && typeof r.body === "object" && (r.body.status === "success" || / not found$/.test(String(r.body.message)));
+    if (!ok(first)) return { error: true, requests: 1 };
+    const rows = Array.isArray(first.body.message) ? first.body.message.slice() : [];
+    const pages = Math.min(Number(first.body.total_pages) || 1, DSF_MAX_PAGES);
+    let requests = 1;
+    if (pages > 1) {
+      const more = await Promise.all(Array.from({ length: pages - 1 }, (x, i) => get("/api/v2/data_widgets/get", Object.assign({ page: i + 2 }, q))));
+      requests += more.length;
+      for (const r of more) if (ok(r) && Array.isArray(r.body.message)) rows.push(...r.body.message);
+    }
+    const byName = new Map();
+    for (const w of rows) if (w && w.widget_id && !udsYes(w.is_default) && !byName.has(w.widget_name)) byName.set(w.widget_name, w);
+    return { byName, requests, partial: (Number(first.body.total_pages) || 1) > DSF_MAX_PAGES };
+  })().catch(() => ({ error: true, requests: 1 }));
+  const entry = { at: Date.now(), p };
+  _dsfWidgetCache.set(key, entry);
+  p.then((r) => { if (r.error && _dsfWidgetCache.get(key) === entry) _dsfWidgetCache.delete(key); });
+  return p;
+}
+
+async function dsfHomePage(get) {
+  const r = await get("/api/v2/list_seo/get", { property: "seo_type", property_value: "home", limit: 1 });
+  const row = r && r.status === 200 && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+  return row && typeof row === "object" ? row : null;
+}
+
+// The overview's rows, each Custom Content row naming its widget; plus the hero hooks that exist as site widgets.
+async function dsfOverview(ds, got, out, key, get) {
+  const rows = out.homepage.rows;
+  const ccRows = rows.filter((r) => /^content\.\d+$/.test(r.block || ""));
+  for (const r of rows) if (r.block) delete r.label;
+  const needHome = ccRows.some((r) => r.block === "content.1");
+  const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), needHome ? dsfHomePage(get) : Promise.resolve(null)]);
+  const named = (r, name) => {
+    r.widget = name;
+    const w = ws.byName ? ws.byName.get(name) : null;
+    if (w) r.widget_id = Number(w.widget_id);
+    else if (ws.byName) r.missing = true;
+  };
+  for (const r of ccRows) {
+    if (r.block === "content.1") {
+      r.page = "home WebPage content";
+      const c = dsfCcRef(home ? home.content : "");
+      if (home && c.name) named(r, c.name);
+      continue;
+    }
+    const c = dsfCcRef(got.values[`homepage_content_${r.block.slice(8)}`]);
+    if (c.name) named(r, c.name);
+    else if (c.html) r.html = true;
+    else r.empty = true;
+  }
+  if (ws.byName) {
+    const hooks = DS_EXTRA.filter((n) => ws.byName.has(n)).map((n) => ({ widget: n, widget_id: Number(ws.byName.get(n).widget_id) }));
+    if (hooks.length) out.homepage.hero_site_widgets = hooks;
+  } else out.homepage.widget_lookup = "failed";
+  return out;
+}
+
+// Visible-text index of a markup string: each visible character with the raw span it came from. Tags print nothing
+// (block tags and <br> print a space), entities print their character, whitespace runs print one space.
+// Loose words: apostrophes inside a word join it (trainer's = trainers), "&" reads as "and", and a plural s / es is
+// dropped on both sides, so the owner's wording and the page's wording meet.
+const DSF_TOK = /[\p{L}\p{N}]+(?:['\u2019\u2018][\p{L}\p{N}]+)*|&/gu;
+function dsfStem(w) {
+  const t = w.replace(/['\u2019\u2018]/g, "");
+  if (t === "&") return "and";
+  if (t.length > 4 && /(s|x|z|ch|sh)es$/.test(t)) return t.slice(0, -2);
+  if (t.length > 3 && /s$/.test(t) && !/ss$/.test(t)) return t.slice(0, -1);
+  return t;
+}
+function dsfToks(s) {
+  const out = [];
+  let m;
+  DSF_TOK.lastIndex = 0;
+  while ((m = DSF_TOK.exec(s))) out.push({ w: dsfStem(m[0]), s: m.index, e: m.index + m[0].length - 1 });
+  return out;
+}
+const DSF_FILLER = new Set(["the", "a", "an", "my", "our", "this", "that", "on", "in", "of", "section", "part", "area", "block", "box", "boxes", "row", "bit", "homepage", "page"].map(dsfStem));
+function dsfCore(words) {
+  const out = [];
+  words.forEach((w, i) => {
+    if (w === "home" && words[i + 1] === dsfStem("page")) return;
+    if (!DSF_FILLER.has(w)) out.push(w);
+  });
+  return out;
+}
+function dsfInTag(raw, at) {
+  const lt = raw.lastIndexOf("<", at);
+  if (lt < 0) return false;
+  return raw.lastIndexOf(">", at - 1) < lt && /^<[\/!a-zA-Z]/.test(raw.slice(lt, lt + 2));
+}
+
+const DSF_BLOCK_TAG = /^<\/?(br|p|div|li|ul|ol|h[1-6]|tr|td|th|section|article|header|footer|table|tbody|blockquote|hr)\b/i;
+const DSF_ENT = { amp: "&", nbsp: " ", lt: "<", gt: ">", quot: '"', apos: "'", "#39": "'", ndash: "-", mdash: "-", rsquo: "'", lsquo: "'", rdquo: '"', ldquo: '"', hellip: "...", copy: "(c)" };
+function dsfVisible(raw, markup) {
+  const ch = [];
+  const at = [];
+  const to = [];
+  const push = (c, s, e) => {
+    if (/\s/.test(c)) {
+      if (!ch.length || ch[ch.length - 1] === " ") { if (ch.length) to[to.length - 1] = e; return; }
+      c = " ";
+    }
+    ch.push(c.toLowerCase());
+    at.push(s);
+    to.push(e);
+  };
+  let i = 0;
+  while (i < raw.length) {
+    const c = raw[i];
+    if (markup && c === "<") {
+      const j = raw.indexOf(">", i);
+      if (j > i && /^<[\/!a-zA-Z]/.test(raw.slice(i, i + 2))) {
+        if (DSF_BLOCK_TAG.test(raw.slice(i, j + 1))) push(" ", i, j + 1);
+        i = j + 1;
+        continue;
+      }
+    }
+    if (markup && c === "&") {
+      const m = /^&(#x[0-9a-f]+|#\d+|[a-z]+\d*);/i.exec(raw.slice(i, i + 12));
+      if (m) {
+        const n = m[1].toLowerCase();
+        const v = DSF_ENT[n] !== undefined ? DSF_ENT[n] : n[0] === "#" ? String.fromCodePoint(n[1] === "x" ? parseInt(n.slice(2), 16) : parseInt(n.slice(1), 10)) : null;
+        if (v !== null) {
+          for (const x of v) push(x, i, i + m[0].length);
+          i += m[0].length;
+          continue;
+        }
+      }
+    }
+    push(c, i, i + 1);
+    i++;
+  }
+  return { s: ch.join(""), at, to };
+}
+
+function dsfNorm(q, markup) {
+  return dsfVisible(String(q), markup).s.trim();
+}
+
+// Raw spans [start, end) where the needle occurs. mode: raw (tags kept), vis (tags stripped), loose (words in order).
+function dsfSpans(raw, needle, mode, words) {
+  const spans = [];
+  if (mode === "loose") {
+    const v = dsfVisible(raw, true);
+    const toks = dsfToks(v.s);
+    for (let i = 0; i + words.length <= toks.length; i++) {
+      if (words.every((w, k) => toks[i + k].w === w)) spans.push([v.at[toks[i].s], v.to[toks[i + words.length - 1].e]]);
+    }
+    return spans;
+  }
+  const v = dsfVisible(raw, mode === "vis");
+  let from = 0;
+  for (;;) {
+    const k = v.s.indexOf(needle, from);
+    if (k < 0 || !needle) break;
+    spans.push([v.at[k], v.to[k + needle.length - 1]]);
+    from = k + needle.length;
+  }
+  return spans;
+}
+
+function dsfCount(raw, s) {
+  if (!s) return 0;
+  let n = 0;
+  let k = raw.indexOf(s);
+  while (k >= 0) { n++; k = raw.indexOf(s, k + s.length); }
+  return n;
+}
+
+function dsfHitText(raw, span) {
+  const [s, e] = span;
+  const flat = (t) => t.replace(/\s+/g, " ");
+  const match = raw.slice(s, e);
+  const out = {};
+  if (match.length > 200) { out.match = match.slice(0, 200); out.match_cut = true; } else out.match = match;
+  out.near = flat((s > 40 ? "…" : "") + raw.slice(Math.max(0, s - 40), s) + match.slice(0, 200) + raw.slice(e, e + 40) + (e + 40 < raw.length ? "…" : ""));
+  const n = dsfCount(raw, match);
+  if (n > 1) out.count = n;
+  return out;
+}
+
+// One occurrence for a find hit: the exact raw span (never widened, so it is safe as replace.find), its ordinal among
+// the same raw string in the field (nth/of, as replace counts), and for markup the innermost open tag around it.
+const DSF_VOID = /^(br|img|hr|input|meta|link|source|wbr|col|area|base|embed|param|track)$/;
+function dsfTagAt(raw, at) {
+  const st = [];
+  const re = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*?(\/?)>/g;
+  const head = raw.slice(0, at);
+  let m;
+  while ((m = re.exec(head))) {
+    const t = m[2].toLowerCase();
+    if (m[1]) { const k = st.lastIndexOf(t); if (k >= 0) st.length = k; }
+    else if (!m[3] && !DSF_VOID.test(t)) st.push(t);
+  }
+  return st.length ? st[st.length - 1] : null;
+}
+function dsfNthAt(raw, s, nth) {
+  let k = raw.indexOf(s);
+  for (let i = 1; k >= 0 && i < nth; i++) k = raw.indexOf(s, k + s.length);
+  return k;
+}
+function dsfOrdinal(raw, s, at) {
+  if (!s) return 0;
+  let k = raw.indexOf(s);
+  let i = 1;
+  while (k >= 0 && k < at) { k = raw.indexOf(s, k + s.length); i++; }
+  return k === at ? i : 0;
+}
+function dsfOccur(raw, span, markup) {
+  const out = dsfHitText(raw, span);
+  const i = out.count && !out.match_cut ? dsfOrdinal(raw, out.match, span[0]) : 0;
+  if (i) { out.nth = i; out.of = out.count; delete out.count; }
+  if (markup) {
+    const t = dsfTagAt(raw, span[0]);
+    if (t) out.in = t;
+  }
+  return out;
+}
+
+async function dsfFind(ds, got, text, key, get) {
+  const q = String(text).trim();
+  if (q.length < 2 || q.length > 300) return { status: "error", message: "find takes 2 to 300 characters of text from the page." };
+  const needle = dsfNorm(q, true);
+  const rawNeedle = dsfNorm(q, false);
+  const words = dsfToks(needle).map((t) => t.w);
+  const m = ds.m;
+  const values = got.values;
+  const dir = dsDirectory(ds, got);
+  const placed = new Map(dir.homepage.rows.filter((r) => r.block).map((r) => [r.block, r.row]));
+  const heroShown = !/^(Blank)$/.test(String(values.custom_30 || "")) && !/Map/.test(String(values.custom_30 || ""));
+  const t0 = Date.now();
+  const [ws, home, mi, mn] = await Promise.all([
+    dsfSiteWidgets(key, get),
+    dsfHomePage(get),
+    get("/api/v2/menu_items/get", { limit: 100 }),
+    get("/api/v2/menus/get", { limit: 100 }),
+  ]);
+  const sources = [];
+  const searched = [];
+  for (const b of m.blocks) {
+    if (b.rows || !(b.tab === "Homepage" || DSF_SETTING_BLOCKS.has(b.id))) continue;
+    for (const f of b.fields) {
+      if (!DSF_TEXT_TYPES.has(f.t) || !Object.prototype.hasOwnProperty.call(values, f.n)) continue;
+      const v = values[f.n];
+      if (v === null || v === undefined || v === "") continue;
+      if (DS_CC_REF.test(f.n) && dsfCcRef(v).name) continue;
+      const tl = /^%%%([A-Za-z0-9_]+)(~[a-z]+)?%%%$/.exec(String(v));
+      const lt = tl ? dsLabelText(got.labels, tl[1]) : null;
+      const row = placed.get(b.id);
+      const shown = /^(section|content)\./.test(b.id) ? row !== undefined : true;
+      sources.push({ hit: Object.assign({ setting: f.n, block: b.id, label: f.l }, row !== undefined ? { row } : {}, lt !== null && tl ? { text_label: tl[1] } : {}), raw: lt !== null ? lt : String(v), markup: f.t !== "code" && f.t !== "img", kind: f.t === "text" || f.t === "area" || f.t === "html" ? "text" : "code", shown });
+    }
+  }
+  searched.push("homepage, header, footer and announcement settings");
+  const widgets = [];
+  const missing = [];
+  const seen = new Set();
+  const want = (name, row, block, via, depth) => {
+    if (seen.has(name)) return;
+    seen.add(name);
+    const w = ws.byName ? ws.byName.get(name) : null;
+    if (!w) { if (ws.byName) missing.push(name); return; }
+    widgets.push({ w, row, block, via, depth });
+  };
+  for (const r of dir.homepage.rows) {
+    if (!/^content\.\d+$/.test(r.block || "") || r.block === "content.1") continue;
+    const c = dsfCcRef(values[`homepage_content_${r.block.slice(8)}`]);
+    if (c.name) want(c.name, r.row, r.block, undefined, 0);
+  }
+  const ccRow = placed.get("content.1");
+  if (home) for (const n of dsfRefs(home.content)) want(n, ccRow === undefined ? null : ccRow, "content.1", undefined, 0);
+  for (const n of DS_EXTRA) if (heroShown && (!ws.byName || ws.byName.has(n))) want(n, null, "hero.cta", undefined, 0);
+  for (let i = 0; i < widgets.length; i++) {
+    const x = widgets[i];
+    if (x.depth >= 2) continue;
+    for (const n of dsfRefs(x.w.widget_data)) want(n, x.row, x.block, x.w.widget_name, x.depth + 1);
+  }
+  const skipped = widgets.length > DSF_MAX_WIDGETS ? widgets.splice(DSF_MAX_WIDGETS).map((x) => x.w.widget_name) : [];
+  const addWidget = (x, shown) => {
+    x.shown = shown;
+    const base = { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
+    if (x.via) base.via = x.via;
+    for (const f of DSF_CODE) if (x.w[f]) sources.push({ hit: Object.assign({}, base, { field: f }), raw: String(x.w[f]), markup: f === "widget_data", kind: f === "widget_data" ? "text" : "code", shown, widget: x });
+  };
+  for (const x of widgets) addWidget(x, x.row !== null || x.block === "hero.cta");
+  if (ws.byName) searched.push(`${widgets.length} site widgets on the homepage (rows, hero hooks, nested)`);
+  else searched.push("site widgets: the widget list could not be read");
+  if (home) {
+    for (const f of DSF_PAGE_FIELDS) {
+      if (!home[f]) continue;
+      const shown = f === "content" ? ccRow !== undefined : true;
+      sources.push({ hit: Object.assign({ page: "home", seo_id: Number(home.seo_id), field: f }, f === "content" && ccRow !== undefined ? { row: ccRow } : {}), raw: String(home[f]), markup: f === "content" || f === "content_footer_html", kind: /^(content|content_footer_html|title|meta_desc)$/.test(f) ? "text" : "code", shown });
+    }
+    searched.push("the home WebPage");
+  }
+  const menus = new Map();
+  if (mn && mn.status === 200 && mn.body && Array.isArray(mn.body.message)) for (const x of mn.body.message) if (x.menu_id !== null && x.menu_id !== undefined) menus.set(String(x.menu_id), x.menu_name);
+  if (mi && mi.status === 200 && mi.body && Array.isArray(mi.body.message)) {
+    for (const x of mi.body.message) {
+      const base = { menu_item_id: x.menu_item_id === null || x.menu_item_id === undefined ? null : Number(x.menu_item_id), menu: menus.get(String(x.menu_id)) || null, label: String(x.menu_name || "") };
+      if (udsYes(x.is_default)) base.bd_default = true;
+      for (const f of ["menu_name", "menu_link"]) if (x[f]) sources.push({ hit: Object.assign({}, base, { field: f }), raw: String(x[f]), markup: f === "menu_name", kind: f === "menu_name" ? "text" : "code", shown: true, menu: true });
+    }
+    searched.push("menu items");
+  }
+  const run = (list, mode, W = []) => {
+    const hits = [];
+    for (const src of list) {
+      let spans = mode === "loose" ? dsfSpans(src.raw, null, "loose", W) : dsfSpans(src.raw, rawNeedle, "raw");
+      if (!spans.length && mode !== "loose" && src.markup && needle) spans = dsfSpans(src.raw, needle, "vis");
+      if (!spans.length) continue;
+      const texts = spans.filter((sp) => src.kind === "text" && !(src.markup && dsfInTag(src.raw, sp[0])));
+      const pick = texts.length ? texts.slice(0, 3) : [spans[0]];
+      for (const sp of pick) {
+        const h = Object.assign({}, src.hit, dsfOccur(src.raw, sp, texts.length > 0 && src.markup));
+        if (mode === "loose") h.loose = true;
+        if (!src.shown) h.shown = false;
+        if (!texts.length && spans.length > 1 && !h.count && !h.of) h.count = spans.length;
+        h._tier = texts.length ? (src.menu && h.menu === null ? 1.5 : 0) : 2;
+        if (src.widget) h._w = src.widget;
+        hits.push(h);
+      }
+    }
+    return hits;
+  };
+  const wbase = (x) => {
+    const b = { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
+    if (x.via) b.via = x.via;
+    if (x.shown === false) b.shown = false;
+    return b;
+  };
+  // Per widget: its visible-text hits; else one hit for the widget, by name or by code (class names, CSS, JS, attributes).
+  // Identical other hits (one BD menu item in many menus) merge with items: n; menu items of menus the site does not list rank after names.
+  const assemble = (raw, named, looseNames) => {
+    const out = [];
+    const per = new Map();
+    const same = new Map();
+    for (const h of raw) {
+      if (!h._w) {
+        const k = JSON.stringify([h.field, h.label, h.match, h.near, h.setting, h.page]);
+        const prev = same.get(k);
+        if (prev) { prev.items = (prev.items || 1) + 1; continue; }
+        same.set(k, h);
+        out.push(h);
+        continue;
+      }
+      if (!per.has(h._w)) per.set(h._w, []);
+      per.get(h._w).push(h);
+    }
+    for (const x of named) if (!per.has(x)) per.set(x, []);
+    for (const [x, list] of per) {
+      const text = list.filter((h) => h._tier === 0);
+      if (text.length) { out.push(...text); continue; }
+      const byName = named.includes(x);
+      const h = Object.assign(wbase(x), { by: byName ? "name" : "code" });
+      if (list.length) {
+        h.fields = list.map((y) => y.field);
+        h.near = list[0].near;
+      }
+      if ((byName && looseNames) || (!byName && list[0].loose)) h.loose = true;
+      h._tier = byName ? 1 : 2;
+      out.push(h);
+    }
+    out.sort((a, b) => (a.shown === false ? 1 : 0) - (b.shown === false ? 1 : 0) || a._tier - b._tier);
+    for (const h of out) { delete h._tier; delete h._w; }
+    return out;
+  };
+  const lname = needle || rawNeedle;
+  const core = dsfCore(words);
+  const search = (list, wl) => {
+    let hits = run(list, "exact");
+    if (!hits.length && words.length > 1) hits = run(list, "loose", words);
+    let named = wl.filter((x) => x.w.widget_name.toLowerCase().includes(lname));
+    let looseNames = false;
+    if (!hits.length && !named.length && core.length && core.length < words.length) {
+      hits = run(list, "loose", core);
+      named = wl.filter((x) => { const t = dsfToks(x.w.widget_name.toLowerCase()).map((o) => o.w); return core.every((w) => t.includes(w)); });
+      looseNames = true;
+    }
+    return assemble(hits, named, looseNames);
+  };
+  let hits = search(sources, widgets);
+  if (!hits.length && ws.byName) {
+    const rest = [];
+    for (const [name, w] of ws.byName) if (/^homepage/i.test(name) && !seen.has(name)) rest.push({ w, row: null, block: null });
+    const extra = rest.slice(0, DSF_MAX_WIDGETS);
+    const off = [];
+    for (const x of extra) {
+      const before = sources.length;
+      addWidget(x, false);
+      off.push(...sources.slice(before));
+    }
+    hits = search(off, extra);
+    if (extra.length) searched.push(`${extra.length} other site widgets named Homepage… (not on the homepage)`);
+  }
+  const out = { find: q };
+  out.hits = hits.slice(0, DSF_MAX_HITS);
+  if (hits.length > DSF_MAX_HITS) out.more = hits.length - DSF_MAX_HITS;
+  out.searched = searched;
+  if (skipped.length) out.skipped = skipped;
+  if (missing.length) out.missing_widgets = missing;
+  if (ws.partial) out.widget_list = `only the first ${DSF_MAX_PAGES * 100} site widgets were read`;
+  if (!hits.length) out.hint = DSF_HINT;
+  else out.edit = dsfEditLine(out.hits);
+  out.ms = Date.now() - t0;
+  return out;
+}
+
+// One line naming the change call for each kind of hit in a find result.
+function dsfEditLine(hits) {
+  const say = [];
+  const w = hits.filter((h) => h.widget_id !== undefined);
+  if (w.length) {
+    let t = "site widget: updateWidget {widget_id, replace:[{field, find: match, with}]}, no read needed, returns an undo";
+    if (w.some((h) => h.of > 1 || h.count > 1)) t += DSF_ALL_SAY;
+    if (w.some((h) => !h.match)) t += "; by name or code: getWidget include_code=1 first";
+    say.push(t);
+  }
+  if (hits.some((h) => h.setting)) say.push("setting: updateDesignSettings {settings: {name: value}}" + (hits.some((h) => h.text_label) ? " (literal text replaces the label)" : ""));
+  const pc = hits.filter((h) => h.page && h.field === "content");
+  if (pc.length) say.push("home page content: updateWebPage {seo_id, replace:[{find: match, with}]}, no read needed, returns an undo" + (pc.some((h) => h.of > 1 || h.count > 1) ? DSF_ALL_SAY : ""));
+  if (hits.some((h) => h.page && h.field !== "content")) say.push("home page CSS, head, title: getWebPage include_code=1, then updateWebPage with the whole field");
+  const m = hits.filter((h) => h.menu_item_id !== undefined);
+  if (m.some((h) => h.menu_item_id !== null)) say.push("menu item: updateMenuItem {menu_item_id, menu_name or menu_link}");
+  if (m.some((h) => h.menu_item_id === null)) say.push("menu_item_id null: BD's default menu, admin only");
+  return say.join("; ");
+}
+
+// Slideshow notes from the add-on status the site reports (absent = unknown: the map's own wording stays).
+function dsfSlideNotes(b, out, addons) {
+  const on = addons ? addons.homepage_background_slideshow : undefined;
+  if (on !== true && on !== false) return;
+  if (b.id === "hero.slideshow") out.note = on ? DSF_SLIDES_ON : DSF_SLIDES_OFF;
+  if (b.id === "hero.background") for (const s of out.settings || []) if (s.name === "custom_76" && s.note) s.note = s.note.replace(DSF_SLIDE_76, on ? DSF_SLIDE_76_ON : DSF_SLIDE_76_OFF);
+}
+
+// updateWidget `replace`: exact substitutions on the stored code fields, all or nothing; `all` changes every occurrence.
+// Returns {problems} or {fields: {name: new value}, replaced, undo}. The new values then go through the ordinary updateWidget path.
+const DSF_REPLACE_FIELDS = ["widget_data", "widget_style", "widget_javascript"];
+function dsfApplyReplace(texts, list) {
+  const t = Object.assign({}, texts);
+  for (const e of list) {
+    const n = e.find ? dsfCount(t[e.field], e.find) : 0;
+    if (!n || (n > 1 && !e.all && !e.nth) || (e.nth && n < e.nth)) return null;
+    if (e.all) { t[e.field] = t[e.field].split(e.find).join(e.with); continue; }
+    const k = dsfNthAt(t[e.field], e.find, e.nth || 1);
+    t[e.field] = t[e.field].slice(0, k) + e.with + t[e.field].slice(k + e.find.length);
+  }
+  return t;
+}
+// One undo entry for a whole field: the changed stretch, widened to whole words and until it is unique.
+function dsfDiffUndo(f, a, b) {
+  let p = 0;
+  while (p < a.length && p < b.length && a[p] === b[p]) p++;
+  let s = 0;
+  while (s < a.length - p && s < b.length - p && a[a.length - 1 - s] === b[b.length - 1 - s]) s++;
+  let l = p;
+  let r = s;
+  const mid = (t, L, R) => t.slice(L, t.length - R);
+  while (l > 0 && /\w/.test(b[l - 1]) && /\w/.test(a[l - 1])) l--;
+  while (r > 0 && /\w/.test(b[b.length - r]) && /\w/.test(a[a.length - r])) r--;
+  for (let k = 0; k < 400; k++) {
+    const fb = mid(b, l, r);
+    if (fb && dsfCount(b, fb) === 1) break;
+    if (l > 0) l--;
+    if (r > 0) r--;
+    if (l === 0 && r === 0) break;
+  }
+  return { field: f, find: mid(b, l, r), with: mid(a, l, r) };
+}
+function dsfReplacePlan(row, list, fields = DSF_REPLACE_FIELDS) {
+  const problems = [];
+  if (!Array.isArray(list) || !list.length || list.length > 20) return { problems: ["replace takes 1 to 20 entries: [{field, find, with, nth?, all?}]."] };
+  const orig = {};
+  const cur = {};
+  const counts = {};
+  const steps = [];
+  list.forEach((e, i) => {
+    const at = `replace entry ${i + 1}`;
+    if (!e || typeof e !== "object" || Array.isArray(e)) return problems.push(`${at}: send {field, find, with}.`);
+    if (!fields.includes(e.field)) return problems.push(`${at}: field is ${fields.join(" or ")}.`);
+    if (typeof e.find !== "string" || !e.find) return problems.push(`${at}: find is the exact text to change, not empty.`);
+    if (typeof e.with !== "string") return problems.push(`${at}: with is a string ("" deletes).`);
+    if (e.all !== undefined && typeof e.all !== "boolean") return problems.push(`${at}: all is true or false.`);
+    if (e.all && e.find.length < 3) return problems.push(`${at}: with all, find needs at least 3 characters.`);
+    if (e.nth !== undefined && (typeof e.nth !== "number" || !Number.isInteger(e.nth) || e.nth < 1)) return problems.push(`${at}: nth is a whole number from 1.`);
+    if (e.nth !== undefined && e.all) return problems.push(`${at}: nth or all, not both.`);
+    if (!(e.field in cur)) cur[e.field] = orig[e.field] = String(row[e.field] === null || row[e.field] === undefined ? "" : row[e.field]);
+    const t0 = cur[e.field];
+    const n = dsfCount(t0, e.find);
+    if (n === 0) return problems.push(`${at}: not found in ${e.field}: read the field or call getDesignSettings find.`);
+    if (e.nth !== undefined && n < e.nth) return problems.push(`${at}: nth is ${e.nth} but find occurs ${n} ${n === 1 ? "time" : "times"} in ${e.field}.`);
+    if (n > 1 && !e.all && e.nth === undefined) return problems.push(`${at}: found ${n} times in ${e.field}: add nth (1..${n}) for one, or all:true for every one.`);
+    counts[e.field] = (counts[e.field] || 0) + (e.all ? n : 1);
+    if (e.all) {
+      const t1 = t0.split(e.find).join(e.with);
+      cur[e.field] = t1;
+      steps.unshift({ e, n, all: true });
+      return;
+    }
+    const k = dsfNthAt(t0, e.find, e.nth || 1);
+    const t1 = t0.slice(0, k) + e.with + t0.slice(k + e.find.length);
+    cur[e.field] = t1;
+    steps.unshift({ e, k, t0, t1 });
+  });
+  if (problems.length) return { problems };
+  const replaced = [];
+  for (const f of Object.keys(cur)) {
+    const a = orig[f];
+    const b = cur[f];
+    if (!b.trim()) { problems.push(`${f} would be empty: clear it with _clear_fields instead.`); continue; }
+    const tags = (t, re) => (t.match(re) || []).length;
+    if (f === "widget_data" && (tags(b, /<script\b/gi) > tags(a, /<script\b/gi) || tags(b, /<style\b/gi) > tags(a, /<style\b/gi))) problems.push("widget_data cannot gain <script> or <style>: put JS in widget_javascript and CSS in widget_style.");
+    if (f === "widget_style" && tags(b, /<\/?style\b/gi) > tags(a, /<\/?style\b/gi)) problems.push("widget_style is raw CSS: no <style> tags.");
+    if (f === "widget_javascript" && /<script\b/i.test(a) && !/<script\b/i.test(b)) problems.push("widget_javascript must keep its <script> wrapper.");
+    let p = 0;
+    while (p < a.length && p < b.length && a[p] === b[p]) p++;
+    let s = 0;
+    while (s < a.length - p && s < b.length - p && a[a.length - 1 - s] === b[b.length - 1 - s]) s++;
+    const snip = (t, L, R) => t.slice(Math.max(0, L - 40), t.length - Math.max(0, R - 40)).slice(0, 300).replace(/\s+/g, " ");
+    replaced.push({ field: f, count: counts[f], before: snip(a, p, s), after: snip(b, p, s), chars_before: a.length, chars_after: b.length });
+  }
+  if (problems.length) return { problems };
+  // The undo swaps back exactly what was written, each find unique in the text as it now stands (an nth write whose text
+  // repeats is undone by nth, applied in order); when that cannot be replayed exactly, one entry per field.
+  const back = steps.map((st) => {
+    const e = st.e;
+    const fin = cur[e.field];
+    if (st.all) return e.with.length >= 3 && dsfCount(fin, e.with) === st.n ? { field: e.field, find: e.with, with: e.find, all: true } : null;
+    const { k, t0, t1 } = st;
+    const m = e.nth !== undefined && dsfCount(t1, e.with) > 1 ? dsfOrdinal(t1, e.with, k) : 0;
+    if (m) return { field: e.field, find: e.with, with: e.find, nth: m };
+    let L = 0;
+    let R = 0;
+    for (;;) {
+      const f = t1.slice(k - L, k + e.with.length + R);
+      if (f && dsfCount(t1, f) === 1 && dsfCount(fin, f) === 1) break;
+      if (k - L <= 0 && k + e.with.length + R >= t1.length) return null;
+      if (k - L > 0) L++;
+      if (k + e.with.length + R < t1.length) R++;
+    }
+    return { field: e.field, find: t1.slice(k - L, k + e.with.length + R), with: t0.slice(k - L, k + e.find.length + R) };
+  });
+  let undo = back.every((x) => x) ? back : null;
+  if (undo) {
+    const t = dsfApplyReplace(cur, undo);
+    if (!t || Object.keys(orig).some((f) => t[f] !== orig[f])) undo = null;
+  }
+  if (!undo) undo = Object.keys(cur).map((f) => dsfDiffUndo(f, orig[f], cur[f]));
+  return { fields: cur, replaced, undo };
+}
+
+// updateWebPage `replace`: the stored `content` with the substitutions applied is sent as the whole field, so every
+// updateWebPage guard and sanitiser runs exactly as if the caller had sent it.
+async function webPageReplacePrepare(config, args) {
+  const id = args.seo_id;
+  if (id === undefined || id === null || !/^\d+$/.test(String(id))) return { problems: ["replace needs seo_id."] };
+  if (Object.prototype.hasOwnProperty.call(args, "content")) return { problems: ["content: send the whole field or replace entries, not both."] };
+  if (!Array.isArray(args.replace)) return { problems: ["replace takes 1 to 20 entries: [{find, with, nth?, all?}]."] };
+  if (args.replace.some((e) => e && typeof e === "object" && e.field !== undefined && e.field !== "content")) return { problems: ["replace on a WebPage changes content only."] };
+  let r = null;
+  try { r = await makeRequest(config, "GET", `/api/v2/list_seo/get/${id}`, null, null); } catch { r = null; }
+  const row = r && r.status === 200 && r.body && r.body.status === "success" ? (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message) : null;
+  if (!row || typeof row !== "object" || !row.seo_id) return { problems: [`WebPage ${id} could not be read; replace needs the stored content.`] };
+  const plan = dsfReplacePlan({ content: row.content }, args.replace.map((e) => (e && typeof e === "object" && !Array.isArray(e) ? Object.assign({ field: "content" }, e) : e)), ["content"]);
+  if (plan.problems) return plan;
+  delete args.replace;
+  args.content = plan.fields.content;
+  return { replaced: plan.replaced, undo: { seo_id: Number(id), replace: plan.undo.map((u) => { const x = Object.assign({}, u); delete x.field; return x; }) }, fields: ["content"], sent: plan.fields, orig: { content: String(row.content === null || row.content === undefined ? "" : row.content) } };
+}
+
+// A guard that rewrote a replaced field (sanitising, class fixes) makes the planned undo stale: undo then covers what
+// was actually sent, one entry per field.
+function replaceUndoAsSent(rp, args) {
+  const changed = rp.fields.filter((f) => args && typeof args[f] === "string" && args[f] !== rp.sent[f]);
+  if (!changed.length) return rp.undo;
+  const key = rp.undo.seo_id !== undefined ? "seo_id" : "widget_id";
+  const list = rp.fields.map((f) => {
+    const u = dsfDiffUndo(f, rp.orig[f], typeof args[f] === "string" ? args[f] : rp.sent[f]);
+    if (key === "seo_id") delete u.field;
+    return u;
+  });
+  return { [key]: rp.undo[key], replace: list };
+}
+
+async function widgetReplacePrepare(config, args) {
+  const id = args.widget_id;
+  if (id === undefined || id === null || !/^\d+$/.test(String(id))) return { problems: ["replace needs widget_id."] };
+  if (Array.isArray(args.replace)) for (const f of DSF_REPLACE_FIELDS) if (Object.prototype.hasOwnProperty.call(args, f) && args.replace.some((e) => e && e.field === f)) return { problems: [`${f}: send the whole field or replace entries for it, not both.`] };
+  let r = null;
+  try { r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${id}`, null, null); } catch { r = null; }
+  const row = r && r.status === 200 && r.body && r.body.status === "success" ? (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message) : null;
+  if (!row || typeof row !== "object" || !row.widget_id) return { problems: [`Widget ${id} could not be read; replace needs the stored widget.`] };
+  if (udsYes(row.is_default)) return { problems: [`Widget ${id} is a BD default, not a site widget.`] };
+  const plan = dsfReplacePlan(row, args.replace);
+  if (plan.problems) return plan;
+  delete args.replace;
+  Object.assign(args, plan.fields);
+  const orig = {};
+  for (const f of Object.keys(plan.fields)) orig[f] = String(row[f] === null || row[f] === undefined ? "" : row[f]);
+  return { replaced: plan.replaced, undo: { widget_id: Number(id), replace: plan.undo }, fields: Object.keys(plan.fields), sent: plan.fields, orig };
+}
+
 function dsBlock(ds, b, got) {
   const values = got.values;
-  const notes = { addon: new Set(), dupIds: got.dupIds };
+  const notes = { addon: new Set(), dupIds: got.dupIds, labels: got.labels };
   const out = { block: b.id, title: b.title };
   if (b.note) out.note = b.note;
+  const css = dsCss(ds, b, values);
+  if (css) out.css = css;
+  if (b.id === "section.recent-events") {
+    const order = dsEventsOrder(values, got.addons);
+    if (order) out.visitor_order = order;
+  }
   const hid = dsWhile(ds, b.show, values);
   if (hid) out.hidden_in_admin_while = hid;
   const addon = !b.rows && b.fields.every((f) => f.addon && f.addon === b.fields[0].addon) ? b.fields[0].addon : null;
@@ -1281,13 +2045,14 @@ function dsBlock(ds, b, got) {
   const dup = dsBlockNames(b).filter((n) => got.dups.includes(n));
   if (dup.length) out.duplicate_names = dup;
   dsAddons(out, notes, got.addons);
+  dsfSlideNotes(b, out, got.addons);
   return out;
 }
 
 // One setting, when `block` is exactly a stored name. The block's note and hide rule come along: they can matter for the value.
 function dsOne(ds, b, name, got) {
   const values = got.values;
-  const notes = { addon: new Set(), dupIds: got.dupIds };
+  const notes = { addon: new Set(), dupIds: got.dupIds, labels: got.labels };
   let s;
   if (b.rows) {
     const i = dsBlockNames(b).indexOf(name);
@@ -1334,9 +2099,16 @@ function dsDirectory(ds, got) {
   const heroCur = dsRead(ds, values, "custom_30");
   const heroOpt = heroOpts.find((p) => dsExpand(m, p[0]) === heroCur);
   const hero = { value: hasHero ? values.custom_30 : "" };
-  if (!hasHero) hero.saved = false;
+  if (!hasHero) hero.stored = DS_NOT_STORED;
   if (heroOpt) hero.label = heroOpt[1];
   else hero.known = false;
+  const cc = { free: [], legacy_html: [] };
+  for (let n = 2; n <= 10; n++) {
+    const v = values[`homepage_content_${n}`];
+    const s = v === undefined || v === null ? "" : String(v).trim();
+    if (!s) cc.free.push(n);
+    else if (!/^(<p>)?\[widget=[^[\]%<>]+\](<\/p>)?$/.test(s)) cc.legacy_html.push(n);
+  }
   const rows = [];
   rb.rows.forEach((n, i) => {
     const v = values[n];
@@ -1347,7 +2119,7 @@ function dsDirectory(ds, got) {
     else if (o) rows.push({ row: rb.N[0] + i, section: v, label: o[1] });
     else rows.push({ row: rb.N[0] + i, section: v, known: false });
   });
-  const out = { map_rev: m.rev, blocks, homepage: { hero_type: hero, rows } };
+  const out = { map_rev: m.rev, blocks, homepage: { hero_type: hero, rows, custom_content: cc } };
   const dup = ["custom_30"].concat(rb.rows).filter((n) => got.dups.includes(n));
   if (dup.length) out.duplicate_names = dup;
   return out;
@@ -1430,6 +2202,7 @@ async function dsFetchValues(config, ds) {
     return { error: httpErr || `The site answered HTTP ${result.status} without the settings list.` };
   }
   const addons = c.addons && typeof c.addons === "object" ? c.addons : null;
+  const labels = c.labels && typeof c.labels === "object" && !Array.isArray(c.labels) ? c.labels : null;
   const dupIds = {};
   for (const d of Array.isArray(c.duplicates) ? c.duplicates : []) {
     if (d && ds.names.has(String(d.name))) dupIds[String(d.name)] = (Array.isArray(d.ids) ? d.ids : []).map(Number).sort((a, x) => a - x);
@@ -1438,11 +2211,11 @@ async function dsFetchValues(config, ds) {
     const paged = await dsFetchPaged(config, ds);
     if (paged.error) return paged;
     for (const n of Object.keys(paged.dupIds)) dupIds[n] = paged.dupIds[n];
-    return { values: paged.values, dups: Object.keys(dupIds), dupIds, addons };
+    return { values: paged.values, dups: Object.keys(dupIds), dupIds, addons, labels };
   }
   const values = {};
   for (const n of Object.keys(c.values)) if (n !== "0" && ds.names.has(n)) values[n] = String(c.values[n] === null || c.values[n] === undefined ? "" : c.values[n]);
-  return { values, dups: [], dupIds, addons };
+  return { values, dups: [], dupIds, addons, labels };
 }
 
 // Per site and per key: a key without the permission must not read another key's cached values.
@@ -1469,6 +2242,13 @@ async function getDesignSettings(config, args) {
     return { status: "error", message: `The design settings map could not be read: ${(err && err.message) || String(err)}` };
   }
   const q = args.block === undefined || args.block === null ? "" : String(args.block).trim();
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  if (args.find !== undefined && args.find !== null && String(args.find).trim() !== "") {
+    if (q) return { status: "error", message: "Send block or find, not both." };
+    const got = await dsValues(config, ds);
+    if (got.error) return { status: "error", message: got.error };
+    return dsfFind(ds, got, args.find, dsCacheKey(config), get);
+  }
   let b = null;
   let one = null;
   if (q) {
@@ -1483,7 +2263,10 @@ async function getDesignSettings(config, args) {
   const got = await dsValues(config, ds);
   if (got.error) return { status: "error", message: got.error };
   if (one) return dsOne(ds, one, q, got);
-  return b ? dsBlock(ds, b, got) : dsDirectory(ds, got);
+  if (!b) return dsfOverview(ds, got, dsDirectory(ds, got), dsCacheKey(config), get);
+  const out = dsBlock(ds, b, got);
+  if (b.id === "hero.cta") out.hero_extra_content = await dsHeroExtra(config);
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -1496,7 +2279,7 @@ const UDS_MAX = 100;
 const UDS_NOTE_PAGE = "A Design Settings page already open in a browser puts back the values it loaded on its next save: reload it before saving there.";
 const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send [widget=Name].";
 const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send [widget=Name].";
-const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and point the row at that Custom Content option.";
+const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and place that block with home_rows.";
 const UDS_UNSIGNED = "This undo was not issued by this tool for this site; send settings instead.";
 const UDS_LOST = "The site's response was lost; the result was confirmed by reading the settings back.";
 const UDS_HERO_FORCED = ["HS:Hero Message with Button Links", "HS:Hero Message with Link"];
@@ -1750,7 +2533,7 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
   }
   if (f.t === "font") return v === "" || /^[A-Za-z0-9 ]{1,60}$/.test(v) ? null : `${label} takes one font family name, such as Open Sans: letters, digits and spaces.`;
   if (f.t === "icon") return /^[A-Za-z0-9 _-]*$/.test(v) ? null : `${label} takes a Font Awesome class such as fa-heart: letters, digits, spaces, - and _.`;
-  if (f.t === "img") return v === "" || /^(https?:\/\/[A-Za-z0-9.-]+)?\/[A-Za-z0-9._~%\/+-]*$/.test(v) ? null : `${label} takes an image path such as /images/photo.webp, or "" for none.`;
+  if (f.t === "img") return v === "" || /^(https?:\/\/[A-Za-z0-9.-]+(:\d+)?)?\/[A-Za-z0-9._~%\/+-]*(\?[A-Za-z0-9._~%\/+=&-]*)?$/.test(v) ? null : `${label} takes a site image path such as /images/photo.webp, an https image URL, or "" for none.`;
   if (f.t !== "sel" && /[<"`]|\$\{/.test(v)) return `${label} takes plain text: no <, ", backtick or \${.`;
   const opts = (x.opts || []).map((o) => [dsExpand(ds.m, o[0]), o[1], o[2] || {}]);
   const want = f.n === "{row}" && v === "Homepage Content" ? dsExpand(ds.m, "D:Custom Content 1") : v;
@@ -1806,7 +2589,7 @@ async function udsCross(config, ds, entries, R, lists, refused) {
     const on = `section_${N}_background_enabled`;
     const bg = `section_${N}_background`;
     if ((touched.has(on) || touched.has(bg)) && R[on] === "1" && !udsColour(String(R[bg] === undefined ? "" : R[bg]), bg)) {
-      add(bg, `Section ${N}: a background switched on needs a colour here, as rgb(R, G, B).`);
+      add(bg, `Section ${N}: a background switched on with no colour prints black. Send ${bg} as rgb(R, G, B), or ${on} "0".`);
     }
   });
   return out;
@@ -1860,15 +2643,23 @@ function udsInput(ds, args) {
       return v;
     }
   };
-  for (const k of Object.keys(args)) if (!["settings", "undo", "dry_run"].includes(k)) add(k, "Unknown key. Send settings (or undo) and dry_run.");
+  for (const k of Object.keys(args)) if (!["settings", "home_rows", "undo", "dry_run"].includes(k)) add(k, "Unknown key. Send settings and/or home_rows (or undo), and dry_run.");
   const settings = parse(args.settings);
   const undo = parse(args.undo);
+  const rows = parse(args.home_rows);
   const hasS = settings !== undefined && settings !== null;
   const hasU = undo !== undefined && undo !== null;
+  const hasR = rows !== undefined && rows !== null;
   if (args.dry_run !== undefined && args.dry_run !== null && typeof args.dry_run !== "boolean") add("dry_run", "Send true or false.");
-  if (hasS && hasU) add("settings", "Send settings or undo, not both.");
-  if (!hasS && !hasU) add("settings", "Send settings as {name: value}, or undo from an earlier result.");
+  if ((hasS || hasR) && hasU) add("undo", "Send undo alone, without settings or home_rows.");
+  if (!hasS && !hasU && !hasR) add("settings", "Send settings as {name: value}, home_rows, or undo from an earlier result.");
   if (problems.length) return { problems };
+  let homeRows = null;
+  if (hasR) {
+    homeRows = udsHomeRowsInput(rows, add);
+    if (problems.length) return { problems };
+    if (!hasS) return { problems, settings: [], homeRows, dry_run: args.dry_run === true };
+  }
   if (hasU) {
     const ok = undo && typeof undo === "object" && !Array.isArray(undo) && Array.isArray(undo.restore) && Object.keys(undo).every((k) => k === "restore" || k === "sig");
     const list = ok ? undo.restore : null;
@@ -1907,7 +2698,143 @@ function udsInput(ds, args) {
     else if (typeof v === "number" && Number.isFinite(v)) entries.push({ name: n, value: String(v) });
     else add(n, "Send the value as a string.");
   }
-  return { problems, settings: entries, dry_run: args.dry_run === true };
+  return { problems, settings: entries, homeRows, dry_run: args.dry_run === true };
+}
+
+const UDS_ROW_LOOK = ["top_spacing", "bottom_spacing", "background"];
+
+// Placed Custom Content rows whose [widget=Name] names no site widget print an empty row. Names sent in this call were checked already.
+async function udsRowsMissing(config, blocks, R, sent, lists) {
+  const out = [];
+  for (const b of blocks) {
+    const cc = /^content\.([2-9]|10)$/.exec(b);
+    if (!cc || sent.has(`homepage_content_${cc[1]}`)) continue;
+    const ref = dsfCcRef(R[`homepage_content_${cc[1]}`]);
+    if (!ref.name) continue;
+    const got = await udsRows(config, lists, "/api/v2/data_widgets/get", { property: "widget_name", property_value: ref.name }, "Widgets GET");
+    if (got.error) continue;
+    if (!got.rows.some((r) => r.widget_name === ref.name && r.widget_id && !udsYes(r.is_default))) out.push(`${b} ([widget=${ref.name}])`);
+  }
+  return out.length ? `${out.join(", ")}: no site widget has that name, so the row prints empty. createWidget with that name, or drop the row.` : null;
+}
+
+const UDS_ROWS_SENT = "No section's spacing or background changed. undo lists row-numbered settings only because sections changed rows.";
+const UDS_ROWS_SENT_LOOK = "Only the sections in look_changed got a new spacing or background. undo lists row-numbered settings because sections changed rows.";
+// home_rows as sent: up to 15 entries, each a block id or {block, top_spacing?, bottom_spacing?, background?}.
+function udsHomeRowsInput(rows, add) {
+  if (!Array.isArray(rows)) {
+    add("home_rows", "Send home_rows as an array of block ids, top to bottom.");
+    return null;
+  }
+  if (rows.length > 15) {
+    add("home_rows", `The homepage has 15 rows; home_rows lists ${rows.length} sections.`);
+    return null;
+  }
+  const out = [];
+  rows.forEach((r, i) => {
+    const at = `home_rows entry ${i + 1}`;
+    if (typeof r === "string") return out.push({ block: r.trim() });
+    if (!r || typeof r !== "object" || Array.isArray(r) || typeof r.block !== "string") return add("home_rows", `${at}: send a block id, or {"block": id} with top_spacing, bottom_spacing or background.`);
+    const extra = Object.keys(r).filter((k) => k !== "block" && !UDS_ROW_LOOK.includes(k));
+    if (extra.length) return add("home_rows", `${at}: unknown key ${extra.join(", ")}. Keys: block, ${UDS_ROW_LOOK.join(", ")}.`);
+    const e = { block: r.block.trim() };
+    for (const k of UDS_ROW_LOOK) {
+      if (r[k] === undefined || r[k] === null) continue;
+      if (typeof r[k] === "number" && Number.isFinite(r[k])) e[k] = String(r[k]);
+      else if (typeof r[k] === "string") e[k] = r[k].trim();
+      else add("home_rows", `${at}: send ${k} as a string.`);
+    }
+    out.push(e);
+  });
+  return out;
+}
+
+// Every name the 15 rows are written with: the content setting and the four look settings of each row.
+function udsRowNames(ds) {
+  const rb = udsRowsBlock(ds);
+  const out = [];
+  rb.rows.forEach((row, i) => {
+    const N = rb.N[0] + i;
+    out.push(row, `section_${N}_top_spacing`, `section_${N}_bottom_spacing`, `section_${N}_background_enabled`, `section_${N}_background`);
+  });
+  return out;
+}
+
+// home_rows to row settings. A section on the homepage now moves with its four look values; a new one gets the
+// values of an untouched row (spacing "" = 40px, no background); rows after the last entry are emptied.
+function udsHomeRows(ds, list, cur, R, addons) {
+  const m = ds.m;
+  const rb = udsRowsBlock(ds);
+  const rowOpts = ds.idx.get("{row}").opts;
+  const problems = [];
+  const add = (problem) => problems.push({ name: "home_rows", problem });
+  const optOf = (b) => rowOpts.find((o) => o[0] !== "" && dsExpand(m, o[0]) === dsExpand(m, b.widget));
+  const blockOf = (v) => m.blocks.find((b) => b.widget && optOf(b) && dsExpand(m, b.widget) === dsRowValue(m, v));
+  const has = (n) => Object.prototype.hasOwnProperty.call(cur, n);
+  const look = (N) => ["top_spacing", "bottom_spacing", "background_enabled", "background"].map((k) => (has(`section_${N}_${k}`) ? cur[`section_${N}_${k}`] : null));
+  const pool = [];
+  rb.rows.forEach((row, i) => {
+    const v = has(row) ? cur[row] : "";
+    if (v === "") return;
+    const b = blockOf(v);
+    if (!b) add(`Row ${rb.N[0] + i} holds ${udsShow(v)}, which no block id names; change that row with settings instead.`);
+    else pool.push({ block: b.id, raw: v, look: look(rb.N[0] + i), used: false });
+  });
+  const placed = list.map((e, k) => {
+    const at = `home_rows entry ${k + 1} (${e.block})`;
+    const b = m.blocks.find((x) => x.id === e.block && x.widget);
+    const o = b ? optOf(b) : null;
+    if (!o) return add(`${at}: not a homepage section. Use a block id from getDesignSettings: homepage.rows[].block, section.*, content.1 to content.10 or home.divider.`);
+    if (o[2] && o[2].addon && udsAddonOff(o[2].addon, addons)) return add(`${at}: ${o[1]} needs the ${o[2].addon} add-on, which is not active on this site.`);
+    const cc = /^content\.(\d+)$/.exec(b.id);
+    if (cc && cc[1] !== "1" && String(R[`homepage_content_${cc[1]}`] === undefined ? "" : R[`homepage_content_${cc[1]}`]) === "") {
+      return add(`${at}: Custom Content ${cc[1]} is empty. Set homepage_content_${cc[1]} to [widget=Name] in settings in the same call.`);
+    }
+    const prev = pool.find((p) => p.block === b.id && !p.used);
+    let row;
+    if (prev) {
+      prev.used = true;
+      row = { block: b.id, label: o[1], raw: prev.raw, look: prev.look.slice() };
+    } else {
+      row = { block: b.id, label: o[1], raw: b.id === "content.1" ? "Homepage Content" : dsExpand(m, b.widget), look: ["", "", "0", ""], added: true };
+    }
+    for (const [k, j] of [["top_spacing", 0], ["bottom_spacing", 1]]) {
+      if (e[k] === undefined) continue;
+      if (e[k] === "" || (/^(0|[1-9]\d*)$/.test(e[k]) && Number(e[k]) <= 200 && Number(e[k]) % 10 === 0)) row.look[j] = e[k] === "" ? "" : String(Number(e[k]));
+      else add(`${at}: ${k} takes 0 to 200 in steps of 10, or "" (40px).`);
+    }
+    if (e.background !== undefined) {
+      if (e.background === "") row.look[2] = "0";
+      else if (udsColour(e.background, "")) {
+        row.look[2] = "1";
+        row.look[3] = e.background;
+      } else add(`${at}: background takes rgb(R, G, B), or "" for none.`);
+    }
+    return row;
+  });
+  if (problems.length) return { problems };
+  const entries = [];
+  const order = [];
+  rb.rows.forEach((row, i) => {
+    const N = rb.N[0] + i;
+    const p = placed[i];
+    const want = p ? [p.raw].concat(p.look) : ["", "", "", "0", ""];
+    const names = [row, `section_${N}_top_spacing`, `section_${N}_bottom_spacing`, `section_${N}_background_enabled`, `section_${N}_background`];
+    names.forEach((n, j) => {
+      const v = want[j] === null ? (j === 3 ? "0" : "") : want[j];
+      const same = has(n) ? cur[n] === v : v === "" || (j === 3 && v === "0");
+      if (!same) entries.push({ name: n, value: v, gen: true });
+    });
+    if (p) order.push(`${N} ${p.block} (${p.label})${p.added ? " new" : ""}`);
+  });
+  const removed = pool.filter((p) => !p.used).map((p) => p.block);
+  const view = placed.map((p, i) => {
+    const v = { row: rb.N[0] + i, block: p.block };
+    if (p.added) v.new = true;
+    for (const k of UDS_ROW_LOOK) if (list[i][k] !== undefined) v[k] = list[i][k];
+    return v;
+  });
+  return { problems, entries, order, removed, blocks: placed.map((p) => p.block), view };
 }
 
 // One GET of `context` for the named settings: { cur, dups (name -> ids), addons } or { error }.
@@ -1939,15 +2866,18 @@ async function udsApply(config, changes) {
   return out;
 }
 
-async function udsResult(config, idx, status, changedIn, unchanged, notes) {
+async function udsResult(config, idx, status, changedIn, unchanged, notes, extra) {
   const changed = changedIn.map((c) => {
     const x = idx.get(c.name);
     const out = { name: c.name, label: x ? x.label : c.name, before: c.before, after: c.after, created: !!c.created };
     if (c.deleted) out.deleted = true;
     return out;
   });
-  const res = { status, changed };
-  if (unchanged.length) res.unchanged = unchanged;
+  // home_rows: the per-row settings it rewrites stay out of `changed` (the rows view says it in section terms) but stay in the undo.
+  const gen = extra ? extra._gen : undefined;
+  const res = Object.assign({ status }, extra || {}, { changed: gen ? changed.filter((c) => !gen.has(c.name)) : changed });
+  const kept = gen ? unchanged.filter((n) => !gen.has(n)) : unchanged;
+  if (kept.length) res.unchanged = kept;
   res.notes = notes;
   const restore = changed.map((c) => ({ name: c.name, value: c.created ? null : c.before, expect: c.deleted ? null : c.after }));
   res.undo = { restore, sig: await udsSign(config, restore) };
@@ -2026,6 +2956,13 @@ async function updateDesignSettings(config, args) {
     return { name: e.name, value: x.f.n === "{row}" && v === dsExpand(ds.m, "D:Custom Content 1") ? "Homepage Content" : v };
   });
   const want = new Set(udsCheckNames(ds));
+  const rowNames = input.homeRows ? udsRowNames(ds) : [];
+  if (input.homeRows) {
+    for (const n of rowNames) want.add(n);
+    for (let i = 2; i <= 10; i++) want.add(`homepage_content_${i}`);
+    const both = entries.filter((e) => rowNames.includes(e.name)).map((e) => e.name);
+    if (both.length) return { status: "refused", problems: both.map((n) => ({ name: n, problem: `${n} is written by home_rows in this call; send it in settings or home_rows, not both.` })) };
+  }
   for (const e of entries) {
     const x = idx.get(e.name);
     if (!x) continue;
@@ -2038,6 +2975,23 @@ async function updateDesignSettings(config, args) {
   const has = (n) => Object.prototype.hasOwnProperty.call(cur, n);
   const R = Object.assign({}, cur);
   for (const e of entries) if (idx.has(e.name)) R[e.name] = e.value;
+  let rows = null;
+  if (input.homeRows) {
+    rows = udsHomeRows(ds, input.homeRows, cur, R, c.addons);
+    if (rows.problems.length) return { status: "refused", problems: rows.problems };
+    for (const e of rows.entries) {
+      entries.push(e);
+      R[e.name] = e.value;
+    }
+  }
+  const extra = {};
+  if (rows) {
+    extra.rows = rows.view;
+    extra.look_changed = rows.view.filter((v) => UDS_ROW_LOOK.some((k) => v[k] !== undefined)).map((v) => v.block);
+    extra.rows_note = extra.look_changed.length ? UDS_ROWS_SENT_LOOK : UDS_ROWS_SENT;
+    Object.defineProperty(extra, "_gen", { value: new Set(rows.entries.map((e) => e.name)), enumerable: false });
+    if (rows.removed.length) extra.removed_from_homepage = `${rows.removed.join(", ")}: only the row was cleared; the section's settings and widget are kept.${rows.removed.some((x) => /^content\.([2-9]|10)$/.test(x)) ? " Re-add with home_rows, or remove the site widget with deleteWidget." : ""}`;
+  }
   const problems = [];
   for (const e of entries) if (idx.has(e.name) && c.dups[e.name]) problems.push({ name: e.name, problem: `${idx.get(e.name).label} (\`${e.name}\`): ${dsDupWhy(c.dups[e.name])}` });
   // A mapped value equal to the stored one is unchanged and skips the value rules: sending back what is stored never fails.
@@ -2056,16 +3010,22 @@ async function updateDesignSettings(config, args) {
   const cross = await udsCross(config, ds, plan.filter((e) => idx.has(e.name)), R, lists, new Set(problems.map((p) => p.name)));
   for (const p of cross) problems.push(p);
   if (problems.length) return { status: "refused", problems };
-  if (!plan.length) return { status: "unchanged", unchanged };
+  if (rows) {
+    const gone = await udsRowsMissing(config, rows.blocks, R, new Set(entries.filter((e) => !e.gen).map((e) => e.name)), lists);
+    if (gone) extra.missing_widgets = gone;
+  }
+  if (!plan.length) return Object.assign({ status: "unchanged", unchanged }, extra);
+  if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
   const notes = [UDS_NOTE_PAGE];
   for (const e of plan) {
+    if (e.gen) continue;
     const x = idx.get(e.name);
     const idle = dsWhile(ds, x.f.used, udsRuleValues(ds, x, R));
     if (idle) notes.push(`${x.label} has no visible effect while ${x.N ? idle.split("{N}").join(x.N) : idle}.`);
   }
   for (const n of udsAdvice(ds, idx, plan, R, c.addons)) notes.push(n);
   if (input.dry_run) {
-    return udsResult(config, idx, "dry_run", plan.map((e) => ({ name: e.name, before: has(e.name) ? cur[e.name] : null, after: e.value, created: !has(e.name) })), unchanged, notes);
+    return udsResult(config, idx, "dry_run", plan.map((e) => ({ name: e.name, before: has(e.name) ? cur[e.name] : null, after: e.value, created: !has(e.name) })), unchanged, notes, extra);
   }
   const slot = await acquireMutateSlot(config.apiKey);
   if (slot.error) return { status: "error", message: slot.error };
@@ -2074,9 +3034,9 @@ async function updateDesignSettings(config, args) {
   _dsCache.delete(dsCacheKey(config));
   if (done.lost) return udsConfirm(config, idx, plan.map((e) => ({ name: e.name, before: has(e.name) ? cur[e.name] : null, after: e.value })), done, unchanged, notes);
   if (!done.core) return done;
-  if (!done.core.changed.length) return { status: "unchanged", unchanged: unchanged.concat(done.core.unchanged) };
+  if (!done.core.changed.length) return Object.assign({ status: "unchanged", unchanged: unchanged.concat(done.core.unchanged) }, extra);
   if (done.core.cache !== "success") notes.push(`The site's settings cache was not refreshed (${done.core.cache}); call refreshSiteCache.`);
-  return udsResult(config, idx, "applied", done.core.changed, unchanged.concat(done.core.unchanged), notes);
+  return udsResult(config, idx, "applied", done.core.changed, unchanged.concat(done.core.unchanged), notes, extra);
 }
 
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
@@ -3084,6 +4044,11 @@ function applyWebPageLean(body, includeFlags) {
     code: !!includeFlags.include_code,
     extras: !!includeFlags.include_extras,
   };
+  const off = [];
+  if (!include.content) off.push("content: include_content=1");
+  if (!include.code) off.push("content_css, content_head, content_footer_html: include_code=1");
+  if (!include.extras) off.push("hero_*, meta, layout: include_extras=1");
+  if (off.length) body.omitted = off.join("; ");
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
     if (!include.content) delete row.content;
@@ -3132,6 +4097,7 @@ const WIDGET_READ_TOOLS = new Set(["listWidgets", "getWidget"]);
 function applyWidgetLean(body, includeFlags) {
   if (!body || body.status !== "success") return body;
   const includeCode = !!includeFlags.include_code;
+  if (!includeCode) body.omitted = "widget_data, widget_style, widget_javascript: include_code=1";
   const shapeRow = (row) => {
     if (!row || typeof row !== "object") return row;
     if (!includeCode) stripKeys(row, WIDGET_CODE_BUNDLE);
@@ -4499,7 +5465,7 @@ function validateHeroEnumsInArgs(toolName, args) {
 // The home page record (seo_type "home"). The homepage never renders its h1, h2 or hero fields: the
 // homepage hero, titles and sections are design settings. Mirrored in Worker src/index.ts.
 const HOME_UNUSED_FIELD = /^(h1|h2|enable_hero_section|hero_.*|h1_font_.*|h2_font_.*)$/;
-const HOME_SETTING_FOR = { h1: "custom_130", h2: "custom_131" };
+const HOME_SETTING_FOR = { h1: "custom_130", h2: "custom_131", hero_image: "custom_76" };
 const HOME_DESIGN_NOTE = "The homepage's visible content is built from Design Settings, not this WebPage: hero title `custom_130`, hero subtitle `custom_131`, sections and their order = homepage row settings; change them with updateDesignSettings. updateWebPage on the home WebPage changes only the SEO title / meta description / keywords, social share tags, page HEAD / footer JS and `content`. The homepage never displays the home WebPage's `h1`, `h2` or `hero_*` fields.";
 
 function isHomeRecord(row) {
@@ -7748,6 +8714,20 @@ async function main() {
         }
       }
 
+      // updateWidget `replace`: the stored field with the substitutions applied is written exactly as if the
+      // agent had sent the whole field, so every guard below still runs on it.
+      let _widgetReplace = null;
+      if (name === "updateWidget" && args && typeof args === "object" && args.replace !== undefined) {
+        const rp = await widgetReplacePrepare(config, args);
+        if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
+        _widgetReplace = rp;
+      }
+      if (name === "updateWebPage" && args && typeof args === "object" && args.replace !== undefined) {
+        const rp = await webPageReplacePrepare(config, args);
+        if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
+        _widgetReplace = rp;
+      }
+
       // Sanitize agent-scaffolding tokens from content-field values before
       // they reach BD. Belt-and-suspenders with the docs rule (which tells
       // agents not to emit them in the first place). Applies to every tool
@@ -8485,6 +9465,13 @@ async function main() {
       }
       if (_segmentWarning && result.body && typeof result.body === "object") {
         result.body._segment_warning = _segmentWarning;
+      }
+      if (_widgetReplace && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const drop = (row) => { if (row && typeof row === "object") for (const f of _widgetReplace.fields) delete row[f]; };
+        if (Array.isArray(result.body.message)) result.body.message.forEach(drop);
+        else drop(result.body.message);
+        result.body.replaced = _widgetReplace.replaced;
+        result.body.undo = replaceUndoAsSent(_widgetReplace, args);
       }
       // Hero readability bundle autofill — agent feedback listing which
       // bundle fields the wrapper filled with canonical defaults on a

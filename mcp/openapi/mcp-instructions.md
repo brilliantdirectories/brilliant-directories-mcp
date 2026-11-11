@@ -29,7 +29,7 @@ If a user assumes a capability that doesn't exist, say so plainly and suggest th
 
 ### Rule: Default-merge models
 
-`listWidgets`, `listForms`, `listFormFields`, `listSidebars`, `listMenus`, `listMenuItems` return a UNION of the site's own records and uncustomised platform master defaults. Filter `property=is_default property_value=false` for only the site's records, `true` for only master defaults — literal `false`/`true`; numeric forms are silently ignored. `is_default` is dependable as a filter on all six; its presence on returned rows varies by tool. `order_column`/`order_type` sort the merged result (e.g. add `order_column=revision_timestamp order_type=DESC limit=1` for the newest).
+`listWidgets`, `listForms`, `listFormFields`, `listSidebars`, `listMenus`, `listMenuItems` return a UNION of the site's own records and uncustomised platform master defaults. Filter `property=is_default property_value=false` for only the site's records, `true` for only master defaults — literal `false`/`true`; numeric forms are silently ignored. `is_default` is dependable as a filter on all six; its presence on returned rows varies by tool. `order_column`/`order_type` sort the merged result (e.g. add `order_column=revision_timestamp order_type=DESC limit=1` for the newest). Their filters run on the merged rows and take only `eq`, `ne`, `lt`, `lte`, `gt`, `gte`, `in`, `not_in`, `between`, `like`, `not_like`; `like` / `not_like` match a substring (`%` optional, `_` literal). Any other operator (`contains`, `starts_with`, `is_set`, …) is read as an exact match and returns nothing.
 
 ### Rule: Table to endpoint
 
@@ -57,7 +57,7 @@ Example: a `users_meta` row's `database=users_data` value identifies which paren
 
 Tool naming: `<verb><Entity>` where Entity is the agent-facing concept name, NOT the table name. `users_data` → `User` → `createUser`/`getUser`/`listUsers`. `list_professions` → `TopCategory` → `createTopCategory`/`listTopCategories`. `rel_services` → `MemberSubCategoryLink` → `createMemberSubCategoryLink`. **Never guess by transforming a table name** — always consult the lookup table in **Rule: Table to endpoint**.
 
-If a tool you need from this lookup is missing from your loaded `tools/list`, that is a session-config issue, NOT evidence the tool doesn't exist. Tell the user to verify their MCP client is loading the full BD catalog (170 tools); do not work around the absence.
+If a tool you need from this lookup is missing from your loaded `tools/list`, that is a session-config issue, NOT evidence the tool doesn't exist. Tell the user to verify their MCP client is loading the full BD catalog; do not work around the absence.
 
 ### Rule: Live production writes
 
@@ -518,7 +518,7 @@ The wrapper refuses (throws on the call) 5 silent-failure paths on `createForm` 
 
 **Field truth:**
 
-- `widget_data` = HTML. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`, `\n`→`n`, `\t`→`t`, `\\`→`\`).
+- `widget_data` = HTML; PHP in it runs at render. Font Awesome 4.7 (`fa fa-*`) and Bootstrap Icons (`bi bi-*`) load on every page. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`, `\n`→`n`, `\t`→`t`, `\\`→`\`).
 - `widget_style` = raw CSS. No `<style>` wrapper. BD wraps at render. Wholly-wrapped values: outer wrapper stripped on storage. Concatenated wrappers: not stripped.
 - `widget_javascript` = JS with `<script>...</script>` wrapper required. BD does not auto-wrap. No backslash-strip.
 
@@ -717,9 +717,9 @@ If unsure what's filterable, call the fields endpoint for the authoritative colu
 
 ### Rule: Filter operators
 
-**Global filter operators — apply to every `list*` tool** (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. For multi-condition AND, pass parallel arrays — see **Rule: Compound filters**.
+**Global filter operators — apply to every `list*` tool except the six default-merge ones** (see **Rule: Default-merge models**) (BD's `/{resource}/get` paths). Set via `property` + `property_value` + `property_operator`. For multi-condition AND, pass parallel arrays — see **Rule: Compound filters**.
 
-**Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params; symbol forms never reach PHP. Word-form aliases survive.
+**Use word-form operators.** BD's WAF strips raw `<`, `>`, `<>`, `%` from URL params (`%x%` loses both, so `like` then has no wildcard: use `contains`); symbol forms never reach PHP. Word-form aliases survive.
 
 **Verified working operators (live 2026-05-27):**
 
@@ -887,7 +887,7 @@ Common cases:
 - Unsubscribe footer suppression - EmailTemplate `unsubscribe_link=0`, NOT stripping the merge token out of `email_body`
 - Per-field visibility - FormField view-flag toggles (`field_input_view` / `field_display_view` / `field_search_view` / `field_email_view` / `field_grid_view`), NOT CSS or email-template surgery
 
-Before reaching for a CSS/JS workaround on anything user-facing, check the resource's GET response for a field/toggle - those are the supported, audit-safe paths.
+Before reaching for a CSS/JS workaround on anything user-facing, check the resource's GET response for a field/toggle - those are the supported, audit-safe paths. When no field or setting exists, scoped CSS is the path; on the homepage, `updatePageCss` without `seo_id`.
 
 ### Rule: WebPage full-bleed
 
@@ -970,7 +970,7 @@ Atomic — never a subset. Applies to every hero-enabled `seo_type`. On updates 
 
 ### Rule: Hero gap-fix CSS
 
-**Hero gap-fix CSS rule - `seo_type=content` ONLY.** When a `content` page has hero enabled, BD inserts a ~40px white clearfix spacer between the hero and the first content section. Add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css` to close the gap. **Never add this rule on any other `seo_type`** - on `profile_search_results` / `data_category` / etc., the clearfix provides necessary spacing before the live search-results block; hiding it makes results butt-join the hero. Rule is page-type-scoped, period.
+**Hero gap-fix CSS rule - `seo_type=content` ONLY.** For WebPage heroes, never the homepage: the homepage gap is Design Settings hero padding (`custom_164` top, `custom_165` bottom) and row spacing via `home_rows`. When a `content` page has hero enabled, BD inserts a ~40px white clearfix spacer between the hero and the first content section. Add `.hero_section_container + div.clearfix-lg {display:none}` to `content_css` to close the gap. **Never add this rule on any other `seo_type`** - on `profile_search_results` / `data_category` / etc., the clearfix provides necessary spacing before the live search-results block; hiding it makes results butt-join the hero. Rule is page-type-scoped, period.
 
 ### Rule: WebPage cache refresh
 
@@ -978,7 +978,7 @@ Atomic — never a subset. Applies to every hero-enabled `seo_type`. On updates 
 
 ### Rule: Image sourcing
 
-**Image sourcing - priority order.** When the user asks for or implies a content image (hero banner, member `cover_photo`, post `post_image`, etc.) without supplying a URL, walk this ladder TOP-DOWN and stop at the first one that yields a real image. Do NOT skip tiers. (For identity-confirming fields — `profile_photo`, `logo`, social URLs — see **Rule: Identity-confirming fields**; the **Pexels stock (fallback)** tier does NOT apply.)
+**Image sourcing - priority order.** When the user asks for or implies a content image (hero banner, Design Settings hero image `custom_76` / slideshow slides, member `cover_photo`, post `post_image`, etc.) without supplying a URL, walk this ladder TOP-DOWN and stop at the first one that yields a real image. Do NOT skip tiers. (For identity-confirming fields — `profile_photo`, `logo`, social URLs — see **Rule: Identity-confirming fields**; the **Pexels stock (fallback)** tier does NOT apply.)
 
 1. **User-supplied URL** — if given, use that.
 2. **The subject's own web presence** (only when the write names a specific real entity — person, business, school, product, institution). Try in order: (a) their official website homepage / brand-asset page, (b) their About / team / staff-bio page, (c) their verified social profiles — Facebook profile photo, LinkedIn headshot, X profile photo, Instagram bio photo, YouTube channel art, TikTok profile photo — confirmed to belong to THIS exact person or business. Use the direct image URL. Do NOT attempt `<head>` meta tags (`og:image`, `twitter:image`) — agent-side WebFetch strips `<head>` before the model sees it; these are unreadable.
@@ -999,7 +999,7 @@ Atomic — never a subset. Applies to every hero-enabled `seo_type`. On updates 
 Applies to all image fields, all contexts.
 
 - **Imported fields** (`post_image`, `hero_image`, `logo`, `profile_photo`, `cover_photo`, `original_image_url`) — bare URL, no `?` query string (BD's filename generator breaks on it). Wrapper auto-strips query strings on these fields if you forget; write the bare URL anyway so the corpus and the wire match.
-- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness).
+- **Inline `<img>` in Froala body** (`post_content`, `group_desc`) — hotlinked; Pexels `?w=700` (2x the 350px display width for retina sharpness). Design Settings images are hotlinked too: their note gives the size.
 - **Orientation gate for Pexels-sourced feature image slots.** `post_image`, `hero_image`, and multi-image album photos require landscape — verify via `getImageDimensions` per **Rule: Image dimensions**. Inline `<img>` in Froala body (`post_content`, `group_desc`) and email-template body (`email_body`) prefer landscape or square; portrait acceptable.
 - **Pexels sourcing workflow.** Use this when an image is needed and **Rule: Image sourcing** routes to Pexels. Pexels does NOT respect keyword orientation filters (no `wide`/`landscape`/`horizontal` keyword reliably surfaces landscape-only; those words search the photo's title/tags). `www.pexels.com/search/*` returns HTTP 403 to agent-side WebFetch on common runtimes (claude.ai); the WebSearch route below reaches Pexels via Google's index and is not gated.
   1. `WebSearch query="site:pexels.com/photo <2-3 word topic>"` — 2-3 words, every word must carry topic information (no filler, no redundant adjectives); 2 words when the noun is already specific (`"pilates reformer"`), 3 words when it isn't (`"pasta plate restaurant"`); 1-word queries are banned (return noise pool). Returns ~10 result URLs of the shape `https://www.pexels.com/photo/<slug>-<id>/`.
@@ -1017,10 +1017,10 @@ Applies to all image fields, all contexts.
 
 **Wrapper-native tool: `getImageDimensions`.** One candidate: `url=<image URL>`. Two or more: ONE call with `urls=<comma-separated, up to 50>` — all probed in parallel, one response with per-URL results in input order; a 404/timeout/parse failure is that URL's own error entry and never breaks the batch. Range-GETs the first 64KB of each JPG or PNG and parses the header to return `{ width, height, format, aspect_ratio, orientation }`. `orientation` is `landscape` (w > h), `portrait` (h > w), or `square` (w == h). Per-URL `{ status: "error", message: <reason> }` on 404, non-image content, parse failure, or unsupported format means drop that candidate.
 
-**Two-step usage for Pexels-sourced feature image slots** (`post_image`, `hero_image`, multi-image album photos via `createMultiImagePost.post_image` CSV + `createMultiImagePostPhoto.original_image_url`):
+**Two-step usage for Pexels-sourced feature image slots** (`post_image`, `hero_image`, Design Settings `custom_76`, `mobile_custom_76` and slideshow slides, multi-image album photos via `createMultiImagePost.post_image` CSV + `createMultiImagePostPhoto.original_image_url`):
 
 1. **Extension filter — before the tool call.** Only consider candidate URLs ending in `.jpg`, `.jpeg`, or `.png` (case-insensitive). Skip `.webp` / `.gif` / `.avif` / anything else outright — don't call the tool. BD's import + downstream rendering only handle JPG/PNG reliably; unsupported extensions break.
-2. **Dimension check — call the tool.** Require `status === "success"` AND `orientation === "landscape"`. Any other outcome — portrait, square, OR any error (404, timeout, parse fail, "unsupported image format") — means drop the candidate and pick another. No exceptions.
+2. **Dimension check — call the tool.** Require `status === "success"` AND `orientation === "landscape"` (portrait or square for `mobile_custom_76`, set only when asked). Any other outcome — portrait, square, OR any error (404, timeout, parse fail, "unsupported image format") — means drop the candidate and pick another. No exceptions.
 
 `aspect_ratio` (e.g. 1.5 for 3:2, 1.78 for 16:9, 0.667 for portrait) is the lever for tighter ratio gates when a skill needs them (e.g. "≥ 1.33" for 4:3, "≥ 2.0" for 2:1).
 
@@ -1143,7 +1143,7 @@ Do NOT auto-set `facebook_image` - needs a user-uploaded asset.
 
 **H1/H2 double-render trap:** if hero enabled AND `content` contains `<h1>`/`<h2>`, both render. Pick one location - not both.
 
-**NEVER set `max-width` or `margin: auto` in `content_css` on any selector.** BD's layout owns width. If a full-width page needs a contained section, use `<div class="container">` in `content` — it's the system global.
+**On these pages, NEVER set `max-width` or `margin: auto` in `content_css` on any selector.** BD's layout owns width. If a full-width page needs a contained section, use `<div class="container">` in `content` — it's the system global.
 
 Location + Sidebar CRUD are read-only by design in this MCP (create/delete deliberately omitted to prevent collisions with BD's auto-seeding and system layouts).
 
@@ -1172,11 +1172,12 @@ Before editing any resource the user named by description, resolve to a stable I
 
 ### Rule: Homepage
 
-The homepage's visible content is NOT edited with `updateWebPage`. It is built from **Design Settings**.
-- `getDesignSettings` / `updateDesignSettings` (setting names directly): hero title (`custom_130`), hero subtitle (`custom_131`), hero image, hero search / call to action, homepage sections and their order (homepage row settings), section spacing / background, colors, fonts, layout.
-- `updateWebPage` on the `seo_type=home` WebPage, ONLY for: SEO title, meta description and keywords, social share tags, page HEAD / footer JS, and `content`. Homepage-only CSS: `updatePageCss` without `seo_id` (Design Settings block `code.css` is sitewide CSS).
-- `content` on the home WebPage is one optional section (Design Settings name: Custom Content 1); the homepage displays `content` only while a homepage row setting has the value `Homepage Content`.
-- The homepage never displays the home WebPage's `h1`, `h2` or `hero_*` fields.
+The homepage's visible content is built from **Design Settings**, NOT edited with `updateWebPage`.
+- `getDesignSettings` / `updateDesignSettings`: hero title `custom_130`, subtitle `custom_131`, hero image, call to action, sections, their order (`home_rows`), spacing / background, colors, fonts.
+- `updateWebPage` on the `seo_type=home` WebPage, ONLY for: SEO tags, social share tags, page HEAD / footer JS, and `content` (Custom Content 1, shown only while a row holds `Homepage Content`); the homepage never shows its `h1`, `h2` or `hero_*`. Homepage-only CSS: `updatePageCss` without `seo_id` (read: `getWebPage` `include_code=1`); Design Settings `code.css` is sitewide.
+- Owner quotes homepage text or names a section: `getDesignSettings` `find`; edit where the hit says.
+- New section: first `createWidget` (markup per **Rule: Widget code fields** and **Rule: Brand kit**, CSS in `widget_style`; the row supplies `.container`: add none, target none; full-width background: the block's `css` row selector); then one `updateDesignSettings` sets a free `homepage_content_N` (`custom_content.free`) to `[widget=<name>]` (never HTML) and places `content.N` with `home_rows`. Only when 2..10 are full: `content` (Custom Content 1) as one `[widget=<name>]`. Existing HTML (`content`, legacy blocks): edit in place, never convert unasked.
+- No setting for what the owner wants in a BD section: `updatePageCss`, or a NEW site widget in a Custom Content block. Never edit or copy `Bootstrap Theme - Custom Appearance Settings`.
 
 ### Rule: Sidebars
 

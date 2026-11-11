@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.621] - 2026-11-11
+
+### Added
+- `updateDesignSettings`: `home_rows` sets the homepage sections in order, top to bottom, by block id. A section already on the homepage keeps its spacing and background; a new one starts with default spacing and no background; sections left out are taken off the homepage (their settings and widgets are kept); rows below the last are emptied, look included. Can be combined with `settings` in one call, with one undo. Refuses an unknown block, an empty Custom Content block, a section whose add-on is off, more than 15 sections, and a setting sent both ways.
+- `getDesignSettings`: a `css` line on the hero, row, section and Custom Content blocks with the selectors for the site's current hero type and section look; `hero.cta` says where the Extra Content Above / Below site widgets print and whether they exist; `section.recent-events` says the order visitors get (`visitor_order`); notes on what the member cards can show and on past events.
+- `getDesignSettings` `find`: finds text the owner quotes from the homepage (or a class, id, image or link) in the homepage settings, the site widgets the homepage shows, the home WebPage and menu items, and says where to edit it. Owner wording is matched loosely (apostrophes, plurals, hyphens, "and" for "&", filler words such as "the" or "section"); visible text ranks first, and a widget found only by name or in its code is one hit. The overview names the site widget behind each Custom Content row, flags a row whose widget is missing, and lists the hero hook widgets.
+- `updateWidget` `replace`: edits part of a code field by exact find-and-replace (each `find` once, one occurrence picked with `nth`, or every occurrence with `all: true`; all or nothing) and returns an undo that swaps back exactly what was written.
+- `updateDesignSettings`: `home_rows` results flag a placed Custom Content row whose widget does not exist, list the sections as `rows` in section terms, name the sections whose spacing or background changed in `look_changed` (empty when only the order changed), and keep the per-row settings the move rewrites out of `changed` (all still in the undo).
+- `getDesignSettings` `find`: an `edit` line names the change call for each kind of hit; a setting that holds a text-label token says so. The overview's hero hook widgets are `hero_site_widgets`.
+- `getWebPage` / `listWebPages` / `getWidget`: a lean read says what it left out and which flag returns it (`omitted`).
+- `updateWebPage` `replace`: edits part of `content` by exact find-and-replace, with the same rules and undo as `updateWidget` `replace`; the resulting content goes through the usual `updateWebPage` checks. Not with `content` in the same call.
+- `getDesignSettings` `find`: text found more than once in a field returns up to 3 occurrences, each with its exact `match`, its place among identical occurrences (`nth` of `of`, which `replace` accepts) and the enclosing tag (`in`); on sites that send label texts, a setting holding a text-label token shows its text (`shows`) and `find` searches it. Home page content hits name the `updateWebPage` `replace` call.
+
+### Changed
+- `getDesignSettings`: Custom Content 2 to 10 are typed `widget reference`, with the accepted format; a stored HTML value is noted as legacy.
+- `updateDesignSettings`: image settings accept an https URL with a query string (stock photo URLs); a row background switched on with no colour is refused (it prints black).
+- `updateWebPage` on the home WebPage: a refused `hero_image` names `custom_76` and the call to send instead.
+- `getDesignSettings`: a setting never stored returns `value: ""` with `stored`; `hero.cta` gives the search box markup for the current hero type and layout and says how to create or edit each hero hook widget; notes on hero padding, overlay, image sizing, search placement, section titles and View All buttons.
+- `createWidget`: the name pre-check says a BD default widget's exact name may be created only to customise it.
+- Instructions: Rule "Homepage" says how to add a homepage section and what to do when no setting exists; the hero images join the image sourcing and size rules; "Field over hack" names the CSS path when no field exists; the tool count is gone.
+
 ## [6.59.620] - 2026-11-11
 
 ### Changed
