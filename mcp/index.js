@@ -2556,9 +2556,10 @@ async function getDesignSettings(config, args) {
     for (const r of wc || []) {
       const x = out.settings.find((s) => s.name === r.setting);
       if (!x || x.overridden_by) continue;
+      const lead = r.choice ? "This choice may not show on the page" : "The page shows this rule, not this value";
       x.overridden_by = r.where.widget_id
-        ? `The page shows site widget ${r.where.widget_id}'s rule, not this value: ${r.rule} { ${r.sets} }. Change it there: updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}.`
-        : `The page shows the home page CSS rule, not this value: ${r.rule} { ${r.sets} }. Change it there: updatePageCss.`;
+        ? `${lead}: site widget ${r.where.widget_id} sets ${r.rule} { ${r.sets} }. Change it there: updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}.`
+        : `${lead}: the home page CSS sets ${r.rule} { ${r.sets} }. Change it there: updatePageCss.`;
     }
   }
   return out;
@@ -3177,7 +3178,9 @@ function udsWcssNotes(idx, rules) {
     const x = idx.get(r.setting);
     const place = r.where.widget_id ? `site widget ${r.where.widget_id} "${r.where.widget}"` : "the home page CSS";
     const fix = r.where.widget_id ? `updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}` : "updatePageCss";
-    lines.push(`NOT SHOWN ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }, and the page shows that value. To change what the page shows, change that rule: ${fix}.`);
+    lines.push(r.choice
+      ? `MAY NOT SHOW ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }. Where the page still looks the same, change that rule: ${fix}.`
+      : `NOT SHOWN ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }, and the page shows that value. To change what the page shows, change that rule: ${fix}.`);
   }
   return lines;
 }
@@ -3190,7 +3193,8 @@ function udsSelKey(sel) {
   const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
   const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
   const toks = (last.match(/[.#][A-Za-z_][\w-]*/g) || []).filter((t) => !DS_PCSS_WIDE.has(t));
-  if (toks.length) return { toks, tag: null, anc: null };
+  const ctx = ((parts[parts.length - 2] || "").match(/[.#][A-Za-z_][\w-]*/g) || []).filter((t) => !DS_PCSS_WIDE.has(t));
+  if (toks.length) return { toks, tag: null, anc: null, ctx };
   if (last.includes("[")) return null;
   const tag = /^[a-z][a-z0-9]*/i.exec(last);
   const ancs = parts.slice(0, -1).join(" ").match(/[.#][A-Za-z_][\w-]*/g) || [];
@@ -3200,7 +3204,7 @@ function udsSelHit(key, sel) {
   const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
   const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
   const has = (hay, t) => { for (let i = hay.indexOf(t); i >= 0; i = hay.indexOf(t, i + 1)) if (!/[\w-]/.test(hay.charAt(i + t.length))) return true; return false; };
-  if (key.toks.length) return key.toks.every((t) => has(last, t));
+  if (key.toks.length) return key.toks.every((t) => has(last, t)) && (key.ctx || []).every((t) => has(parts.slice(0, -1).join(" "), t));
   const tag = /^[a-z][a-z0-9]*/i.exec(last);
   return !!tag && !!key.tag && !!key.anc && tag[0].toLowerCase() === key.tag && has(parts.slice(0, -1).join(" "), key.anc);
 }
@@ -3240,7 +3244,9 @@ async function udsWidgetCss(config, changed) {
     if (!scan || scan.error) continue;
     for (const c of todo) {
       for (const e of map[c.name]) {
-        const keys = e.s.map((x) => udsSelKey(x)).filter(Boolean);
+        const first = map[c.name][0];
+        const keys = e.s.filter((x) => e.c || e === first || !first.s.includes(x)).map((x) => udsSelKey(x)).filter(Boolean);
+        if (!keys.length) continue;
         const side = /^(padding|margin)-(top|right|bottom|left)$/.exec(e.p);
         const prop = e.p === "background" ? "background(?:-color|-image)?" : e.p === "border" ? "(?:border|outline)(?!-[a-z-]*radius)(?:-[a-z-]+)?" : side ? side[1] + "(?:-" + side[2] + ")?" : e.p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const re = new RegExp("(?:^|[;\\s])(" + prop + ")\\s*:\\s*([^;]*)", "i");
@@ -3248,12 +3254,14 @@ async function udsWidgetCss(config, changed) {
           const body = src.css.slice(r.bodyStart, r.bodyEnd);
           const d = re.exec(body);
           if (!d) continue;
-          const part = String(r.sel).split(",").map((x) => x.replace(/\s+/g, " ").trim()).find((x) => keys.some((k) => udsSelHit(k, x)));
+          const part = String(r.sel).split(",").map((x) => x.replace(/\s+/g, " ").trim()).find((x) => !/:(hover|focus|active)[^s]*$/i.test(x) && keys.some((k) => udsSelHit(k, x)));
           if (!part) continue;
           const sets = d[0].slice(d[0].indexOf(d[1])).trim();
+          const flat = (v) => String(v == null ? "" : v).replace(/!important/i, "").replace(/\s+/g, "").replace(/^(\d+)px$/i, "$1").toLowerCase();
+          if (!e.c && flat(d[2]) === flat(c.after || got.values[c.name])) continue;
           if (out.some((o) => o.setting === c.name && o.rule === part && JSON.stringify(o.where) === JSON.stringify(src.where))) continue;
           if (sets.length > 140) continue;
-          out.push(Object.assign({ setting: c.name }, { where: src.where, rule: part.slice(0, 160), sets }, /!important/i.test(d[2]) ? { important: true } : {}));
+          out.push(Object.assign({ setting: c.name }, { where: src.where, rule: part.slice(0, 160), sets }, /!important/i.test(d[2]) ? { important: true } : {}, e.c ? { choice: true } : {}));
         }
       }
     }

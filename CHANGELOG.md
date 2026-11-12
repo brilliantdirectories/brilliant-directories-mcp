@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.633] - 2026-11-12
+
+### Added
+- Override marks now cover the homepage section choice settings (Display Post Details, Image Aspect Ratio, Image Behavior, Card Text Alignment, Button Style, "Read More" and "View All" button): a homepage rule on the card or its buttons is reported as "may not show".
+- The selector map now also holds rules whose selector list uses a child combinator (the main `.module, .well` box rule among them) and settings read through a condition or a cast (Background Visibility, Search Box Padding, section title size and spacing): 124 settings, up from 107.
+
+### Fixed
+- No override mark when the rule sets the value the setting holds, for a `:hover` / `:focus` / `:active` rule, or for a setting's secondary property on the same element.
+- A setting whose rule names a parent (`.well .well`, `.module h2`) is matched only by a rule that names that parent too.
+
 ## [6.59.632] - 2026-11-12
 
 ### Changed
