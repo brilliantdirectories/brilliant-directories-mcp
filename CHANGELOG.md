@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.631] - 2026-11-12
+
+### Added
+- `updateDesignSettings` (applied and `dry_run`): `overridden_by` lists each rule on the homepage, in a site widget's own CSS or the home page CSS, that sets the same property on the same element as a setting changed in the call, with the value it sets and whether it is `!important`. The page shows that rule's value, not the setting.
+- `openapi/setting-selectors.json`: the selectors and property each design setting drives, generated from BD's settings stylesheet widget.
+
 ## [6.59.630] - 2026-11-12
 
 ### Added

@@ -3154,6 +3154,89 @@ async function udsApply(config, changes) {
   return out;
 }
 
+// BD's settings CSS prints each setting on known selectors (openapi/setting-selectors.json, generated from the settings
+// stylesheet widget). A site widget's own rule on the same element and property wins over the setting, so a saved setting
+// can leave the page unchanged: the reply names each such rule on the homepage.
+const UDS_WCSS = "These rules on the homepage set the same property on the same element as a setting changed here, so the page shows the rule's value, not the setting. Change the rule: site widget: updateWidget {widget_id, replace:[{field:\"widget_style\", find, with}]}; home page CSS: updatePageCss.";
+let _udsSel = null;
+function udsSelMap() {
+  if (!_udsSel) { try { _udsSel = JSON.parse(fs.readFileSync(path.join(__dirname, "openapi", "setting-selectors.json"), "utf8")); } catch { _udsSel = {}; } }
+  return _udsSel;
+}
+function udsSelKey(sel) {
+  const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
+  const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
+  const toks = (last.match(/[.#][A-Za-z_][\w-]*/g) || []).filter((t) => !DS_PCSS_WIDE.has(t));
+  if (toks.length) return { toks, tag: null, anc: null };
+  if (last.includes("[")) return null;
+  const tag = /^[a-z][a-z0-9]*/i.exec(last);
+  const ancs = parts.slice(0, -1).join(" ").match(/[.#][A-Za-z_][\w-]*/g) || [];
+  return tag && ancs.length ? { toks: [], tag: tag[0].toLowerCase(), anc: ancs[ancs.length - 1] } : null;
+}
+function udsSelHit(key, sel) {
+  const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
+  const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
+  const has = (hay, t) => { for (let i = hay.indexOf(t); i >= 0; i = hay.indexOf(t, i + 1)) if (!/[\w-]/.test(hay.charAt(i + t.length))) return true; return false; };
+  if (key.toks.length) return key.toks.every((t) => has(last, t));
+  const tag = /^[a-z][a-z0-9]*/i.exec(last);
+  return !!tag && !!key.tag && !!key.anc && tag[0].toLowerCase() === key.tag && has(parts.slice(0, -1).join(" "), key.anc);
+}
+async function udsWidgetCss(config, changed) {
+  const map = udsSelMap();
+  const todo = changed.filter((c) => !c.deleted && c.before !== c.after && Array.isArray(map[c.name]));
+  if (!todo.length) return null;
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  const key = dsCacheKey(config);
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
+  const sources = [];
+  const seen = new Set();
+  const want = (name) => {
+    if (!name || seen.has(name) || !ws || !ws.byName) return;
+    seen.add(name);
+    const w = ws.byName.get(name);
+    if (!w) return;
+    if (w.widget_style) sources.push({ where: { widget_id: Number(w.widget_id), widget: name }, css: String(w.widget_style) });
+    for (const n of dsfRefs(w.widget_data)) want(n);
+  };
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
+  for (const r of dsDirectory(ds, got).homepage.rows) {
+    const m = /^content\.(\d+)$/.exec(r.block || "");
+    const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
+    if (m && m[1] !== "1") want(dsfCcRef(got.values[`homepage_content_${m[1]}`]).name);
+    else if (m && home) for (const n of dsfRefs(home.content)) want(n);
+    else if (b && b.widget) want(dsExpand(ds.m, b.widget));
+  }
+  if (home && home.content_css) sources.push({ where: { page: "home", field: "content_css" }, css: String(home.content_css) });
+  const out = [];
+  for (const src of sources) {
+    const scan = pcssScan(src.css);
+    if (!scan || scan.error) continue;
+    for (const c of todo) {
+      for (const e of map[c.name]) {
+        const keys = e.s.map((x) => udsSelKey(x)).filter(Boolean);
+        const prop = e.p === "background" ? "background(?:-color|-image)?" : e.p === "border" ? "(?:border|outline)(?:-[a-z-]+)?" : e.p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp("(?:^|[;\\s])(" + prop + ")\\s*:\\s*([^;]*)", "i");
+        for (const r of scan.rules) {
+          const body = src.css.slice(r.bodyStart, r.bodyEnd);
+          const d = re.exec(body);
+          if (!d) continue;
+          const part = String(r.sel).split(",").map((x) => x.replace(/\s+/g, " ").trim()).find((x) => keys.some((k) => udsSelHit(k, x)));
+          if (!part) continue;
+          const sets = (d[1] + ": " + d[2].trim()).slice(0, 80);
+          if (out.some((o) => o.setting === c.name && o.rule === part && JSON.stringify(o.where) === JSON.stringify(src.where))) continue;
+          out.push(Object.assign({ setting: c.name }, { where: src.where, rule: part.slice(0, 160), sets }, /!important/i.test(d[2]) ? { important: true } : {}));
+        }
+      }
+    }
+  }
+  out.sort((a, b) => Number(!!b.important) - Number(!!a.important));
+  return out.length ? out.slice(0, 8) : null;
+}
+
 async function udsResult(config, idx, status, changedIn, unchanged, notes, extra) {
   const changed = changedIn.map((c) => {
     const x = idx.get(c.name);
@@ -3169,6 +3252,10 @@ async function udsResult(config, idx, status, changedIn, unchanged, notes, extra
   res.notes = notes;
   const restore = changed.map((c) => ({ name: c.name, value: c.created ? null : c.before, expect: c.deleted ? null : c.after }));
   res.undo = { restore, sig: await udsSign(config, restore) };
+  if (status === "applied" || status === "dry_run") {
+    const wc = await udsWidgetCss(config, changed).catch(() => null);
+    if (wc) res.overridden_by = { note: UDS_WCSS, rules: wc };
+  }
   return res;
 }
 
