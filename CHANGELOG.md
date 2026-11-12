@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.626] - 2026-11-11
+
+### Changed
+- Instructions: Rule "Homepage", customising a widget is keyed to the request: a redesign rewrites its HTML with your own classes and leaves the PHP as is; a small change edits only that part; a data or logic change edits the PHP.
+
 ## [6.59.625] - 2026-11-11
 
 ### Changed
