@@ -2551,6 +2551,16 @@ async function getDesignSettings(config, args) {
     if (copy) out.widget_copy = `This site's own copy: widget_id ${copy}; updateWidget edits it; deleteWidget removes it and BD's original widget shows again.`;
   }
   if (b.id === "hero.cta") out.hero_extra_content = await dsHeroExtra(config);
+  if (out.settings) {
+    const wc = await udsWidgetCss(config, out.settings.map((x) => ({ name: x.name, before: null, after: "" }))).catch(() => null);
+    for (const r of wc || []) {
+      const x = out.settings.find((s) => s.name === r.setting);
+      if (!x || x.overridden_by) continue;
+      x.overridden_by = r.where.widget_id
+        ? `The page shows site widget ${r.where.widget_id}'s rule, not this value: ${r.rule} { ${r.sets} }. Change it there: updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}.`
+        : `The page shows the home page CSS rule, not this value: ${r.rule} { ${r.sets} }. Change it there: updatePageCss.`;
+    }
+  }
   return out;
 }
 
@@ -3157,7 +3167,20 @@ async function udsApply(config, changes) {
 // BD's settings CSS prints each setting on known selectors (openapi/setting-selectors.json, generated from the settings
 // stylesheet widget). A site widget's own rule on the same element and property wins over the setting, so a saved setting
 // can leave the page unchanged: the reply names each such rule on the homepage.
-const UDS_WCSS = "These rules on the homepage set the same property on the same element as a setting changed here, so the page shows the rule's value, not the setting. Change the rule: site widget: updateWidget {widget_id, replace:[{field:\"widget_style\", find, with}]}; home page CSS: updatePageCss.";
+function udsWcssNotes(idx, rules) {
+  const lines = [];
+  const seen = new Set();
+  for (const r of rules) {
+    const k = r.setting + "|" + JSON.stringify(r.where);
+    if (seen.has(k) || lines.length >= 4) continue;
+    seen.add(k);
+    const x = idx.get(r.setting);
+    const place = r.where.widget_id ? `site widget ${r.where.widget_id} "${r.where.widget}"` : "the home page CSS";
+    const fix = r.where.widget_id ? `updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}` : "updatePageCss";
+    lines.push(`NOT SHOWN ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }, and the page shows that value. To change what the page shows, change that rule: ${fix}.`);
+  }
+  return lines;
+}
 let _udsSel = null;
 function udsSelMap() {
   if (!_udsSel) { try { _udsSel = JSON.parse(fs.readFileSync(path.join(__dirname, "openapi", "setting-selectors.json"), "utf8")); } catch { _udsSel = {}; } }
@@ -3218,7 +3241,8 @@ async function udsWidgetCss(config, changed) {
     for (const c of todo) {
       for (const e of map[c.name]) {
         const keys = e.s.map((x) => udsSelKey(x)).filter(Boolean);
-        const prop = e.p === "background" ? "background(?:-color|-image)?" : e.p === "border" ? "(?:border|outline)(?:-[a-z-]+)?" : e.p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const side = /^(padding|margin)-(top|right|bottom|left)$/.exec(e.p);
+        const prop = e.p === "background" ? "background(?:-color|-image)?" : e.p === "border" ? "(?:border|outline)(?!-[a-z-]*radius)(?:-[a-z-]+)?" : side ? side[1] + "(?:-" + side[2] + ")?" : e.p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const re = new RegExp("(?:^|[;\\s])(" + prop + ")\\s*:\\s*([^;]*)", "i");
         for (const r of scan.rules) {
           const body = src.css.slice(r.bodyStart, r.bodyEnd);
@@ -3226,8 +3250,9 @@ async function udsWidgetCss(config, changed) {
           if (!d) continue;
           const part = String(r.sel).split(",").map((x) => x.replace(/\s+/g, " ").trim()).find((x) => keys.some((k) => udsSelHit(k, x)));
           if (!part) continue;
-          const sets = (d[1] + ": " + d[2].trim()).slice(0, 80);
+          const sets = d[0].slice(d[0].indexOf(d[1])).trim();
           if (out.some((o) => o.setting === c.name && o.rule === part && JSON.stringify(o.where) === JSON.stringify(src.where))) continue;
+          if (sets.length > 140) continue;
           out.push(Object.assign({ setting: c.name }, { where: src.where, rule: part.slice(0, 160), sets }, /!important/i.test(d[2]) ? { important: true } : {}));
         }
       }
@@ -3253,8 +3278,8 @@ async function udsResult(config, idx, status, changedIn, unchanged, notes, extra
   const restore = changed.map((c) => ({ name: c.name, value: c.created ? null : c.before, expect: c.deleted ? null : c.after }));
   res.undo = { restore, sig: await udsSign(config, restore) };
   if (status === "applied" || status === "dry_run") {
-    const wc = await udsWidgetCss(config, changed).catch(() => null);
-    if (wc) res.overridden_by = { note: UDS_WCSS, rules: wc };
+    const wc = await udsWidgetCss(config, changed.concat(kept.map((n) => ({ name: n, before: null, after: "" })))).catch(() => null);
+    if (wc) res.notes = udsWcssNotes(idx, wc).concat(res.notes);
   }
   return res;
 }
@@ -3389,7 +3414,10 @@ async function updateDesignSettings(config, args) {
     const gone = await udsRowsMissing(config, rows.blocks, R, new Set(entries.filter((e) => !e.gen).map((e) => e.name)), lists);
     if (gone) extra.missing_widgets = gone;
   }
-  if (!plan.length) return Object.assign({ status: "unchanged", unchanged }, extra);
+  if (!plan.length) {
+    const wc = await udsWidgetCss(config, unchanged.map((n) => ({ name: n, before: null, after: "" }))).catch(() => null);
+    return Object.assign({ status: "unchanged", unchanged }, extra, wc ? { notes: udsWcssNotes(idx, wc) } : {});
+  }
   if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
   const notes = [UDS_NOTE_PAGE];
   for (const e of plan) {

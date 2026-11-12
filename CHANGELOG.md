@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.632] - 2026-11-12
+
+### Changed
+- `updateDesignSettings`: a homepage rule (site widget CSS or home page CSS) that overrides a setting sent in the call is now reported as the first line of `notes`, with the rule and the `updateWidget` call that changes it. The separate `overridden_by` key is gone. A setting sent with the value it already holds is checked too, so an `unchanged` reply carries the note.
+- `getDesignSettings` block read: each setting a homepage rule overrides carries `overridden_by`, naming the rule and where to change it.
+
+### Fixed
+- Override matching: a border setting no longer matches `border-radius`; a `padding-*` or `margin-*` setting also matches the shorthand.
+
 ## [6.59.631] - 2026-11-12
 
 ### Added
