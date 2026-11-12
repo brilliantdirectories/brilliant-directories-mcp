@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.634] - 2026-11-12
+
+### Fixed
+- Override marks: a rule under `#first_container` now counts against a hero setting printed under `.homepage_settings` (title and sub-title colour, size, weight), and the reverse.
+
+### Added
+- Override marks cover the hero title, sub-title and content alignment settings (settings read together in one condition).
+
 ## [6.59.633] - 2026-11-12
 
 ### Added

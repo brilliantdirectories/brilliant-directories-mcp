@@ -3189,6 +3189,8 @@ function udsSelMap() {
   if (!_udsSel) { try { _udsSel = JSON.parse(fs.readFileSync(path.join(__dirname, "openapi", "setting-selectors.json"), "utf8")); } catch { _udsSel = {}; } }
   return _udsSel;
 }
+// BD prints the homepage hero inside all of these; a rule under one overrides a setting printed under another.
+const UDS_HERO = new Set([".homepage_settings", ".homepage_title", ".homepage_map", "#first_container"]);
 function udsSelKey(sel) {
   const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
   const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
@@ -3204,9 +3206,10 @@ function udsSelHit(key, sel) {
   const parts = sel.replace(/\s*([>+~])\s*/g, " ").trim().split(/\s+/);
   const last = (parts[parts.length - 1] || "").replace(/::?[a-z-]+(\([^)]*\))?/gi, "");
   const has = (hay, t) => { for (let i = hay.indexOf(t); i >= 0; i = hay.indexOf(t, i + 1)) if (!/[\w-]/.test(hay.charAt(i + t.length))) return true; return false; };
-  if (key.toks.length) return key.toks.every((t) => has(last, t)) && (key.ctx || []).every((t) => has(parts.slice(0, -1).join(" "), t));
+  const under = (hay, t) => has(hay, t) || (UDS_HERO.has(t) && [...UDS_HERO].some((a) => has(hay, a)));
+  if (key.toks.length) return key.toks.every((t) => has(last, t)) && (key.ctx || []).every((t) => under(parts.slice(0, -1).join(" "), t));
   const tag = /^[a-z][a-z0-9]*/i.exec(last);
-  return !!tag && !!key.tag && !!key.anc && tag[0].toLowerCase() === key.tag && has(parts.slice(0, -1).join(" "), key.anc);
+  return !!tag && !!key.tag && !!key.anc && tag[0].toLowerCase() === key.tag && under(parts.slice(0, -1).join(" "), key.anc);
 }
 async function udsWidgetCss(config, changed) {
   const map = udsSelMap();
