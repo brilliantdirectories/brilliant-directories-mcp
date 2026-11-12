@@ -2262,18 +2262,113 @@ function wcPick(r, name) {
 // BD's sitewide lazy-load script turns every YouTube embed iframe into a click-to-play thumbnail unless its URL
 // carries forceplay=1 or nolazy=1, so an autoplay embed saved without one never plays.
 const YT_FIELDS = ["widget_data", "widget_javascript", "content", "content_head", "content_footer_html"];
-function ytAutoplayLazy(args) {
+// A background video must show nothing but the video. The site's thumbnail and YouTube's own play button and title are
+// drawn until playback starts; Vimeo removes its controls only with background=1.
+function ytBackground(v) {
+  if (/youtube(-nocookie)?\.com\/embed/i.test(v) && /autoplay=1/i.test(v) && /controls=0/i.test(v) && !(/nolazy=1/i.test(v) && /enablejsapi=1/i.test(v))) return "a YouTube background video (autoplay=1, controls=0) shows a play button on load: first the site's thumbnail, then YouTube's own, until it plays. Put nolazy=1, enablejsapi=1 and cc_load_policy=3 (no captions) in the embed URL, keep the iframe at opacity 0, and show it when YT.Player onStateChange reports 1 (playing).";
+  if (/youtube(-nocookie)?\.com\/embed/i.test(v) && /autoplay=1/i.test(v) && /controls=0/i.test(v) && !/cc_load_policy=[03]/i.test(v)) return "a muted YouTube background video shows captions by itself when the video has them. Add cc_load_policy=3 to the embed URL.";
+  if (/player\.vimeo\.com\/video\//i.test(v) && /autoplay=1/i.test(v) && /muted=1/i.test(v) && !/background=1/i.test(v)) return "a Vimeo background video needs background=1 in the player URL: it removes the controls and plays muted in a loop.";
+  const tag = (/<video\b[^>]*\bautoplay\b[^>]*>/i.exec(v) || [""])[0];
+  if (tag && !(/\bmuted\b/i.test(tag) && /\bplaysinline\b/i.test(tag))) return "a <video> with autoplay starts by itself only when it also has muted, and phones open it full screen unless it has playsinline. Add both to the tag.";
+  return "";
+}
+function ytAutoplayLazy(args, orig) {
   for (const f of YT_FIELDS) {
     const v = args && typeof args[f] === "string" ? args[f] : "";
+    const bg = ytBackground(v);
+    if (bg && !(orig && typeof orig[f] === "string" && ytBackground(orig[f]) === bg)) return `${f}: ${bg}`;
     if (/youtube(-nocookie)?\.com\/embed/i.test(v) && /autoplay=1/i.test(v) && !/(forceplay|nolazy)=1/i.test(v)) return `${f}: this site turns every YouTube embed iframe into a click-to-play thumbnail, so autoplay=1 never plays. Add forceplay=1 to the embed URL (the site then starts it muted, in place) or nolazy=1 (the iframe is left as written).`;
   }
   return null;
+}
+// A new background video is often saved in another place than the old one, which then keeps loading and playing
+// beside it. After such a save the reply names every other autoplaying video the homepage holds.
+const VID_PAGE_FIELDS = ["content", "content_head", "content_footer_html"];
+function vidKind(t) {
+  if (typeof t !== "string" || !/autoplay/i.test(t)) return "";
+  return /youtube(-nocookie)?\.com\/embed/i.test(t) ? "YouTube" : /player\.vimeo\.com\/video/i.test(t) ? "Vimeo" : /<video\b|\.(mp4|webm)\b/i.test(t) ? "video file" : "";
+}
+async function vidElsewhere(config, tool, args, orig) {
+  const has = YT_FIELDS.some((f) => vidKind(args[f]));
+  if (!has && !(orig && YT_FIELDS.some((f) => vidKind(orig[f])))) return null;
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  const key = dsCacheKey(config);
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  _dsfWidgetCache.delete(key);
+  const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
+  if (!ws || !ws.byName) return null;
+  const isWidget = tool === "updateWidget";
+  const saved = Number(isWidget ? args.widget_id : args.seo_id);
+  const found = [];
+  const seen = new Set();
+  let savedOnHome = !isWidget && !!home && Number(home.seo_id) === saved;
+  const want = (name) => {
+    if (!name || seen.has(name)) return;
+    seen.add(name);
+    const w = ws.byName.get(name);
+    if (!w) return;
+    if (isWidget && Number(w.widget_id) === saved) savedOnHome = true;
+    else for (const f of ["widget_data", "widget_javascript"]) if (vidKind(w[f])) found.push(`widget ${Number(w.widget_id)} "${name}" ${f} (${vidKind(w[f])})`);
+    for (const n of dsfRefs(w.widget_data)) want(n);
+  };
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
+  for (const r of dsDirectory(ds, got).homepage.rows) {
+    const m = /^content\.(\d+)$/.exec(r.block || "");
+    const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
+    if (m && m[1] !== "1") want(dsfCcRef(got.values[`homepage_content_${m[1]}`]).name);
+    else if (m && home) for (const n of dsfRefs(home.content)) want(n);
+    else if (b && b.widget) want(dsExpand(ds.m, b.widget));
+  }
+  if (home && (isWidget || Number(home.seo_id) !== saved)) for (const f of VID_PAGE_FIELDS) if (vidKind(home[f])) found.push(`the home WebPage ${f} (${vidKind(home[f])})`);
+  if (!savedOnHome || !found.length) return null;
+  if (!has) return `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.`;
+  return `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.`;
+}
+// A background video that does not exist plays nothing and looks saved. YouTube and the file host are asked before the save;
+// no answer, or any answer but "not there" / "not allowed", lets the save through.
+async function vidSourceDead(args, orig) {
+  const jobs = [];
+  const seen = new Set();
+  for (const f of YT_FIELDS) {
+    const v = args && typeof args[f] === "string" ? args[f] : "";
+    if (!vidKind(v)) continue;
+    const old = orig && typeof orig[f] === "string" ? orig[f] : "";
+    const add = (kind, id, url) => { if (jobs.length < 4 && !seen.has(id) && !old.includes(id)) { seen.add(id); jobs.push({ f, kind, id, url }); } };
+    for (const m of v.matchAll(/youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})(?![\w-])/gi)) add("YouTube video", m[1], "https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + m[1]));
+    for (const m of v.matchAll(/https?:\/\/[^\s"'`<>)]+\.(?:mp4|webm)\b/gi)) add("video file", m[0], m[0]);
+  }
+  const bad = await Promise.all(jobs.map(async (j) => {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 5000);
+    try {
+      const r = await fetch(j.url, { method: j.kind === "video file" ? "HEAD" : "GET", headers: { "User-Agent": "brilliant-directories-mcp" }, signal: ctl.signal });
+      if (r.status === 404 || r.status === 410 || (j.kind === "YouTube video" && r.status === 400)) return `${j.f}: the ${j.kind} ${j.id} does not exist, so nothing would play. Use one that exists.`;
+      if (j.kind === "YouTube video" && (r.status === 401 || r.status === 403)) return `${j.f}: the YouTube video ${j.id} is private or does not allow playing on other websites. Use another video.`;
+      return null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }));
+  return bad.find(Boolean) || null;
+}
+const VID_BG_NOTE = "A background video stays under the content when its layer is position:absolute; inset:0; z-index:0; overflow:hidden inside a position:relative section, the tint is its own layer above it, and the content is position:relative with a higher z-index. It fills the section when an iframe has position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:177.78vh; min-width:100%; height:56.25vw; min-height:100%, and a <video> has width:100%; height:100%; object-fit:cover.";
+function vidIsBackground(args) {
+  return YT_FIELDS.some((f) => { const v = args && typeof args[f] === "string" ? args[f] : ""; return !!vidKind(v) && (/controls=0|background=1/i.test(v) || /<video\b[^>]*\bautoplay\b(?![^>]*\bcontrols\b)/i.test(v)); });
 }
 // A saved widget's PHP fails only when it runs: render it once and report the error BD prints on the page.
 async function widgetRenderError(config, id) {
   let r = null;
   try { r = await makeRequest(config, "POST", "/api/v2/data_widgets/render", null, { widget_id: Number(id) }); } catch { return null; }
   const b = r && r.body;
+  if (b && typeof b === "object" && b.status === "success" && typeof b.output === "string") {
+    const text = b.output.replace(/<(style|script)\b[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+    return { prints: text ? (text.length > 300 ? text.slice(0, 300) + " … (cut; renderWidget returns all of it)" : text) : "(no visible text)" };
+  }
   if (!b || typeof b !== "object" || b.status !== "error" || typeof b.message !== "string" || !/^Widget error/i.test(b.message)) return null;
   return `Saved, but the widget fails when it runs and visitors see this error: ${b.message.slice(0, 400)}`;
 }
@@ -2304,6 +2399,30 @@ function wcPlan(master, name, list, args) {
   fields.bootstrap_enabled = 4;
   return { customize: { name, fields, replaced: plan.replaced } };
 }
+// createWidget copy_of: the new widget starts as another widget's code, so a variant of BD's widget is BD's own
+// working code plus the edit, not code written from nothing. The widget copied is left as it is.
+const WC_COPIED = "A new site widget that starts as a copy of that widget's code, with your changes. The widget copied is unchanged. Put it on a page with [widget=<its widget_name>].";
+async function widgetCopyOf(config, args) {
+  const src = String(args.copy_of).trim();
+  const name = typeof args.widget_name === "string" ? args.widget_name.trim() : "";
+  if (!src || !name || name.toLowerCase() === src.toLowerCase()) return { problems: ["copy_of needs the widget_name of the widget to copy, and a different widget_name for the new widget."] };
+  if (src.toLowerCase() === WC_CAS.toLowerCase()) return { problems: [WC_CAS_SAY] };
+  if (Array.isArray(args.replace)) for (const f of DSF_REPLACE_FIELDS) if (Object.prototype.hasOwnProperty.call(args, f) && args.replace.some((e) => e && e.field === f)) return { problems: [`${f}: send the whole field or replace entries for it, not both.`] };
+  let r = null;
+  try { r = await makeRequest(config, "GET", "/api/v2/data_widgets/get", { property: "widget_name", property_value: src, limit: 10 }, null); } catch { r = null; }
+  const found = wcPick(r, src);
+  const row = found ? found.site || found.master : null;
+  if (!found) return { problems: [`Widget ${src} could not be read.`] };
+  if (!row) return { problems: [`No site widget or BD widget is named ${src}.`] };
+  let r2 = null;
+  try { r2 = await makeRequest(config, "GET", "/api/v2/data_widgets/get", { property: "widget_name", property_value: name, limit: 10 }, null); } catch { r2 = null; }
+  const taken = wcPick(r2, name);
+  if (taken && taken.site) return { problems: [`A site widget named ${name} already exists (widget_id ${taken.site.widget_id}): change it with updateWidget, or give the copy another widget_name.`] };
+  if (taken && taken.master) return { problems: [`${name} is the name of one of BD's widgets: give the copy another widget_name.`] };
+  const plan = Array.isArray(args.replace) && args.replace.length ? wcPlan(row, name, args.replace, args) : wcPlan(row, name, undefined, Object.assign({ widget_data: String(row.widget_data === null || row.widget_data === undefined ? "" : row.widget_data) }, wcWhole(args)));
+  if (plan.customize) plan.customize.copied = src;
+  return plan;
+}
 async function widgetCustomize(config, c) {
   const body = Object.assign({}, c.fields);
   sanitizeScaffoldingInArgs(body);
@@ -2319,6 +2438,13 @@ async function widgetCustomize(config, c) {
   const wid = Number(row.widget_id);
   const ref = await autoRefreshCache(config, AUTO_REFRESH_SCOPE.createWidget);
   const out = { status: "success", message: { widget_id: wid, widget_name: c.name }, customized: WC_DONE, replaced: c.replaced, undo: { deleteWidget: { widget_id: wid } }, auto_cache_refreshed: ref.ok };
+  if (c.copied) {
+    delete out.customized;
+    out.copied = WC_COPIED;
+    const ran = await widgetRenderError(config, wid);
+    if (typeof ran === "string") out.render_error = ran;
+    else if (ran && ran.prints) out.prints = ran.prints;
+  }
   if (!ref.ok) out.auto_cache_refresh_error = ref.message;
   return out;
 }
@@ -2637,6 +2763,15 @@ async function getDesignSettings(config, args) {
     return { status: "error", message: `The design settings map could not be read: ${(err && err.message) || String(err)}` };
   }
   const q = args.block === undefined || args.block === null ? "" : String(args.block).trim();
+  // Several blocks in one call: one read of the site's values serves them all. Only split when every part names a block or a setting.
+  const many = q.includes(",") ? q.split(",").map((x) => x.trim()).filter(Boolean) : [];
+  if (many.length > 1 && many.every((x) => ds.names.has(x) || ds.m.blocks.some((k) => k.id === x))) {
+    if (args.find !== undefined && args.find !== null && String(args.find).trim() !== "") return { status: "error", message: "Send block or find, not both." };
+    if (many.length > 30) return { status: "error", message: `block takes at most 30 blocks in one call (got ${many.length}).` };
+    const blocks = [];
+    for (const id of many) blocks.push(await getDesignSettings(config, { block: id }));
+    return { blocks };
+  }
   const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
   if (args.find !== undefined && args.find !== null && String(args.find).trim() !== "") {
     if (q) return { status: "error", message: "Send block or find, not both." };
@@ -3204,7 +3339,7 @@ function udsHomeRows(ds, list, cur, R, addons) {
   });
   const placed = list.map((e, k) => {
     const at = `home_rows entry ${k + 1} (${e.block})`;
-    const b = m.blocks.find((x) => x.id === e.block && x.widget);
+    const b = m.blocks.find((x) => x.widget && (x.id === e.block || dsExpand(m, x.widget) === e.block));
     const o = b ? optOf(b) : null;
     if (!o) return add(`${at}: not a homepage section. Use a block id from getDesignSettings: homepage.rows[].block, section.*, content.1 to content.10 or home.divider. ${UDS_ROW_WIDGET}`);
     if (o[2] && o[2].addon && udsAddonOff(o[2].addon, addons)) return add(`${at}: ${o[1]} needs the ${o[2].addon} add-on, which is not active on this site.`);
@@ -3489,13 +3624,14 @@ async function updateDesignSettings(config, args) {
     const v = udsNormal(ds, x, e.value);
     return { name: e.name, value: x.f.n === "{row}" && v === dsExpand(ds.m, "D:Custom Content 1") ? "Homepage Content" : v };
   });
+  let rowDup = [];
   const want = new Set(udsCheckNames(ds));
   const rowNames = input.homeRows ? udsRowNames(ds) : [];
   if (input.homeRows) {
     for (const n of rowNames) want.add(n);
     for (let i = 2; i <= 10; i++) want.add(`homepage_content_${i}`);
-    const both = entries.filter((e) => rowNames.includes(e.name)).map((e) => e.name);
-    if (both.length) return { status: "refused", problems: both.map((n) => ({ name: n, problem: `${n} is written by home_rows in this call; send it in settings or home_rows, not both.` })) };
+    rowDup = entries.filter((e) => rowNames.includes(e.name)).map((e) => e.name);
+    for (const n of rowDup) entries.splice(entries.findIndex((e) => e.name === n), 1);
   }
   for (const e of entries) {
     const x = idx.get(e.name);
@@ -3554,6 +3690,7 @@ async function updateDesignSettings(config, args) {
   }
   if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
   const notes = [UDS_NOTE_PAGE];
+  if (rowDup.length) notes.push(`${rowDup.join(", ")} left out of settings: home_rows sets the homepage rows in this call.`);
   for (const e of plan) {
     if (e.gen) continue;
     const x = idx.get(e.name);
@@ -3597,6 +3734,52 @@ async function fetchImageDimensionsBatch(urlsArg) {
     return { url: u, ...one };
   }));
   return { status: "success", count: results.length, results };
+}
+
+// Free stock video for a background: Pexels video pages (or ids) resolved to a playable mp4, with no API key.
+// Pexels' download address redirects to the file of the asked width; a width the video has no file for is a 404.
+const SV_USE = "Play url in a <video> with autoplay, muted, loop and playsinline and no controls attribute: it starts by itself and shows no player buttons and no captions. Without muted it does not start; without playsinline phones open it full screen.";
+async function stockVideoOne(ref) {
+  const id = (/(\d{4,})\/?(?:[?#].*)?$/.exec(ref) || [])[1];
+  if (!id || !(/^\d+$/.test(ref) || /pexels\.com\/(?:[a-z]{2}-[a-z]{2}\/)?video\//i.test(ref))) return { video: ref, error: "not a Pexels video page (https://www.pexels.com/video/<name>-<id>/) or video id" };
+  const about = ((/\/video\/([^/?#]+)/i.exec(ref) || [])[1] || "").replace(/-?\d+$/, "").replace(/-/g, " ").trim();
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 9000);
+  const head = (u) => fetch(u, { method: "HEAD", redirect: "manual", headers: { "User-Agent": "brilliant-directories-mcp" }, signal: ctl.signal });
+  try {
+    let file = "";
+    for (const w of [1280, 960, 720, 0]) {
+      const r = await head(`https://www.pexels.com/download/video/${id}/${w ? "?w=" + w : ""}`);
+      const loc = r.headers.get("location") || "";
+      if (r.status >= 300 && r.status < 400 && /\.mp4(\?|$)/i.test(loc)) { file = loc; break; }
+    }
+    if (!file) return { video: ref, error: "Pexels has no video file for this id" };
+    const dim = /_(\d{3,4})_(\d{3,4})_/.exec(file);
+    const width = dim ? Number(dim[1]) : null, height = dim ? Number(dim[2]) : null;
+    const len = Number((await head(file)).headers.get("content-length") || 0);
+    const out = { id: Number(id) };
+    if (about) out.about = about;
+    if (width && height) Object.assign(out, { width, height, orientation: width > height ? "landscape" : width < height ? "portrait" : "square" });
+    if (len) out.mb = Math.round(len / 104857.6) / 10;
+    out.url = file;
+    return out;
+  } catch (e) {
+    return { video: ref, error: e && e.name === "AbortError" ? "Pexels did not answer in time" : `could not reach Pexels: ${e && e.message}` };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function stockVideos(arg) {
+  const list = (Array.isArray(arg) ? arg.map(String) : typeof arg === "string" ? arg.split(",") : []).map((u) => u.trim()).filter(Boolean);
+  if (!list.length) return { status: "error", message: "urls takes 1 to 8 Pexels video pages (https://www.pexels.com/video/<name>-<id>/) or video ids, comma-separated." };
+  if (list.length > 8) return { status: "error", message: `urls takes at most 8 videos (got ${list.length}).` };
+  const got = await Promise.all(list.map(stockVideoOne));
+  const videos = got.filter((v) => v.url), failed = got.filter((v) => !v.url);
+  if (!videos.length) return { status: "error", message: "No video file found.", failed };
+  const out = { status: "success", videos };
+  if (failed.length) out.failed = failed;
+  out.use = SV_USE;
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -8639,6 +8822,11 @@ async function main() {
       };
     }
 
+    if (name === "getStockVideo") {
+      const sv = await stockVideos(args && args.urls);
+      return { content: [{ type: "text", text: JSON.stringify(sv, null, 2) }], isError: sv.status === "error" };
+    }
+
     if (name === "getBrandKit") {
       const SLOTS_WITH_DEFAULTS = {
         custom_1:   "rgb(255,255,255)",
@@ -9256,6 +9444,12 @@ async function main() {
 
       // updateWidget `replace`: the stored field with the substitutions applied is written exactly as if the
       // agent had sent the whole field, so every guard below still runs on it.
+      if (name === "createWidget" && args && typeof args === "object" && typeof args.copy_of === "string") {
+        const cp = await widgetCopyOf(config, args);
+        if (cp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: cp.problems }) }], isError: true };
+        const res = await widgetCustomize(config, cp.customize);
+        return { content: [{ type: "text", text: JSON.stringify(res, null, 2) }], isError: res.status !== "success" };
+      }
       let _widgetReplace = null;
       if (name === "updateWidget" && args && typeof args === "object" && (args.replace !== undefined || (udsYes(args.customize) && (args.widget_id === undefined || args.widget_id === null || args.widget_id === "")))) {
         const rp = await widgetReplacePrepare(config, args);
@@ -9284,8 +9478,10 @@ async function main() {
         _widgetReplace = rp;
       }
       if (/^(create|update)(Widget|WebPage)$/.test(name) && args && typeof args === "object") {
-        const yt = ytAutoplayLazy(args);
+        const yt = ytAutoplayLazy(args, _widgetReplace && _widgetReplace.orig);
         if (yt) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [yt] }) }], isError: true };
+        const dead = await vidSourceDead(args, _widgetReplace && _widgetReplace.orig);
+        if (dead) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [dead] }) }], isError: true };
       }
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args.content_css === "string") {
         const star = pcssStarDisplay(args.content_css);
@@ -10049,8 +10245,14 @@ async function main() {
         const row = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
         const wid = (row && typeof row === "object" && row.widget_id) || args.widget_id;
         const bad = wid ? await widgetRenderError(config, wid) : null;
-        if (bad) result.body.render_error = bad;
+        if (typeof bad === "string") result.body.render_error = bad;
+        else if (bad && bad.prints) result.body.prints = bad.prints;
       }
+      if ((name === "updateWidget" || name === "updateWebPage") && args && typeof args === "object" && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const also = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
+        if (also) result.body.other_video = also;
+      }
+      if (/^(create|update)(Widget|WebPage)$/.test(name) && result.body && typeof result.body === "object" && result.body.status === "success" && vidIsBackground(args)) result.body.background_video = VID_BG_NOTE;
       // Hero readability bundle autofill — agent feedback listing which
       // bundle fields the wrapper filled with canonical defaults on a
       // hero off→on transition. User-supplied values are not listed here.

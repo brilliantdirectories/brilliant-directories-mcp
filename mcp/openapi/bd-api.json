@@ -5596,6 +5596,45 @@
                   "widget_javascript": {
                     "type": "string",
                     "description": "JS with `<script>...</script>` wrapper required. BD does not auto-wrap; unwrapped content renders as inert text. No backslash-strip on this field — regex literals (`\\d`, `\\w`, `\\s`) AND string escapes (`\\n`, `\\t`, `\\\\`) survive intact. See **Rule: Widget code fields**."
+                  },
+                  "copy_of": {
+                    "type": "string",
+                    "description": "widget_name of a widget to start from, BD's or this site's: the new widget gets its code, with your replace edits or whole fields applied. For a variant of an existing widget (other members, posts, order or count)."
+                  },
+                  "replace": {
+                    "type": "array",
+                    "description": "With copy_of: change part of the copied code: [{field, find, with}]. If find occurs more than once, add nth (1 = first) or all:true.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string",
+                          "enum": [
+                            "widget_data",
+                            "widget_style",
+                            "widget_javascript"
+                          ]
+                        },
+                        "find": {
+                          "type": "string"
+                        },
+                        "with": {
+                          "type": "string"
+                        },
+                        "nth": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "all": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "find",
+                        "with"
+                      ]
+                    }
                   }
                 }
               }
@@ -9484,6 +9523,39 @@
         }
       }
     },
+    "/_synthetic/stock_video": {
+      "get": {
+        "operationId": "getStockVideo",
+        "summary": "Free stock video (mp4) for a background video.",
+        "description": "Free stock video for a background, e.g. behind the homepage hero. Wrapper-native synthetic tool; does NOT proxy to BD. Give it Pexels video pages and it returns, for each, a ready-to-use mp4 `url` sized for a background (1280 wide when the video has that file), with `width`, `height`, `orientation` and size in `mb`, plus how to play it with no player buttons.\n\nFind the pages with a web search for `pexels free stock video <2-3 word topic>`; they look like `https://www.pexels.com/video/<name>-<id>/`. A Pexels video link the owner gives works the same way. Pass several candidates in one call, then pick a landscape one for a wide background and prefer a smaller file.\n\n**Use when:** the owner wants a background video and has not given a YouTube or Vimeo link.\n\n**Returns:** `{ status, videos: [{ id, about, width, height, orientation, mb, url }], failed?, use }`.",
+        "tags": [
+          "Design"
+        ],
+        "parameters": [
+          {
+            "name": "urls",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "1 to 8 Pexels video pages (`https://www.pexels.com/video/<name>-<id>/`) or bare video ids, comma-separated."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The playable files, or an error envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/_synthetic/image_dimensions": {
       "get": {
         "operationId": "getImageDimensions",
@@ -9622,7 +9694,7 @@
     "/_synthetic/design_settings": {
       "get": {
         "operationId": "getDesignSettings",
-        "summary": "Read design settings one block at a time: labels, allowed and current values. No arguments: the block list and the homepage sections in order, each Custom Content row with its widget.",
+        "summary": "Read design settings by block: labels, allowed and current values. Several blocks in one call: block \"hero.primary,hero.cta,home.rows\" (up to 30), returned as blocks[]. No arguments: the block list and the homepage sections in order, each Custom Content row with its widget.",
         "tags": [
           "Design"
         ],

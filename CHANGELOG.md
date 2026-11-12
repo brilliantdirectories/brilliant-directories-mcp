@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.638] - 2026-11-12
+
+### Added
+- `createWidget` `copy_of`: the new widget starts as the code of another widget, BD's or the site's, with `replace` edits or whole fields applied. A variant of an existing widget (other members, posts, order or count) is that widget's working code plus the edit. The widget copied is left unchanged; the reply carries `copied`, `replaced`, `undo` and what the new widget prints.
+- Saving a widget whose HTML holds PHP returns `prints`, the first 300 visible characters it outputs, so an empty list or a fallback message is seen at save time.
+- A YouTube background video (`autoplay=1`, `controls=0`) without `nolazy=1` and `enablejsapi=1`, and a muted autoplay Vimeo player without `background=1`, are refused with the working recipe: both show a play button or controls on load. The YouTube one also needs `cc_load_policy=3`: a muted embed turns captions on by itself when the video has them.
+- `updateWidget` or `updateWebPage` that saves an autoplaying video on the homepage returns `other_video` when the homepage already holds another autoplaying video in a different widget or home page field, naming where it is. A `replace` that takes a video out returns it too when an autoplaying video is still on the homepage.
+- `getStockVideo`: free stock video for a background. Takes 1 to 8 Pexels video pages or ids and returns, for each, a playable mp4 `url` (1280 wide when the video has that file) with `width`, `height`, `orientation` and `mb`, plus how to play it with no player buttons. No API key.
+- A `<video>` tag with `autoplay` but without `muted` or `playsinline` is refused: it does not start by itself, and phones open it full screen.
+- `getDesignSettings` reads several blocks in one call: `block: "hero.primary,hero.cta,home.rows"` (up to 30), returned as `blocks[]`. 23 blocks cost 23 site API requests in one call, against about 95 as 23 calls, which is the site's whole 100-per-minute allowance.
+- `prints` says when it was cut at 300 characters.
+- A background video whose YouTube id does not exist or cannot play on other websites, or whose mp4/webm address is a 404, is refused at save. No answer from YouTube or the file host lets the save through.
+- A saved background video returns `background_video`: the CSS that keeps it under the tint and the content, and the CSS that makes an iframe or a `<video>` fill the section.
+
+### Fixed
+- `updateDesignSettings`: a homepage row setting sent in `settings` in a call that also sends `home_rows` no longer refuses the whole call. `home_rows` sets the rows, the setting is left out, and a note says so.
+- `home_rows` accepts a section's widget name (`Bootstrap Theme - Display - Custom Content 2`) as well as its block id (`content.2`).
+
 ## [6.59.637] - 2026-11-12
 
 ### Added
