@@ -1488,6 +1488,19 @@ function dsPageCssOn(blockCss, pageCss) {
   return `The homepage CSS has ${hits.length} rule${hits.length === 1 ? "" : "s"} on this block's selectors${imp ? ` (${imp} with !important)` : ""}; they also apply to a customised widget's markup. Read: getWebPage include_code=1 on the home WebPage; change or remove: updatePageCss. ${sels.slice(0, 6).map((x) => x.slice(0, 120)).join("; ")}${sels.length > 6 ? `; +${sels.length - 6} more` : ""}`;
 }
 
+// A site widget's own CSS wins over Design Settings colours, so the overview lists the hued colours each one uses
+// (most used first); white, black and greys are left out.
+function dsfColors(css) {
+  const n = new Map();
+  for (const m of String(css || "").matchAll(/(?:rgba?|hsla?)\([^()]*\)|#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi)) {
+    const c = m[0].toLowerCase().replace(/\s+/g, "");
+    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(c);
+    const v = hex ? (hex[1].length === 3 ? hex[1].split("").map((x) => parseInt(x + x, 16)) : [0, 2, 4].map((k) => parseInt(hex[1].slice(k, k + 2), 16))) : /^rgba?\(/.test(c) ? c.slice(c.indexOf("(") + 1, -1).split(",").slice(0, 3).map(Number) : null;
+    if (v && v.length === 3 && v.every((x) => Number.isFinite(x)) && Math.max(...v) - Math.min(...v) <= 12) continue;
+    n.set(c, (n.get(c) || 0) + 1);
+  }
+  return [...n.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map((x) => x[0]);
+}
 // The overview's rows, each Custom Content row naming its widget; plus the hero hooks that exist as site widgets.
 async function dsfOverview(ds, got, out, key, get) {
   const rows = out.homepage.rows;
@@ -1500,6 +1513,8 @@ async function dsfOverview(ds, got, out, key, get) {
     const w = ws.byName ? ws.byName.get(name) : null;
     if (w) r.widget_id = Number(w.widget_id);
     else if (ws.byName) r.missing = true;
+    const cols = w ? dsfColors(w.widget_style) : [];
+    if (cols.length) r.colors = cols;
     if (/^DISABLED - ./.test(name)) r.off = wcOffSay(name.slice(11));
   };
   for (const r of ccRows) {
@@ -1515,7 +1530,12 @@ async function dsfOverview(ds, got, out, key, get) {
     else r.empty = true;
   }
   if (ws.byName) {
-    const hooks = DS_EXTRA.filter((n) => ws.byName.has(n)).map((n) => ({ widget: n, widget_id: Number(ws.byName.get(n).widget_id) }));
+    const hero = String(got.values.custom_30 || "");
+    const hooks = [hero, ...DS_EXTRA].filter((n, i, all) => n && all.indexOf(n) === i && ws.byName.has(n)).map((n) => {
+      const w = ws.byName.get(n);
+      const cols = dsfColors(w.widget_style);
+      return Object.assign({ widget: n, widget_id: Number(w.widget_id) }, cols.length ? { colors: cols } : {});
+    });
     if (hooks.length) out.homepage.hero_site_widgets = hooks;
   } else out.homepage.widget_lookup = "failed";
   return out;
@@ -1627,6 +1647,13 @@ function dsfSpans(raw, needle, mode, words) {
     return spans;
   }
   const v = dsfVisible(raw, mode === "vis");
+  // Code writes one colour with or without spaces (rgb(1,2,3) / rgb(1, 2, 3)); a colour needle matches both.
+  const col = /^(rgba?|hsla?)\(([^()]+)\)$/i.exec(needle || "");
+  if (col) {
+    const re = new RegExp(col[1] + "\\(\\s*" + col[2].split(",").map((p) => p.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s*,\\s*") + "\\s*\\)", "gi");
+    for (let m = re.exec(v.s); m; m = re.exec(v.s)) spans.push([v.at[m.index], v.to[m.index + m[0].length - 1]]);
+    return spans;
+  }
   let from = 0;
   for (;;) {
     const k = v.s.indexOf(needle, from);
@@ -1753,7 +1780,7 @@ async function dsfFind(ds, got, text, key, get) {
   }
   const ccRow = placed.get("content.1");
   if (home) for (const n of dsfRefs(home.content)) want(n, ccRow === undefined ? null : ccRow, "content.1", undefined, 0);
-  for (const n of DS_EXTRA) if (heroShown && (!ws.byName || ws.byName.has(n))) want(n, null, "hero.cta", undefined, 0);
+  for (const n of [String(values.custom_30 || ""), ...DS_EXTRA]) if (n && heroShown && (!ws.byName || ws.byName.has(n))) want(n, null, "hero.cta", undefined, 0);
   const bdw = [];
   for (const x of secRows) {
     if (ws.byName && ws.byName.has(x.name)) want(x.name, x.row, x.block, undefined, 0);

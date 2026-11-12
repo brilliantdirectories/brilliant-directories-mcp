@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.630] - 2026-11-12
+
+### Added
+- `getDesignSettings` without arguments: each homepage row served by a site widget carries `colors`, the hued colours that widget's own CSS uses (most used first; white, black and greys left out). The hero's site copy is listed in `hero_site_widgets` with its `colors`.
+
+### Changed
+- `getDesignSettings` `find`: a colour function (`rgb`, `rgba`, `hsl`, `hsla`) matches whatever the spacing inside it, so `rgb(32, 80, 129)` also finds `rgb(32,80,129)`. It also searches the hero's own site copy, beside the hero hooks.
+- Instructions: Rule "Homepage", a colour or style to change or remove across the homepage is searched with `find`.
+
 ## [6.59.629] - 2026-11-12
 
 ### Added
