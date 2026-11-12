@@ -5540,6 +5540,14 @@
                 1
               ]
             }
+          },
+          {
+            "name": "widget_name",
+            "in": "query",
+            "description": "Instead of widget_id: the exact name. Returns the site's copy, else BD's widget.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5554,7 +5562,7 @@
             }
           }
         },
-        "description": "Fetch a single widget record by `widget_id`. Read-only.\n\n**Lean-by-default keep-list:** returns only `widget_id`, `widget_name`, `widget_type`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`. The code fields (`widget_data`, `widget_style`, `widget_javascript`) are stripped — restore with `include_code=1`.\n\n**Use when:** you have a `widget_id` (from `listWidgets` or admin) and want the widget's SOURCE code to edit or audit. To preview the rendered widget on the front-end, embed it on a page via `[widget=Name]` shortcode and view the page.\n\n**Required:** `widget_id` (path parameter).\n\n**See also:** `listWidgets` (enumerate), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record with all widget fields (`widget_data` = HTML, `widget_style` = CSS, `widget_javascript` = JS, plus metadata).\n\n\nFor the full field list, see `listWidgets`.\n\n"
+        "description": "Fetch a single widget record by `widget_id`. Read-only.\n\n**Lean-by-default keep-list:** returns only `widget_id`, `widget_name`, `widget_type`, `short_code`, `date_updated`, `revision_timestamp`, `is_default`. The code fields (`widget_data`, `widget_style`, `widget_javascript`) are stripped — restore with `include_code=1`.\n\n**Use when:** you have a `widget_id` (from `listWidgets` or admin) and want the widget's SOURCE code to edit or audit. To preview the rendered widget on the front-end, embed it on a page via `[widget=Name]` shortcode and view the page.\n\n**Required:** `widget_id` or `widget_name`.\n\n**See also:** `listWidgets` (enumerate), `updateWidget` (modify).\n\n**Returns:** `{ status: \"success\", message: [{...record}] }` - the `message` array contains 1 record with all widget fields (`widget_data` = HTML, `widget_style` = CSS, `widget_javascript` = JS, plus metadata).\n\n\nFor the full field list, see `listWidgets`.\n\n"
       }
     },
     "/api/v2/data_widgets/create": {
@@ -5622,9 +5630,6 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "widget_id"
-                ],
                 "properties": {
                   "widget_id": {
                     "type": "integer"
@@ -5646,6 +5651,9 @@
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
+                  },
+                  "customize": {
+                    "type": "boolean"
                   },
                   "replace": {
                     "type": "array",
@@ -5699,7 +5707,7 @@
             }
           }
         },
-        "description": "Update an existing widget by `widget_id`. Fields omitted are untouched. Writes live data. Small edit: `replace` (no need to read or resend the field).\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** editing widget HTML (`widget_data`), CSS (`widget_style`), JS (`widget_javascript`), or metadata. Any page or email referencing this widget via `[widget=Name]` shortcode will render the updated content on next view.\n\n**Required:** `widget_id`.\n\n**Common edits:**\n\n- Content: `widget_data`, `widget_style`, `widget_javascript`\n\n- Framework: `mobile_enabled`, `ssl_enabled`\n\n**Renaming via `widget_name`:** **DO NOT pass `widget_name` unless the user explicitly asks to rename the widget.** Renaming a widget breaks every `[widget=Name]` shortcode reference to its old name on every page/email — silently. If the user does ask: same format rules as create (`[A-Za-z0-9 -+_]+`, runtime-rejected on bad chars); on collision follow the auto-suffix flow (`-v2`, `-v3`, ... up to `-v10`).\n\n**See also:** `createWidget` (add new), `deleteWidget` (remove).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }`.\n\n\nFor the full field list, see `listWidgets`.\n\n"
+        "description": "Update an existing widget by `widget_id`. Fields omitted are untouched. Writes live data. Small edit: `replace` (no need to read or resend the field).\n\n**Cache refresh is automatic.** Response includes `auto_cache_refreshed: true` after successful writes; no manual `refreshSiteCache` call needed. If `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.\n\n**Use when:** editing widget HTML (`widget_data`), CSS (`widget_style`), JS (`widget_javascript`), or metadata. Any page or email referencing this widget via `[widget=Name]` shortcode will render the updated content on next view.\n\n**Required:** `widget_id`; for BD's own widget, `widget_name` + `replace` + `customize: true` (makes this site's copy).\n\n**Common edits:**\n\n- Content: `widget_data`, `widget_style`, `widget_javascript`\n\n- Framework: `mobile_enabled`, `ssl_enabled`\n\n**Renaming via `widget_name`:** **DO NOT pass `widget_name` unless the user explicitly asks to rename the widget.** Renaming a widget breaks every `[widget=Name]` shortcode reference to its old name on every page/email — silently. If the user does ask: same format rules as create (`[A-Za-z0-9 -+_]+`, runtime-rejected on bad chars); on collision follow the auto-suffix flow (`-v2`, `-v3`, ... up to `-v10`).\n\n**See also:** `createWidget` (add new), `deleteWidget` (remove).\n\n**Returns:** `{ status: \"success\", message: {...updatedRecord}, auto_cache_refreshed: true|false, auto_cache_refresh_error?: \"...\" }`.\n\n\nFor the full field list, see `listWidgets`.\n\n"
       }
     },
     "/api/v2/data_widgets/delete": {

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.622] - 2026-11-11
+
+### Added
+- `updateWidget`: `customize: true` with `widget_name` and `replace` on one of BD's own widgets (a homepage section's widget, for example) creates this site's copy of it with the replacements applied, as the admin's Customize does: every field of BD's widget, same name, so the copy replaces BD's widget on this site and stops receiving BD's updates to it. The result's `undo` is `deleteWidget` on the copy. Without `customize` the call is refused with what it does; when the site already has its own copy, the same call edits that copy. `Bootstrap Theme - Custom Appearance Settings` is refused.
+- `getDesignSettings`: each homepage section block names the widget that renders it (`widget`), and says when the site has its own copy (`widget_copy`, from the widget list already read). `find` also searches BD's widgets behind the homepage's sections (one request); a hit inside a text label token (`%%%view_listing_label%%%`) returns the whole token with `text_label`, and the `edit` line gives the customise call.
+- `getWidget` by `widget_name` (no `widget_id`): returns the site's copy of the widget, else BD's own (`is_default` says which), lean like `listWidgets` (`include_code=1` for the code). An unknown name is refused in one line.
+- `getDesignSettings` `hero.primary` and `hero.cta` (and `hero.cta.text` / `hero.cta.buttons`) name the hero type's widget (`widget`, the value of `custom_30`) and the site's own copy (`widget_copy`), as the section blocks do. The hide and map hero types name none.
+- `updateDesignSettings`: setting a homepage Custom Content block to a widget reference adds a note: the widget's own wrapper (max-width, margin auto, side padding), no negative margin into neighbouring rows, and the model call for live counts (active members, posts, categories).
+
+### Changed
+- `getDesignSettings` section.recent-members: the note points to customising the section's widget (card-loop variables, plan flags for the phone and message buttons, the contact page, where new buttons go) instead of a new site widget.
+- `getDesignSettings` `find`: PHP in widget code (`<?php ... ?>`, `->`, `=>`) no longer confuses the visible-text test.
+- Instructions: Rule "Homepage" says to customise a section's widget for what its settings and CSS cannot do.
+- `renderWidget` by `widget_name` on BD's own widget with no site copy: one sentence saying it renders only on the page that uses it and how to read its code, instead of BD's "Widget not found".
+- `deleteWidget` refreshes the site cache after the delete (`auto_cache_refreshed`), so removing a customised copy shows BD's widget again at once.
+- `getDesignSettings` section.recent-members note: what `receive_messages` 1 means and BD's label tokens for the message and phone buttons.
+- `getDesignSettings` homepage row selectors use the row's name class from BD's Homepage widget (`.homepage-sections > .hs-recent-members`) instead of `:has()`; a site with its own copy of that widget keeps the `:has()` selectors.
+- `getDesignSettings` `find`: a text label hit also finds the label's token where BD prints it (`%%%name%%%`, `%Name~ao%`, any case), the hit shown on the homepage first.
+- Instructions: Rule "Homepage" says a redesign or new layout of a section or the hero customises its widget with your own markup and classes, keeping its PHP; the section.recent-members note points to that rule.
+- `updatePageCss`, and `createWebPage` / `updateWebPage` with `content_css`: a rule whose selector ends in a bare `*` and sets `display` (other than `none`) is refused. It also matches a widget's own `<style>` and `<script>` tags and prints their code on the page; the refusal says to end the selector with a class or `*:not(style):not(script)`.
+
 ## [6.59.621] - 2026-11-11
 
 ### Added

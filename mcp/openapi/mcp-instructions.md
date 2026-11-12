@@ -1177,7 +1177,7 @@ The homepage's visible content is built from **Design Settings**, NOT edited wit
 - `updateWebPage` on the `seo_type=home` WebPage, ONLY for: SEO tags, social share tags, page HEAD / footer JS, and `content` (Custom Content 1, shown only while a row holds `Homepage Content`); the homepage never shows its `h1`, `h2` or `hero_*`. Homepage-only CSS: `updatePageCss` without `seo_id` (read: `getWebPage` `include_code=1`); Design Settings `code.css` is sitewide.
 - Owner quotes homepage text or names a section: `getDesignSettings` `find`; edit where the hit says.
 - New section: first `createWidget` (markup per **Rule: Widget code fields** and **Rule: Brand kit**, CSS in `widget_style`; the row supplies `.container`: add none, target none; full-width background: the block's `css` row selector); then one `updateDesignSettings` sets a free `homepage_content_N` (`custom_content.free`) to `[widget=<name>]` (never HTML) and places `content.N` with `home_rows`. Only when 2..10 are full: `content` (Custom Content 1) as one `[widget=<name>]`. Existing HTML (`content`, legacy blocks): edit in place, never convert unasked.
-- No setting for what the owner wants in a BD section: `updatePageCss`, or a NEW site widget in a Custom Content block. Never edit or copy `Bootstrap Theme - Custom Appearance Settings`.
+- Redesign or new layout of a section or the hero: customise its `widget` (`updateWidget` `replace`, `customize:true`) with your own markup and classes, keeping its PHP (loop, conditions, labels, links); restyling BD's layout classes fights its markup. Never edit or copy `Bootstrap Theme - Custom Appearance Settings`.
 
 ### Rule: Sidebars
 

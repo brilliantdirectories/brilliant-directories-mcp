@@ -672,6 +672,20 @@ function pcssSplitCommas(sel) {
   return parts;
 }
 
+// A rule whose selector ends in a bare `*` also matches a widget's own <style>/<script> tags; giving them a display prints their code on the page.
+function pcssStarDisplay(css) {
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(css))) {
+    const sel = m[1].replace(/\s+/g, " ").trim();
+    if (sel.startsWith("@") || !/(?:^|;)\s*display\s*:\s*(?!none\b)/i.test(m[2])) continue;
+    if (pcssSplitCommas(sel).some((part) => /(?:^|[\s>+~])\*\s*$/.test(part))) {
+      return `\`${sel.slice(0, 160)}\` ends in \`*\` and sets display: that also matches a widget's own <style> and <script> tags and prints their code on the page. End it with a class, or with \`*:not(style):not(script)\`.`;
+    }
+  }
+  return null;
+}
+
 // Checks 1 to 6 of the tool's contract. Returns { entries } or { refused: [messages] }.
 function pcssValidate(args) {
   const refused = [];
@@ -716,6 +730,8 @@ function pcssValidate(args) {
       refused.push(`The css for \`${selector}\` contains ${bad.map((b) => "`" + b + "`").join(", ")}.` + (bad.includes("//") ? " Use a root-relative /path for images." : ""));
       continue;
     }
+    const star = pcssStarDisplay(`${selector}{${css}}`);
+    if (star) { refused.push(star); continue; }
     const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
     if (seen.has(key)) {
       refused.push(`\`${selector}\` appears twice in this call.`);
@@ -1262,6 +1278,17 @@ function dsBy(ds, by, values) {
   return kind || by.else;
 }
 
+// BD's Homepage widget gives each row a class from its stored value (hs-recent-members); a site copy of that widget may not.
+function dsRowCss(ds, b, values, css) {
+  const want = dsExpand(ds.m, b.widget);
+  const rb = ds.m.blocks.find((x) => x.id === "home.rows");
+  const n = rb ? rb.rows.find((r) => dsRowValue(ds.m, values[r]) === want) : undefined;
+  let v = n ? String(values[n]) : b.id === "content.1" ? "Homepage Content" : want;
+  for (const p of ["Bootstrap Theme - Display - ", "Bootstrap Theme - Homepage - "]) v = v.split(p).join("");
+  const cls = "hs-" + v.replace(/[A-Z]/g, (c) => c.toLowerCase()).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return css.replace(/\.homepage-sections > (div:has\([^()]*\)|\.custom-homepage-content( \([^()]*\))?)/g, `.homepage-sections > .${cls}`);
+}
+
 // The block's selectors for the site's current state: per hero type (css_by), plus the inline title colour and the Card View photo.
 function dsCss(ds, b, values) {
   let css = b.css_by ? dsBy(ds, b.css_by, values) : b.css || null;
@@ -1407,6 +1434,35 @@ async function dsfSiteWidgets(key, get) {
   return p;
 }
 
+// The site's copy of a widget, from the site widget list already read (no request), or null.
+async function dsfCachedCopy(key, name) {
+  const hit = _dsfWidgetCache.get(key);
+  if (!hit || Date.now() - hit.at >= DS_TTL_MS) return null;
+  const ws = await hit.p;
+  const w = ws && ws.byName ? ws.byName.get(name) : null;
+  return w ? Number(w.widget_id) : null;
+}
+
+// BD's widgets behind the homepage sections, name -> row with code. One list request, kept as long as the read cache.
+const _dsfMasterCache = new Map();
+async function dsfMasters(key, names, get) {
+  if (!names.length) return new Map();
+  const k = `${key}\n${names.join("\n")}`;
+  const hit = _dsfMasterCache.get(k);
+  if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
+  const p = (async () => {
+    const r = await get("/api/v2/data_widgets/get", { property: "widget_name", property_value: names.join(","), property_operator: "in", limit: 50 });
+    if (!r || r.status !== 200 || !r.body || !Array.isArray(r.body.message)) return null;
+    const out = new Map();
+    for (const w of r.body.message) if (w && udsYes(w.is_default) && names.includes(w.widget_name) && !out.has(w.widget_name)) out.set(w.widget_name, w);
+    return out;
+  })().catch(() => null);
+  const entry = { at: Date.now(), p };
+  _dsfMasterCache.set(k, entry);
+  p.then((r) => { if (!r && _dsfMasterCache.get(k) === entry) _dsfMasterCache.delete(k); });
+  return p;
+}
+
 async function dsfHomePage(get) {
   const r = await get("/api/v2/list_seo/get", { property: "seo_type", property_value: "home", limit: 1 });
   const row = r && r.status === 200 && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
@@ -1473,10 +1529,22 @@ function dsfCore(words) {
   });
   return out;
 }
+// PHP in widget code: "<?php" opens no tag, and the ">" of "?>", "->" or "=>" closes none.
 function dsfInTag(raw, at) {
-  const lt = raw.lastIndexOf("<", at);
-  if (lt < 0) return false;
-  return raw.lastIndexOf(">", at - 1) < lt && /^<[\/!a-zA-Z]/.test(raw.slice(lt, lt + 2));
+  let lt = raw.lastIndexOf("<", at);
+  while (lt >= 0 && raw[lt + 1] === "?") lt = lt > 0 ? raw.lastIndexOf("<", lt - 1) : -1;
+  if (lt < 0 || !/^<[\/!a-zA-Z]/.test(raw.slice(lt, lt + 2))) return false;
+  let gt = raw.lastIndexOf(">", at - 1);
+  while (gt > lt && (raw[gt - 1] === "?" || raw[gt - 1] === "=" || (raw[gt - 1] === "-" && raw[gt - 2] !== "-"))) gt = raw.lastIndexOf(">", gt - 1);
+  return gt < lt;
+}
+
+// A hit inside a %%%label%%% token is the whole token: the code holds the token, and replacing part of it breaks it.
+function dsfToken(raw, sp) {
+  const s = raw.lastIndexOf("%%%", sp[0]);
+  if (s < 0) return null;
+  const m = /^%%%([A-Za-z0-9_]+)(~[a-z]+)?%%%/.exec(raw.slice(s, s + 120));
+  return m && s + m[0].length >= sp[1] ? { sp: [s, s + m[0].length], name: m[1] } : null;
 }
 
 const DSF_BLOCK_TAG = /^<\/?(br|p|div|li|ul|ol|h[1-6]|tr|td|th|section|article|header|footer|table|tbody|blockquote|hr)\b/i;
@@ -1619,11 +1687,17 @@ async function dsfFind(ds, got, text, key, get) {
   const placed = new Map(dir.homepage.rows.filter((r) => r.block).map((r) => [r.block, r.row]));
   const heroShown = !/^(Blank)$/.test(String(values.custom_30 || "")) && !/Map/.test(String(values.custom_30 || ""));
   const t0 = Date.now();
-  const [ws, home, mi, mn] = await Promise.all([
+  const secRows = [];
+  for (const r of dir.homepage.rows) {
+    const b = /^section\./.test(r.block || "") ? m.blocks.find((x) => x.id === r.block) : null;
+    if (b && b.widget) secRows.push({ name: dsExpand(m, b.widget), row: r.row, block: r.block });
+  }
+  const [ws, home, mi, mn, bd] = await Promise.all([
     dsfSiteWidgets(key, get),
     dsfHomePage(get),
     get("/api/v2/menu_items/get", { limit: 100 }),
     get("/api/v2/menus/get", { limit: 100 }),
+    dsfMasters(key, Array.from(new Set(secRows.map((x) => x.name))), get),
   ]);
   const sources = [];
   const searched = [];
@@ -1660,6 +1734,11 @@ async function dsfFind(ds, got, text, key, get) {
   const ccRow = placed.get("content.1");
   if (home) for (const n of dsfRefs(home.content)) want(n, ccRow === undefined ? null : ccRow, "content.1", undefined, 0);
   for (const n of DS_EXTRA) if (heroShown && (!ws.byName || ws.byName.has(n))) want(n, null, "hero.cta", undefined, 0);
+  const bdw = [];
+  for (const x of secRows) {
+    if (ws.byName && ws.byName.has(x.name)) want(x.name, x.row, x.block, undefined, 0);
+    else if (bd && bd.has(x.name) && !bdw.some((y) => y.w.widget_name === x.name)) bdw.push({ w: bd.get(x.name), row: x.row, block: x.block, master: true });
+  }
   for (let i = 0; i < widgets.length; i++) {
     const x = widgets[i];
     if (x.depth >= 2) continue;
@@ -1668,13 +1747,15 @@ async function dsfFind(ds, got, text, key, get) {
   const skipped = widgets.length > DSF_MAX_WIDGETS ? widgets.splice(DSF_MAX_WIDGETS).map((x) => x.w.widget_name) : [];
   const addWidget = (x, shown) => {
     x.shown = shown;
-    const base = { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
+    const base = x.master ? { widget: x.w.widget_name, bd_widget: true, row: x.row === undefined ? null : x.row, block: x.block } : { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
     if (x.via) base.via = x.via;
     for (const f of DSF_CODE) if (x.w[f]) sources.push({ hit: Object.assign({}, base, { field: f }), raw: String(x.w[f]), markup: f === "widget_data", kind: f === "widget_data" ? "text" : "code", shown, widget: x });
   };
   for (const x of widgets) addWidget(x, x.row !== null || x.block === "hero.cta");
   if (ws.byName) searched.push(`${widgets.length} site widgets on the homepage (rows, hero hooks, nested)`);
   else searched.push("site widgets: the widget list could not be read");
+  for (const x of bdw) addWidget(x, true);
+  if (bdw.length) searched.push(`${bdw.length} BD section widgets on the homepage (no site copy)`);
   if (home) {
     for (const f of DSF_PAGE_FIELDS) {
       if (!home[f]) continue;
@@ -1699,10 +1780,13 @@ async function dsfFind(ds, got, text, key, get) {
       let spans = mode === "loose" ? dsfSpans(src.raw, null, "loose", W) : dsfSpans(src.raw, rawNeedle, "raw");
       if (!spans.length && mode !== "loose" && src.markup && needle) spans = dsfSpans(src.raw, needle, "vis");
       if (!spans.length) continue;
+      const tok = new Map();
+      if (src.widget) spans = spans.map((sp) => { const t = dsfToken(src.raw, sp); if (!t) return sp; tok.set(t.sp[0], t.name); return t.sp; }).filter((sp, i, all) => all.findIndex((o) => o[0] === sp[0]) === i);
       const texts = spans.filter((sp) => src.kind === "text" && !(src.markup && dsfInTag(src.raw, sp[0])));
       const pick = texts.length ? texts.slice(0, 3) : [spans[0]];
       for (const sp of pick) {
         const h = Object.assign({}, src.hit, dsfOccur(src.raw, sp, texts.length > 0 && src.markup));
+        if (tok.has(sp[0])) h.text_label = tok.get(sp[0]);
         if (mode === "loose") h.loose = true;
         if (!src.shown) h.shown = false;
         if (!texts.length && spans.length > 1 && !h.count && !h.of) h.count = spans.length;
@@ -1714,7 +1798,7 @@ async function dsfFind(ds, got, text, key, get) {
     return hits;
   };
   const wbase = (x) => {
-    const b = { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
+    const b = x.master ? { widget: x.w.widget_name, bd_widget: true, row: x.row === undefined ? null : x.row, block: x.block } : { widget_id: Number(x.w.widget_id), widget: x.w.widget_name, row: x.row === undefined ? null : x.row, block: x.block };
     if (x.via) b.via = x.via;
     if (x.shown === false) b.shown = false;
     return b;
@@ -1769,7 +1853,20 @@ async function dsfFind(ds, got, text, key, get) {
     }
     return assemble(hits, named, looseNames);
   };
-  let hits = search(sources, widgets);
+  let hits = search(sources, widgets.concat(bdw));
+  // A text label also matches its token where BD prints it: any number of %, ~na/~ao/~as/~ut, any case (core's pattern).
+  const labs = Array.from(new Set(hits.filter((h) => h.text_label).map((h) => String(h.text_label).toLowerCase())));
+  if (labs.length) {
+    const hk = (h) => JSON.stringify([h.setting, h.page, h.widget_id, h.widget, h.menu_item_id, h.field, h.match, h.nth]);
+    const have = new Set(hits.map(hk));
+    const re = new RegExp(`(?<!['0-9])%+(${labs.join("|")})(~na|~ao|~as|~ut)?%+(?:(?!['0-9])|(?='s))`, "gi");
+    for (const src of sources) for (const x of String(src.raw).matchAll(re)) {
+      const h = Object.assign({}, src.hit, dsfOccur(src.raw, [x.index, x.index + x[0].length], src.kind === "text" && src.markup && !dsfInTag(src.raw, x.index)), { text_label: x[1] });
+      if (!src.shown) h.shown = false;
+      if (!have.has(hk(h))) { have.add(hk(h)); hits.push(h); }
+    }
+    hits.sort((a, b) => (a.shown === false ? 1 : 0) - (b.shown === false ? 1 : 0));
+  }
   if (!hits.length && ws.byName) {
     const rest = [];
     for (const [name, w] of ws.byName) if (/^homepage/i.test(name) && !seen.has(name)) rest.push({ w, row: null, block: null });
@@ -1806,6 +1903,8 @@ function dsfEditLine(hits) {
     if (w.some((h) => !h.match)) t += "; by name or code: getWidget include_code=1 first";
     say.push(t);
   }
+  const bw = hits.filter((h) => h.bd_widget);
+  if (bw.length) say.push("BD section widget: updateWidget {widget_name, customize:true, replace:[{field, find: match, with}]} makes this site's own copy with the change" + (bw.some((h) => h.of > 1 || h.count > 1) ? DSF_ALL_SAY : ""));
   if (hits.some((h) => h.setting)) say.push("setting: updateDesignSettings {settings: {name: value}}" + (hits.some((h) => h.text_label) ? " (literal text replaces the label)" : ""));
   const pc = hits.filter((h) => h.page && h.field === "content");
   if (pc.length) say.push("home page content: updateWebPage {seo_id, replace:[{find: match, with}]}, no read needed, returns an undo" + (pc.some((h) => h.of > 1 || h.count > 1) ? DSF_ALL_SAY : ""));
@@ -1823,6 +1922,14 @@ function dsfSlideNotes(b, out, addons) {
   if (b.id === "hero.slideshow") out.note = on ? DSF_SLIDES_ON : DSF_SLIDES_OFF;
   if (b.id === "hero.background") for (const s of out.settings || []) if (s.name === "custom_76" && s.note) s.note = s.note.replace(DSF_SLIDE_76, on ? DSF_SLIDE_76_ON : DSF_SLIDE_76_OFF);
 }
+
+// updateWidget on BD's own widget: `customize` creates this site's copy under the same name (it then replaces BD's widget on
+// this site), as the admin's Customize does: every column of BD's row, with the replacements applied.
+const WC_CAS = "Bootstrap Theme - Custom Appearance Settings";
+const WC_COPY = ["widget_name", "widget_type", "widget_data", "widget_style", "widget_javascript", "widget_class", "widget_viewport", "short_code", "div_id", "ssl_enabled", "mobile_enabled", "widget_html_element", "widget_settings", "widget_values"];
+const WC_CAS_SAY = `${WC_CAS} is never customised or edited: BD updates it often. Override what it prints with CSS.`;
+const WC_DONE = "This site's own copy of BD's widget, made with your changes; it no longer receives BD's updates to that widget. undo (deleteWidget) removes the copy and the site shows BD's widget again.";
+const WC_NO_ID = "updateWidget needs widget_id; for BD's own widget send widget_name with replace and customize:true.";
 
 // updateWidget `replace`: exact substitutions on the stored code fields, all or nothing; `all` changes every occurrence.
 // Returns {problems} or {fields: {name: new value}, replaced, undo}. The new values then go through the ordinary updateWidget path.
@@ -1973,15 +2080,89 @@ function replaceUndoAsSent(rp, args) {
   return { [key]: rp.undo[key], replace: list };
 }
 
-async function widgetReplacePrepare(config, args) {
-  const id = args.widget_id;
-  if (id === undefined || id === null || !/^\d+$/.test(String(id))) return { problems: ["replace needs widget_id."] };
-  if (Array.isArray(args.replace)) for (const f of DSF_REPLACE_FIELDS) if (Object.prototype.hasOwnProperty.call(args, f) && args.replace.some((e) => e && e.field === f)) return { problems: [`${f}: send the whole field or replace entries for it, not both.`] };
+function wcNeeds(name) {
+  return `${name} is BD's widget: add customize:true, which creates this site's own copy of BD's widget with your changes; that copy stops receiving BD's updates to it.`;
+}
+function wcPick(r, name) {
+  const b = r && r.status === 200 ? r.body : null;
+  if (!b || typeof b !== "object" || !(b.status === "success" || / not found$/.test(String(b.message)))) return null;
+  const rows = Array.isArray(b.message) ? b.message : [];
+  return { site: rows.find((w) => w && w.widget_name === name && w.widget_id && !udsYes(w.is_default)) || null, master: rows.find((w) => w && w.widget_name === name && udsYes(w.is_default)) || null };
+}
+function wcPlan(master, name, list) {
+  const plan = dsfReplacePlan(master, list);
+  if (plan.problems) return plan;
+  const fields = {};
+  for (const f of WC_COPY) if (master[f] !== null && master[f] !== undefined && master[f] !== "") fields[f] = String(master[f]);
+  Object.assign(fields, plan.fields);
+  fields.widget_name = name;
+  fields.bootstrap_enabled = 4;
+  return { customize: { name, fields, replaced: plan.replaced } };
+}
+async function widgetCustomize(config, c) {
+  const body = Object.assign({}, c.fields);
+  sanitizeScaffoldingInArgs(body);
+  stripWidgetWrapperTagsInArgs(body);
+  autoDefaultSystemTimestamps("createWidget", body, await getSiteTimezoneCached(config.apiUrl, config.apiKey));
   let r = null;
-  try { r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${id}`, null, null); } catch { r = null; }
-  const row = r && r.status === 200 && r.body && r.body.status === "success" ? (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message) : null;
+  try { r = await makeRequest(config, "POST", "/api/v2/data_widgets/create", null, body); } catch (e) { return { status: "error", message: `Network error: ${(e && e.message) || String(e)}` }; }
+  const b = r && r.body;
+  const row = b && typeof b === "object" && b.status === "success" ? (Array.isArray(b.message) ? b.message[0] : b.message) : null;
+  if (!row || typeof row !== "object" || !row.widget_id) return { status: "error", message: `The copy was not created: ${b && typeof b === "object" && b.message ? (typeof b.message === "string" ? b.message : JSON.stringify(b.message)) : `HTTP ${r && r.status}`}` };
+  const wid = Number(row.widget_id);
+  const ref = await autoRefreshCache(config, AUTO_REFRESH_SCOPE.createWidget);
+  const out = { status: "success", message: { widget_id: wid, widget_name: c.name }, customized: WC_DONE, replaced: c.replaced, undo: { deleteWidget: { widget_id: wid } }, auto_cache_refreshed: ref.ok };
+  if (!ref.ok) out.auto_cache_refresh_error = ref.message;
+  return out;
+}
+
+// getWidget / renderWidget by widget_name alone: BD's get/{id} needs an id and BD's render reads only the site's own
+// widgets, so the name is looked up in the merged list. null: BD answers as before.
+const WN_RENDER = "BD's own widget renders only on the page that uses it; read its code with getWidget {widget_name, include_code:1}.";
+function wnAnswer(found, tool, name, includeFlags) {
+  if (tool === "renderWidget") return found && !found.site && found.master ? { status: "error", message: WN_RENDER } : null;
+  if (!found) return { status: "error", message: `Widget ${name} could not be read.` };
+  const row = found.site || found.master;
+  if (!row) return { status: "error", message: `No site widget or BD widget is named ${name}.` };
+  return applyWidgetLean({ status: "success", message: [Object.assign({}, row)] }, includeFlags);
+}
+async function widgetByName(config, tool, name, includeFlags) {
+  let r = null;
+  try { r = await makeRequest(config, "GET", "/api/v2/data_widgets/get", { property: "widget_name", property_value: name, limit: 10 }, null); } catch { r = null; }
+  return wnAnswer(wcPick(r, name), tool, name, includeFlags);
+}
+async function widgetReplacePrepare(config, args) {
+  const customize = udsYes(args.customize);
+  delete args.customize;
+  if (Array.isArray(args.replace)) for (const f of DSF_REPLACE_FIELDS) if (Object.prototype.hasOwnProperty.call(args, f) && args.replace.some((e) => e && e.field === f)) return { problems: [`${f}: send the whole field or replace entries for it, not both.`] };
+  let id = args.widget_id;
+  let row = null;
+  if ((id === undefined || id === null || id === "") && typeof args.widget_name === "string" && args.widget_name.trim()) {
+    const name = args.widget_name.trim();
+    if (name.toLowerCase() === WC_CAS.toLowerCase()) return { problems: [WC_CAS_SAY] };
+    let r = null;
+    try { r = await makeRequest(config, "GET", "/api/v2/data_widgets/get", { property: "widget_name", property_value: name, limit: 10 }, null); } catch { r = null; }
+    const found = wcPick(r, name);
+    if (!found) return { problems: [`Widget ${name} could not be read; replace needs the stored widget.`] };
+    if (found.site) {
+      row = found.site;
+      id = row.widget_id;
+      args.widget_id = Number(id);
+      delete args.widget_name;
+    } else if (found.master) {
+      if (!customize) return { problems: [wcNeeds(name)] };
+      return wcPlan(found.master, name, args.replace);
+    } else return { problems: [`No site widget or BD widget is named ${name}.`] };
+  }
+  if (id === undefined || id === null || !/^\d+$/.test(String(id))) return { problems: ["replace needs widget_id, or widget_name for BD's widget."] };
+  if (!row) {
+    let r = null;
+    try { r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${id}`, null, null); } catch { r = null; }
+    row = r && r.status === 200 && r.body && r.body.status === "success" ? (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message) : null;
+  }
   if (!row || typeof row !== "object" || !row.widget_id) return { problems: [`Widget ${id} could not be read; replace needs the stored widget.`] };
   if (udsYes(row.is_default)) return { problems: [`Widget ${id} is a BD default, not a site widget.`] };
+  if (String(row.widget_name || "").trim().toLowerCase() === WC_CAS.toLowerCase()) return { problems: [WC_CAS_SAY] };
   const plan = dsfReplacePlan(row, args.replace);
   if (plan.problems) return plan;
   delete args.replace;
@@ -2234,6 +2415,12 @@ function dsValues(config, ds) {
   return p;
 }
 
+// The hero type's widget (custom_30). The hide types print none; the map types print the maps add-on's widgets instead.
+function dsHeroWidget(ds, values) {
+  const k = dsMeta(ds, values, "custom_30", "kind");
+  return k && k !== "hide" && k !== "map" ? dsRead(ds, values, "custom_30") || null : null;
+}
+
 async function getDesignSettings(config, args) {
   let ds;
   try {
@@ -2264,7 +2451,15 @@ async function getDesignSettings(config, args) {
   if (got.error) return { status: "error", message: got.error };
   if (one) return dsOne(ds, one, q, got);
   if (!b) return dsfOverview(ds, got, dsDirectory(ds, got), dsCacheKey(config), get);
-  const out = dsBlock(ds, b, got);
+  let out = dsBlock(ds, b, got);
+  if (out.css && b.widget && !(await dsfCachedCopy(dsCacheKey(config), "Bootstrap Theme - Homepage"))) out.css = dsRowCss(ds, b, got.values, out.css);
+  const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
+  if ((/^section\./.test(b.id) && b.widget) || hw) {
+    const name = dsExpand(ds.m, hw || b.widget);
+    out = Object.assign({ block: out.block, title: out.title, widget: name }, out);
+    const copy = await dsfCachedCopy(dsCacheKey(config), name);
+    if (copy) out.widget_copy = `This site's own copy: widget_id ${copy}; updateWidget replace edits it.`;
+  }
   if (b.id === "hero.cta") out.hero_extra_content = await dsHeroExtra(config);
   return out;
 }
@@ -2279,6 +2474,7 @@ const UDS_MAX = 100;
 const UDS_NOTE_PAGE = "A Design Settings page already open in a browser puts back the values it loaded on its next save: reload it before saving there.";
 const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send [widget=Name].";
 const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send [widget=Name].";
+const UDS_ROW_WRAP = "Row widget: own wrapper (max-width, margin auto, side padding); no negative margin into neighbouring rows. Live counts in its PHP: bd_controller::user(WEBSITE_DB)->getCount('user_id', array(array('column' => 'active', 'value' => 2))); same on data_posts (post_status 1) and list_professions.";
 const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and place that block with home_rows.";
 const UDS_UNSIGNED = "This undo was not issued by this tool for this site; send settings instead.";
 const UDS_LOST = "The site's response was lost; the result was confirmed by reading the settings back.";
@@ -2615,6 +2811,7 @@ function udsAdvice(ds, idx, plan, R, addons) {
       if (also.length) notes.push(`${x.label}: the same section is also in row ${also.join(" and ")}; the page shows it in each row.`);
     }
   }
+  if (plan.some((e) => DS_CC_REF.test(e.name) && dsfCcRef(e.value).name)) notes.push(UDS_ROW_WRAP);
   return notes;
 }
 
@@ -3275,7 +3472,8 @@ function buildTools(spec) {
           if (p.in === "path") {
             properties[p.name] = p.schema || { type: "string" };
             if (p.description) properties[p.name].description = p.description;
-            required.push(p.name);
+            // getWidget also reads by widget_name (wrapper), so its widget_id is optional.
+            if (!(op.operationId === "getWidget" && p.name === "widget_id")) required.push(p.name);
           } else if (p.in === "query" && !["limit", "page", "property", "property_value", "property_operator", "order_column", "order_type"].includes(p.name)) {
             // Non-standard query params (like form_name).
             // The skip-list above is BD's standard pagination/filter param
@@ -4721,6 +4919,7 @@ function applyWriteLean(toolName, body, sentKeys) {
 //   createWebPage / updateWebPage   -> scope=web_pages   (page render cache;
 //                                      also covers list_seo hero-EAV)
 //   createWidget  / updateWidget    -> scope=data_widgets
+//   deleteWidget                    -> "" (the site shows BD's widget again only after a refresh)
 //   updatePostType                  -> "" (full refresh; no targeted scope
 //                                      exists for post-type config)
 //
@@ -4757,6 +4956,7 @@ const AUTO_REFRESH_SCOPE = {
   updateWebPage: "",
   createWidget: "",
   updateWidget: "",
+  deleteWidget: "",
   updatePostType: "",
   createMenu: "",
   updateMenu: "",
@@ -8720,12 +8920,32 @@ async function main() {
       if (name === "updateWidget" && args && typeof args === "object" && args.replace !== undefined) {
         const rp = await widgetReplacePrepare(config, args);
         if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
+        if (rp.customize) {
+          const res = await widgetCustomize(config, rp.customize);
+          return { content: [{ type: "text", text: JSON.stringify(res, null, 2) }], isError: res.status !== "success" };
+        }
         _widgetReplace = rp;
+      } else if (name === "updateWidget" && args && typeof args === "object") {
+        delete args.customize;
+        if (args.widget_id === undefined || args.widget_id === null || args.widget_id === "") return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [WC_NO_ID] }) }], isError: true };
+      }
+      if ((name === "getWidget" || name === "renderWidget") && args && typeof args === "object") {
+        const noId = args.widget_id === undefined || args.widget_id === null || args.widget_id === "";
+        const wn = typeof args.widget_name === "string" ? args.widget_name.trim() : "";
+        if (name === "getWidget" && !noId) delete args.widget_name;
+        else if (noId && wn) {
+          const res = await widgetByName(config, name, wn, includeFlags);
+          if (res) return { content: [{ type: "text", text: JSON.stringify(res, null, 2) }], isError: res.status !== "success" };
+        } else if (name === "getWidget") return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: ["getWidget needs widget_id or widget_name."] }) }], isError: true };
       }
       if (name === "updateWebPage" && args && typeof args === "object" && args.replace !== undefined) {
         const rp = await webPageReplacePrepare(config, args);
         if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
         _widgetReplace = rp;
+      }
+      if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args.content_css === "string") {
+        const star = pcssStarDisplay(args.content_css);
+        if (star) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [star] }) }], isError: true };
       }
 
       // Sanitize agent-scaffolding tokens from content-field values before
