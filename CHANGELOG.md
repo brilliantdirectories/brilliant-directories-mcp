@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.637] - 2026-11-12
+
+### Added
+- `getDesignSettings` `find` with CSS property names, one or several (`border outline box-shadow`, `border-radius`, `background`, `text-shadow`, `opacity`, `filter`): the reply adds `elements`, the homepage elements whose own CSS sets them, hero first, each with its block, widget and the declarations to change, and `elements_say`: one fits the owner's words, change it; several fit, change the best fit and name the others. For a look the owner describes in any words or language (ring, circle, glow), the caller sends the properties that draw it; a search that finds nothing says so.
+
+### Fixed
+- `find` with a single word matches only at the start of a word: `ring` no longer matches `$tableString`.
+
 ## [6.59.636] - 2026-11-12
 
 ### Fixed

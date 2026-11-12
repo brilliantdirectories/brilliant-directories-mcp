@@ -1382,7 +1382,7 @@ const DSF_MAX_HITS = 10;
 const DSF_ALL_SAY = " (several occurrences: add nth from the hit, or all:true for every one)";
 const DSF_MAX_WIDGETS = 20;
 const DSF_MAX_PAGES = 5;
-const DSF_HINT = "No editable text matched. Member, post and category text: their own tools. Section titles, buttons: that section's block. BD text labels (Search Now) and BD's default footer menu: admin only.";
+const DSF_HINT = "No editable text matched. Member, post and category text: their own tools. Section titles, buttons: that section's block. BD text labels (Search Now) and BD's default footer menu: admin only. A look the owner describes in their own words (a ring, a circle, a glow, a box): find the CSS properties that draw it, one or several: border outline box-shadow border-radius background.";
 const DSF_SLIDE_76 = "As the hero image it shows when custom_77 = 1, the hero type is not Blank or a map, and the slideshow is off, set to 0, or set to 2 on phones (2 means desktop only).";
 const DSF_SLIDE_76_OFF = "As the hero image it shows when custom_77 = 1 and the hero type is not Blank or a map (the slideshow add-on is off).";
 const DSF_SLIDE_76_ON = "As the hero image it shows when custom_77 = 1, the hero type is not Blank or a map, and custom_78 is 0 (or 2, on phones).";
@@ -1655,9 +1655,11 @@ function dsfSpans(raw, needle, mode, words) {
     return spans;
   }
   let from = 0;
+  const word = /^[a-z]+$/i.test(needle || "");
   for (;;) {
     const k = v.s.indexOf(needle, from);
     if (k < 0 || !needle) break;
+    if (word && k > 0 && /[a-z]/i.test(v.s[k - 1])) { from = k + 1; continue; }
     spans.push([v.at[k], v.to[k + needle.length - 1]]);
     from = k + needle.length;
   }
@@ -1722,6 +1724,45 @@ function dsfOccur(raw, span, markup) {
   return out;
 }
 
+// A look the owner describes (a ring, a circle, a glow) is not text on the page. The caller names the CSS properties that
+// draw it and find lists the homepage elements whose own CSS sets them, so it picks from real candidates.
+const DSF_LOOK = {
+  border: "border(?:-(?:top|right|bottom|left))?(?:-(?:width|style|color))?", outline: "outline(?:-(?:width|style|color))?", "box-shadow": "box-shadow", "text-shadow": "text-shadow",
+  "border-radius": "border(?:-(?:top|bottom)-(?:left|right))?-radius", background: "background(?:-color|-image)?", "background-color": "background(?:-color)?", "background-image": "background(?:-image)?",
+  opacity: "opacity", filter: "(?:backdrop-)?filter",
+};
+const DSF_MAX_ELS = 20;
+const DSF_LOOK_SAY = "Each entry is one homepage element whose CSS sets this; block says where it sits (hero.* is the hero; content.N and section.* are rows). Keep the entries the owner's words fit. One fits: change it, updateWidget {widget_id, replace:[{field:\"widget_style\", find: <one of sets>, with}]} (home page CSS: updatePageCss). Several fit: change the one that fits best, then name in one line what was changed and what the others are, so the owner can point to another.";
+function dsfLook(sources, props) {
+  const names = props.map((p) => DSF_LOOK[p]).join("|");
+  const re = new RegExp("(?:^|[;{\\s])((?:" + names + ")\\s*:\\s*[^;}]*)", "gi");
+  const dead = /:\s*(?:0(?:px)?|none|transparent|inherit|initial|unset)?\s*(?:!important)?\s*$/i;
+  const out = [];
+  for (const src of sources) {
+    const h = src.hit;
+    if (!(h.field === "widget_style" || (h.page && h.field === "content_css")) || h.bd_widget || src.shown === false) continue;
+    const scan = pcssScan(src.raw);
+    if (!scan || scan.error) continue;
+    for (const r of scan.rules) {
+      const body = src.raw.slice(r.bodyStart, r.bodyEnd);
+      const sets = [];
+      re.lastIndex = 0;
+      for (let m = re.exec(body); m; m = re.exec(body)) {
+        const d = m[1].trim();
+        if (!dead.test(d) && !sets.includes(d)) sets.push(d);
+      }
+      if (!sets.length) continue;
+      const sel = String(r.sel).replace(/\s+/g, " ").trim();
+      const el = sel.split(",")[0].trim().replace(/::?(?:before|after|hover|focus-visible|focus-within|focus|active)\b/gi, "");
+      const where = h.page ? { page: "home", field: "content_css" } : { widget_id: h.widget_id, widget: h.widget };
+      const key = JSON.stringify(where) + " " + el;
+      const have = out.find((o) => o.key === key);
+      if (have) { for (const d of sets) if (!have.sets.includes(d) && have.sets.length < 4) have.sets.push(d); continue; }
+      out.push({ key, block: h.block || (h.page ? "home page CSS" : null), where, element: el.slice(0, 140), sets: sets.slice(0, 4) });
+    }
+  }
+  return out;
+}
 async function dsfFind(ds, got, text, key, get) {
   const q = String(text).trim();
   if (q.length < 2 || q.length > 300) return { status: "error", message: "find takes 2 to 300 characters of text from the page." };
@@ -1928,14 +1969,23 @@ async function dsfFind(ds, got, text, key, get) {
     if (extra.length) searched.push(`${extra.length} other site widgets named Homepage… (not on the homepage)`);
   }
   const out = { find: q };
+  const asked = q.toLowerCase().split(/[\s,]+/).filter(Boolean);
+  const els = asked.length <= 6 && asked.every((p) => Object.prototype.hasOwnProperty.call(DSF_LOOK, p)) ? dsfLook(sources, asked) : [];
+  const heroFirst = (x) => (String(x.block || "").indexOf("hero.") === 0 ? 0 : 1);
+  els.sort((x, y) => heroFirst(x) - heroFirst(y));
   out.hits = hits.slice(0, DSF_MAX_HITS);
   if (hits.length > DSF_MAX_HITS) out.more = hits.length - DSF_MAX_HITS;
   out.searched = searched;
   if (skipped.length) out.skipped = skipped;
   if (missing.length) out.missing_widgets = missing;
   if (ws.partial) out.widget_list = `only the first ${DSF_MAX_PAGES * 100} site widgets were read`;
-  if (!hits.length) out.hint = DSF_HINT;
-  else out.edit = dsfEditLine(out.hits);
+  if (els.length) {
+    out.elements = els.slice(0, DSF_MAX_ELS).map((x) => ({ block: x.block, where: x.where, element: x.element, sets: x.sets }));
+    if (els.length > DSF_MAX_ELS) out.more_elements = els.length - DSF_MAX_ELS;
+    out.elements_say = DSF_LOOK_SAY;
+  }
+  if (!hits.length && !els.length) out.hint = DSF_HINT;
+  else if (hits.length) out.edit = dsfEditLine(out.hits);
   out.ms = Date.now() - t0;
   return out;
 }

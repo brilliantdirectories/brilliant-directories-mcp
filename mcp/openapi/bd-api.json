@@ -9639,7 +9639,7 @@
             "name": "find",
             "in": "query",
             "required": false,
-            "description": "Homepage text the owner quotes (or a class, id, image, link): returns where it lives.",
+            "description": "Homepage text the owner quotes (or a class, id, image, link): returns where it lives. A look the owner describes (ring, circle, glow, box): the CSS properties that draw it (border outline box-shadow border-radius background): returns the homepage elements that set them.",
             "schema": {
               "type": "string"
             }
