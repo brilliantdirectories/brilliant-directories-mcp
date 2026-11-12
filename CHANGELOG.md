@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.635] - 2026-11-12
+
+### Changed
+- `replace` (updateWidget, updateWebPage): a `find` that is not in the text as typed is matched again with flexible spacing (around punctuation and between words), hex digits in either case and an optional leading zero, so `rgb(231,231,234)` finds `rgb(231, 231, 234)`. The stored spelling is what gets replaced. An exact match always wins; several loose matches still need `nth` or `all`.
+- `updateWidget` `replace` on `widget_style`: a single edit returns `rule_now`, the whole CSS rule as it reads after the change.
+
 ## [6.59.634] - 2026-11-12
 
 ### Fixed

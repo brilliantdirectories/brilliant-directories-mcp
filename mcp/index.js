@@ -2012,6 +2012,55 @@ function dsfDiffUndo(f, a, b) {
   }
   return { field: f, find: mid(b, l, r), with: mid(a, l, r) };
 }
+// A `find` that is not in the text as typed is matched again with spacing made flexible (around : ; , ( ) { } > + ~ ! =
+// and between words), hex digits in either case and an optional leading zero (.14 / 0.14). The stored spelling is what
+// gets replaced. Returns [{ at, text }].
+function dsfLooseAll(raw, find) {
+  if (find.length < 3) return [];
+  const esc = (c) => c.replace(/[.*+?^${}()|[\]\\\/-]/g, "\\$&");
+  const parts = [];
+  let hex = false;
+  for (let i = 0; i < find.length; i++) {
+    const ch = find[i];
+    const prev = find[i - 1] || "";
+    const next = find[i + 1] || "";
+    if (/\s/.test(ch)) {
+      let j = i;
+      while (j < find.length && /\s/.test(find[j])) j++;
+      parts.push(/[\w-]/.test(prev) && /[\w-]/.test(find[j] || "") ? "\\s+" : "\\s*");
+      i = j - 1;
+      hex = false;
+      continue;
+    }
+    if (ch === "#") { hex = true; parts.push("#"); continue; }
+    if (hex && /[0-9a-f]/i.test(ch)) { parts.push(/[a-f]/i.test(ch) ? `[${ch.toLowerCase()}${ch.toUpperCase()}]` : ch); continue; }
+    hex = false;
+    if (/[:;,(){}>+~!=]/.test(ch)) { parts.push("\\s*", esc(ch), "\\s*"); continue; }
+    if (ch === "." && /\d/.test(next) && !/\d/.test(prev)) { parts.push("0?\\."); continue; }
+    if (ch === "0" && next === "." && /\d/.test(find[i + 2] || "") && !/[\d.]/.test(prev)) { parts.push("0?"); continue; }
+    parts.push(esc(ch));
+  }
+  while (parts.length && /^\\s[*+]$/.test(parts[0])) parts.shift();
+  while (parts.length && /^\\s[*+]$/.test(parts[parts.length - 1])) parts.pop();
+  let re;
+  try { re = new RegExp(parts.join(""), "g"); } catch { return []; }
+  const out = [];
+  for (let m = re.exec(raw); m; m = re.exec(raw)) {
+    if (!m[0]) { re.lastIndex++; continue; }
+    out.push({ at: m.index, text: m[0] });
+    if (out.length > 200) break;
+  }
+  return out;
+}
+// The CSS rule that holds position p, on one line: what the rule says after an edit.
+function dsfRuleAt(css, p) {
+  const open = css.lastIndexOf("{", p);
+  if (open < 0 || open < css.lastIndexOf("}", p - 1)) return "";
+  const end = css.indexOf("}", p);
+  if (end < 0) return "";
+  const start = Math.max(css.lastIndexOf("}", open), css.lastIndexOf("{", open - 1)) + 1;
+  return css.slice(start, end + 1).replace(/\s+/g, " ").trim().slice(0, 600);
+}
 function dsfReplacePlan(row, list, fields = DSF_REPLACE_FIELDS) {
   const problems = [];
   if (!Array.isArray(list) || !list.length || list.length > 20) return { problems: ["replace takes 1 to 20 entries: [{field, find, with, nth?, all?}]."] };
@@ -2019,8 +2068,9 @@ function dsfReplacePlan(row, list, fields = DSF_REPLACE_FIELDS) {
   const cur = {};
   const counts = {};
   const steps = [];
-  list.forEach((e, i) => {
+  list.forEach((e0, i) => {
     const at = `replace entry ${i + 1}`;
+    let e = e0;
     if (!e || typeof e !== "object" || Array.isArray(e)) return problems.push(`${at}: send {field, find, with}.`);
     if (!fields.includes(e.field)) return problems.push(`${at}: field is ${fields.join(" or ")}.`);
     if (typeof e.find !== "string" || !e.find) return problems.push(`${at}: find is the exact text to change, not empty.`);
@@ -2031,7 +2081,20 @@ function dsfReplacePlan(row, list, fields = DSF_REPLACE_FIELDS) {
     if (e.nth !== undefined && e.all) return problems.push(`${at}: nth or all, not both.`);
     if (!(e.field in cur)) cur[e.field] = orig[e.field] = String(row[e.field] === null || row[e.field] === undefined ? "" : row[e.field]);
     const t0 = cur[e.field];
-    const n = dsfCount(t0, e.find);
+    let n = dsfCount(t0, e.find);
+    if (n === 0) {
+      const ms = dsfLooseAll(t0, e.find);
+      const texts = ms.map((m) => m.text).filter((t, k, all) => all.indexOf(t) === k);
+      if (ms.length && e.all && texts.length > 1) return problems.push(`${at}: found ${ms.length} times in ${e.field} in ${texts.length} spellings: send one entry for each: ${texts.slice(0, 4).map((t) => JSON.stringify(t)).join(", ")}.`);
+      if (ms.length && e.nth !== undefined && ms.length < e.nth) return problems.push(`${at}: nth is ${e.nth} but find occurs ${ms.length} ${ms.length === 1 ? "time" : "times"} in ${e.field}.`);
+      if (ms.length > 1 && !e.all && e.nth === undefined) return problems.push(`${at}: found ${ms.length} times in ${e.field}: add nth (1..${ms.length}) for one, or all:true for every one.`);
+      if (ms.length) {
+        const m = e.all ? ms[0] : ms[(e.nth || 1) - 1];
+        e = Object.assign({}, e, { find: m.text });
+        if (!e.all) { const o = dsfCount(t0, m.text) > 1 ? dsfOrdinal(t0, m.text, m.at) : -1; if (o > 0) e.nth = o; else if (o < 0) delete e.nth; else e = e0; }
+        n = dsfCount(t0, e.find);
+      }
+    }
     if (n === 0) return problems.push(`${at}: not found in ${e.field}: read the field or call getDesignSettings find.`);
     if (e.nth !== undefined && n < e.nth) return problems.push(`${at}: nth is ${e.nth} but find occurs ${n} ${n === 1 ? "time" : "times"} in ${e.field}.`);
     if (n > 1 && !e.all && e.nth === undefined) return problems.push(`${at}: found ${n} times in ${e.field}: add nth (1..${n}) for one, or all:true for every one.`);
@@ -2062,7 +2125,8 @@ function dsfReplacePlan(row, list, fields = DSF_REPLACE_FIELDS) {
     let s = 0;
     while (s < a.length - p && s < b.length - p && a[a.length - 1 - s] === b[b.length - 1 - s]) s++;
     const snip = (t, L, R) => t.slice(Math.max(0, L - 40), t.length - Math.max(0, R - 40)).slice(0, 300).replace(/\s+/g, " ");
-    replaced.push({ field: f, count: counts[f], before: snip(a, p, s), after: snip(b, p, s), chars_before: a.length, chars_after: b.length });
+    const rule = f === "widget_style" && counts[f] === 1 ? dsfRuleAt(b, p) : "";
+    replaced.push(Object.assign({ field: f, count: counts[f], before: snip(a, p, s), after: snip(b, p, s), chars_before: a.length, chars_after: b.length }, rule ? { rule_now: rule } : {}));
   }
   if (problems.length) return { problems };
   // The undo swaps back exactly what was written, each find unique in the text as it now stands (an nth write whose text
