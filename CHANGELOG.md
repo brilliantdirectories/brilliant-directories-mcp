@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.623] - 2026-11-11
+
+### Changed
+- `getDesignSettings`: the hero search box colours each carry a one-line contrast note (Search Box Background `custom_33`, Search Box Font Color `custom_39`, Sub-Title Text: Color `custom_38`), so the box background is not set to the colour of the text printed on it.
+
 ## [6.59.622] - 2026-11-11
 
 ### Added
