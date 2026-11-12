@@ -1500,6 +1500,7 @@ async function dsfOverview(ds, got, out, key, get) {
     const w = ws.byName ? ws.byName.get(name) : null;
     if (w) r.widget_id = Number(w.widget_id);
     else if (ws.byName) r.missing = true;
+    if (/^DISABLED - ./.test(name)) r.off = wcOffSay(name.slice(11));
   };
   for (const r of ccRows) {
     if (r.block === "content.1") {
@@ -2126,6 +2127,15 @@ async function widgetRenderError(config, id) {
   if (!b || typeof b !== "object" || b.status !== "error" || typeof b.message !== "string" || !/^Widget error/i.test(b.message)) return null;
   return `Saved, but the widget fails when it runs and visitors see this error: ${b.message.slice(0, 400)}`;
 }
+// BD never serves a widget whose name starts with "DISABLED - " (the admin's off switch); the name without the prefix switches it on.
+function wcOffSay(name) {
+  return `A widget named "DISABLED - ${name}" is switched off in the admin and never printed. updateWidget {widget_id, widget_name: "${name}"} switches it on; whole code fields in the same call replace its code.`;
+}
+// A widget disabled in the admin is renamed "DISABLED - <name>"; BD's API then answers that it is an internal widget.
+function wcDisabledSay(message) {
+  const m = typeof message === "string" ? message.match(/^The widget "DISABLED - (.+)" is an internal widget/) : null;
+  return m ? `The widget "${m[1]}" is disabled on this site (the owner disabled it in the admin; it is stored as "DISABLED - ${m[1]}"). The API cannot read or show it while disabled, and the site does not print it. updateWidget by its widget_id with widget_name "${m[1]}" re-enables it; whole code fields in the same call replace its code.` : null;
+}
 // Whole code fields sent with customize: BD's CSS or JS field is often empty, where replace has nothing to find.
 function wcWhole(args) {
   const whole = {};
@@ -2153,6 +2163,8 @@ async function widgetCustomize(config, c) {
   try { r = await makeRequest(config, "POST", "/api/v2/data_widgets/create", null, body); } catch (e) { return { status: "error", message: `Network error: ${(e && e.message) || String(e)}` }; }
   const b = r && r.body;
   const row = b && typeof b === "object" && b.status === "success" ? (Array.isArray(b.message) ? b.message[0] : b.message) : null;
+  const offCopy = b && typeof b === "object" && typeof b.message === "string" ? b.message.match(/^A disabled widget with this name already exists: DISABLED - (.+)$/) : null;
+  if (offCopy) return { status: "error", message: `The copy was not created: this site holds a disabled copy, "DISABLED - ${offCopy[1]}". updateWidget {widget_id, widget_name: "${offCopy[1]}"} on that copy switches it on; whole code fields in the same call replace its code. For a fresh copy of BD's widget: give that copy another widget_name, then send customize again.` };
   if (!row || typeof row !== "object" || !row.widget_id) return { status: "error", message: `The copy was not created: ${b && typeof b === "object" && b.message ? (typeof b.message === "string" ? b.message : JSON.stringify(b.message)) : `HTTP ${r && r.status}`}` };
   const wid = Number(row.widget_id);
   const ref = await autoRefreshCache(config, AUTO_REFRESH_SCOPE.createWidget);
@@ -2509,7 +2521,7 @@ async function getDesignSettings(config, args) {
     const name = dsExpand(ds.m, hw || b.widget);
     out = Object.assign({ block: out.block, title: out.title, widget: name }, out);
     const copy = await dsfCachedCopy(dsCacheKey(config), name);
-    if (copy) out.widget_copy = `This site's own copy: widget_id ${copy}; updateWidget replace edits it.`;
+    if (copy) out.widget_copy = `This site's own copy: widget_id ${copy}; updateWidget edits it; deleteWidget removes it and BD's original widget shows again.`;
   }
   if (b.id === "hero.cta") out.hero_extra_content = await dsHeroExtra(config);
   return out;
@@ -2525,7 +2537,7 @@ const UDS_MAX = 100;
 const UDS_NOTE_PAGE = "A Design Settings page already open in a browser puts back the values it loaded on its next save: reload it before saving there.";
 const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send [widget=Name].";
 const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send [widget=Name].";
-const UDS_ROW_WRAP = "Row widget: own wrapper (max-width, margin auto, side padding); no negative margin into neighbouring rows. Live counts in its PHP: bd_controller::user(WEBSITE_DB)->getCount('user_id', array(array('column' => 'active', 'value' => 2))); same on data_posts (post_status 1) and list_professions.";
+const UDS_ROW_WRAP = "Row widget: one <section> whose first child is <div class=\"container\">; no negative margin into neighbouring rows. Live counts in its PHP: bd_controller::user(WEBSITE_DB)->getCount('user_id', array(array('column' => 'active', 'value' => 2))); same on data_posts (post_status 1) and list_professions.";
 const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and place that block with home_rows.";
 const UDS_UNSIGNED = "This undo was not issued by this tool for this site; send settings instead.";
 const UDS_LOST = "The site's response was lost; the result was confirmed by reading the settings back.";
@@ -2757,6 +2769,7 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
     const w = /^\[widget=([^[\]%<>]+)\]$/.exec(v) || /^<p>\[widget=([^[\]%<>]+)\]<\/p>$/.exec(v);
     if (!w) return /^\s*</.test(v) ? UDS_CC_HTML : UDS_CC;
     if (/^Bootstrap Theme - Display - Custom Content \d+$/.test(w[1])) return `${label}: a Custom Content block cannot show a Custom Content block.`;
+    if (/^DISABLED - ./.test(w[1])) return `${label}: ${wcOffSay(w[1].slice(11))} Then send [widget=${w[1].slice(11)}].`;
     const got = await udsRows(config, lists, "/api/v2/data_widgets/get", { property: "widget_name", property_value: w[1] }, "Widgets GET");
     if (got.error) return `${label} could not be checked: ${got.error}`;
     return got.rows.some((r) => r.widget_name === w[1] && r.widget_id && !udsYes(r.is_default)) ? null : `No site widget named ${w[1]}. Create it first.`;
@@ -3032,7 +3045,7 @@ function udsHomeRows(ds, list, cur, R, addons) {
     const at = `home_rows entry ${k + 1} (${e.block})`;
     const b = m.blocks.find((x) => x.id === e.block && x.widget);
     const o = b ? optOf(b) : null;
-    if (!o) return add(`${at}: not a homepage section. Use a block id from getDesignSettings: homepage.rows[].block, section.*, content.1 to content.10 or home.divider.`);
+    if (!o) return add(`${at}: not a homepage section. Use a block id from getDesignSettings: homepage.rows[].block, section.*, content.1 to content.10 or home.divider. ${UDS_ROW_WIDGET}`);
     if (o[2] && o[2].addon && udsAddonOff(o[2].addon, addons)) return add(`${at}: ${o[1]} needs the ${o[2].addon} add-on, which is not active on this site.`);
     const cc = /^content\.(\d+)$/.exec(b.id);
     if (cc && cc[1] !== "1" && String(R[`homepage_content_${cc[1]}`] === undefined ? "" : R[`homepage_content_${cc[1]}`]) === "") {
@@ -9740,6 +9753,14 @@ async function main() {
       }
       if (_segmentWarning && result.body && typeof result.body === "object") {
         result.body._segment_warning = _segmentWarning;
+      }
+      if (name === "getWidget" && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const row0 = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
+        if (row0 && typeof row0.widget_name === "string" && /^DISABLED - ./.test(row0.widget_name)) result.body.off = wcOffSay(row0.widget_name.slice(11));
+      }
+      if (result.body && typeof result.body === "object" && result.body.status === "error") {
+        const off = wcDisabledSay(result.body.message);
+        if (off) result.body.message = off;
       }
       if (_widgetReplace && result.body && typeof result.body === "object" && result.body.status === "success") {
         const drop = (row) => { if (row && typeof row === "object") for (const f of _widgetReplace.fields) delete row[f]; };

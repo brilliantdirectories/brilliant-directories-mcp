@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.629] - 2026-11-12
+
+### Added
+- A widget disabled in the admin (stored as `DISABLED - <name>`): the homepage overview row and `getWidget` carry `off`, and a Custom Content value of `[widget=DISABLED - <name>]` is refused; each names the `updateWidget` call that switches it on, with new code in the same call when its code is replaced.
+- `updateWidget` with `customize: true` on a BD widget whose site copy is disabled: the refusal names the two routes (switch the copy on, or rename it and take a fresh copy).
+
+### Changed
+- Instructions: Rule "Homepage", a new homepage section widget is one `<section class id>` whose first child is `<div class="container">`. The earlier "the row supplies `.container`: add none" wording and the matching Custom Content note are removed.
+- `updateDesignSettings` `home_rows`: the refusal for an entry that is not a block id says how a site widget is placed (through a Custom Content block).
+- Reading a disabled widget with a key that cannot see it: the error says the widget is disabled on the site and how it is re-enabled, in place of "internal widget".
+- `getDesignSettings`: a block served by the site's own copy of a BD widget says `deleteWidget` on that copy brings BD's original back.
+
 ## [6.59.628] - 2026-11-11
 
 ### Added
