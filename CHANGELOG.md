@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.627] - 2026-11-11
+
+### Fixed
+- `updateWidget` with `customize: true`: whole `widget_data`, `widget_style` and `widget_javascript` sent in the call are stored in the site's copy, with or without `replace`. Before, whole fields sent beside `replace` were dropped, and a call without `replace` was refused.
+
+### Changed
+- Instructions: Rule "Homepage", a section named by position (first, last, above or below another) is resolved from the row order `getDesignSettings` returns without arguments.
+- `getDesignSettings` `hero.search_box`: the `css` line lists the selectors BD's settings CSS prints for the box, heading, labels and button.
+
 ## [6.59.626] - 2026-11-11
 
 ### Changed

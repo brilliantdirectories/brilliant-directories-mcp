@@ -1929,7 +1929,7 @@ const WC_CAS = "Bootstrap Theme - Custom Appearance Settings";
 const WC_COPY = ["widget_name", "widget_type", "widget_data", "widget_style", "widget_javascript", "widget_class", "widget_viewport", "short_code", "div_id", "ssl_enabled", "mobile_enabled", "widget_html_element", "widget_settings", "widget_values"];
 const WC_CAS_SAY = `${WC_CAS} is never customised or edited: BD updates it often. Override what it prints with CSS.`;
 const WC_DONE = "This site's own copy of BD's widget, made with your changes; it no longer receives BD's updates to that widget. undo (deleteWidget) removes the copy and the site shows BD's widget again.";
-const WC_NO_ID = "updateWidget needs widget_id; for BD's own widget send widget_name with replace and customize:true.";
+const WC_NO_ID = "updateWidget needs widget_id; for BD's own widget send widget_name with customize:true and replace entries or whole code fields.";
 
 // updateWidget `replace`: exact substitutions on the stored code fields, all or nothing; `all` changes every occurrence.
 // Returns {problems} or {fields: {name: new value}, replaced, undo}. The new values then go through the ordinary updateWidget path.
@@ -2089,12 +2089,20 @@ function wcPick(r, name) {
   const rows = Array.isArray(b.message) ? b.message : [];
   return { site: rows.find((w) => w && w.widget_name === name && w.widget_id && !udsYes(w.is_default)) || null, master: rows.find((w) => w && w.widget_name === name && udsYes(w.is_default)) || null };
 }
-function wcPlan(master, name, list) {
-  const plan = dsfReplacePlan(master, list);
+// Whole code fields sent with customize: BD's CSS or JS field is often empty, where replace has nothing to find.
+function wcWhole(args) {
+  const whole = {};
+  for (const f of DSF_REPLACE_FIELDS) if (args && typeof args[f] === "string") whole[f] = args[f];
+  return whole;
+}
+function wcPlan(master, name, list, args) {
+  const whole = wcWhole(args);
+  const hasList = Array.isArray(list) && list.length > 0;
+  const plan = hasList || !Object.keys(whole).length ? dsfReplacePlan(master, list) : { fields: {}, replaced: undefined };
   if (plan.problems) return plan;
   const fields = {};
   for (const f of WC_COPY) if (master[f] !== null && master[f] !== undefined && master[f] !== "") fields[f] = String(master[f]);
-  Object.assign(fields, plan.fields);
+  Object.assign(fields, plan.fields, whole);
   fields.widget_name = name;
   fields.bootstrap_enabled = 4;
   return { customize: { name, fields, replaced: plan.replaced } };
@@ -2149,9 +2157,10 @@ async function widgetReplacePrepare(config, args) {
       id = row.widget_id;
       args.widget_id = Number(id);
       delete args.widget_name;
+      if (args.replace === undefined) return {};
     } else if (found.master) {
       if (!customize) return { problems: [wcNeeds(name)] };
-      return wcPlan(found.master, name, args.replace);
+      return wcPlan(found.master, name, args.replace, args);
     } else return { problems: [`No site widget or BD widget is named ${name}.`] };
   }
   if (id === undefined || id === null || !/^\d+$/.test(String(id))) return { problems: ["replace needs widget_id, or widget_name for BD's widget."] };
@@ -8917,14 +8926,14 @@ async function main() {
       // updateWidget `replace`: the stored field with the substitutions applied is written exactly as if the
       // agent had sent the whole field, so every guard below still runs on it.
       let _widgetReplace = null;
-      if (name === "updateWidget" && args && typeof args === "object" && args.replace !== undefined) {
+      if (name === "updateWidget" && args && typeof args === "object" && (args.replace !== undefined || (udsYes(args.customize) && (args.widget_id === undefined || args.widget_id === null || args.widget_id === "")))) {
         const rp = await widgetReplacePrepare(config, args);
         if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
         if (rp.customize) {
           const res = await widgetCustomize(config, rp.customize);
           return { content: [{ type: "text", text: JSON.stringify(res, null, 2) }], isError: res.status !== "success" };
         }
-        _widgetReplace = rp;
+        _widgetReplace = rp.fields ? rp : null;
       } else if (name === "updateWidget" && args && typeof args === "object") {
         delete args.customize;
         if (args.widget_id === undefined || args.widget_id === null || args.widget_id === "") return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [WC_NO_ID] }) }], isError: true };
