@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.624] - 2026-11-11
+
+### Changed
+- `getDesignSettings` `hero.cta`: the note says a new layout for the search box or call to action means customising the hero type's widget (Rule: Homepage), and names what the autosuggest, location and category lists read on each input and select (name, id, class, data- attributes).
+
 ## [6.59.623] - 2026-11-11
 
 ### Changed
