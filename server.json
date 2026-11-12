@@ -6,7 +6,7 @@
     "url": "https://github.com/brilliantdirectories/brilliant-directories-mcp",
     "source": "github"
   },
-  "version": "6.59.627",
+  "version": "6.59.628",
   "remotes": [
     {
       "type": "streamable-http",
@@ -31,7 +31,7 @@
     {
       "registryType": "npm",
       "identifier": "brilliant-directories-mcp",
-      "version": "6.59.627",
+      "version": "6.59.628",
       "transport": {
         "type": "stdio"
       },

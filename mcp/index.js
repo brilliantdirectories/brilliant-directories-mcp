@@ -1469,6 +1469,25 @@ async function dsfHomePage(get) {
   return row && typeof row === "object" ? row : null;
 }
 
+// Homepage CSS rules that already hit a block's selectors keep styling a customised widget's markup.
+const DS_PCSS_WIDE = new Set([".container", ".row", ".clearfix", ".btn", ".form-group", ".form-control", ".form-inline", ".form-horizontal", ".input-group", ".homepage_settings"]);
+function dsPageCssOn(blockCss, pageCss) {
+  const css = typeof pageCss === "string" ? pageCss : "";
+  const toks = [...new Set(String(blockCss).match(/(?<![\w-])[.#][A-Za-z_][\w-]*/g) || [])].filter((t) => !DS_PCSS_WIDE.has(t) && !/^\.col-/.test(t));
+  if (!css.trim() || !toks.length) return null;
+  const scan = pcssScan(css);
+  if (scan.error) return null;
+  const has = (sel, t) => {
+    for (let i = sel.indexOf(t); i >= 0; i = sel.indexOf(t, i + 1)) if (!/[\w-]/.test(sel.charAt(i + t.length))) return true;
+    return false;
+  };
+  const hits = scan.rules.filter((r) => toks.some((t) => has(r.sel, t)));
+  if (!hits.length) return null;
+  const imp = hits.filter((r) => /!important/i.test(css.slice(r.bodyStart, r.bodyEnd))).length;
+  const sels = [...new Set(hits.map((r) => String(r.sel)))];
+  return `The homepage CSS has ${hits.length} rule${hits.length === 1 ? "" : "s"} on this block's selectors${imp ? ` (${imp} with !important)` : ""}; they also apply to a customised widget's markup. Read: getWebPage include_code=1 on the home WebPage; change or remove: updatePageCss. ${sels.slice(0, 6).map((x) => x.slice(0, 120)).join("; ")}${sels.length > 6 ? `; +${sels.length - 6} more` : ""}`;
+}
+
 // The overview's rows, each Custom Content row naming its widget; plus the hero hooks that exist as site widgets.
 async function dsfOverview(ds, got, out, key, get) {
   const rows = out.homepage.rows;
@@ -2089,6 +2108,24 @@ function wcPick(r, name) {
   const rows = Array.isArray(b.message) ? b.message : [];
   return { site: rows.find((w) => w && w.widget_name === name && w.widget_id && !udsYes(w.is_default)) || null, master: rows.find((w) => w && w.widget_name === name && udsYes(w.is_default)) || null };
 }
+// BD's sitewide lazy-load script turns every YouTube embed iframe into a click-to-play thumbnail unless its URL
+// carries forceplay=1 or nolazy=1, so an autoplay embed saved without one never plays.
+const YT_FIELDS = ["widget_data", "widget_javascript", "content", "content_head", "content_footer_html"];
+function ytAutoplayLazy(args) {
+  for (const f of YT_FIELDS) {
+    const v = args && typeof args[f] === "string" ? args[f] : "";
+    if (/youtube(-nocookie)?\.com\/embed/i.test(v) && /autoplay=1/i.test(v) && !/(forceplay|nolazy)=1/i.test(v)) return `${f}: this site turns every YouTube embed iframe into a click-to-play thumbnail, so autoplay=1 never plays. Add forceplay=1 to the embed URL (the site then starts it muted, in place) or nolazy=1 (the iframe is left as written).`;
+  }
+  return null;
+}
+// A saved widget's PHP fails only when it runs: render it once and report the error BD prints on the page.
+async function widgetRenderError(config, id) {
+  let r = null;
+  try { r = await makeRequest(config, "POST", "/api/v2/data_widgets/render", null, { widget_id: Number(id) }); } catch { return null; }
+  const b = r && r.body;
+  if (!b || typeof b !== "object" || b.status !== "error" || typeof b.message !== "string" || !/^Widget error/i.test(b.message)) return null;
+  return `Saved, but the widget fails when it runs and visitors see this error: ${b.message.slice(0, 400)}`;
+}
 // Whole code fields sent with customize: BD's CSS or JS field is often empty, where replace has nothing to find.
 function wcWhole(args) {
   const whole = {};
@@ -2462,6 +2499,11 @@ async function getDesignSettings(config, args) {
   if (!b) return dsfOverview(ds, got, dsDirectory(ds, got), dsCacheKey(config), get);
   let out = dsBlock(ds, b, got);
   if (out.css && b.widget && !(await dsfCachedCopy(dsCacheKey(config), "Bootstrap Theme - Homepage"))) out.css = dsRowCss(ds, b, got.values, out.css);
+  if (out.css && /^hero\./.test(b.id)) {
+    const home = await dsfHomePage(get);
+    const on = home ? dsPageCssOn(out.css, home.content_css) : null;
+    if (on) out.page_css = on;
+  }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
   if ((/^section\./.test(b.id) && b.widget) || hw) {
     const name = dsExpand(ds.m, hw || b.widget);
@@ -8952,6 +8994,10 @@ async function main() {
         if (rp.problems) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: rp.problems }) }], isError: true };
         _widgetReplace = rp;
       }
+      if (/^(create|update)(Widget|WebPage)$/.test(name) && args && typeof args === "object") {
+        const yt = ytAutoplayLazy(args);
+        if (yt) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [yt] }) }], isError: true };
+      }
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args.content_css === "string") {
         const star = pcssStarDisplay(args.content_css);
         if (star) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [star] }) }], isError: true };
@@ -9701,6 +9747,12 @@ async function main() {
         else drop(result.body.message);
         result.body.replaced = _widgetReplace.replaced;
         result.body.undo = replaceUndoAsSent(_widgetReplace, args);
+      }
+      if ((name === "createWidget" || name === "updateWidget") && args && typeof args.widget_data === "string" && args.widget_data.includes("<?") && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const row = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
+        const wid = (row && typeof row === "object" && row.widget_id) || args.widget_id;
+        const bad = wid ? await widgetRenderError(config, wid) : null;
+        if (bad) result.body.render_error = bad;
       }
       // Hero readability bundle autofill — agent feedback listing which
       // bundle fields the wrapper filled with canonical defaults on a

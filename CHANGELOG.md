@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.628] - 2026-11-11
+
+### Added
+- `createWidget` / `updateWidget` / `createWebPage` / `updateWebPage`: code holding a YouTube embed with `autoplay=1` and neither `forceplay=1` nor `nolazy=1` is refused with the reason: the site turns every YouTube embed iframe into a click-to-play thumbnail.
+- `createWidget` / `updateWidget`: after a widget containing PHP is saved it is rendered once; when it fails, the reply carries `render_error` with the error visitors would see.
+- `getDesignSettings` on a hero block: `page_css` reports homepage CSS rules that already target that block's selectors.
+
+### Changed
+- `getDesignSettings` `hero.background`: a full-hero layer (a background video: YouTube, Vimeo, Wistia or mp4) covers the photo and the overlay; the `css` line says how to put the overlay back above it.
+- Instructions: Rule "Homepage", a section of members, posts, events or other site records is a streaming section placed with `home_rows`, not a custom widget with its own query.
+
 ## [6.59.627] - 2026-11-11
 
 ### Fixed
