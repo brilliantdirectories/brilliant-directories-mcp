@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.625] - 2026-11-11
+
+### Changed
+- Instructions: Rule "Homepage", customising a BD widget: a design change rewrites the HTML with your own classes and leaves the PHP as is; a data or logic change edits the PHP; the ids, names, `data-` attributes and classes its scripts read are kept; its CSS goes in its `widget_style`, never in page CSS.
+- `updatePageCss`: the note says CSS for a custom section or your copy of a BD widget belongs in that widget's CSS field.
+
 ## [6.59.624] - 2026-11-11
 
 ### Changed

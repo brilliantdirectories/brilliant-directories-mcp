@@ -526,7 +526,7 @@ async function buildCategoryTree(config, args) {
 const PCSS_MAX_RULES = 40;
 const PCSS_MAX_SELECTOR = 300;
 const PCSS_NOTES = [
-  "This CSS loads on that page only. A custom section's own CSS belongs in its widget's CSS field.",
+  "This CSS loads on that page only. CSS for a custom section or your copy of a BD widget belongs in that widget's CSS field.",
   "Target a homepage section by its own class, never by .homepage-section-<number>: the number changes when sections are reordered.",
 ];
 const _pcssQueues = new Map();
