@@ -2012,43 +2012,52 @@ function dsfDiffUndo(f, a, b) {
   }
   return { field: f, find: mid(b, l, r), with: mid(a, l, r) };
 }
-// A `find` that is not in the text as typed is matched again with spacing made flexible (around : ; , ( ) { } > + ~ ! =
-// and between words), hex digits in either case and an optional leading zero (.14 / 0.14). The stored spelling is what
-// gets replaced. Returns [{ at, text }].
-function dsfLooseAll(raw, find) {
-  if (find.length < 3) return [];
-  const esc = (c) => c.replace(/[.*+?^${}()|[\]\\\/-]/g, "\\$&");
-  const parts = [];
+// Spacing-neutral form of a text, with the raw index of each kept character: spaces survive only between two words,
+// hex digits are lower case, a leading zero before a decimal point is dropped. One pass, no regex over the text.
+function dsfFlat(raw) {
+  const out = [];
+  const at = [];
+  const word = (c) => (c >= "0" && c <= "9") || (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c === "_" || c === "-";
+  const ws = (c) => c === " " || c === "\n" || c === "\t" || c === "\r" || c === "\f";
+  const digit = (c) => c >= "0" && c <= "9";
   let hex = false;
-  for (let i = 0; i < find.length; i++) {
-    const ch = find[i];
-    const prev = find[i - 1] || "";
-    const next = find[i + 1] || "";
-    if (/\s/.test(ch)) {
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ws(ch)) {
       let j = i;
-      while (j < find.length && /\s/.test(find[j])) j++;
-      parts.push(/[\w-]/.test(prev) && /[\w-]/.test(find[j] || "") ? "\\s+" : "\\s*");
+      while (j < raw.length && ws(raw[j])) j++;
+      if (out.length && word(out[out.length - 1]) && j < raw.length && word(raw[j])) { out.push(" "); at.push(i); }
       i = j - 1;
       hex = false;
       continue;
     }
-    if (ch === "#") { hex = true; parts.push("#"); continue; }
-    if (hex && /[0-9a-f]/i.test(ch)) { parts.push(/[a-f]/i.test(ch) ? `[${ch.toLowerCase()}${ch.toUpperCase()}]` : ch); continue; }
+    if (ch === "#") { hex = true; out.push(ch); at.push(i); continue; }
+    if (hex && ((ch >= "a" && ch <= "f") || (ch >= "A" && ch <= "F") || digit(ch))) { out.push(ch.toLowerCase()); at.push(i); continue; }
     hex = false;
-    if (/[:;,(){}>+~!=]/.test(ch)) { parts.push("\\s*", esc(ch), "\\s*"); continue; }
-    if (ch === "." && /\d/.test(next) && !/\d/.test(prev)) { parts.push("0?\\."); continue; }
-    if (ch === "0" && next === "." && /\d/.test(find[i + 2] || "") && !/[\d.]/.test(prev)) { parts.push("0?"); continue; }
-    parts.push(esc(ch));
+    if (ch === "0" && raw[i + 1] === "." && digit(raw[i + 2] || "") && !(i > 0 && (digit(raw[i - 1]) || raw[i - 1] === "."))) {
+      out.push(".");
+      at.push(i);
+      i++;
+      continue;
+    }
+    out.push(ch);
+    at.push(i);
   }
-  while (parts.length && /^\\s[*+]$/.test(parts[0])) parts.shift();
-  while (parts.length && /^\\s[*+]$/.test(parts[parts.length - 1])) parts.pop();
-  let re;
-  try { re = new RegExp(parts.join(""), "g"); } catch { return []; }
+  return { s: out.join(""), at };
+}
+// A `find` that is not in the text as typed is matched again in spacing-neutral form (see dsfFlat). The stored spelling
+// is what gets replaced. Returns [{ at, text }].
+function dsfLooseAll(raw, find) {
+  if (find.length < 3 || find.length > 20000) return [];
+  const f = dsfFlat(find).s;
+  if (f.length < 3) return [];
+  const r = dsfFlat(raw);
   const out = [];
-  for (let m = re.exec(raw); m; m = re.exec(raw)) {
-    if (!m[0]) { re.lastIndex++; continue; }
-    out.push({ at: m.index, text: m[0] });
-    if (out.length > 200) break;
+  for (let k = r.s.indexOf(f); k >= 0 && out.length <= 200; k = r.s.indexOf(f, k + f.length)) {
+    const a = r.at[k];
+    const last = r.at[k + f.length - 1];
+    const b = raw[last] === "0" && r.s[k + f.length - 1] === "." ? last + 2 : last + 1;
+    out.push({ at: a, text: raw.slice(a, b) });
   }
   return out;
 }

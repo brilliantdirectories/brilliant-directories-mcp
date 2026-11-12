@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.636] - 2026-11-12
+
+### Fixed
+- `replace`: the flexible-spacing match added in 6.59.635 could run for minutes when a long `find` was not in the text. It now compares in one pass.
+
 ## [6.59.635] - 2026-11-12
 
 ### Changed
