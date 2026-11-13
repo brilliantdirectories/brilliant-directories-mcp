@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.640] - 2026-11-13
+
+### Fixed
+- `getDesignSettings {block: "hero.background"}`: the hero background video script now goes in `widget_javascript` and finds its layer by class anywhere in the hero. The 6.59.639 script read `document.currentScript.previousElementSibling`, which only worked inline; an assistant that moved it to the JavaScript field rewrote the selector and the video stayed hidden. The script also keeps one layer when the hero prints the widget twice (a hero with a form).
+
 ## [6.59.639] - 2026-11-12
 
 ### Added
