@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.641] - 2026-11-13
+
+### Fixed
+- `getDesignSettings {block: "hero.background"}`: the video layer rule sets `position` and `z-index` with `!important`. A site that already carried a rule such as `#first_container > div{position:relative}` or `#first_container > :not(#x){position:relative}` from an earlier hand-made hero video kept the new layer in the page flow: the video sat above the headline and the hero grew taller.
+
 ## [6.59.640] - 2026-11-13
 
 ### Fixed
