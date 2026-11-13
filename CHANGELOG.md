@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.642] - 2026-11-13
+
+### Changed
+- `getDesignSettings {block: "hero.background"}`: one hero background video recipe for a video file and for YouTube, with the exact `widget_data` for each and the same `widget_javascript` and `widget_style` for both. The layer stays invisible until the video is playing (the `playing` event of a video file, state 1 of the YouTube player), so the hero photo shows first and a YouTube play button or thumbnail is never visible.
+
 ## [6.59.641] - 2026-11-13
 
 ### Fixed
