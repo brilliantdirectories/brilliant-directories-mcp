@@ -1377,7 +1377,12 @@ const DSF_CODE = ["widget_data", "widget_style", "widget_javascript"];
 const DSF_PAGE_FIELDS = ["content", "content_css", "content_head", "content_footer_html", "title", "meta_desc"];
 const DSF_MARKUP = new Set(["widget_data", "content", "content_footer_html", "menu_name", "html", "area", "text"]);
 const DSF_TEXT_TYPES = new Set(["text", "area", "html", "code", "embed", "img"]);
-const DSF_SETTING_BLOCKS = new Set(["general.header", "general.footer", "general.announcement"]);
+const DSF_SETTING_BLOCKS = new Set(["general.header", "general.logo", "general.footer", "general.announcement"]);
+// The home page record's own width option, which no design setting holds.
+const DS_FULL_WIDTH = /full[ -]?(screen|width|bleed)|edge[ -]to[ -]edge|page width|boxed/i;
+function dsPageOpt(home) {
+  return { page: "home", seo_id: Number(home.seo_id), option: "Full Screen Page Width", on: String(home.content_layout) === "1", set: "updateWebPage {seo_id, content_layout}: 1 on, 0 off. On, the homepage's Custom Content sections run edge to edge." };
+}
 const DSF_MAX_HITS = 10;
 const DSF_ALL_SAY = " (several occurrences: add nth from the hit, or all:true for every one)";
 const DSF_MAX_WIDGETS = 20;
@@ -1506,8 +1511,8 @@ async function dsfOverview(ds, got, out, key, get) {
   const rows = out.homepage.rows;
   const ccRows = rows.filter((r) => /^content\.\d+$/.test(r.block || ""));
   for (const r of rows) if (r.block) delete r.label;
-  const needHome = ccRows.some((r) => r.block === "content.1");
-  const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), needHome ? dsfHomePage(get) : Promise.resolve(null)]);
+  const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
+  if (home) out.homepage.page = dsPageOpt(home);
   const named = (r, name) => {
     r.widget = name;
     const w = ws.byName ? ws.byName.get(name) : null;
@@ -1984,7 +1989,13 @@ async function dsfFind(ds, got, text, key, get) {
     if (els.length > DSF_MAX_ELS) out.more_elements = els.length - DSF_MAX_ELS;
     out.elements_say = DSF_LOOK_SAY;
   }
-  if (!hits.length && !els.length) out.hint = DSF_HINT;
+  if (home && DS_FULL_WIDTH.test(q)) out.page_option = dsPageOpt(home);
+  const named = hits.length ? [] : dsFind(ds, q).slice(0, 6);
+  if (named.length) {
+    out.settings = named.map((b) => `${b.id} ${b.title}`);
+    out.settings_say = "Design settings named like this: getDesignSettings {block} lists them with their values.";
+  }
+  if (!hits.length && !els.length && !named.length && !out.page_option) out.hint = DSF_HINT;
   else if (hits.length) out.edit = dsfEditLine(out.hits);
   out.ms = Date.now() - t0;
   return out;
@@ -2282,13 +2293,14 @@ function ytAutoplayLazy(args, orig) {
   return null;
 }
 // A new background video is often saved in another place than the old one, which then keeps loading and playing
-// beside it. After such a save the reply names every other autoplaying video the homepage holds.
+// beside it. After such a save the reply names every other autoplaying video the homepage holds (other). A video saved
+// into a widget the homepage does not show never plays there: the reply says so and names the hero's widgets (hidden).
 const VID_PAGE_FIELDS = ["content", "content_head", "content_footer_html"];
 function vidKind(t) {
   if (typeof t !== "string" || !/autoplay/i.test(t)) return "";
   return /youtube(-nocookie)?\.com\/embed/i.test(t) ? "YouTube" : /player\.vimeo\.com\/video/i.test(t) ? "Vimeo" : /<video\b|\.(mp4|webm)\b/i.test(t) ? "video file" : "";
 }
-async function vidElsewhere(config, tool, args, orig) {
+async function vidElsewhere(config, tool, args, orig, newId) {
   const has = YT_FIELDS.some((f) => vidKind(args[f]));
   if (!has && !(orig && YT_FIELDS.some((f) => vidKind(orig[f])))) return null;
   let ds;
@@ -2300,8 +2312,8 @@ async function vidElsewhere(config, tool, args, orig) {
   _dsfWidgetCache.delete(key);
   const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
   if (!ws || !ws.byName) return null;
-  const isWidget = tool === "updateWidget";
-  const saved = Number(isWidget ? args.widget_id : args.seo_id);
+  const isWidget = tool === "updateWidget" || tool === "createWidget";
+  const saved = Number(isWidget ? (args.widget_id || newId) : args.seo_id);
   const found = [];
   const seen = new Set();
   let savedOnHome = !isWidget && !!home && Number(home.seo_id) === saved;
@@ -2323,9 +2335,13 @@ async function vidElsewhere(config, tool, args, orig) {
     else if (b && b.widget) want(dsExpand(ds.m, b.widget));
   }
   if (home && (isWidget || Number(home.seo_id) !== saved)) for (const f of VID_PAGE_FIELDS) if (vidKind(home[f])) found.push(`the home WebPage ${f} (${vidKind(home[f])})`);
+  if (isWidget && has && saved && !savedOnHome) {
+    const hero = String(got.values.custom_30 || "");
+    return { hidden: `Widget ${saved} is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there.${hero ? ` The hero is drawn by "${hero}";` : ""} a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` };
+  }
   if (!savedOnHome || !found.length) return null;
-  if (!has) return `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.`;
-  return `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.`;
+  if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
+  return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
 // A background video that does not exist plays nothing and looks saved. YouTube and the file host are asked before the save;
 // no answer, or any answer but "not there" / "not allowed", lets the save through.
@@ -2356,7 +2372,7 @@ async function vidSourceDead(args, orig) {
   }));
   return bad.find(Boolean) || null;
 }
-const VID_BG_NOTE = "A background video stays under the content when its layer is position:absolute; inset:0; z-index:0; overflow:hidden inside a position:relative section, the tint is its own layer above it, and the content is position:relative with a higher z-index. It fills the section when an iframe has position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:177.78vh; min-width:100%; height:56.25vw; min-height:100%, and a <video> has width:100%; height:100%; object-fit:cover.";
+const VID_BG_NOTE = "A background video stays under the content when its layer is position:absolute; inset:0; z-index:0; overflow:hidden inside a position:relative section, the tint is its own layer above it, and the content is position:relative with a higher z-index. It fills the section when an iframe has position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:177.78vh; min-width:100%; height:56.25vw; min-height:100%, and a <video> has width:100%; height:100%; object-fit:cover. Behind the homepage hero: getDesignSettings {block: \"hero.background\"} gives the widget markup that works as written.";
 function vidIsBackground(args) {
   return YT_FIELDS.some((f) => { const v = args && typeof args[f] === "string" ? args[f] : ""; return !!vidKind(v) && (/controls=0|background=1/i.test(v) || /<video\b[^>]*\bautoplay\b(?![^>]*\bcontrols\b)/i.test(v)); });
 }
@@ -2640,7 +2656,8 @@ function dsDirectory(ds, got) {
   return out;
 }
 
-// Search when `block` is not an exact id: exact matches (id, title, label, name) win over partial ones.
+// Search when `block` is not an exact id: exact matches (id, title, label, name) win over partial ones, and the
+// whole phrase wins over its words (logo text: the blocks naming most of the words, titles counting double).
 function dsFind(ds, q) {
   const s = q.toLowerCase();
   const exact = [];
@@ -2655,7 +2672,17 @@ function dsFind(ds, q) {
     }
   }
   if (exact.length) return exact;
-  return part.sort((a, c) => c.score - a.score).map((x) => x.b);
+  if (part.length) return part.sort((a, c) => c.score - a.score).map((x) => x.b);
+  const ws = s.split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !DSF_FILLER.has(dsfStem(w)) && !/^(and|for|with|update|change|make|set|edit)$/.test(w));
+  if (!ws.length) return [];
+  for (const b of ds.m.blocks) {
+    const head = `${b.id} ${b.title}`.toLowerCase();
+    const labels = b.fields.map((f) => String(f.l).toLowerCase()).join(" | ");
+    const score = ws.reduce((n, w) => n + (head.includes(w) ? 2 : labels.includes(w) ? 1 : 0), 0);
+    if (score) part.push({ b, score, head: ws.some((w) => head.includes(w)) });
+  }
+  const top = Math.max(0, ...part.map((x) => x.score));
+  return part.filter((x) => x.score === top || x.head).sort((a, c) => c.score - a.score).map((x) => x.b);
 }
 
 // A 403 is a missing permission only when the body is BD's own permission message; anything else is a firewall block.
@@ -2809,6 +2836,16 @@ async function getDesignSettings(config, args) {
     if (copy) out.widget_copy = `This site's own copy: widget_id ${copy}; updateWidget edits it; deleteWidget removes it and BD's original widget shows again.`;
   }
   if (b.id === "hero.cta") out.hero_extra_content = await dsHeroExtra(config);
+  if (b.id === "hero.primary" || b.id === "hero.background") {
+    const hc = await udsHeroContrast(config).catch(() => null);
+    if (hc) out.unreadable = hc;
+  }
+  if (b.id === "general.logo") {
+    let si = null;
+    try { si = await get("/api/v2/site_info/get", {}); } catch { si = null; }
+    const bi = si && si.status === 200 && si.body && si.body.message ? si.body.message.brand_images_relative : null;
+    if (bi && typeof bi === "object") out.text_logo = bi.website_logo ? `Not shown: the header shows the uploaded logo image (${bi.website_logo}), which replaces this title, slogan and icon. The image is changed in the admin, General Settings.` : "Shown in the header: this title, slogan and icon are the site's logo.";
+  }
   if (out.settings) {
     const wc = await udsWidgetCss(config, out.settings.map((x) => ({ name: x.name, before: null, after: "" }))).catch(() => null);
     for (const r of wc || []) {
@@ -3088,7 +3125,7 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
     return `${label} takes plan ids from this site, comma-separated: ${udsCap(got.rows.map((r) => `${r.subscription_id} (${r.subscription_name})`))}.`;
   }
   if (f.t === "font") return v === "" || /^[A-Za-z0-9 ]{1,60}$/.test(v) ? null : `${label} takes one font family name, such as Open Sans: letters, digits and spaces.`;
-  if (f.t === "icon") return /^[A-Za-z0-9 _-]*$/.test(v) ? null : `${label} takes a Font Awesome class such as fa-heart: letters, digits, spaces, - and _.`;
+  if (f.t === "icon") return /^[A-Za-z0-9 _-]*$/.test(v) ? null : `${label} takes a Font Awesome 4.7 class such as fa-heart: letters, digits, spaces, - and _.`;
   if (f.t === "img") return v === "" || /^(https?:\/\/[A-Za-z0-9.-]+(:\d+)?)?\/[A-Za-z0-9._~%\/+-]*(\?[A-Za-z0-9._~%\/+=&-]*)?$/.test(v) ? null : `${label} takes a site image path such as /images/photo.webp, an https image URL, or "" for none.`;
   if (f.t !== "sel" && /[<"`]|\$\{/.test(v)) return `${label} takes plain text: no <, ", backtick or \${.`;
   const opts = (x.opts || []).map((o) => [dsExpand(ds.m, o[0]), o[1], o[2] || {}]);
@@ -3469,16 +3506,10 @@ function udsSelHit(key, sel) {
   const tag = /^[a-z][a-z0-9]*/i.exec(last);
   return !!tag && !!key.tag && !!key.anc && tag[0].toLowerCase() === key.tag && under(parts.slice(0, -1).join(" "), key.anc);
 }
-async function udsWidgetCss(config, changed) {
-  const map = udsSelMap();
-  const todo = changed.filter((c) => !c.deleted && c.before !== c.after && Array.isArray(map[c.name]));
-  if (!todo.length) return null;
-  let ds;
-  try { ds = dsLoad(); } catch { return null; }
+// The CSS that styles the homepage besides the settings: the hero widget, the hero hooks, every row's widget (nested ones too) and the home page.
+async function udsHomeCss(config, ds, got) {
   const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
   const key = dsCacheKey(config);
-  const got = await dsValues(config, ds);
-  if (!got || got.error) return null;
   const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
   const sources = [];
   const seen = new Set();
@@ -3499,6 +3530,48 @@ async function udsWidgetCss(config, changed) {
     else if (b && b.widget) want(dsExpand(ds.m, b.widget));
   }
   if (home && home.content_css) sources.push({ where: { page: "home", field: "content_css" }, css: String(home.content_css) });
+  return sources;
+}
+
+// A hero with no image, overlay or background of its own sits on the body background: the headline can be unreadable there.
+const UDS_HERO_LOOK = ["custom_30", "custom_77", "custom_76", "custom_78", "custom_26", "custom_1", "homepage_bg_overlay_transparency"];
+function udsLum(c) {
+  const t = String(c || "").trim().toLowerCase();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(t);
+  const v = hex ? (hex[1].length === 3 ? hex[1].split("").map((x) => parseInt(x + x, 16)) : [0, 2, 4].map((k) => parseInt(hex[1].slice(k, k + 2), 16))) : /^rgba?\(/.test(t) ? t.slice(t.indexOf("(") + 1, -1).split(",").slice(0, 3).map(Number) : null;
+  if (!v || v.length !== 3 || !v.every((x) => Number.isFinite(x))) return null;
+  const [r, g, b] = v.map((x) => { const u = x / 255; return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4); });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+async function udsHeroContrast(config, over) {
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const v = Object.assign({}, got.values, over || {});
+  if (!dsHeroWidget(ds, v)) return null;
+  if ((String(v.custom_77) === "1" && v.custom_76) || (v.custom_78 && String(v.custom_78) !== "0") || Number(v.homepage_bg_overlay_transparency) > 0) return null;
+  const fg = udsLum(v.custom_26), bg = udsLum(v.custom_1);
+  if (fg === null || bg === null) return null;
+  const ratio = (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+  if (ratio >= 2) return null;
+  const css = (await udsHomeCss(config, ds, Object.assign({}, got, { values: v }))).map((x) => x.css).concat(String(v.website_css || "")).join("\n");
+  if (/hero-bg-video|vegas/i.test(css)) return null;
+  for (const m of css.matchAll(/(?:#first_container|\.homepage_settings)\s*(::?(?:before|after))?\s*(?:,[^{}]*)?\{([^}]*)\}/gi)) {
+    if (/background(-color|-image)?\s*:/i.test(m[2]) && (!m[1] || /position\s*:\s*(absolute|fixed)/i.test(m[2]))) return null;
+  }
+  return `The headline cannot be read: the hero shows no background image, so it sits on the body background ${v.custom_1}, and the headline colour ${v.custom_26} is nearly the same (contrast ${ratio.toFixed(1)} to 1). Show a hero image (custom_77 = 1 with custom_76) or set the headline colour (custom_26).`;
+}
+
+async function udsWidgetCss(config, changed) {
+  const map = udsSelMap();
+  const todo = changed.filter((c) => !c.deleted && c.before !== c.after && Array.isArray(map[c.name]));
+  if (!todo.length) return null;
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const sources = await udsHomeCss(config, ds, got);
   const out = [];
   for (const src of sources) {
     const scan = pcssScan(src.css);
@@ -3549,6 +3622,10 @@ async function udsResult(config, idx, status, changedIn, unchanged, notes, extra
   if (status === "applied" || status === "dry_run") {
     const wc = await udsWidgetCss(config, changed.concat(kept.map((n) => ({ name: n, before: null, after: "" })))).catch(() => null);
     if (wc) res.notes = udsWcssNotes(idx, wc).concat(res.notes);
+    if (changed.some((c) => UDS_HERO_LOOK.includes(c.name))) {
+      const hc = await udsHeroContrast(config, Object.fromEntries(changed.filter((c) => !c.deleted).map((c) => [c.name, c.after]))).catch(() => null);
+      if (hc) res.notes = [hc].concat(res.notes);
+    }
   }
   return res;
 }
@@ -3738,7 +3815,7 @@ async function fetchImageDimensionsBatch(urlsArg) {
 
 // Free stock video for a background: Pexels video pages (or ids) resolved to a playable mp4, with no API key.
 // Pexels' download address redirects to the file of the asked width; a width the video has no file for is a 404.
-const SV_USE = "Play url in a <video> with autoplay, muted, loop and playsinline and no controls attribute: it starts by itself and shows no player buttons and no captions. Without muted it does not start; without playsinline phones open it full screen.";
+const SV_USE = "Play url in a <video> with autoplay, muted, loop and playsinline and no controls attribute: it starts by itself and shows no player buttons and no captions. Without muted it does not start; without playsinline phones open it full screen. As the homepage hero background: getDesignSettings {block: \"hero.background\"} gives the widget markup that works as written.";
 async function stockVideoOne(ref) {
   const id = (/(\d{4,})\/?(?:[?#].*)?$/.exec(ref) || [])[1];
   if (!id || !(/^\d+$/.test(ref) || /pexels\.com\/(?:[a-z]{2}-[a-z]{2}\/)?video\//i.test(ref))) return { video: ref, error: "not a Pexels video page (https://www.pexels.com/video/<name>-<id>/) or video id" };
@@ -7083,7 +7160,7 @@ function validateFilterOperatorInArgs(args) {
 // Excluded by user-confirmed semantics:
 // - active: multi-value 1-6 on users (not [0,1])
 // - status: wrapper-managed below (always 1 on createMultiImagePostPhoto)
-// - content_layout: empty OR 1 only (0 is not a real BD value)
+// - content_layout: 1 = on; empty or 0 = off (the admin stores empty, an API update cannot store empty)
 // - post_status / group_status: 0, 1, OR 3 (3 = pending admin moderation)
 const BOOLEAN_INT_FIELDS = new Set([
   "auto_geocode", "auto_image_import", "auto_match",
@@ -10248,9 +10325,11 @@ async function main() {
         if (typeof bad === "string") result.body.render_error = bad;
         else if (bad && bad.prints) result.body.prints = bad.prints;
       }
-      if ((name === "updateWidget" || name === "updateWebPage") && args && typeof args === "object" && result.body && typeof result.body === "object" && result.body.status === "success") {
-        const also = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
-        if (also) result.body.other_video = also;
+      if ((name === "createWidget" || name === "updateWidget" || name === "updateWebPage") && args && typeof args === "object" && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const vidRow = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
+        const vid = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig, vidRow && typeof vidRow === "object" ? vidRow.widget_id : undefined).catch(() => null);
+        if (vid && vid.other) result.body.other_video = vid.other;
+        if (vid && vid.hidden) result.body.not_on_homepage = vid.hidden;
       }
       if (/^(create|update)(Widget|WebPage)$/.test(name) && result.body && typeof result.body === "object" && result.body.status === "success" && vidIsBackground(args)) result.body.background_video = VID_BG_NOTE;
       // Hero readability bundle autofill — agent feedback listing which

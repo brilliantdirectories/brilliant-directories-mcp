@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.639] - 2026-11-12
+
+### Added
+- `createWidget` or `updateWidget` that saves an autoplaying video into a widget the homepage does not show returns `not_on_homepage`: no homepage section, hero widget or widget nested in them shows it, so the video does not play there. The note names the widget that draws the hero and the two site widget names that print inside it.
+- `getDesignSettings` with no arguments returns `homepage.page`: the home page's Full Screen Page Width option, on or off, and the `updateWebPage` call that sets it. `find` returns it as `page_option` for words such as full screen, full width, edge to edge or boxed.
+- `getDesignSettings` `find` that matches no page text returns `settings`: the settings blocks named like the words (logo, slogan, logo text), to read with `block`. `block` given as several words (logo and slogan) finds the block the same way.
+- `getDesignSettings` `block: "hero.background"` carries the measured markup for a background video behind the whole hero: one site widget whose layer is moved to be the first child of the hero, with the tint on the video and the hero text above both. The `background_video` note of a save and `getStockVideo` point to it.
+- `getDesignSettings` `block: "general.logo"` returns `text_logo`: whether the header shows the text logo (title, slogan, icon) or an uploaded logo image in its place.
+- A hero that shows no image, slideshow, overlay or background of its own sits on the body background. When the headline colour is nearly the same as that background, `updateDesignSettings` puts a note first that the headline cannot be read, and the `hero.primary` and `hero.background` blocks return it as `unreadable`.
+
+### Changed
+- `other_video` is also checked on `createWidget`.
+- `find` searches the text logo and slogan (Logo Designer).
+- `updateWebPage` `content_layout` takes `0` to turn Full Screen Page Width off.
+- The logo icon note names Font Awesome 4.7 and says any icon of that set works.
+
 ## [6.59.638] - 2026-11-12
 
 ### Added

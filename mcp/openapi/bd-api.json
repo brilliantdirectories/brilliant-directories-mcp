@@ -10823,9 +10823,10 @@
                   "content_layout": {
                     "type": "integer",
                     "enum": [
+                      0,
                       1
                     ],
-                    "description": "**Full Screen Page Width override.** OMIT for normal pages (BD's default container width). Set to `1` for full-bleed pages — individual sections in `content` can then break edge-to-edge (background bands, hero strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake full-bleed with negative-margin/9999px-padding tricks in `content_css` — breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered."
+                    "description": "**Full Screen Page Width override.** OMIT for normal pages (BD's default container width). On an update, `0` turns it off. Set to `1` for full-bleed pages — individual sections in `content` can then break edge-to-edge (background bands, hero strips, viewport-wide images).\n\n**For full-bleed sections, set `content_layout=1` FIRST.** Do NOT fake full-bleed with negative-margin/9999px-padding tricks in `content_css` — breaks horizontal scroll, fights `overflow: hidden` parents, prevents future layout changes. Anti-pattern.\n\nPattern with `content_layout=1`: scoped CSS in `content_css` gives each section its own edge-to-edge background; inner `<div class=\"container\">` (or page-scoped max-width wrapper) keeps readable copy centered."
                   },
                   "content_sidebar": {
                     "type": "string",
