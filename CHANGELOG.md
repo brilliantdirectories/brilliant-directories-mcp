@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.643] - 2026-11-13
+
+### Fixed
+- `getDesignSettings {block: "hero.background"}`, YouTube: the script showed the video the moment YouTube reported it playing, which is when YouTube draws its title and a previous / pause / next overlay (about 4 seconds, again at every loop restart). The video is now shown 5 seconds after playback starts and hidden for the last second and a half before each restart, with a 1.2 second dissolve in and out. The text now says what a visitor sees while the video is hidden (the hero photo when `custom_77` is on, otherwise the hero background colour) and to leave those settings alone unless asked. The script also reads the iframe address from `data-youtube-src` when the site's YouTube handler has moved it, and starts the player after the page has loaded; before, it could miss the YouTube branch and never load the player API.
+
 ## [6.59.642] - 2026-11-13
 
 ### Changed
