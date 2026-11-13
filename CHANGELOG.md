@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.644] - 2026-11-13
+
+### Changed
+- `getDesignSettings {block: "hero.background"}`: the hero video text now says the Homepage prints the "Extra Content Above" widget by itself, whatever the hero widget contains, so the hero widget is not edited, and that video code already in the hero widget from an earlier attempt is removed, not completed. Before, an assistant that found leftover video CSS and script in a hero site copy saved the recipe and then also rebuilt the old video inside the hero widget, which showed a second small video in the hero.
+
 ## [6.59.643] - 2026-11-13
 
 ### Fixed
