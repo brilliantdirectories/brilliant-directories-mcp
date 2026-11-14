@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.659] - 2026-11-14
+
+### Fixed
+- `getDesignSettings` and `find`: a site whose widget rows carry no `is_default` (a key that reads the site table directly) now gets its own widgets. Before, the `is_default=false` list came back empty, every Custom Content row showed `missing`, its colours and text were unread, and an assistant asked to change a homepage section by its heading could edit a different section.
+
 ## [6.59.658] - 2026-11-14
 
 ### Changed

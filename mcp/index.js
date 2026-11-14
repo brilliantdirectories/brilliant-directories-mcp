@@ -1662,21 +1662,30 @@ async function dsfSiteWidgets(key, get) {
   const hit = _dsfWidgetCache.get(key);
   if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
   const p = (async () => {
-    const q = { property: "is_default", property_value: "false", limit: 100 };
-    const first = await get("/api/v2/data_widgets/get", Object.assign({ page: 1 }, q));
     const ok = (r) => r && r.status === 200 && r.body && typeof r.body === "object" && (r.body.status === "success" || / not found$/.test(String(r.body.message)));
-    if (!ok(first)) return { error: true, requests: 1 };
-    const rows = Array.isArray(first.body.message) ? first.body.message.slice() : [];
-    const pages = Math.min(Number(first.body.total_pages) || 1, DSF_MAX_PAGES);
-    let requests = 1;
-    if (pages > 1) {
-      const more = await Promise.all(Array.from({ length: pages - 1 }, (x, i) => get("/api/v2/data_widgets/get", Object.assign({ page: i + 2 }, q))));
-      requests += more.length;
-      for (const r of more) if (ok(r) && Array.isArray(r.body.message)) rows.push(...r.body.message);
+    const list = async (q, done) => {
+      const first = await get("/api/v2/data_widgets/get", Object.assign({ page: 1 }, q));
+      if (!ok(first)) return null;
+      const rows = Array.isArray(first.body.message) ? first.body.message.slice() : [];
+      const total = Number(first.body.total_pages) || 1;
+      const pages = done && done(rows) ? 1 : Math.min(total, DSF_MAX_PAGES);
+      if (pages > 1) {
+        const more = await Promise.all(Array.from({ length: pages - 1 }, (x, i) => get("/api/v2/data_widgets/get", Object.assign({ page: i + 2 }, q))));
+        for (const r of more) if (ok(r) && Array.isArray(r.body.message)) rows.push(...r.body.message);
+      }
+      return { rows, requests: pages, partial: pages > 1 && total > DSF_MAX_PAGES };
+    };
+    let got = await list({ property: "is_default", property_value: "false", limit: 100 });
+    if (!got) return { error: true, requests: 1 };
+    let requests = got.requests;
+    // A super key reads the site table directly: rows carry no is_default and that filter matches nothing.
+    if (!got.rows.length) {
+      const all = await list({ limit: 100 }, (rows) => rows.some((w) => w && "is_default" in w));
+      if (all) { requests += all.requests; got = all; }
     }
     const byName = new Map();
-    for (const w of rows) if (w && w.widget_id && !udsYes(w.is_default) && !byName.has(w.widget_name)) byName.set(w.widget_name, w);
-    return { byName, requests, partial: (Number(first.body.total_pages) || 1) > DSF_MAX_PAGES };
+    for (const w of got.rows) if (w && w.widget_id && !udsYes(w.is_default) && !byName.has(w.widget_name)) byName.set(w.widget_name, w);
+    return { byName, requests, partial: got.partial };
   })().catch(() => ({ error: true, requests: 1 }));
   const entry = { at: Date.now(), p };
   _dsfWidgetCache.set(key, entry);
