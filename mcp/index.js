@@ -212,6 +212,47 @@ function parseImageHeader(buf) {
   throw new Error("unsupported image format (only jpg/png)");
 }
 
+// Tools that fetch an address an AI supplies reach only public hosts: no private, loopback, link-local or multicast address,
+// checked on every DNS answer and on every redirect hop.
+function netPrivateIp(ip) {
+  let a = String(ip).toLowerCase().replace(/^\[|\]$/g, "");
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(a);
+  if (mapped) a = mapped[1];
+  const v4 = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(a);
+  if (v4) {
+    const [p, q] = [Number(v4[1]), Number(v4[2])];
+    return p === 0 || p === 10 || p === 127 || p >= 224 || (p === 100 && q >= 64 && q <= 127) || (p === 169 && q === 254) || (p === 172 && q >= 16 && q <= 31) || (p === 192 && q === 168) || (p === 192 && q === 0 && Number(v4[3]) === 0) || (p === 198 && (q === 18 || q === 19));
+  }
+  if (a.includes(":")) return a === "::" || a === "::1" || /^f[cd]/.test(a) || /^fe[89ab]/.test(a) || /^ff/.test(a) || /^::ffff:/.test(a);
+  return false;
+}
+async function netPublicUrl(raw) {
+  let u;
+  try { u = new URL(String(raw)); } catch { return "url must be a full http or https address"; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return "url must be a full http or https address";
+  const host = u.hostname.replace(/^\[|\]$/g, "");
+  if (/^localhost$|\.localhost$|\.local$|\.internal$/i.test(host) || netPrivateIp(host)) return "url must be a public address: private, loopback and link-local hosts are not fetched";
+  if (!/^[\d.]+$/.test(host) && !host.includes(":")) {
+    let addrs = [];
+    try { addrs = await require("dns").promises.lookup(host, { all: true }); } catch { return `could not resolve ${host}`; }
+    if (!addrs.length || addrs.some((x) => netPrivateIp(x.address))) return "url must be a public address: private, loopback and link-local hosts are not fetched";
+  }
+  return null;
+}
+async function netFetchPublic(raw, opts) {
+  let url = String(raw);
+  for (let hop = 0; hop <= 5; hop++) {
+    const bad = await netPublicUrl(url);
+    if (bad) { const e = new Error(bad); e.netRefused = true; throw e; }
+    const r = await fetch(url, Object.assign({}, opts, { redirect: "manual" }));
+    const loc = r.status >= 300 && r.status < 400 ? r.headers.get("location") : null;
+    if (!loc) return r;
+    try { await r.body?.cancel(); } catch {}
+    url = new URL(loc, url).toString();
+  }
+  throw new Error("too many redirects");
+}
+
 async function fetchImageDimensionsForUrl(url) {
   if (!url || typeof url !== "string") {
     return { status: "error", message: "url parameter required" };
@@ -219,9 +260,8 @@ async function fetchImageDimensionsForUrl(url) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 5000);
   try {
-    const response = await fetch(url, {
+    const response = await netFetchPublic(url, {
       headers: { Range: "bytes=0-65535", "User-Agent": "brilliant-directories-mcp" },
-      redirect: "follow",
       signal: ctl.signal,
     });
     if (!response.ok && response.status !== 206) {
@@ -2416,7 +2456,7 @@ async function vidSourceDead(args, orig) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 5000);
     try {
-      const r = await fetch(j.url, { method: j.kind === "video file" ? "HEAD" : "GET", headers: { "User-Agent": "brilliant-directories-mcp" }, signal: ctl.signal });
+      const r = await netFetchPublic(j.url, { method: j.kind === "video file" ? "HEAD" : "GET", headers: { "User-Agent": "brilliant-directories-mcp" }, signal: ctl.signal });
       if (r.status === 404 || r.status === 410 || (j.kind === "YouTube video" && r.status === 400)) return `${j.f}: the ${j.kind} ${j.id} does not exist, so nothing would play. Use one that exists.`;
       if (j.kind === "YouTube video" && (r.status === 401 || r.status === 403)) return `${j.f}: the YouTube video ${j.id} is private or does not allow playing on other websites. Use another video.`;
       return null;

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.648] - 2026-11-13
+
+### Security
+- `getImageDimensions` (`url` and `urls`) and the background video check on `createWidget` / `updateWidget` / `createWebPage` / `updateWebPage` fetch only public http and https addresses. Private, loopback, link-local, CGNAT and multicast addresses are refused, on the address itself, on every address its host name resolves to (npm), and on every redirect hop (at most 5). Before, a caller could make these fetches reach a private network and learn whether an address answered (GitHub issue #10). Response bodies were never returned, only image width and height or an error. The hosted Worker 3.14.27 applies the same checks without DNS resolution; Cloudflare's network does not route to private ranges.
+
 ## [6.59.647] - 2026-11-13
 
 ### Added
