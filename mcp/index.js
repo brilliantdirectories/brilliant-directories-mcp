@@ -1078,7 +1078,7 @@ function pcssRecipeState(R, cur) {
 function pcssRecipeNow(R, cur) {
   const st = pcssRecipeState(R, cur);
   const values = {};
-  for (const k of Object.keys(R.values)) if (!R.values[k].set) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token;
+  for (const k of Object.keys(R.values)) if (!R.values[k].set) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token.replace(/^calc\((\d+px)\)$/, "$1");
   return { looks_on: Object.keys(st.on).filter((k) => st.on[k]), values };
 }
 // field_icons as a list: field N's icon replaces the glyph of its own icon, or is added where it has none, and its text

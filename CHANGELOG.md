@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.660] - 2026-11-14
+
+### Changed
+- `updatePageCss` recipe `hero.search_box`: the search sits 20px under the hero sub-title on every search hero type, desktop and phone (two more measured rules, 26 in all). New value `title_gap` (pixels, 0 to 96) sets that space; a later call that leaves it out keeps it. Before, the sub-title could sit 0 to 7px above the fields.
+- `getDesignSettings`: Background Visibility (`custom_32`), Sub-Title Text: Color (`custom_38`), Search Box Font Color (`custom_39`), Search Box Background (`custom_33`) and Search Box Padding say what to do when the box behind the search is hidden: padding under 8 or the `flush` look hides the box (`custom_32` 0), and the sub-title and the search box font colour (`custom_39`) then take the headline colour (`custom_26`), unless the user asks otherwise. Before, the fields touched a visible box edge and the sub-title and labels kept colours chosen for the box.
+
 ## [6.59.659] - 2026-11-14
 
 ### Fixed
