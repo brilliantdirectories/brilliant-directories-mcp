@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.657] - 2026-11-14
+
+### Changed
+- `getDesignSettings {block: "home.rows"}`: the row spacing fields (`section_{N}_top_spacing`, `section_{N}_bottom_spacing`) carry the spacing rule as their own note: 90 unless the user names spacing; 0 on a Custom Content row, whose section widget pads itself 90px. The block note no longer mentions the 40px default. Before, an assistant asked to space the sections evenly set every row to 40px.
+
 ## [6.59.656] - 2026-11-14
 
 ### Changed
