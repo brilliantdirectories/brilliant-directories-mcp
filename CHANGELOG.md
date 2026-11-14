@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.646] - 2026-11-13
+
+### Changed
+- `getDesignSettings {block: "hero.search_box"}`: every rule is saved; none is skipped because the homepage CSS already styles the search. Before, an assistant on a homepage with an earlier search restyle saved only the rules it judged missing, and the Select2 clear button sat on its arrow once an option was chosen.
+- `hero.cta`: on hero types whose selectors are not listed (the post-type searches), the note says their fields are restyled with the rules in `hero.search_box`. Before, it said only that the selectors were not listed.
+
 ## [6.59.645] - 2026-11-13
 
 ### Added
