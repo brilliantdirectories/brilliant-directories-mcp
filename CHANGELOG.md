@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.650] - 2026-11-14
+
+### Changed
+- `updatePageCss {recipe: "hero.search_box", values: {joined: true}}`: the layout follows the space the search has. In a hero column of 60% or less, 4 or more items form a card with 2 per row; in a column of 30% or less, or with the Vertical search layout, one field per row. Before, a search in a half-width column kept 3 or 4 fields per row and cut off their text. The fields of post-type searches no longer sit 8px in from the hero headline.
+- `getDesignSettings {block: "hero.secondary"}`: says the column holds an image, a video or other content beside the hero text and search, as one site widget placed with `<div>[widget=Name]</div>`, with the video markup and which side the column is on. Before, an assistant asked for a video beside the search copied the hero search widget and replaced the content of Extra Content Above.
+- `getDesignSettings {block: "hero.search_box"}`: Background Visibility 0 and Search Box Padding 0 line the search up with the hero headline.
+- Widget references in editor fields (Custom Content, secondary hero content, page content) are sent as `<div>[widget=Name]</div>`: a bare shortcode is wrapped in `<p>` when the field is next saved in the admin. `updateDesignSettings` accepts the `<div>` form for Custom Content; `[widget=Name]` and `<p>[widget=Name]</p>` are still accepted.
+- Recipe calls may send up to 120 rules.
+
 ## [6.59.649] - 2026-11-14
 
 ### Added

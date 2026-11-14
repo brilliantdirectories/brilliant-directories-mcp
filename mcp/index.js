@@ -1065,7 +1065,7 @@ async function updatePageCss(config, args) {
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
   args = rec.args;
   // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
-  const checked = pcssValidate(args, rec.recipe ? { rules: 80, selector: 600 } : undefined);
+  const checked = pcssValidate(args, rec.recipe ? { rules: 120, selector: 600 } : undefined);
   if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });
   let seoId = null;
   if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") {
@@ -1143,7 +1143,7 @@ const DS_ADDON_NOTE = "Add-on status cannot be read through the API: a setting o
 const DS_ADDON_UNKNOWN = "The site does not report the status of an add-on marked unknown: a setting or option that needs it does nothing unless it is active.";
 const DS_PERMISSION = /does not have permission/i;
 const DS_CC_REF = /^homepage_content_([2-9]|10)$/;
-const DS_CC_FORMAT = "[widget=<site widget name>] or empty; create the widget first with createWidget";
+const DS_CC_FORMAT = "<div>[widget=<site widget name>]</div> or empty; create the widget first with createWidget";
 const DS_NOT_STORED = "not yet; writing it creates it";
 const _dsCache = new Map();
 let _dsLoaded = null;
@@ -1527,7 +1527,7 @@ function dsfRefs(text) {
 function dsfCcRef(v) {
   const s = v === undefined || v === null ? "" : String(v).trim();
   if (!s) return { empty: true };
-  const m = /^(?:<p>)?\[widget=([^[\]%<>]+)\](?:<\/p>)?$/.exec(s);
+  const m = /^(?:<(?:p|div)>)?\[widget=([^[\]%<>]+)\](?:<\/(?:p|div)>)?$/.exec(s);
   return m ? { name: m[1].trim() } : { html: true };
 }
 
@@ -2536,7 +2536,7 @@ function wcPlan(master, name, list, args) {
 }
 // createWidget copy_of: the new widget starts as another widget's code, so a variant of BD's widget is BD's own
 // working code plus the edit, not code written from nothing. The widget copied is left as it is.
-const WC_COPIED = "A new site widget that starts as a copy of that widget's code, with your changes. The widget copied is unchanged. Put it on a page with [widget=<its widget_name>].";
+const WC_COPIED = "A new site widget that starts as a copy of that widget's code, with your changes. The widget copied is unchanged. Put it on a page with <div>[widget=<its widget_name>]</div>.";
 async function widgetCopyOf(config, args) {
   const src = String(args.copy_of).trim();
   const name = typeof args.widget_name === "string" ? args.widget_name.trim() : "";
@@ -2757,7 +2757,7 @@ function dsDirectory(ds, got) {
     const v = values[`homepage_content_${n}`];
     const s = v === undefined || v === null ? "" : String(v).trim();
     if (!s) cc.free.push(n);
-    else if (!/^(<p>)?\[widget=[^[\]%<>]+\](<\/p>)?$/.test(s)) cc.legacy_html.push(n);
+    else if (!/^(?:<(?:p|div)>)?\[widget=[^[\]%<>]+\](?:<\/(?:p|div)>)?$/.test(s)) cc.legacy_html.push(n);
   }
   const rows = [];
   rb.rows.forEach((n, i) => {
@@ -2987,10 +2987,10 @@ async function getDesignSettings(config, args) {
 // ---------------------------------------------------------------------------
 const UDS_MAX = 100;
 const UDS_NOTE_PAGE = "A Design Settings page already open in a browser puts back the values it loaded on its next save: reload it before saving there.";
-const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send [widget=Name].";
-const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send [widget=Name].";
+const UDS_CC = "Custom Content holds one widget reference. Create a site widget and send <div>[widget=Name]</div>.";
+const UDS_CC_HTML = "This value is editor HTML. Custom Content holds one widget reference: put the HTML in a site widget and send <div>[widget=Name]</div>.";
 const UDS_ROW_WRAP = "Row widget: one <section> whose first child is <div class=\"container\">; no negative margin into neighbouring rows. Live counts in its PHP: bd_controller::user(WEBSITE_DB)->getCount('user_id', array(array('column' => 'active', 'value' => 2))); same on data_posts (post_status 1) and list_professions.";
-const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to [widget=Name] and place that block with home_rows.";
+const UDS_ROW_WIDGET = "To show a site widget as a section, set a free Custom Content block (homepage_content_2 to 10) to <div>[widget=Name]</div> and place that block with home_rows.";
 const UDS_UNSIGNED = "This undo was not issued by this tool for this site; send settings instead.";
 const UDS_LOST = "The site's response was lost; the result was confirmed by reading the settings back.";
 const UDS_HERO_FORCED = ["HS:Hero Message with Button Links", "HS:Hero Message with Link"];
@@ -3218,10 +3218,10 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
   if (v.includes("\\")) return `${label}: backslashes are removed when the page prints this value.`;
   if (cc) {
     if (v === "") return null;
-    const w = /^\[widget=([^[\]%<>]+)\]$/.exec(v) || /^<p>\[widget=([^[\]%<>]+)\]<\/p>$/.exec(v);
+    const w = /^\[widget=([^[\]%<>]+)\]$/.exec(v) || /^<(?:p|div)>\[widget=([^[\]%<>]+)\]<\/(?:p|div)>$/.exec(v);
     if (!w) return /^\s*</.test(v) ? UDS_CC_HTML : UDS_CC;
     if (/^Bootstrap Theme - Display - Custom Content \d+$/.test(w[1])) return `${label}: a Custom Content block cannot show a Custom Content block.`;
-    if (/^DISABLED - ./.test(w[1])) return `${label}: ${wcOffSay(w[1].slice(11))} Then send [widget=${w[1].slice(11)}].`;
+    if (/^DISABLED - ./.test(w[1])) return `${label}: ${wcOffSay(w[1].slice(11))} Then send <div>[widget=${w[1].slice(11)}]</div>.`;
     const got = await udsRows(config, lists, "/api/v2/data_widgets/get", { property: "widget_name", property_value: w[1] }, "Widgets GET");
     if (got.error) return `${label} could not be checked: ${got.error}`;
     return got.rows.some((r) => r.widget_name === w[1] && r.widget_id && !udsYes(r.is_default)) ? null : `No site widget named ${w[1]}. Create it first.`;
@@ -3501,7 +3501,7 @@ function udsHomeRows(ds, list, cur, R, addons) {
     if (o[2] && o[2].addon && udsAddonOff(o[2].addon, addons)) return add(`${at}: ${o[1]} needs the ${o[2].addon} add-on, which is not active on this site.`);
     const cc = /^content\.(\d+)$/.exec(b.id);
     if (cc && cc[1] !== "1" && String(R[`homepage_content_${cc[1]}`] === undefined ? "" : R[`homepage_content_${cc[1]}`]) === "") {
-      return add(`${at}: Custom Content ${cc[1]} is empty. Set homepage_content_${cc[1]} to [widget=Name] in settings in the same call.`);
+      return add(`${at}: Custom Content ${cc[1]} is empty. Set homepage_content_${cc[1]} to <div>[widget=Name]</div> in settings in the same call.`);
     }
     const prev = pool.find((p) => p.block === b.id && !p.used);
     let row;
