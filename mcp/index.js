@@ -1150,6 +1150,7 @@ function pcssRecipe(args, cur) {
     if (spec.px) {
       const n = Number(v);
       if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}.`] };
+      if (k === "title_gap" && n !== 20 && args.user_named !== true) return { refused: ["title_gap is 20. Send another value only with user_named: true, when the user names the space under the sub-title."] };
       swaps.push([spec.token, n + "px"]);
       if (spec.minus2) swaps.push([spec.minus2, n - 2 + "px"]);
     } else {
@@ -1178,7 +1179,7 @@ function pcssRecipe(args, cur) {
     for (const [from, to] of swaps) css = css.split(from).join(to);
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
-  return { args: { rules }, recipe: b.id, looks: looks.filter((k) => lookOn[k] === true) };
+  return { args: { rules }, recipe: b.id, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush };
 }
 
 async function updatePageCss(config, args) {
@@ -1243,6 +1244,7 @@ async function updatePageCss(config, args) {
       if (!refresh.ok) out.auto_cache_refresh_error = refresh.message;
       if (plan.undo.length) out.undo = { seo_id: Number(page.seo_id), rules: plan.undo };
       out.notes = PCSS_NOTES;
+      if (rec.flush_on) out.design_settings = await updateDesignSettings(config, { settings: { custom_32: "0" } }).catch((err) => ({ status: "error", message: String((err && err.message) || err) }));
       return out;
     }
     return fail("Nothing was written. This page's CSS changed while it was being read. Call again.");
@@ -3492,7 +3494,8 @@ function udsInput(ds, args) {
       return v;
     }
   };
-  for (const k of Object.keys(args)) if (!["settings", "home_rows", "undo", "dry_run"].includes(k)) add(k, "Unknown key. Send settings and/or home_rows (or undo), and dry_run.");
+  for (const k of Object.keys(args)) if (!["settings", "home_rows", "undo", "dry_run", "user_named"].includes(k)) add(k, "Unknown key. Send settings and/or home_rows (or undo), dry_run and user_named.");
+  if (args.user_named !== undefined && args.user_named !== null && typeof args.user_named !== "boolean") add("user_named", "Send true or false.");
   const settings = parse(args.settings);
   const undo = parse(args.undo);
   const rows = parse(args.home_rows);
@@ -3547,7 +3550,43 @@ function udsInput(ds, args) {
     else if (typeof v === "number" && Number.isFinite(v)) entries.push({ name: n, value: String(v) });
     else add(n, "Send the value as a string.");
   }
-  return { problems, settings: entries, homeRows, dry_run: args.dry_run === true };
+  return { problems, settings: entries, homeRows, dry_run: args.dry_run === true, user_named: args.user_named === true };
+}
+
+// With the box behind the search hidden, the sub-title and the search text print on the hero: they take the headline colour.
+const UDS_HERO_TEXT = ["custom_38", "custom_39"];
+function udsHeroText(idx, entries, R, named) {
+  const out = { problems: [], notes: [] };
+  const val = (n) => String(R[n] === undefined || R[n] === null ? "" : R[n]).trim();
+  const flat = (v) => String(v).replace(/\s+/g, "").toLowerCase();
+  const shown = () => val("custom_32") !== "0" && val("custom_32") !== "";
+  const pad = entries.find((e) => e.name === "search_box_padding");
+  if (pad && /^\d+$/.test(pad.value) && Number(pad.value) < 8 && shown() && !entries.some((e) => e.name === "custom_32")) {
+    entries.push({ name: "custom_32", value: "0" });
+    R.custom_32 = "0";
+    out.notes.push("custom_32 set to 0: search_box_padding under 8 puts the fields on the box edge. Send custom_32 in the same call to keep the box.");
+  }
+  if (!entries.some((e) => e.name === "custom_32") || shown()) return out;
+  const head = val("custom_26");
+  if (!head) return out;
+  const set = [];
+  for (const n of UDS_HERO_TEXT) {
+    const e = entries.find((x) => x.name === n);
+    if (e) {
+      if (!named && flat(e.value) !== flat(head)) {
+        const x = idx.get(n);
+        out.problems.push({ name: n, problem: `${x ? x.label : n} (\`${n}\`) prints on the hero while custom_32 hides the box. Send ${head} (the custom_26 color), or add user_named: true when the user named this color.` });
+      }
+      continue;
+    }
+    if (flat(val(n)) !== flat(head)) {
+      entries.push({ name: n, value: head });
+      R[n] = head;
+      set.push(n);
+    }
+  }
+  if (set.length) out.notes.push(`${set.join(" and ")} set to ${head} (the custom_26 color): with custom_32 hiding the box they print on the hero.`);
+  return out;
 }
 
 const UDS_ROW_LOOK = ["top_spacing", "bottom_spacing", "background"];
@@ -3991,6 +4030,7 @@ async function updateDesignSettings(config, args) {
     want.add(e.name);
     udsClauseNames(ds, x.f.used, x.N, want);
   }
+  if (entries.some((e) => e.name === "custom_32" || e.name === "search_box_padding")) for (const n of ["custom_32", "custom_26"].concat(UDS_HERO_TEXT)) want.add(n);
   const c = await udsContext(config, Array.from(want));
   if (c.error) return { status: "error", message: c.error };
   const cur = c.cur;
@@ -4006,6 +4046,8 @@ async function updateDesignSettings(config, args) {
       R[e.name] = e.value;
     }
   }
+  const heroText = udsHeroText(idx, entries, R, input.user_named);
+  if (heroText.problems.length) return { status: "refused", problems: heroText.problems };
   const extra = {};
   if (rows) {
     extra.rows = rows.view;
@@ -4042,6 +4084,7 @@ async function updateDesignSettings(config, args) {
   }
   if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
   const notes = [UDS_NOTE_PAGE];
+  for (const n of heroText.notes) notes.push(n);
   if (rowDup.length) notes.push(`${rowDup.join(", ")} left out of settings: home_rows sets the homepage rows in this call.`);
   for (const e of plan) {
     if (e.gen) continue;

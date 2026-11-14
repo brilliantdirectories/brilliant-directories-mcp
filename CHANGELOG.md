@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.661] - 2026-11-14
+
+### Fixed
+- `getDesignSettings`: the headline settings are labelled Main Title Text (H1) and the sub-title settings Sub-Title Text (H2). Bottom Spacing (`main_title_bottom_spacing`) and Text Shadow (`main_title_shadow`) had no element in their label, so a request for the space under the sub-title could be sent to the headline's Bottom Spacing, which never moves the sub-title. Bottom Spacing now says it prints margin-bottom on the H1 only, and that the space under the sub-title is `title_gap` of the search recipe.
+
+### Changed
+- `updateDesignSettings`: a call that hides the box behind the search (`custom_32` 0 or empty) also sets the sub-title colour (`custom_38`) and the search box font colour (`custom_39`) to the headline colour (`custom_26`). A different colour for either is refused unless the call sends `user_named: true`. Search Box Padding under 8 also hides the box, unless the call sends `custom_32`. Before, these were notes the caller could skip.
+- `updatePageCss` recipe `hero.search_box`: turning the `flush` look on also hides the box through `updateDesignSettings` (its result is in `design_settings`). `title_gap` other than 20 is refused unless the call sends `user_named: true`.
+
 ## [6.59.660] - 2026-11-14
 
 ### Changed

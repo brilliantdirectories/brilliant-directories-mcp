@@ -9756,6 +9756,10 @@
                   "dry_run": {
                     "type": "boolean"
                   },
+                  "user_named": {
+                    "type": "boolean",
+                    "description": "true only when the user's own words name the value this call sends."
+                  },
                   "undo": {
                     "type": "object",
                     "description": "An earlier result's undo, sent alone."
@@ -12071,6 +12075,10 @@
                   "values": {
                     "type": "object",
                     "description": "Only with recipe: the look to change. Its block names the keys."
+                  },
+                  "user_named": {
+                    "type": "boolean",
+                    "description": "true only when the user's own words name the value this call sends."
                   }
                 }
               }
