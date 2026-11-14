@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.645] - 2026-11-13
+
+### Added
+- `getDesignSettings {block: "hero.search_box"}`: measured CSS rules for restyling the hero search fields (oval fields, no labels, no icons, one wrapping row) on the stock markup of every hero search form, member and post-type (Property with its price slider included), in both layouts at desktop and phone width, saved with `updatePageCss`, with the runtime facts they handle: the `span.input_wrapper` and `span.twitter-typeahead` wrappers platform scripts add around the inputs, the clear button, the forced input corners, the white box behind the keyword field on post-type searches, Select2 3.5.2 replacing a category select on its first click (four states), Bootstrap-select 1.7.2 dropdown buttons, the price slider, rows capped at four across, and the `button_corners_style` button radius. Before, an assistant asked for a modern search copied the hero widget, kept its Bootstrap classes and fought the platform rules: square left corners, a clear button floating above the field, a field that jumped on its first click.
+- `hero.cta` note: restyling the search fields is CSS only; the widget is customised only for a different set of fields.
+- `getDesignSettings {block: "home.rows"}`: the note now says the Streaming sections read the site's records on every page view, a widget with typed-in cards is a fixed copy, and a request for recent members or posts on the homepage is the Streaming section restyled with `updatePageCss`. Before, an assistant asked for "the 3 most recent blog articles as full bleed cards" built a custom widget with the three posts copied in; it never followed new posts or changed photos.
+
+### Changed
+- `getDesignSettings {block: "hero.background"}`, `widget_style`: a video file is shown at once with no fade (only a YouTube frame is held back while YouTube draws its overlays). The tint now sits on the always-visible layer and the hero's own overlay is turned off, so the hero photo seen before a YouTube video and the video carry the same tint; before, the photo showed without the video's tint. The YouTube frame is sized from the hero's own box (container units), so a hero taller than the screen no longer shows black bars. `widget_javascript` is unchanged.
+
 ## [6.59.644] - 2026-11-13
 
 ### Changed
