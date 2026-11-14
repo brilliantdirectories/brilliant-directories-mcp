@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.647] - 2026-11-13
+
+### Added
+- `updatePageCss {recipe: "hero.search_box", values?}`: the tool saves the measured hero search rules itself on the Home page, all 24 of them, with optional `values` for the look (`field_background`, `field_text`, `field_border`, `focus_border`, `focus_ring`, `arrow`, `height`, `radius`). The rules are kept in the design settings map as data. Before, an assistant copied the rules from the block text by hand: in live tests BD Butler saved 14 of 23 and then 16 of 23, rewrote some of them, and left a Select2 clear button on its arrow, then two Select2 fields with no arrow at all.
+
+### Changed
+- `getDesignSettings {block: "hero.search_box"}`: the text says to call the recipe and not to write search field rules by hand; it is about 1,100 characters instead of about 8,400.
+- `getDesignSettings` on the post-type Streaming sections: the css line says the cards' columns come from the block's Results Per Row setting and stack on a phone, and that `display`, `grid`, `flex` or `width` on the cards' container or their `col-*` divs keeps them side by side on a phone. Before, BD Butler asked for blog cards set the container to a 3-column grid and the homepage scrolled sideways on a phone.
+- `updatePageCss`, and `content_css` on `createWebPage` / `updateWebPage`: a rule that sets `overflow` (`hidden`, `clip`, `auto` or `scroll`) on `#first_container` itself is refused. The hero's keyword suggestion list opens below the hero, and that overflow cut it off at the hero's bottom edge. Rules on elements inside the hero, such as the video layer, are unaffected.
+
 ## [6.59.646] - 2026-11-13
 
 ### Changed

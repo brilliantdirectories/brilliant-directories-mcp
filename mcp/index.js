@@ -686,6 +686,20 @@ function pcssStarDisplay(css) {
   return null;
 }
 
+// The hero's search suggestion lists and dropdowns open below #first_container; overflow on the hero itself cuts them off.
+function pcssHeroClip(css) {
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(css))) {
+    const sel = m[1].replace(/\s+/g, " ").trim();
+    if (sel.startsWith("@") || !/(?:^|;)\s*overflow(?:-[xy])?\s*:\s*(?:hidden|clip|auto|scroll)\b/i.test(m[2])) continue;
+    if (pcssSplitCommas(sel).some((part) => /#first_container(?:\.[\w-]+|:(?!:)[\w-]+(?:\([^)]*\))?)*\s*$/.test(part))) {
+      return `\`${sel.slice(0, 160)}\` sets overflow on the hero (#first_container): that cuts off the search suggestion lists and dropdowns, which open below the hero. Leave the hero's overflow unset. The hero video layer clips itself.`;
+    }
+  }
+  return null;
+}
+
 // Checks 1 to 6 of the tool's contract. Returns { entries } or { refused: [messages] }.
 function pcssValidate(args) {
   const refused = [];
@@ -730,7 +744,7 @@ function pcssValidate(args) {
       refused.push(`The css for \`${selector}\` contains ${bad.map((b) => "`" + b + "`").join(", ")}.` + (bad.includes("//") ? " Use a root-relative /path for images." : ""));
       continue;
     }
-    const star = pcssStarDisplay(`${selector}{${css}}`);
+    const star = pcssStarDisplay(`${selector}{${css}}`) || pcssHeroClip(`${selector}{${css}}`);
     if (star) { refused.push(star); continue; }
     const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
     if (seen.has(key)) {
@@ -948,8 +962,46 @@ async function pcssWrite(config, seoId, css) {
   return { ok: true };
 }
 
+// `recipe` names a map block whose measured rules the tool writes itself, so an assistant cannot save a partial
+// or edited copy. `values` replace the block's own tokens (colours, height, radius) and nothing else.
+const PCSS_COLOUR = /^(?:rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+)\s*)?\)|#[0-9a-f]{3}(?:[0-9a-f]{3})?)$/i;
+function pcssRecipe(args) {
+  if (args.recipe === undefined || args.recipe === null) return { args };
+  if (args.rules !== undefined) return { refused: ["Send recipe or rules, not both."] };
+  if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") return { refused: ["A recipe is saved on the Home page: leave seo_id out."] };
+  const b = dsLoad().m.blocks.find((x) => x.id === String(args.recipe) && x.recipe);
+  if (!b) return { refused: [`No recipe named ${String(args.recipe).slice(0, 60)}. The recipe is hero.search_box.`] };
+  const R = b.recipe;
+  const vals = args.values === undefined || args.values === null ? {} : args.values;
+  if (typeof vals !== "object" || Array.isArray(vals)) return { refused: [`values is an object: ${Object.keys(R.values).join(", ")}.`] };
+  const swaps = [];
+  for (const k of Object.keys(vals)) {
+    const spec = R.values[k];
+    if (!spec) return { refused: [`values takes ${Object.keys(R.values).join(", ")}; ${String(k).slice(0, 40)} is not one of them.`] };
+    const v = vals[k];
+    if (spec.px) {
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}.`] };
+      swaps.push([spec.token, n + "px"]);
+      if (spec.minus2) swaps.push([spec.minus2, n - 2 + "px"]);
+    } else {
+      if (typeof v !== "string" || !PCSS_COLOUR.test(v.trim())) return { refused: [`${k} is a colour: rgb(R, G, B), rgba(R, G, B, A) or #hex.`] };
+      swaps.push([spec.token, v.trim()]);
+    }
+  }
+  const rules = R.rules.map((r) => {
+    let css = r.css;
+    for (const [from, to] of swaps) css = css.split(from).join(to);
+    return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
+  });
+  return { args: { rules }, recipe: b.id };
+}
+
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
+  const rec = pcssRecipe(args || {});
+  if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
+  args = rec.args;
   const checked = pcssValidate(args);
   if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });
   let seoId = null;
@@ -971,6 +1023,7 @@ async function updatePageCss(config, args) {
       const out = {
         status: "success",
         seo_id: Number(page.seo_id),
+        ...(rec.recipe ? { recipe: rec.recipe, rules_in_recipe: args.rules.length } : {}),
         results: plan.results,
         chars_before: R.length,
         chars_after: plan.next.length,
@@ -1289,6 +1342,8 @@ function dsRowCss(ds, b, values, css) {
   return css.replace(/\.homepage-sections > (div:has\([^()]*\)|\.custom-homepage-content( \([^()]*\))?)/g, `.homepage-sections > .${cls}`);
 }
 
+// Streaming card columns are Bootstrap col-* divs that stack on a phone (and slides when the carousel is on).
+const DS_CARD_COLUMNS = " The cards' columns come from this block's Results Per Row setting and stack one per row on a phone. Set the number of columns with that setting. Do not set display, grid, flex or width on the cards' container or on their col-* column divs: that keeps the cards side by side on a phone and breaks the carousel.";
 // The block's selectors for the site's current state: per hero type (css_by), plus the inline title colour and the Card View photo.
 function dsCss(ds, b, values) {
   let css = b.css_by ? dsBy(ds, b.css_by, values) : b.css || null;
@@ -1298,6 +1353,7 @@ function dsCss(ds, b, values) {
     css += dsRead(ds, values, "streaming_info_display") === "card_view"
       ? " Card View is on: the photo is .pic::before."
       : " The photo is the inline background-image of .pic; a script sets its height, so a CSS height loses.";
+    css += DS_CARD_COLUMNS;
   }
   if (b.markup_by) {
     const t = dsBy(ds, b.markup_by, values);
@@ -9561,7 +9617,7 @@ async function main() {
         if (dead) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [dead] }) }], isError: true };
       }
       if ((name === "createWebPage" || name === "updateWebPage") && args && typeof args.content_css === "string") {
-        const star = pcssStarDisplay(args.content_css);
+        const star = pcssStarDisplay(args.content_css) || pcssHeroClip(args.content_css);
         if (star) return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [star] }) }], isError: true };
       }
 

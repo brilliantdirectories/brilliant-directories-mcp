@@ -12063,11 +12063,16 @@
                         "css"
                       ]
                     }
+                  },
+                  "recipe": {
+                    "type": "string",
+                    "description": "Instead of rules: the name of a block's measured rule set, which the tool saves whole on the Home page. hero.search_box is the one recipe."
+                  },
+                  "values": {
+                    "type": "object",
+                    "description": "Only with recipe: the look to change. Its block names the keys."
                   }
-                },
-                "required": [
-                  "rules"
-                ]
+                }
               }
             }
           }
