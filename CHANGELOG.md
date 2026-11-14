@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.649] - 2026-11-14
+
+### Added
+- `updatePageCss {recipe: "hero.search_box"}`: six looks in `values`, off by default. `joined`: the fields and the search button form one piece with one outer border; on screens 992px and wider a form with up to 4 fields is one oval bar and a form with 5 or more is one rounded card with balanced rows (6 items: 3 and 3), the search button filling the rest of its row; on phones every form is one stacked card. `dividers` (with `joined`): a short thin line between the fields of the oval bar. `shadow` (with `joined`): a soft shadow under the bar or card, kept with the focus ring. `field_icons`: each field shows its own icon inside it. `button_icon`: the search button shows an icon instead of its text, `true` for a magnifying glass or any Bootstrap Icons 1.13.1 name (an unknown name is refused). `button_text`: the button keeps its text beside the icon. A look sent as `false` or left out is removed. Before, an assistant asked for a joined search bar wrote its own rules, which lost to the recipe's rules and changed nothing.
+
+### Changed
+- `updatePageCss` with `rules`: a rule on the hero search form (`form:has(.btn_home_search)`) without `:not(#_):not(#__)` is refused with that fix, nothing written. Before, such a rule was saved and lost to the recipe's rules.
+- A recipe call removes rules an earlier version of the recipe saved, when the map lists them. None are listed in this version.
+
 ## [6.59.648] - 2026-11-13
 
 ### Security

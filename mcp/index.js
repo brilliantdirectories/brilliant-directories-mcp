@@ -741,17 +741,18 @@ function pcssHeroClip(css) {
 }
 
 // Checks 1 to 6 of the tool's contract. Returns { entries } or { refused: [messages] }.
-function pcssValidate(args) {
+function pcssValidate(args, lim) {
+  const maxRules = lim ? lim.rules : PCSS_MAX_RULES, maxSel = lim ? lim.selector : PCSS_MAX_SELECTOR;
   const refused = [];
   const rulesIn = args && Array.isArray(args.rules) ? args.rules : null;
-  if (!rulesIn || rulesIn.length < 1 || rulesIn.length > PCSS_MAX_RULES) {
-    return { refused: [`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css. To remove a rule, send its css as an empty string.`] };
+  if (!rulesIn || rulesIn.length < 1 || rulesIn.length > maxRules) {
+    return { refused: [`Send 1 to ${maxRules} rules, each with a selector and css. To remove a rule, send its css as an empty string.`] };
   }
   const entries = [];
   const seen = new Set();
   for (const r of rulesIn) {
     if (!r || typeof r !== "object" || typeof r.selector !== "string" || r.selector.trim() === "" || typeof r.css !== "string") {
-      refused.push(`Send 1 to ${PCSS_MAX_RULES} rules, each with a selector and css. To remove a rule, send its css as an empty string.`);
+      refused.push(`Send 1 to ${maxRules} rules, each with a selector and css. To remove a rule, send its css as an empty string.`);
       continue;
     }
     const selector = String(stripAgentScaffolding(r.selector)).replace(/\s+/g, " ").trim();
@@ -759,7 +760,7 @@ function pcssValidate(args) {
     const media = r.media === undefined || r.media === null ? "" : String(stripAgentScaffolding(String(r.media))).replace(/\s+/g, " ").trim();
     const hasAfter = typeof r.after === "string";
     const after = hasAfter ? pcssNorm(String(stripAgentScaffolding(r.after)), false) : "";
-    if (selector.length > PCSS_MAX_SELECTOR || /[{}<;@]/.test(selector) || selector.includes("/*")) {
+    if (selector.length > maxSel || /[{}<;@]/.test(selector) || selector.includes("/*")) {
       refused.push(`\`${selector.slice(0, 120)}\` is not a plain selector.`);
       continue;
     }
@@ -786,6 +787,11 @@ function pcssValidate(args) {
     }
     const star = pcssStarDisplay(`${selector}{${css}}`) || pcssHeroClip(`${selector}{${css}}`);
     if (star) { refused.push(star); continue; }
+    // The search recipe's rules carry :not(#_) or more; a hand rule on the hero search form without :not(#_):not(#__) loses to them.
+    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(":not(#_):not(#__)"))) {
+      refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without :not(#_):not(#__), so the search recipe's rules win over it. End the part that names a field or the button with :not(#_):not(#__).`);
+      continue;
+    }
     const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
     if (seen.has(key)) {
       refused.push(`\`${selector}\` appears twice in this call.`);
@@ -1015,10 +1021,23 @@ function pcssRecipe(args) {
   const vals = args.values === undefined || args.values === null ? {} : args.values;
   if (typeof vals !== "object" || Array.isArray(vals)) return { refused: [`values is an object: ${Object.keys(R.values).join(", ")}.`] };
   const swaps = [];
+  const lookOn = {};
   for (const k of Object.keys(vals)) {
     const spec = R.values[k];
     if (!spec) return { refused: [`values takes ${Object.keys(R.values).join(", ")}; ${String(k).slice(0, 40)} is not one of them.`] };
     const v = vals[k];
+    if (spec.set) {
+      if (spec.icons && typeof v === "string") {
+        const hex = R.icons && R.icons[v.trim().replace(/^(bi )?bi-/, "")];
+        if (!hex) return { refused: [`${k} is true, false or a Bootstrap Icons name such as search or arrow-right; ${String(v).slice(0, 40)} is not one.`] };
+        swaps.push(["\\f52a", "\\" + hex]);
+        lookOn[k] = true;
+        continue;
+      }
+      if (v !== true && v !== false) return { refused: [`${k} is true or false.`] };
+      lookOn[k] = v;
+      continue;
+    }
     if (spec.px) {
       const n = Number(v);
       if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}.`] };
@@ -1029,12 +1048,15 @@ function pcssRecipe(args) {
       swaps.push([spec.token, v.trim()]);
     }
   }
-  const rules = R.rules.map((r) => {
-    let css = r.css;
+  // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
+  const looks = Object.keys(R.values).filter((k) => R.values[k].set);
+  const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]));
+  const rules = all.map(([r, on]) => {
+    let css = on ? r.css : "";
     for (const [from, to] of swaps) css = css.split(from).join(to);
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
-  return { args: { rules }, recipe: b.id };
+  return { args: { rules }, recipe: b.id, looks: looks.filter((k) => lookOn[k] === true) };
 }
 
 async function updatePageCss(config, args) {
@@ -1042,7 +1064,8 @@ async function updatePageCss(config, args) {
   const rec = pcssRecipe(args || {});
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
   args = rec.args;
-  const checked = pcssValidate(args);
+  // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
+  const checked = pcssValidate(args, rec.recipe ? { rules: 80, selector: 600 } : undefined);
   if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });
   let seoId = null;
   if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") {
@@ -1063,7 +1086,7 @@ async function updatePageCss(config, args) {
       const out = {
         status: "success",
         seo_id: Number(page.seo_id),
-        ...(rec.recipe ? { recipe: rec.recipe, rules_in_recipe: args.rules.length } : {}),
+        ...(rec.recipe ? { recipe: rec.recipe, rules_in_recipe: args.rules.filter((r) => r.css).length, looks_on: rec.looks } : {}),
         results: plan.results,
         chars_before: R.length,
         chars_after: plan.next.length,
