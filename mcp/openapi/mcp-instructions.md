@@ -518,7 +518,7 @@ The wrapper refuses (throws on the call) 5 silent-failure paths on `createForm` 
 
 **Field truth:**
 
-- `widget_data` = HTML; PHP in it runs at render. Font Awesome 4.7 (`fa fa-*`) and Bootstrap Icons (`bi bi-*`) load on every page. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`, `\n`→`n`, `\t`→`t`, `\\`→`\`).
+- `widget_data` = HTML; PHP in it runs at render. Icons: **Rule: Icons**. No `<style>`, no `<script>`. Render strips backslashes (`\d`→`d`, `\n`→`n`, `\t`→`t`, `\\`→`\`).
 - `widget_style` = raw CSS. No `<style>` wrapper. BD wraps at render. Wholly-wrapped values: outer wrapper stripped on storage. Concatenated wrappers: not stripped.
 - `widget_javascript` = JS with `<script>...</script>` wrapper required. BD does not auto-wrap. No backslash-strip.
 
@@ -945,6 +945,10 @@ NEVER fake full-bleed with `margin: 0 -9999px; padding: 0 9999px` or negative ho
 - empty/whitespace/absent → same compose with `subscription_id` as the final segment.
 
 `default_checkout_url` varies by site (`checkout`, `join`, `signup`, …) — use the returned value, never hardcoded. `full_url` has no trailing slash; single-`/` joins. E.g. `https://site.com/checkout/2`.
+
+### Rule: Icons
+
+An icon you add is a Bootstrap Icons 1.13.1 icon unless the user names another icon set: `<i class="bi bi-NAME"></i>` in HTML, and `content: bi(NAME)` in an `updatePageCss` rule (the tool writes the glyph and its font). Font Awesome 4.7 also loads on every page: use it when the user asks for it, and in the settings whose field takes a Font Awesome class. Icons in one place share one colour and size unless the user asks for a different one.
 
 ### Rule: Brand kit
 

@@ -698,6 +698,27 @@ function pcssQuotesBalanced(s) {
   return q === "";
 }
 
+// `content: bi(NAME)` in a rule: the Bootstrap Icons 1.13.1 glyph from the map's icon list, with its font.
+function pcssBi(css) {
+  if (!/\bbi\(/i.test(css)) return { css };
+  let icons = {};
+  try { icons = (dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe || {}).icons || {}; } catch { icons = {}; }
+  let bad = null;
+  const out = css.replace(/\bbi\(\s*["']?(?:bi-)?([a-z0-9-]+)["']?\s*\)/gi, (m, n) => {
+    const h = icons[n.toLowerCase()];
+    if (!h) { bad = bad || n; return m; }
+    return `"\\${h}"`;
+  });
+  if (bad) return { refused: `bi(${String(bad).slice(0, 40)}) is not a Bootstrap Icons 1.13.1 name. Use the name from <i class="bi bi-NAME">.` };
+  const rest = out.split(";").map((d) => d.trim()).filter((d) => d && !/^font-family\s*:/i.test(d));
+  return { css: rest.concat('font-family: "bootstrap-icons" !important').join("; ") + ";" };
+}
+// True when a selector part ends on a <select> in the hero (parenthesised arguments such as :has(...) do not count).
+function pcssHeroSelect(p) {
+  let q = String(p);
+  for (let i = 0; i < 3; i++) q = q.replace(/\([^()]*\)/g, "");
+  return p.includes("#first_container") && !/::?(before|after)/i.test(q) && /(^|[\s>+~])select(?![\w-])[^\s>+~]*$/i.test(q.trim());
+}
 function pcssSplitCommas(sel) {
   const parts = [];
   let cur = "";
@@ -756,7 +777,9 @@ function pcssValidate(args, lim) {
       continue;
     }
     const selector = String(stripAgentScaffolding(r.selector)).replace(/\s+/g, " ").trim();
-    const css = String(stripAgentScaffolding(r.css));
+    const bi = pcssBi(String(stripAgentScaffolding(r.css)));
+    if (bi.refused) { refused.push(bi.refused); continue; }
+    const css = bi.css;
     const media = r.media === undefined || r.media === null ? "" : String(stripAgentScaffolding(String(r.media))).replace(/\s+/g, " ").trim();
     const hasAfter = typeof r.after === "string";
     const after = hasAfter ? pcssNorm(String(stripAgentScaffolding(r.after)), false) : "";
@@ -790,6 +813,11 @@ function pcssValidate(args, lim) {
     // The search recipe's rules carry :not(#_) or more; a hand rule on the hero search form without :not(#_):not(#__) loses to them.
     if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(":not(#_):not(#__)"))) {
       refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without :not(#_):not(#__), so the search recipe's rules win over it. End the part that names a field or the button with :not(#_):not(#__).`);
+      continue;
+    }
+    // Select2 and Bootstrap-select hide a hero select on first use and show their own control, which the recipe pads.
+    if (!lim && /padding|text-indent/i.test(css) && !selector.includes(".select2-choice") && pcssSplitCommas(selector).some((p) => pcssHeroSelect(p))) {
+      refused.push(`\`${selector.slice(0, 160)}\` pads a hero select. Select2 and Bootstrap-select hide that select when it is first used and show their own control, so its text moves back under an icon. Pad the visible control in the same rule: add the same field followed by :is(.select2-choice, .bootstrap-select > .dropdown-toggle):not(#_):not(#__):not(#___) to the selector.`);
       continue;
     }
     const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
@@ -1024,7 +1052,7 @@ function pcssRecipeState(R, cur) {
     const spec = R.values[k];
     if (!spec.set) continue;
     const set = R.sets[spec.set] || [];
-    st.on[k] = set.length > 0 && set.every((r) => (body(r) || "").trim() !== "");
+    st.on[k] = set.some((r) => (body(r) || "").trim() !== "");
     if (spec.icons && st.on[k]) for (const r of set) { const m = r.css.includes("\\f52a") && /content:\s*"\\([0-9a-f]{4,5})"/i.exec(body(r) || ""); if (m) st.icon = m[1].toLowerCase(); }
   }
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1045,6 +1073,13 @@ function pcssRecipeState(R, cur) {
     }
   }
   return st;
+}
+// The recipe as the page has it now: the looks that are on and every value in use (the default where the site set none).
+function pcssRecipeNow(R, cur) {
+  const st = pcssRecipeState(R, cur);
+  const values = {};
+  for (const k of Object.keys(R.values)) if (!R.values[k].set) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token;
+  return { looks_on: Object.keys(st.on).filter((k) => st.on[k]), values };
 }
 function pcssRecipe(args, cur) {
   if (args.recipe === undefined || args.recipe === null) return { args };
@@ -2996,6 +3031,7 @@ async function getDesignSettings(config, args) {
     const home = await dsfHomePage(get);
     const on = home ? dsPageCssOn(out.css, home.content_css) : null;
     if (on) out.page_css = on;
+    if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css);
   }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
   if ((/^section\./.test(b.id) && b.widget) || hw) {

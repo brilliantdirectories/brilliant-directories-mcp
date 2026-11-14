@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.653] - 2026-11-14
+
+### Changed
+- `getDesignSettings` hero blocks: `custom_25` (Content Alignment) says it does not remove the padding around the search, and that the flush look lines the search and its heading up with the headline. Before, an assistant asked to align the hero left and flush changed only the alignment, and the sub-title stayed 8px in.
+- `updatePageCss` refuses a hand rule that pads a hero `<select>` unless the same rule also pads `.select2-choice` and `.bootstrap-select > .dropdown-toggle`, and says how. Select2 and Bootstrap-select hide the select when it is first used and show their own control, so padding only the select let the text slide back under an icon after a click.
+- Icons: a new rule says an added icon is Bootstrap Icons 1.13.1 unless the user names another set; Font Awesome stays for the settings whose field takes a Font Awesome class. In an `updatePageCss` rule, `content: bi(NAME)` writes the icon's glyph and font, and an unknown name is refused.
+- `getDesignSettings {block: "hero.search_box"}` returns `recipe_now`: the looks that are on and the values in use. With `field_icons` on, an icon added by hand to a hero field takes the same colour, size and position as the other field icons, unless the owner asks for its own colour.
+- A look counts as on when any of its rules is on the page, so a look saved by an earlier version stays on when a later version adds a rule to it.
+
 ## [6.59.652] - 2026-11-14
 
 ### Fixed
