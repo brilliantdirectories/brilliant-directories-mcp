@@ -1081,6 +1081,28 @@ function pcssRecipeNow(R, cur) {
   for (const k of Object.keys(R.values)) if (!R.values[k].set) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token;
   return { looks_on: Object.keys(st.on).filter((k) => st.on[k]), values };
 }
+// field_icons as a list: field N's icon replaces the glyph of its own icon, or is added where it has none, and its text
+// starts 50px in on every state. false removes them; an entry left null, or a field past the list, keeps its rules.
+function pcssFieldIcons(list, cur) {
+  if (list !== false && !list.some(Boolean)) return [];
+  const n4 = ":not(#_):not(#__):not(#___):not(#____)";
+  const out = [];
+  for (let n = 1; n <= 8; n++) {
+    const e = list === false ? false : list[n - 1];
+    if (e === null || e === undefined) continue;
+    const of = `:nth-child(${n} of :not(.clearfix, [type="hidden"], script, style))`;
+    const slot = [`#first_container form:has(.btn_home_search):not(:has(> .row)) > ${of}`, `#first_container form:has(.btn_home_search) > .row > ${of}`];
+    const sel = (suffix) => slot.map((p) => p + suffix).join(", ");
+    const glyph = e && e.hex ? `content: "\\${e.hex}" !important; font-family: "bootstrap-icons" !important; font-size: 18px !important; font-weight: normal !important; line-height: 1 !important;` : "";
+    if (!e || e.hex) {
+      out.push([{ selector: sel(`:not(:has(.input-group-addon))${n4}::before`), css: glyph && `${glyph} position: absolute !important; top: 50% !important; left: 20px !important; transform: translateY(-50%) !important; z-index: 4; pointer-events: none; color: rgb(136, 136, 136);` }, !!glyph]);
+      out.push([{ selector: sel(" .input-group-addon i:not(#_):not(#__)::before"), css: glyph }, !!glyph]);
+      out.push([{ selector: sel(" :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice):not(#_):not(#__):not(#___)"), css: glyph && "padding-left: 50px !important;" }, !!glyph]);
+    }
+    if (!e || e.color) for (const s of [` .input-group-addon${n4}:not(#_____)`, `${n4}:not(#_____)::before`]) out.push([{ selector: sel(s), css: e ? `color: ${e.color} !important;` : "" }, !!e]);
+  }
+  return out.filter(([r, on]) => on || cur.includes(r.selector));
+}
 function pcssRecipe(args, cur) {
   if (args.recipe === undefined || args.recipe === null) return { args };
   if (args.rules !== undefined) return { refused: ["Send recipe or rules, not both."] };
@@ -1092,11 +1114,28 @@ function pcssRecipe(args, cur) {
   if (typeof vals !== "object" || Array.isArray(vals)) return { refused: [`values is an object: ${Object.keys(R.values).join(", ")}.`] };
   const swaps = [];
   const lookOn = {};
+  let fieldIcons = [];
   for (const k of Object.keys(vals)) {
     const spec = R.values[k];
     if (!spec) return { refused: [`values takes ${Object.keys(R.values).join(", ")}; ${String(k).slice(0, 40)} is not one of them.`] };
     const v = vals[k];
     if (spec.set) {
+      if (spec.fields && Array.isArray(v)) {
+        const bad = `${k} is true, false or a list with one entry per field in order: a Bootstrap Icons name, {icon, color}, {color}, or null to leave that field as it is.`;
+        if (v.length > 8) return { refused: [bad] };
+        for (const e of v) {
+          if (e === null || e === "") { fieldIcons.push(null); continue; }
+          const o = typeof e === "string" ? { icon: e } : e;
+          if (typeof o !== "object" || Array.isArray(o) || Object.keys(o).some((x) => x !== "icon" && x !== "color") || (o.icon === undefined && o.color === undefined)) return { refused: [bad] };
+          const hex = o.icon === undefined ? null : R.icons && R.icons[String(o.icon).trim().replace(/^(bi )?bi-/, "")];
+          if (o.icon !== undefined && !hex) return { refused: [`${String(o.icon).slice(0, 40)} is not a Bootstrap Icons 1.13.1 name. Use the name from <i class="bi bi-NAME">.`] };
+          if (o.color !== undefined && (typeof o.color !== "string" || !PCSS_COLOUR.test(o.color.trim()))) return { refused: [`color is a colour: rgb(R, G, B), rgba(R, G, B, A) or #hex.`] };
+          fieldIcons.push({ hex, color: o.color === undefined ? null : o.color.trim() });
+        }
+        lookOn[k] = true;
+        continue;
+      }
+      if (spec.fields && v === false) fieldIcons = false;
       if (spec.icons && typeof v === "string") {
         const hex = R.icons && R.icons[v.trim().replace(/^(bi )?bi-/, "")];
         if (!hex) return { refused: [`${k} is true, false or a Bootstrap Icons name such as search or arrow-right; ${String(v).slice(0, 40)} is not one.`] };
@@ -1133,7 +1172,7 @@ function pcssRecipe(args, cur) {
   }
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
-  const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]));
+  const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
   const rules = all.map(([r, on]) => {
     let css = on ? r.css : "";
     for (const [from, to] of swaps) css = css.split(from).join(to);

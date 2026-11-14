@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.655] - 2026-11-14
+
+### Changed
+- `updatePageCss {recipe: "hero.search_box"}`: `field_icons` also takes a list, one entry per field in order: a Bootstrap Icons name, `{icon, color}`, `{color}`, or `null` for no change. A field with its own icon gets the new glyph in the same place; a field without one gets the icon added there. Each field's text starts 50px in on the native select, Select2, Bootstrap-select and inputs, in every state. `false` removes the field icons. Before, adding or swapping a field icon meant hand rules, which guessed field selectors and set padding that lost to the recipe's own, so text slid under the icon.
+
 ## [6.59.654] - 2026-11-14
 
 ### Changed
