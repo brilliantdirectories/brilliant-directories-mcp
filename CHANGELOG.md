@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.652] - 2026-11-14
+
+### Fixed
+- `updatePageCss {recipe: "hero.search_box"}` changes only the looks and values the call names; the rest stay as the page has them, and `false` turns a look off. Before, a call that named one look (for example `{flush: true}`) turned every other look off and reset colours, height, radius and the button icon to their defaults, so asking for one change replaced a site's search design.
+
 ## [6.59.651] - 2026-11-14
 
 ### Changed

@@ -1011,7 +1011,42 @@ async function pcssWrite(config, seoId, css) {
 // `recipe` names a map block whose measured rules the tool writes itself, so an assistant cannot save a partial
 // or edited copy. `values` replace the block's own tokens (colours, height, radius) and nothing else.
 const PCSS_COLOUR = /^(?:rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+)\s*)?\)|#[0-9a-f]{3}(?:[0-9a-f]{3})?)$/i;
-function pcssRecipe(args) {
+// What the page's CSS already holds for a recipe: the looks that are on, the values the site set, a chosen button icon.
+// A call changes only what it names, so asking for one look never undoes the others.
+function pcssRecipeState(R, cur) {
+  const st = { on: {}, vals: {}, icon: null };
+  const scan = pcssScan(String(cur || ""));
+  if (!scan || scan.error) return st;
+  const bodies = new Map();
+  for (const r of scan.rules) bodies.set(r.sel + "|" + r.at, String(cur).slice(r.bodyStart, r.bodyEnd));
+  const body = (r) => bodies.get(pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : ""));
+  for (const k of Object.keys(R.values)) {
+    const spec = R.values[k];
+    if (!spec.set) continue;
+    const set = R.sets[spec.set] || [];
+    st.on[k] = set.length > 0 && set.every((r) => (body(r) || "").trim() !== "");
+    if (spec.icons && st.on[k]) for (const r of set) { const m = r.css.includes("\\f52a") && /content:\s*"\\([0-9a-f]{4,5})"/i.exec(body(r) || ""); if (m) st.icon = m[1].toLowerCase(); }
+  }
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const toks = Object.values(R.values).flatMap((s) => (s.set ? [] : [s.token, s.minus2])).filter(Boolean);
+  for (const k of Object.keys(R.values)) {
+    const spec = R.values[k];
+    if (spec.set) continue;
+    for (const r of R.rules) {
+      const decl = r.css.split(";").find((d) => d.includes(spec.token));
+      const b = decl && body(r);
+      if (!b) continue;
+      const prop = decl.slice(0, decl.indexOf(":")).trim();
+      let pat = esc(decl.slice(decl.indexOf(":") + 1).trim()).split(esc(spec.token)).join("\u0000");
+      for (const t of toks) if (t !== spec.token) pat = pat.split(esc(t)).join("[^;]+?");
+      const m = new RegExp("(?:^|[;{\\s])" + esc(prop) + "\\s*:\\s*" + pat.split("\u0000").join("([^;]+?)") + "\\s*(?:;|$)", "i").exec(b);
+      const v = m && m[1].trim();
+      if (v && (spec.px ? /^\d+px$/.test(v) && Number.parseInt(v, 10) >= spec.min && Number.parseInt(v, 10) <= spec.max : PCSS_COLOUR.test(v))) { st.vals[k] = spec.px ? Number.parseInt(v, 10) : v; break; }
+    }
+  }
+  return st;
+}
+function pcssRecipe(args, cur) {
   if (args.recipe === undefined || args.recipe === null) return { args };
   if (args.rules !== undefined) return { refused: ["Send recipe or rules, not both."] };
   if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") return { refused: ["A recipe is saved on the Home page: leave seo_id out."] };
@@ -1048,6 +1083,19 @@ function pcssRecipe(args) {
       swaps.push([spec.token, v.trim()]);
     }
   }
+  const st = pcssRecipeState(R, cur);
+  for (const k of Object.keys(R.values)) {
+    if (Object.prototype.hasOwnProperty.call(vals, k)) continue;
+    const spec = R.values[k];
+    if (spec.set) {
+      if (!st.on[k]) continue;
+      lookOn[k] = true;
+      if (spec.icons && st.icon && st.icon !== "f52a") swaps.push(["\\f52a", "\\" + st.icon]);
+    } else if (st.vals[k] !== undefined) {
+      swaps.push([spec.token, spec.px ? st.vals[k] + "px" : st.vals[k]]);
+      if (spec.px && spec.minus2) swaps.push([spec.minus2, st.vals[k] - 2 + "px"]);
+    }
+  }
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
   const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]));
@@ -1061,7 +1109,9 @@ function pcssRecipe(args) {
 
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
-  const rec = pcssRecipe(args || {});
+  const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
+  if (pre && pre.error) return fail("Nothing was written. " + pre.error);
+  const rec = pcssRecipe(args || {}, pre ? pre.css : "");
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
   args = rec.args;
   // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
