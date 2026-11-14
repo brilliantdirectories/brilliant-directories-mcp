@@ -2969,11 +2969,11 @@ async function getDesignSettings(config, args) {
     const wc = await udsWidgetCss(config, out.settings.map((x) => ({ name: x.name, before: null, after: "" }))).catch(() => null);
     for (const r of wc || []) {
       const x = out.settings.find((s) => s.name === r.setting);
-      if (!x || x.overridden_by) continue;
+      if (!x) continue;
       const lead = r.choice ? "This choice may not show on the page" : "The page shows this rule, not this value";
-      x.overridden_by = r.where.widget_id
-        ? `${lead}: site widget ${r.where.widget_id} sets ${r.rule} { ${r.sets} }. Change it there: updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}.`
-        : `${lead}: the home page CSS sets ${r.rule} { ${r.sets} }. Change it there: updatePageCss.`;
+      const at = udsWhere(r);
+      const one = `${at.place} sets ${r.rule} { ${r.sets} }. Change it: ${at.fix}.`;
+      x.overridden_by = x.overridden_by ? `${x.overridden_by} Also: ${one}` : `${lead}: ${one}`;
     }
   }
   return out;
@@ -3582,16 +3582,24 @@ async function udsApply(config, changes) {
 // BD's settings CSS prints each setting on known selectors (openapi/setting-selectors.json, generated from the settings
 // stylesheet widget). A site widget's own rule on the same element and property wins over the setting, so a saved setting
 // can leave the page unchanged: the reply names each such rule on the homepage.
+const UDS_SITE = { website_css: "Additional CSS", website_head: "Additional HEAD code", website_footer: "Additional footer code" };
+function udsWhere(r) {
+  const w = r.where;
+  if (w.widget_id) return { place: `site widget ${w.widget_id} "${w.widget}"`, fix: `updateWidget {widget_id: ${w.widget_id}, replace:[{field:"${w.field || "widget_style"}", find:"${r.sets}", with}]}` };
+  if (w.page && w.field !== "content_css") return { place: `a <style> in the home page's ${w.field}`, fix: `updateWebPage {seo_id: ${w.seo_id}, ${w.field}} with that rule changed` };
+  if (UDS_SITE[w.field]) return { place: `the sitewide ${UDS_SITE[w.field]} (${w.field})`, fix: `updatePageCss with a selector that wins over it, more specific or !important (these tools do not edit ${w.field})` };
+  return { place: "the home page CSS", fix: "updatePageCss" };
+}
+const udsStyles = (html) => [...String(html || "").matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n");
 function udsWcssNotes(idx, rules) {
   const lines = [];
   const seen = new Set();
   for (const r of rules) {
     const k = r.setting + "|" + JSON.stringify(r.where);
-    if (seen.has(k) || lines.length >= 4) continue;
+    if (seen.has(k) || lines.length >= 12) continue;
     seen.add(k);
     const x = idx.get(r.setting);
-    const place = r.where.widget_id ? `site widget ${r.where.widget_id} "${r.where.widget}"` : "the home page CSS";
-    const fix = r.where.widget_id ? `updateWidget {widget_id: ${r.where.widget_id}, replace:[{field:"widget_style", find:"${r.sets}", with}]}` : "updatePageCss";
+    const { place, fix } = udsWhere(r);
     lines.push(r.choice
       ? `MAY NOT SHOW ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }. Where the page still looks the same, change that rule: ${fix}.`
       : `NOT SHOWN ON THE HOMEPAGE: ${x ? x.label : r.setting} (\`${r.setting}\`) is saved, but ${place} has its own rule on the same element, ${r.rule} { ${r.sets} }, and the page shows that value. To change what the page shows, change that rule: ${fix}.`);
@@ -3638,6 +3646,8 @@ async function udsHomeCss(config, ds, got) {
     const w = ws.byName.get(name);
     if (!w) return;
     if (w.widget_style) sources.push({ where: { widget_id: Number(w.widget_id), widget: name }, css: String(w.widget_style) });
+    const inline = udsStyles(w.widget_data);
+    if (inline) sources.push({ where: { widget_id: Number(w.widget_id), widget: name, field: "widget_data" }, css: inline });
     for (const n of dsfRefs(w.widget_data)) want(n);
   };
   for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
@@ -3649,6 +3659,10 @@ async function udsHomeCss(config, ds, got) {
     else if (b && b.widget) want(dsExpand(ds.m, b.widget));
   }
   if (home && home.content_css) sources.push({ where: { page: "home", field: "content_css" }, css: String(home.content_css) });
+  for (const f of home ? ["content", "content_head", "content_footer_html"] : []) {
+    const inline = udsStyles(home[f]);
+    if (inline) sources.push({ where: { page: "home", field: f, seo_id: home.seo_id }, css: inline });
+  }
   return sources;
 }
 
@@ -3691,6 +3705,10 @@ async function udsWidgetCss(config, changed) {
   const got = await dsValues(config, ds);
   if (!got || got.error) return null;
   const sources = await udsHomeCss(config, ds, got);
+  for (const f of Object.keys(UDS_SITE)) {
+    const css = f === "website_css" ? String(got.values[f] || "") : udsStyles(got.values[f]);
+    if (css) sources.push({ where: { field: f }, css });
+  }
   const out = [];
   for (const src of sources) {
     const scan = pcssScan(src.css);
@@ -3707,7 +3725,7 @@ async function udsWidgetCss(config, changed) {
           const body = src.css.slice(r.bodyStart, r.bodyEnd);
           const d = re.exec(body);
           if (!d) continue;
-          const part = String(r.sel).split(",").map((x) => x.replace(/\s+/g, " ").trim()).find((x) => !/:(hover|focus|active)[^s]*$/i.test(x) && keys.some((k) => udsSelHit(k, x)));
+          const part = pcssSplitCommas(String(r.sel)).map((x) => x.replace(/\s+/g, " ").trim()).find((x) => !/:(hover|focus|active)[^s]*$/i.test(x) && !/::?(before|after)$/i.test(x) && keys.some((k) => udsSelHit(k, x)));
           if (!part) continue;
           const sets = d[0].slice(d[0].indexOf(d[1])).trim();
           const flat = (v) => String(v == null ? "" : v).replace(/!important/i, "").replace(/\s+/g, "").replace(/^(\d+)px$/i, "$1").toLowerCase();
@@ -3720,7 +3738,9 @@ async function udsWidgetCss(config, changed) {
     }
   }
   out.sort((a, b) => Number(!!b.important) - Number(!!a.important));
-  return out.length ? out.slice(0, 8) : null;
+  const per = {};
+  const kept = out.filter((o) => (per[o.setting] = (per[o.setting] || 0) + 1) <= 12);
+  return kept.length ? kept : null;
 }
 
 async function udsResult(config, idx, status, changedIn, unchanged, notes, extra) {

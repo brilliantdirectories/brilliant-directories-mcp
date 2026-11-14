@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.651] - 2026-11-14
+
+### Changed
+- `getDesignSettings` hero blocks say which part of the hero each column setting controls. `custom_216` (Content Area Width) is the width of the primary hero column with the headline, and the second column takes the rest. `custom_25` left or right picks which side the primary column is on. `search_box_placement` inside_primary keeps the search with the headline. Before, an assistant asked to put the video on the left at 40% set the text column to 40% and moved the search into the video's column.
+- `custom_32` (Background Visibility) and `search_box_padding` say they control the box behind the search. Before, an assistant asked to remove that box wrote CSS instead of setting both to 0.
+- `updatePageCss {recipe: "hero.search_box", values: {flush: true}}`: a new look that removes the side padding of the search box, its heading, its labels and its form, so the search lines up with the hero headline, also when the site's own CSS pads the box.
+- A setting the page does not show because another rule wins (`overridden_by` in `getDesignSettings`, the notes of `updateDesignSettings`) is now also found in the sitewide Additional CSS, HEAD and footer code, the home page's content, head and footer code, and a `<style>` inside a homepage widget's HTML. Every competing rule for a setting is listed, not only the first. Selectors with `:is(...)` lists and `::before`/`::after` rules no longer give false matches.
+
 ## [6.59.650] - 2026-11-14
 
 ### Changed
