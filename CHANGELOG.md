@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.658] - 2026-11-14
+
+### Changed
+- `getDesignSettings`: Display Post Details (`streaming_info_display`) says what each option shows: `on_hover` a photo whose title, text and button show only on hover, `always_show` them over the photo, `card_view` cards with the photo on top and them below; one setting for every streaming section. Each streaming section block now names the current value and the other two. Before, an assistant asked for proper cards whose titles show without hovering restyled the hover tiles with CSS and then copied the widget.
+
 ## [6.59.657] - 2026-11-14
 
 ### Changed

@@ -1529,6 +1529,8 @@ function dsRowCss(ds, b, values, css) {
   return css.replace(/\.homepage-sections > (div:has\([^()]*\)|\.custom-homepage-content( \([^()]*\))?)/g, `.homepage-sections > .${cls}`);
 }
 
+// Display Post Details, shared by every streaming section: the hover reveal and Card View are this setting, not CSS.
+const DS_POST_DETAILS = [" Display Post Details (streaming_info_display) is On Hover: each post is a photo whose title, text and button show only on hover. always_show shows them over the photo; card_view makes cards with the photo on top and the title, text and button below. It applies to every streaming section.", " Display Post Details (streaming_info_display) is Always Show: the title, text and button show over the photo. card_view makes cards with the photo on top and the title, text and button below. It applies to every streaming section."];
 // Streaming card columns are Bootstrap col-* divs that stack on a phone (and slides when the carousel is on).
 const DS_CARD_COLUMNS = " The cards' columns come from this block's Results Per Row setting and stack one per row on a phone. Set the number of columns with that setting. Do not set display, grid, flex or width on the cards' container or on their col-* column divs: that keeps the cards side by side on a phone and breaks the carousel.";
 // The block's selectors for the site's current state: per hero type (css_by), plus the inline title colour and the Card View photo.
@@ -1539,7 +1541,7 @@ function dsCss(ds, b, values) {
   if (b.css_pic) {
     css += dsRead(ds, values, "streaming_info_display") === "card_view"
       ? " Card View is on: the photo is .pic::before."
-      : " The photo is the inline background-image of .pic; a script sets its height, so a CSS height loses.";
+      : " The photo is the inline background-image of .pic; a script sets its height, so a CSS height loses." + DS_POST_DETAILS[dsRead(ds, values, "streaming_info_display") === "always_show" ? 1 : 0];
     css += DS_CARD_COLUMNS;
   }
   if (b.markup_by) {
