@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.656] - 2026-11-14
+
+### Changed
+- `updateDesignSettings home_rows`: a section placed on the homepage for the first time gets top and bottom spacing 0 when it is a Custom Content block (its section widget pads itself) and 90 otherwise, unless the entry sends its own spacing. Before, a new row took the empty default of 40px, so a Custom Content section that pads itself 90px had 130px above and below it. Sections already on the homepage keep their spacing.
+
 ## [6.59.655] - 2026-11-14
 
 ### Changed

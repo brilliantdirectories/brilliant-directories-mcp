@@ -3598,8 +3598,8 @@ function udsRowNames(ds) {
   return out;
 }
 
-// home_rows to row settings. A section on the homepage now moves with its four look values; a new one gets the
-// values of an untouched row (spacing "" = 40px, no background); rows after the last entry are emptied.
+// home_rows to row settings. A section on the homepage now moves with its four look values; a new one gets no
+// background and spacing 0 (Custom Content, whose widget pads itself) or 90; rows after the last entry are emptied.
 function udsHomeRows(ds, list, cur, R, addons) {
   const m = ds.m;
   const rb = udsRowsBlock(ds);
@@ -3634,7 +3634,7 @@ function udsHomeRows(ds, list, cur, R, addons) {
       prev.used = true;
       row = { block: b.id, label: o[1], raw: prev.raw, look: prev.look.slice() };
     } else {
-      row = { block: b.id, label: o[1], raw: b.id === "content.1" ? "Homepage Content" : dsExpand(m, b.widget), look: ["", "", "0", ""], added: true };
+      row = { block: b.id, label: o[1], raw: b.id === "content.1" ? "Homepage Content" : dsExpand(m, b.widget), look: cc ? ["0", "0", "0", ""] : ["90", "90", "0", ""], added: true };
     }
     for (const [k, j] of [["top_spacing", 0], ["bottom_spacing", 1]]) {
       if (e[k] === undefined) continue;
