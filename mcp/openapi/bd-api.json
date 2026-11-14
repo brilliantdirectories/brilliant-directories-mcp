@@ -12020,7 +12020,7 @@
       "put": {
         "operationId": "updatePageCss",
         "summary": "Add, replace or remove individual CSS rules in a web page's CSS field by selector",
-        "description": "every other character of the field is left as it is.\n\n**Returns:** `results` (one action per rule: `added`, `replaced`, `removed`, `unchanged`, `not_found`) and `undo`, which is this tool's own input for putting the previous rules back.",
+        "description": "every other character of the field is left as it is. An icon is a Bootstrap Icons 1.13.1 icon unless the user names another icon set: write `content: bi(NAME)` with the name from `<i class=\"bi bi-NAME\">`, and the tool writes the glyph and its font.\n\n**Returns:** `results` (one action per rule: `added`, `replaced`, `removed`, `unchanged`, `not_found`) and `undo`, which is this tool's own input for putting the previous rules back.",
         "tags": [
           "Pages"
         ],

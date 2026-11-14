@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.654] - 2026-11-14
+
+### Changed
+- `updatePageCss` says in its own description that an icon is Bootstrap Icons 1.13.1 unless the user names another set, written `content: bi(NAME)`. Before, this was only in the server instructions, and a client that does not read them wrote Font Awesome glyph codes from memory.
+- The hero `<select>` padding guard also catches a select inside `:is(...)` or `:where(...)`, such as `:is(select#sid, .bootstrap-select > .dropdown-toggle)`. Before, that rule got past the guard, left out `.select2-choice`, and the text still slid under the icon after a click.
+- `getDesignSettings {block: "home.rows"}`: homepage sections are 90px top and bottom unless the user names other spacing. A row holding a Custom Content block takes 0 top and bottom spacing, because its section widget pads itself; every other row takes 90px. Before, a Custom Content row added its own spacing around a section that was already padded, which doubled the gap and showed a seam when the row and the section had different backgrounds.
+
 ## [6.59.653] - 2026-11-14
 
 ### Changed

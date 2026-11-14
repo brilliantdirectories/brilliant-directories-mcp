@@ -713,10 +713,10 @@ function pcssBi(css) {
   const rest = out.split(";").map((d) => d.trim()).filter((d) => d && !/^font-family\s*:/i.test(d));
   return { css: rest.concat('font-family: "bootstrap-icons" !important').join("; ") + ";" };
 }
-// True when a selector part ends on a <select> in the hero (parenthesised arguments such as :has(...) do not count).
+// True when a selector part ends on a <select> in the hero, also through :is(select…) or :where(select…); other parenthesised arguments such as :has(...) do not count.
 function pcssHeroSelect(p) {
   let q = String(p);
-  for (let i = 0; i < 3; i++) q = q.replace(/\([^()]*\)/g, "");
+  for (let i = 0; i < 3; i++) q = q.replace(/:(?:is|where|matches|-webkit-any)\(([^()]*)\)/gi, (m, g) => (g.split(",").some((a) => /^\s*select(?![\w-])[^\s>+~]*\s*$/i.test(a)) ? "select" : m)).replace(/\([^()]*\)/g, "");
   return p.includes("#first_container") && !/::?(before|after)/i.test(q) && /(^|[\s>+~])select(?![\w-])[^\s>+~]*$/i.test(q.trim());
 }
 function pcssSplitCommas(sel) {
