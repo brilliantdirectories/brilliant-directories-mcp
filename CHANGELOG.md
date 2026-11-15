@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.664] - 2026-11-15
+
+### Fixed
+- `updatePageCss` recipe `hero.search_box`, joined look: the space between the bar's edge and the fields and button is the same on every side. When the hero has a sub-title, the rule that sets the space under it also removed the bar's top padding, so the button touched the top edge while it sat 8px from the right and bottom. Under 992px the stacked button sat 16px from the bottom (BD's own form padding plus its margin) and 8px from the sides; it is now the same on its left, right and bottom, and below the last field.
+- The button and the fields inside the joined bar take the bar's corner less the space around them, so their corners follow the bar's at any `radius`.
+- The price slider column of a post-type search is one field tall from 992px, so its row is as tall as the others and the button beside it keeps its space; under 992px its row has 12px above and below, where its price labels touched the line above.
+- A Bootstrap-select dropdown (Property Search's status, type, beds and baths) is the field height at every `height`; below 46px BD's large-button minimum made it taller than the other fields.
+- A value equal to another value's default is no longer changed by it: `radius` 56 sent with `height` 40 also turned the radius into 40px.
+
+### Added
+- Recipe value `inset` (pixels, 0 to 24, default 8): with `joined` on, the space between the bar's edge and the fields and button, and between rows. It replaces the 6px of a single row, the 8px of a wrapped bar and the 8px around the stacked button. A page saved by an earlier version gets 8.
+- `updatePageCss` `rules`: a hand-written rule that sets padding, margin, height, line-height, alignment or corners on the hero search bar, its columns or the search button, or the height, line-height or corners of a hero field, is refused and names `inset`, `height`, `radius` and `title_gap`. Before, the refusal explained how to make such a rule outrank the recipe, and a rule that did so lined the button up at one width and left the others uneven.
+- `getDesignSettings` `hero.search_box`: the text names `inset`, `height`, `radius` and `title_gap` as the way to change the bar's spacing, heights and corners, and says the button's words are the site's text label `home_search_submit`, which these tools cannot change. A reply could say the button now read "Search" while it still showed the site's own label.
+- A recipe call lists, in `hand_rules`, the hand-written rules already on the page that set that spacing, so they can be removed.
+- 40 base rules (was 38) and 48 joined rules (was 46); no rules removed.
+
 ## [6.59.663] - 2026-11-14
 
 ### Fixed

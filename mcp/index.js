@@ -719,6 +719,28 @@ function pcssHeroSelect(p) {
   for (let i = 0; i < 3; i++) q = q.replace(/:(?:is|where|matches|-webkit-any)\(([^()]*)\)/gi, (m, g) => (g.split(",").some((a) => /^\s*select(?![\w-])[^\s>+~]*\s*$/i.test(a)) ? "select" : m)).replace(/\([^()]*\)/g, "");
   return p.includes("#first_container") && !/::?(before|after)/i.test(q) && /(^|[\s>+~])select(?![\w-])[^\s>+~]*$/i.test(q.trim());
 }
+// The search recipe sizes and spaces the hero search bar, its columns and the button (values inset, height, radius, title_gap);
+// a hand rule on those wins at one width and leaves the others uneven. Returns the properties such a rule sets, or null.
+const PCSS_HERO_GEO = /^(?:padding|margin|height|min-height|max-height|line-height|align-items|align-self|border-radius)(?:-[a-z-]+)?$/i;
+function pcssHeroGeometry(selector, css) {
+  const props = Array.from(new Set(pcssDecls(css).map((d) => d.slice(0, d.indexOf(":")).trim().toLowerCase()).filter((p) => PCSS_HERO_GEO.test(p))));
+  if (!props.length) return null;
+  let field = false;
+  const hit = pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    const fieldPart = /(?:input|select)\.form-control|\.select2-choice|\.dropdown-toggle/.test(part.split(/\s|>/).pop() || "") || /:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim());
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    q = q.replace(/\s*([>+~])\s*/g, "$1").trim();
+    if (q.includes("::")) return false;
+    const last = q.split(/[\s>+~]/).pop();
+    if (fieldPart) { field = true; return true; }
+    return /\.btn_home_search(?![\w-])/.test(last) || /^(?:form|\.row|\.form-group)(?![\w-])/.test(last) || /form:has[^\s>+~]*(?:>\.row[^\s>+~]*)?>[^\s>+~]+$/.test(q);
+  });
+  if (!hit) return null;
+  const out = field ? props.filter((p) => /^(?:height|min-height|max-height|line-height|border-radius)$/.test(p)) : props;
+  return out.length ? out : null;
+}
 function pcssSplitCommas(sel) {
   const parts = [];
   let cur = "";
@@ -810,6 +832,11 @@ function pcssValidate(args, lim) {
     }
     const star = pcssStarDisplay(`${selector}{${css}}`) || pcssHeroClip(`${selector}{${css}}`);
     if (star) { refused.push(star); continue; }
+    const geo = !lim && css.trim() !== "" && pcssHeroGeometry(selector, css);
+    if (geo) {
+      refused.push(`\`${selector.slice(0, 160)}\` sets ${geo.join(", ")} on the hero search bar, its columns, its fields or the search button. The search recipe sets those so they stay even at every width: call updatePageCss {recipe: "hero.search_box", values: {...}} with inset (the space inside the joined bar, around the button and between rows), height (fields and button), radius (corners) or title_gap (the space above the search).`);
+      continue;
+    }
     // The search recipe's rules carry :not(#_) or more; a hand rule on the hero search form without :not(#_):not(#__) loses to them.
     if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(":not(#_):not(#__)"))) {
       refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without :not(#_):not(#__), so the search recipe's rules win over it. End the part that names a field or the button with :not(#_):not(#__).`);
@@ -1057,10 +1084,11 @@ function pcssRecipeState(R, cur) {
   }
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const toks = Object.values(R.values).flatMap((s) => (s.set ? [] : [s.token, s.minus2])).filter(Boolean);
+  const pool = R.rules.concat(...Object.values(R.sets));
   for (const k of Object.keys(R.values)) {
     const spec = R.values[k];
     if (spec.set) continue;
-    for (const r of R.rules) {
+    for (const r of spec.read ? pool.filter((x) => x.selector === spec.read) : pool) {
       const decl = r.css.split(";").find((d) => d.includes(spec.token));
       const b = decl && body(r);
       if (!b) continue;
@@ -1174,12 +1202,27 @@ function pcssRecipe(args, cur) {
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
   const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
+  // Every token is swapped in one pass, so a value equal to another token (radius 56 with height 56) is not swapped again.
   const rules = all.map(([r, on]) => {
     let css = on ? r.css : "";
-    for (const [from, to] of swaps) css = css.split(from).join(to);
+    swaps.forEach(([from], i) => { css = css.split(from).join(`\u0001${i}\u0001`); });
+    css = css.replace(/\u0001(\d+)\u0001/g, (m, i) => swaps[Number(i)][1]);
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
-  return { args: { rules }, recipe: b.id, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush };
+  const own = new Set(rules.map((r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "")));
+  return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush };
+}
+// Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
+function pcssHeroHandRules(css, own) {
+  const scan = pcssScan(String(css || ""));
+  if (!scan || scan.error) return [];
+  const out = [];
+  for (const r of scan.rules) {
+    if (own.has(r.sel + "|" + r.at)) continue;
+    const selector = String(css).slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
+    if (pcssHeroGeometry(selector, String(css).slice(r.bodyStart, r.bodyEnd))) out.push(r.at ? { selector, media: r.at } : { selector });
+  }
+  return out;
 }
 
 async function updatePageCss(config, args) {
@@ -1216,6 +1259,8 @@ async function updatePageCss(config, args) {
         chars_before: R.length,
         chars_after: plan.next.length,
       };
+      const hand = rec.recipe ? pcssHeroHandRules(plan.next, rec.own) : [];
+      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and set the spacing of the search bar or the search button, so they override inset, height and radius at some widths. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
       if (plan.next === R) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }
