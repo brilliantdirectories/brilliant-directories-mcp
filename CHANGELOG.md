@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.662] - 2026-11-14
+
+### Fixed
+- `getDesignSettings`: nine labels name the part they style, in the admin's own words, so a search by label no longer lands on a same-named setting elsewhere. Hero Section: Top / Bottom Spacing (`custom_164`, `custom_165`); Section Title: Bottom Spacing (`streaming_title_padding_bottom`); Header Search Module: Button Background / Font Color (`custom_9`, `custom_10`), which a search for the hero search button found first; Footer Newsletter Bar: Button Background / Font Color (`custom_111`, `custom_112`); Post Details: Hover Background / Font Color (`custom_56`, `custom_57`), the overlay on post photos rather than a button hover.
+
 ## [6.59.661] - 2026-11-14
 
 ### Fixed
