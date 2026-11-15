@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.663] - 2026-11-14
+
+### Fixed
+- `updatePageCss` recipe `hero.search_box`: a Select2 category field (including the chained Top, Sub and Sub-Sub selects) matches the search in every state. The open list, its options and its search box take the field colours, and the highlighted option is a tint of the focus colour instead of Bootstrap blue. Before the first click, while the field is still a plain select, the same arrow is drawn in the same place instead of BD's grey arrow image. Before, a coloured or dark search opened a white list with a blue highlight and showed a grey arrow until it was clicked.
+- The clear buttons are one 24 × 24 icon in the arrow colour: the Select2 ×, the text field ×, the location field's error icon and its locate icon. Bootstrap Icons `x-lg` replaces the grey image and the white circle, and the box no longer changes with BD's small, medium and large classes. A long option or typed value ends in an ellipsis before the ×, where it ran under it.
+- The open list keeps an 8px gap when it opens upward, where it covered the field, and its styling applies only to a list the hero opened, where it also restyled any other Select2 list on the Home page. The joined search keeps its focus ring while a list is open. The list's search box is 16px, so a phone no longer zooms the page when it is tapped.
+- The search button is the field height at every `height` from 36 to 80; below 46px BD's large-button minimum made it taller. 38 base rules (was 26); the 3 replaced selectors are removed on the next call; no new values.
+- `updatePageCss` `rules`: a selector may be up to 600 characters (was 300), the same limit as a recipe. A call that removed or edited one of the longer search-box rules the recipe saves was refused, so those rules could only be removed by turning their look off.
+
 ## [6.59.662] - 2026-11-14
 
 ### Fixed

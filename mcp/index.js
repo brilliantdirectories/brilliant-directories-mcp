@@ -564,7 +564,7 @@ async function buildCategoryTree(config, args) {
 // Mirrored in Worker `src/index.ts` (pcss* functions). Keep in sync.
 // ---------------------------------------------------------------------------
 const PCSS_MAX_RULES = 40;
-const PCSS_MAX_SELECTOR = 300;
+const PCSS_MAX_SELECTOR = 600;
 const PCSS_NOTES = [
   "This CSS loads on that page only. CSS for a custom section or your copy of a BD widget belongs in that widget's CSS field.",
   "Target a homepage section by its own class, never by .homepage-section-<number>: the number changes when sections are reordered.",
