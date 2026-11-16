@@ -1308,9 +1308,9 @@ function pcssRecipe(args, cur) {
       continue;
     }
     if (spec.px) {
-      const n = Number(v);
+      const n = Number(typeof v === "string" ? v.trim().replace(/px$/i, "") : v);
       if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}.`] };
-      if (k === "title_gap" && n !== 20 && args.user_named !== true) return { refused: ["title_gap is 20. Send another value only with user_named: true, when the user names the space under the sub-title."] };
+      if (k === "title_gap" && n !== 20 && args.user_named !== true && parseInt(String((pcssRecipeNow(R, cur).values || {}).title_gap), 10) !== n) return { refused: ["title_gap is 20. Send another value only with user_named: true, when the user names the space under the sub-title."] };
       swaps.push([spec.token, n + "px"]);
       if (spec.minus2) swaps.push([spec.minus2, n - 2 + "px"]);
     } else {
@@ -1345,6 +1345,7 @@ function pcssRecipe(args, cur) {
   const own = new Set(rules.map((r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "")));
   return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
+const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
 function pcssHeroHandRules(css, own) {
   const scan = pcssScan(String(css || ""));
@@ -1397,7 +1398,7 @@ async function updatePageCss(config, args) {
         ...(rec.foot ? { required: pcssReqNow(foot), required_saved_in: "content_footer_html" } : {}),
       };
       const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
-      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
+      if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
       if (plan.next === R && footSent === undefined) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }
@@ -1804,6 +1805,8 @@ function dsLabelText(labels, name) {
 const DSF_WIDGET_REF = /\[widget=([^[\]%<>]+)\]/g;
 const DSF_CODE = ["widget_data", "widget_style", "widget_javascript"];
 const DSF_PAGE_FIELDS = ["content", "content_css", "content_head", "content_footer_html", "title", "meta_desc"];
+// A find about the search form gets a pointer to the hero's own search: a row widget with a form of its own can match first.
+const DSF_SEARCH_WORDS = /\b(search(es|ing)?|fields?|buttons?|location|category|keywords?|drop-?downs?)\b/i;
 const DSF_MARKUP = new Set(["widget_data", "content", "content_footer_html", "menu_name", "html", "area", "text"]);
 const DSF_TEXT_TYPES = new Set(["text", "area", "html", "code", "embed", "img"]);
 const DSF_SETTING_BLOCKS = new Set(["general.header", "general.logo", "general.footer", "general.announcement"]);
@@ -2418,6 +2421,9 @@ async function dsfFind(ds, got, text, key, get) {
   els.sort((x, y) => heroFirst(x) - heroFirst(y));
   out.hits = hits.slice(0, DSF_MAX_HITS);
   if (hits.length > DSF_MAX_HITS) out.more = hits.length - DSF_MAX_HITS;
+  for (const h of out.hits) if (h.widget !== undefined && !h.in) h.in = /^hero\./.test(h.block || "") ? "hero" : h.row !== null && h.row !== undefined ? `row ${h.row}, below the hero` : undefined;
+  const heroKind = dsMeta(ds, values, "custom_30", "kind");
+  if (heroShown && (heroKind === "member_search" || heroKind === "post_search") && DSF_SEARCH_WORDS.test(q)) out.hero_search = `The search form in the hero, at the top of the homepage, is "${dsRead(ds, values, "custom_30")}" (custom_30). Its fields, button, look, required fields and the hand-written rules that break it: getDesignSettings {block: "hero.search_box"}. A hit "in" a row is a different section lower on the page.`;
   out.searched = searched;
   if (skipped.length) out.skipped = skipped;
   if (missing.length) out.missing_widgets = missing;
@@ -3324,6 +3330,8 @@ async function getDesignSettings(config, args) {
     const home = await dsfHomePage(get);
     const on = home ? dsPageCssOn(out.css, home.content_css) : null;
     if (on) out.page_css = on;
+    const hand = b.recipe && home ? pcssHeroHandRules(home.content_css, pcssRecipeKeys()) : [];
+    if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
     if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css, home.content_footer_html);
   }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;

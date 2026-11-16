@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.675] - 2026-11-15
+
+### Fixed
+- A homepage with a second section that has its own search-like form or video (a lead form, a video row) drew fixes for the hero into that section. On 145, a cold request to fix the hero search on phones and the black bars on the hero video edited the row widget below the hero; the hero did not change.
+  - `getDesignSettings {find}`: a query about the search form (search, fields, button, location, category, keyword, dropdown) on a site whose hero is a member or post search returns `hero_search`, naming the hero's search widget and pointing to `getDesignSettings {block: "hero.search_box"}`. Each widget hit says where it is: `in: "hero"` or `in: "row N, below the hero"`.
+  - `getDesignSettings {block: "hero.search_box"}` lists `hand_rules`: hand-written page rules that break the hero search (bar or button spacing, an oval corner, fields side by side on phones), the same list a recipe write already returned. Measured on 145: 3 rules.
+  - `updatePageCss` recipe values read from `recipe_now` can be sent back as read: a pixel value given as "48px" is taken as 48, and `title_gap` equal to the value already on the page needs no `user_named`.
+
 ## [6.59.674] - 2026-11-15
 
 ### Fixed
