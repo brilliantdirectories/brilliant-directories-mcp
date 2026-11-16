@@ -1282,7 +1282,8 @@ function pcssHeroHandRules(css, own) {
   for (const r of scan.rules) {
     if (own.has(r.sel + "|" + r.at)) continue;
     const selector = String(css).slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
-    if (pcssHeroGeometry(selector, String(css).slice(r.bodyStart, r.bodyEnd))) out.push(r.at ? { selector, media: r.at } : { selector });
+    const body = String(css).slice(r.bodyStart, r.bodyEnd);
+    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
   }
   return out;
 }
@@ -1321,8 +1322,8 @@ async function updatePageCss(config, args) {
         chars_before: R.length,
         chars_after: plan.next.length,
       };
-      const hand = rec.recipe ? pcssHeroHandRules(plan.next, rec.own) : [];
-      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and set the spacing of the search bar or the search button, so they override inset, height and radius at some widths. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
+      const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
+      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
       if (plan.next === R) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }

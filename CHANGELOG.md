@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.667] - 2026-11-15
+
+### Fixed
+- Hero search recipe: with Search Box Layout (`custom_29`) set to vertical, the fields and the button stay one per row at every width. Without `joined`, the recipe laid a vertical search out in rows (three fields in a row at 1440 and 768, a 2×2 grid at 1024), so a request for a stacked search could not be met with the setting and the recipe, and was styled by hand instead. The recipe text now says stacked fields come from that setting. The recipe has 41 rules.
+- `updatePageCss`: every write reports hand rules already on the page that break the hero search (spacing the recipe owns, or a bar corner over 28px where the bar stacks) in `hand_rules`, with the removal to send. Before, only a recipe call reported them, and only for spacing, so an oval bar rule written before 6.59.666 stayed after a later, correct desktop-only rule.
+- Hero search recipe, `joined`: focus shows on the field the visitor is in (a 2px ring in `focus_border` inside its segment, also while its list is open), not around the whole bar. A ring around the bar or card did not say which field had focus, and on a card of two rows the whole card lit up for one field. The `shadow` look keeps its resting shadow and no longer adds a focus ring. Without `joined`, focus was already on the field alone.
+- The recipe removes two title-gap rules and the two bar focus rules of earlier versions when it finds them.
+
 ## [6.59.666] - 2026-11-15
 
 ### Fixed
