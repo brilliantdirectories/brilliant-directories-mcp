@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.666] - 2026-11-15
+
+### Fixed
+- `updatePageCss` `rules`: a hand edit that leaves out properties the rule already has is refused, with nothing written, and the refusal gives the css that keeps them. A later corner change sent only `border-radius` for the search button's rule and silently removed the bold, larger text and wider button asked for just before. To remove properties on purpose, send the rule with `whole: true`; the `undo` a call returns carries it. Recipe writes are unchanged.
+- Hero search: a hand rule giving the search bar a corner over 28px outside `@media (min-width: 992px)` is refused. The bar stacks into rows under 992px, and at every width in the vertical layout, and a pill corner turned it into an oval on phones. A stacked bar keeps 28px or less, as the recipe's `radius` does by itself; pill corners on a stacked search go on the fields and the button.
+
 ## [6.59.665] - 2026-11-15
 
 ### Fixed

@@ -12060,6 +12060,10 @@
                         "after": {
                           "type": "string",
                           "description": "Only when adding: the selector of the rule to place it after."
+                        },
+                        "whole": {
+                          "type": "boolean",
+                          "description": "Only to drop properties a rule already has: true makes css the whole rule. Without it, css that leaves out a property the rule has is refused."
                         }
                       },
                       "required": [

@@ -741,6 +741,19 @@ function pcssHeroGeometry(selector, css) {
   }
   return out.size ? Array.from(out) : null;
 }
+// A stacked bar (under 992px, or the vertical layout) with a corner over 28px turns into an oval; the recipe caps it there.
+function pcssHeroBarCorner(selector, css, media) {
+  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
+  if (m && Number(m[1]) >= 992) return false;
+  const big = pcssDecls(css).some((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d) && Array.from(d.matchAll(/(\d*\.?\d+)(px|%|r?em|v[wh])/gi)).some((x) => (x[2] === "px" ? Number(x[1]) > 28 : /em$/i.test(x[2]) ? Number(x[1]) > 1.75 : Number(x[1]) > 0)));
+  if (!big) return false;
+  return pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    return /^(?:form|\.row)(?![\w-])/.test(q.replace(/\s*([>+~])\s*/g, "$1").trim().split(/[\s>+~]/).pop());
+  });
+}
 // A hand rule on the hero search ends the part that names the bar, a field or the button with this: 6 ids, more than any
 // recipe rule carries (the battery checks it), so the hand rule wins whatever order the rules sit in.
 const PCSS_HERO_OWN = ":not(#_#_#_#_#_#_)";
@@ -869,6 +882,10 @@ function pcssValidate(args, lim) {
       refused.push(`\`${selector.slice(0, 160)}\` sets ${geo.join(", ")} on the hero search bar, its columns, its fields or the search button. The search recipe sets that spacing so it stays even at every width: call updatePageCss {recipe: "hero.search_box", values: {...}} with inset (the space inside the joined bar, around the button and between rows), height (fields and button) or title_gap (the space above the search). Corners, colours, fonts and the button's width (padding-left, padding-right, min-width) can go in a rule of your own.`);
       continue;
     }
+    if (!lim && css.trim() !== "" && pcssHeroBarCorner(selector, css, media)) {
+      refused.push(`\`${selector.slice(0, 160)}\` gives the search bar a corner over 28px outside @media (min-width: 992px). The bar stacks into rows under 992px, and at every width in the vertical layout, where a large corner turns it into an oval. For a horizontal bar, put the rule in @media (min-width: 992px); a stacked bar keeps 28px or less, as the recipe's radius does by itself. Pill corners on a stacked search go on the fields and the button.`);
+      continue;
+    }
     // A hero field or the button named without the form loses to the recipe's rules, which all start with it.
     if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("#first_container") && !p.includes("form:has(.btn_home_search)") && /\.btn_home_search|\.select2-choice|\.form-control|\.dropdown-toggle/.test(p))) {
       refused.push(`\`${selector.slice(0, 160)}\` names the hero search without #first_container form:has(.btn_home_search), so the search recipe's rules win over it. Start it with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
@@ -890,7 +907,7 @@ function pcssValidate(args, lim) {
       continue;
     }
     seen.add(key);
-    entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after });
+    entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after, whole: r.whole === true || r.whole === "true" });
   }
   if (refused.length) return { refused: Array.from(new Set(refused)) };
   return { entries };
@@ -935,7 +952,8 @@ function pcssSpot(R, scan, e, skip) {
 }
 
 // Applies the entries to the field text. Returns { next, results, undo } or { refused }.
-function pcssPlan(R, entries) {
+// keepOld: a hand edit may not silently drop properties the rule already has (a later corner change wiped a bold button).
+function pcssPlan(R, entries, keepOld) {
   if (R.includes("<?")) return { refused: ["This page's CSS contains PHP code. Edit it in the page editor."] };
   const scan = pcssScan(R);
   if (scan.error) {
@@ -1011,6 +1029,13 @@ function pcssPlan(R, entries) {
       results.push({ ...base, action: "unchanged" });
       continue;
     }
+    const prop = (d) => d.split(":")[0].trim().toLowerCase();
+    const sent = new Set(e.decls.map(prop));
+    const lost = oldDecls.filter((d) => !sent.has(prop(d)));
+    if (keepOld && !e.whole && lost.length) {
+      refused.push(`\`${e.selector.slice(0, 160)}\`${e.media ? " in " + e.media : ""} already has ${lost.join("; ")}, which this css leaves out, so they would be lost. To keep them, send css: "${e.decls.concat(lost).join("; ")};". To remove them, send the same css with whole: true.`);
+      continue;
+    }
     const inner = hit.group >= 0 ? "    " : "  ";
     const close = hit.group >= 0 ? "  " : "";
     edits.push({ start: hit.bodyStart, end: hit.bodyEnd, text: nl + e.decls.map((d) => inner + d + ";").join(nl) + nl + close });
@@ -1019,7 +1044,7 @@ function pcssPlan(R, entries) {
       continue;
     }
     results.push({ ...base, action: "replaced" });
-    undo.push({ ...undoBase, css: oldDecls.join("; ") + ";" });
+    undo.push({ ...undoBase, css: oldDecls.join("; ") + ";", whole: true });
     undoPos.push(-1);
   }
   if (refused.length) return { refused };
@@ -1286,7 +1311,7 @@ async function updatePageCss(config, args) {
       const page = await pcssReadPage(config, seoId);
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
-      const plan = pcssPlan(R, checked.entries);
+      const plan = pcssPlan(R, checked.entries, !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const out = {
         status: "success",
