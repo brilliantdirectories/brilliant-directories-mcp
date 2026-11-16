@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.673] - 2026-11-15
+
+### Fixed
+- A homepage with two forms: a `createWidget` / `updateWidget` save that adds `required` to a widget the homepage shows, while the hero shows a search (custom_30 a member or post search), is refused before anything is written. The reply names both forms (the hero search widget, and any `[form=…]` in the saved widget) and the right path for each: `updatePageCss {recipe: "hero.search_box", values: {required}}` for the hero search, `updateFormField field_required` for a BD form, and asks which one the user means when they did not say. `own_form: true` sends the save anyway. Measured on 145: a script making `lead_location` of the Get Matched form required in widget 97 is refused by replace and by full-field update with nothing written; an edit that adds no required, `own_form: true`, and a widget not on the homepage all go through.
+
+## [6.59.672] - 2026-11-15
+
+### Added
+- Hero background video (`getDesignSettings {block: "hero.background"}`): a video on computers and tablets only. With `data-from="769"` on the video layer and `data-src` in place of `src`, phones (768px and under, where BD switches to `mobile_custom_76`) never load the video and keep the hero photo under the site's own overlay; wider screens load and play it as before. Measured on 60030: at 1440 the video covers the hero; at 390 nothing is requested from YouTube and the phone hero photo shows.
+
+### Fixed
+- Hero background video markup: the hero's own overlay is switched off only while a video layer is in the hero (`#first_container:has(> .hero-bg-video)`), so a hero without the video keeps the site's tint.
+
 ## [6.59.671] - 2026-11-15
 
 ### Fixed

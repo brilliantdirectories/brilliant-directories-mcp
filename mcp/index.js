@@ -2789,6 +2789,55 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
   return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
+// A homepage can show two forms: the hero search and a widget's own (a lead form, say). "Make the location field required"
+// fits both, so a save that adds required to a homepage widget while the hero shows a search stops and names both.
+const wdgReqN = (o) => ["widget_data", "widget_javascript"].reduce((n, f) => n + (o && typeof o[f] === "string" ? (o[f].match(/\brequired\b/gi) || []).length : 0), 0);
+async function wdgRequiredWhich(config, tool, args, orig) {
+  if (args.own_form === true || !wdgReqN(args)) return null;
+  let o = orig;
+  if ((!o || !o.widget_name) && tool === "updateWidget") {
+    if (!/^\d+$/.test(String(args.widget_id))) return null;
+    const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
+    o = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    if (!o) return null;
+  }
+  const after = Object.assign({}, o || {}, args);
+  if (wdgReqN(after) <= wdgReqN(o) || /btn_home_search/.test(String(after.widget_data || ""))) return null;
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const kind = dsMeta(ds, got.values, "custom_30", "kind");
+  const hero = dsRead(ds, got.values, "custom_30");
+  const names = [o && o.widget_name, args.widget_name].filter(Boolean).map(String);
+  if ((kind !== "member_search" && kind !== "post_search") || !hero || names.includes(hero)) return null;
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  const [ws, home] = await Promise.all([dsfSiteWidgets(dsCacheKey(config), get), dsfHomePage(get)]);
+  if (!ws || !ws.byName) return null;
+  const seen = new Set();
+  const want = (name) => {
+    if (!name || seen.has(name)) return;
+    seen.add(name);
+    const w = ws.byName.get(name);
+    if (w) for (const n of dsfRefs(w.widget_data)) want(n);
+  };
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
+  for (const r of dsDirectory(ds, got).homepage.rows) {
+    const m = /^content\.(\d+)$/.exec(r.block || "");
+    const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
+    if (m && m[1] !== "1") want(dsfCcRef(got.values[`homepage_content_${m[1]}`]).name);
+    else if (m && home) for (const n of dsfRefs(home.content)) want(n);
+    else if (b && b.widget) want(dsExpand(ds.m, b.widget));
+  }
+  if (!names.some((n) => seen.has(n))) return null;
+  const forms = [...new Set((String(after.widget_data || "").match(/\[form=([\w-]+)\]/gi) || []).map((x) => x.slice(6, -1)))];
+  const fl = forms.map((f) => `"${f}"`).join(", ");
+  const label = `widget ${args.widget_id ? Number(args.widget_id) + " " : ""}"${names[names.length - 1]}"`;
+  return `Nothing was written. This adds required to ${label}, and the homepage has two forms: the hero search drawn by "${hero}" (custom_30), and ${forms.length ? `the form ${fl} in ${label}` : `a form in ${label}`}. `
+    + `A field of the hero search is made required with updatePageCss {recipe: "hero.search_box", values: {required}} (getDesignSettings {block: "hero.search_box"} gives its fields in order). `
+    + (forms.length ? `A field of ${fl} is made required on the field itself: updateFormField field_required, with no script. ` : "")
+    + `If the user did not say which form, ask them. To add required to this widget's own code anyway, send the same call with own_form: true.`;
+}
 // A background video that does not exist plays nothing and looks saved. YouTube and the file host are asked before the save;
 // no answer, or any answer but "not there" / "not allowed", lets the save through.
 async function vidSourceDead(args, orig) {
@@ -10244,6 +10293,9 @@ async function main() {
         delete args.widget_viewport;
         const bs = wdgScriptBackslash(args, _widgetReplace && _widgetReplace.orig);
         if (bs) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: "Nothing was written. " + bs }) }], isError: true };
+        const which = await wdgRequiredWhich(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
+        if (which) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: which }) }], isError: true };
+        delete args.own_form;
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique
