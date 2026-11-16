@@ -773,11 +773,9 @@ function pcssHeroBarLayout(selector, decls) {
     (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-direction|flex-flow)$/.test(p)) || /grid/.test(val("display")) || /(?<!no)wrap/.test(val("flex-wrap")))) ||
     (child && props.some((p) => /^(?:grid-(?:column|row|area)|order)$/.test(p) || ((p === "flex" || p === "flex-basis" || p === "width") && /100%/.test(val(p))))));
 }
-// Under 992px the recipe rounds the stacked bar, fields and button to match the desktop look (values.radius sets them at
-// every width): a hand corner there squares or reshapes them on phones and tablets only.
+// The recipe rounds the bar, its fields and the button from one radius value, each fitting inside the one around it, at
+// every width: a hand corner on any of them breaks that fit.
 function pcssHeroCorner(selector, decls, media) {
-  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
-  if (m && Number(m[1]) >= 992) return false;
   if (!decls.some((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d))) return false;
   return pcssSplitCommas(selector).some((part) => {
     if (!part.includes("form:has(.btn_home_search)")) return false;
@@ -815,6 +813,81 @@ function pcssHeroPhoneCols(selector, decls, media) {
   const part = ["width", "flex-basis", "flex", "max-width"].some((p) => { const x = /(\d*\.?\d+)%/.exec(val(p)); return x && Number(x[1]) > 0 && Number(x[1]) < 100; });
   return pcssHeroParts(selector).some(({ bar, child }) => (bar && many) || (child && part));
 }
+// What a browser drops without a word: the whole rule for a bad selector, one declaration for a bad declaration.
+function pcssBroken(selector, css) {
+  const sel = selector.replace(/"[^"]*"|'[^']*'/g, "\"\"");
+  let d = 0;
+  for (const c of sel) { if (c === "(") d++; if (c === ")" && --d < 0) break; }
+  if (d !== 0) return "its brackets ( ) do not pair up, so browsers drop the whole rule";
+  const args = [];
+  const re = /:(is|where|not|has)\(/gi;
+  let m;
+  while ((m = re.exec(sel))) {
+    let k = m.index + m[0].length, depth = 1;
+    while (k < sel.length && depth) { if (sel[k] === "(") depth++; else if (sel[k] === ")") depth--; k++; }
+    args.push([m[1].toLowerCase(), sel.slice(m.index + m[0].length, k - 1)]);
+  }
+  if (args.some(([f, a]) => f === "has" && /:has\(/i.test(a))) return "it puts :has() inside :has(), which browsers do not allow, so they drop the whole rule";
+  if (args.some(([, a]) => /::[\w-]|:(?:before|after|first-line|first-letter)(?![\w-])/i.test(a))) return "it puts a pseudo-element (::before, ::after…) inside :is(), :where(), :not() or :has(), which browsers do not allow, so they drop the whole rule";
+  for (const raw of pcssDecls(css)) {
+    const t = raw.trim();
+    if (!t) continue;
+    const p = /^(--[\w-]+|-?[a-z][a-z-]*)\s*:([\s\S]*)$/i.exec(t);
+    if (!p) return "`" + t.slice(0, 60) + "` is not a declaration (property: value), so browsers skip it";
+    if (p[1].startsWith("--")) continue;
+    const v = p[2].replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "''");
+    let flat = v;
+    for (let i = 0; i < 5; i++) flat = flat.replace(/\([^()]*\)/g, "()");
+    if (flat.trim() === "" || /^!important$/i.test(flat.trim())) return "`" + t.slice(0, 60) + "` has no value, so browsers skip it";
+    if (/!(?!\s*important\s*$)/i.test(flat)) return "`" + t.slice(0, 60) + "` has a `!` that is not a closing !important, so browsers skip it";
+    if (/(?:^|\s)-?[a-z][a-z-]*\s*:\s*\S/i.test(flat.replace(/progid:[\w.]+/gi, ""))) return "`" + t.slice(0, 80) + "` holds two declarations: a `;` is missing between them, so browsers skip both";
+  }
+  return null;
+}
+// A browser drops the whole rule when anything follows a pseudo-element (`::before:not(#x)`), and saving it would look like success.
+function pcssPseudoNotLast(selector) {
+  return pcssSplitCommas(selector).find((part) => {
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    const m = /::[\w-]+|:(?:before|after|first-line|first-letter)(?![\w-])/i.exec(q);
+    return !!m && q.slice(m.index + m[0].length).trim() !== "";
+  }) || null;
+}
+// The corners a rule gives, in its own order; null when it leaves them all alone.
+function pcssCorners(decls) {
+  const c = {};
+  const names = { "top-left": "tl", "top-right": "tr", "bottom-right": "br", "bottom-left": "bl", "start-start": "tl", "start-end": "tr", "end-end": "br", "end-start": "bl" };
+  for (const d of decls) {
+    const m = /^border(?:-([a-z]+-[a-z]+))?-radius\s*:\s*([\s\S]*)$/i.exec(d.trim());
+    if (!m) continue;
+    const v = m[2].replace(/!\s*important\s*$/i, "").trim().split("/")[0].trim().split(/\s+(?![^(]*\))/);
+    if (m[1]) { if (names[m[1].toLowerCase()]) c[names[m[1].toLowerCase()]] = v[0]; continue; }
+    const [a, b = a, e = a, f = b] = v;
+    Object.assign(c, { tl: a, tr: b, br: e, bl: f });
+  }
+  return Object.keys(c).length ? c : null;
+}
+// A hero bar, field or button whose corners are not all the same: the recipe draws them even and fits each inside the
+// one around it, so a lopsided shape reads as a mistake at every width unless the user asked for it.
+function pcssHeroUneven(selector, decls) {
+  const c = pcssCorners(decls);
+  if (!c || new Set(Object.values(c).map((x) => x.replace(/\s+/g, ""))).size < 2) return false;
+  return pcssHeroCorner(selector, decls, "");
+}
+// An icon drawn by hand in the hero search (content on a ::before/::after), or a field's text moved over to clear one:
+// field_icons and button_icon place them, and a hand icon stays on the page when those are turned off.
+function pcssHeroIcon(selector, decls) {
+  const drawn = decls.some((d) => /^content\s*:/i.test(d) && !/^content\s*:\s*(?:none|normal|""|'')\s*(?:!important)?\s*$/i.test(d.trim()));
+  const moved = decls.some((d) => /^padding-(?:left|inline-start)\s*:/i.test(d));
+  return pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    if (drawn && /::?(?:before|after)/i.test(part)) return true;
+    if (!moved) return false;
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    return /:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim()) || /^(?:input|select|textarea)(?![\w-])|\.form-control|\.select2-choice|\.dropdown-toggle/.test(q.replace(/\s*([>+~])\s*/g, "$1").trim().split(/[\s>+~]/).pop() || "");
+  });
+}
 // A rule on the bar whose corners are all 28px or less.
 function pcssHeroBarRadius(selector, decls) {
   const r = decls.filter((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d));
@@ -829,7 +902,7 @@ function pcssRecipeKeys() {
   const keys = new Set();
   try {
     const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe;
-    for (const r of R.rules.concat(...Object.values(R.sets))) keys.add(pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : ""));
+    for (const r of R.rules.concat(...Object.values(R.sets), R.retired || [])) keys.add(pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : ""));
   } catch { return keys; }
   _pcssRecipeKeys = keys;
   return keys;
@@ -936,6 +1009,11 @@ function pcssValidate(args, lim) {
       refused.push(`The css for \`${selector}\` contains ${bad.map((b) => "`" + b + "`").join(", ")}.` + (bad.includes("//") ? " Use a root-relative /path for images." : ""));
       continue;
     }
+    const broken = css.trim() !== "" && pcssBroken(selector, css);
+    if (broken) {
+      refused.push("`" + selector.slice(0, 160) + "`: " + broken + ". Nothing would change on the page; send it corrected.");
+      continue;
+    }
     const star = pcssStarDisplay(`${selector}{${css}}`) || pcssHeroClip(`${selector}{${css}}`);
     if (star) { refused.push(star); continue; }
     // A recipe rule is rewritten whole by the next recipe call, so what a hand edit adds to it is lost then.
@@ -949,7 +1027,7 @@ function pcssValidate(args, lim) {
       continue;
     }
     if (!lim && css.trim() !== "" && pcssHeroBarCorner(selector, css, media)) {
-      refused.push(`\`${selector.slice(0, 160)}\` gives the search bar a corner over 28px outside @media (min-width: 992px). The bar stacks into rows under 992px, and at every width in the vertical layout, where a large corner turns it into an oval. For a horizontal bar, put the rule in @media (min-width: 992px); a stacked bar keeps 28px or less, as the recipe's radius does by itself. Pill corners on a stacked search go on the fields and the button.`);
+      refused.push(`\`${selector.slice(0, 160)}\` gives the search bar a corner over 28px outside @media (min-width: 992px). The bar stacks into rows under 992px, and at every width in the vertical layout, where a large corner turns it into an oval. Set the corners with the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}): it keeps a stacked bar at 28px or less by itself and fits the fields and the button inside the bar.`);
       continue;
     }
     // A hero field or the button named without the form loses to the recipe's rules, which all start with it.
@@ -957,9 +1035,14 @@ function pcssValidate(args, lim) {
       refused.push(`\`${selector.slice(0, 160)}\` names the hero search without #first_container form:has(.btn_home_search), so the search recipe's rules win over it. Start it with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
       continue;
     }
+    const pseudo = css.trim() !== "" && pcssPseudoNotLast(selector);
+    if (pseudo) {
+      refused.push("`" + pseudo.trim().slice(0, 160) + "` has something after its pseudo-element (::before, ::after, ::placeholder…). Browsers drop the whole rule, so nothing would change on the page. Move the pseudo-element to the very end of that part, after every class, id and :not().");
+      continue;
+    }
     // Every recipe rule carries fewer ids than PCSS_HERO_OWN; a hand rule on the hero search form without it can lose to them.
     if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(PCSS_HERO_OWN))) {
-      refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without ${PCSS_HERO_OWN}, so the search recipe's rules can win over it. End the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
+      refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without ${PCSS_HERO_OWN}, so the search recipe's rules can win over it. Put ${PCSS_HERO_OWN} on the bar, field or button itself, before any ::before or ::after.`);
       continue;
     }
     // Select2 and Bootstrap-select hide a hero select on first use and show their own control, which the recipe pads.
@@ -975,16 +1058,21 @@ function pcssValidate(args, lim) {
     seen.add(key);
     entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after, whole: r.whole === true || r.whole === "true" });
   }
+  if (!lim && args.user_named === true) for (const e of entries) if (e.decls.length && !e.decls.includes(PCSS_USER_NAMED) && (pcssHeroCorner(e.selector, e.decls, e.media) || pcssHeroUneven(e.selector, e.decls))) e.decls.push(PCSS_USER_NAMED);
   if (!lim && !refused.length) {
     const cols = entries.find((e) => e.decls.length && pcssHeroPhoneCols(e.selector, e.decls, e.media));
     if (cols) refused.push(`\`${cols.selector.slice(0, 160)}\` puts the hero search fields side by side on phones as well: under 768px the search recipe stacks every field and the button full width, one per row. Send the same rule inside media "@media (min-width: 768px)" (or 992px), or use the recipe: button_below puts the fields in one row over a full-width button.`);
     const bw = entries.find((e) => e.decls.length && pcssHeroBtnWidth(e.selector, e.decls, e.media));
     const corner = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroCorner(e.selector, e.decls, e.media));
-    if (corner) refused.push(`\`${corner.selector.slice(0, 160)}\` sets the corners of the hero search bar, a field or the button under 992px, where the search recipe already rounds them to match the desktop look. The corners at every width come from the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}; 0 is square). Send a corner rule here only when the user asked for a different look on phones, with user_named: true.`);
+    if (corner) refused.push(`\`${corner.selector.slice(0, 160)}\` sets the corners of the hero search bar, a field or the button. The search recipe rounds all of them from one radius value and fits the fields and the button inside the bar's corner, at every width; a hand corner on one of them breaks that fit. The corners at every width come from the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}; 0 is square). Send a corner rule here only when the user asked for that shape, with user_named: true.`);
+    const uneven = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroUneven(e.selector, e.decls));
+    if (uneven) refused.push("`" + uneven.selector.slice(0, 160) + "` gives the hero search bar, a field or the button corners of different sizes (" + Object.values(pcssCorners(uneven.decls)).join(" ") + "). The search recipe rounds every corner the same and fits the fields and the button inside the bar's corner, so a lopsided shape looks broken. Use the recipe's radius value (updatePageCss {recipe: \"hero.search_box\", values: {radius}}). Send uneven corners only when the user asked for that shape, with user_named: true.");
+    const icon = entries.find((e) => e.decls.length && pcssHeroIcon(e.selector, e.decls));
+    if (icon) refused.push("`" + icon.selector.slice(0, 160) + "` draws an icon in the hero search by hand, or moves a field's text to make room for one. Field icons, their colours and the button icon come from the search recipe: updatePageCss {recipe: \"hero.search_box\", values: {field_icons: [...], button_icon: ...}}. It places each icon and its field's text the same way in every field, and removes them when they are turned off.");
     if (bw) refused.push(`\`${bw.selector.slice(0, 160)}\` sets the hero search button's width under 992px, where the search recipe already sizes it to the bar (calc(100% - 16px) with an 8px margin): the button would stick out past the bar. Leave width out, or send the rule inside media "@media (min-width: 992px)".`);
     const wraps = entries.find((e) => pcssHeroBarLayout(e.selector, e.decls));
-    if (wraps && !entries.some((e) => pcssHeroBarRadius(e.selector, e.decls))) {
-      refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). Send in the same call, inside media "@media (min-width: 992px)", a rule on the bar (#first_container form:has(.btn_home_search)${PCSS_HERO_OWN}) with border-radius of 28px or less; under 992px the recipe already rounds the stacked bar. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
+    if (wraps && args.user_named !== true && !entries.some((e) => pcssHeroBarRadius(e.selector, e.decls))) {
+      refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). First set the recipe's radius to 28 or less (updatePageCss {recipe: "hero.search_box", values: {radius: 28}}), then send this rule again with user_named: true. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
     }
   }
   if (refused.length) return { refused: Array.from(new Set(refused)) };
@@ -1276,7 +1364,7 @@ function pcssFieldIcons(list, cur) {
   for (let n = 1; n <= 8; n++) {
     const e = list === false ? false : list[n - 1];
     if (e === null || e === undefined) continue;
-    const of = `:nth-child(${n} of :not(.clearfix, [type="hidden"], script, style))`;
+    const of = `:nth-child(${n} of :not(.clearfix, [type="hidden"], script, style, .hidden-xs.hidden-sm))`;
     const slot = [`#first_container form:has(.btn_home_search):not(:has(> .row)) > ${of}`, `#first_container form:has(.btn_home_search) > .row > ${of}`];
     const sel = (suffix) => slot.map((p) => p + suffix).join(", ");
     const glyph = e && e.hex ? `content: "\\${e.hex}" !important; font-family: "bootstrap-icons" !important; font-size: 18px !important; font-weight: normal !important; line-height: 1 !important;` : "";
@@ -1286,6 +1374,11 @@ function pcssFieldIcons(list, cur) {
       out.push([{ selector: sel(" :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice):not(#_):not(#__):not(#___)"), css: glyph && "padding-left: 50px !important;" }, !!glyph]);
     }
     if (!e || e.color) for (const s of [` .input-group-addon${n4}:not(#_____)`, `${n4}:not(#_____)::before`]) out.push([{ selector: sel(s), css: e ? `color: ${e.color} !important;` : "" }, !!e]);
+  }
+  // Slot rules saved before label-only wrappers were skipped in the count: removed when the page still has them.
+  for (const r of out.slice()) {
+    const old = { ...r[0], selector: r[0].selector.split(", .hidden-xs.hidden-sm)").join(")"), css: "" };
+    if (old.selector !== r[0].selector) out.push([old, false]);
   }
   return out.filter(([r, on]) => on || cur.includes(r.selector));
 }
@@ -1364,20 +1457,27 @@ function pcssRecipe(args, cur) {
       if (spec.px && spec.minus2) swaps.push([spec.minus2, st.vals[k] - 2 + "px"]);
     }
   }
+  // Joined turned on without a word on dividers brings the dividers with it; a page already joined keeps what it has.
+  if (vals.joined === true && !st.on.joined && !Object.prototype.hasOwnProperty.call(vals, "dividers") && R.values.dividers) lookOn.dividers = true;
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
   const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
+  // A rule that is off and not on the page is left out: sending it empty would remove nothing.
+  const present = new Set();
+  const scanned = pcssScan(String(cur || ""));
+  if (scanned && !scanned.error) for (const x of scanned.rules) present.add(x.sel + "|" + x.at);
+  const key = (r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "");
   // Every token is swapped in one pass, so a value equal to another token (radius 56 with height 56) is not swapped again.
-  const rules = all.map(([r, on]) => {
+  const rules = all.filter(([r, on]) => on || present.has(key(r))).map(([r, on]) => {
     let css = on ? r.css : "";
     swaps.forEach(([from], i) => { css = css.split(from).join(`\u0001${i}\u0001`); });
     css = css.replace(/\u0001(\d+)\u0001/g, (m, i) => swaps[Number(i)][1]);
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
-  const own = new Set(rules.map((r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "")));
+  const own = new Set(all.map(([r]) => key(r)));
   return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
-const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack, or set the button's width where it stacks, which pushes it past the bar, or set corners where it stacks, which the recipe already rounds to match the desktop look (keep those only when the user asked for that look on phones). Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
+const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack, or set the button's width where it stacks, which pushes it past the bar, or set the corners of the bar, a field or the button, which the recipe rounds from its radius value so each fits inside the other (keep those only when the user asked for that shape), or give the bar, a field or the button corners of different sizes (keep those only when the user asked for that shape), or draw a field or button icon by hand, or move a field's text over for one, which field_icons and button_icon do. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
 function pcssHeroHandRules(css, own) {
   const scan = pcssScan(String(css || ""));
@@ -1387,11 +1487,56 @@ function pcssHeroHandRules(css, own) {
     if (own.has(r.sel + "|" + r.at)) continue;
     const selector = String(css).slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
     const body = String(css).slice(r.bodyStart, r.bodyEnd);
-    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at) || pcssHeroPhoneCols(selector, pcssDecls(body), r.at) || pcssHeroBtnWidth(selector, pcssDecls(body), r.at) || pcssHeroCorner(selector, pcssDecls(body), r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
+    if (pcssHeroBreaks(selector, pcssDecls(body), r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
   }
   return out;
 }
 
+// A hand corner the user asked for (user_named) is saved with this, so the list and the cleanup leave its corners alone.
+const PCSS_CLEAN_MSG = "These declarations, written by hand on the hero search, broke the search recipe and were taken out of their rules; the rest of each rule stays. Tell the user what changed in plain words. If the user had asked for one of these corner shapes, send that rule again with user_named: true and it is kept from then on.";
+const PCSS_USER_NAMED = "--bd-user-named: 1";
+// field_icons writes one rule per field slot, each part starting at the form (or its .row) > :nth-child(N of …): the recipe's own.
+function pcssHeroBreaks(selector, decls, at) {
+  if (pcssSplitCommas(selector).every((p) => ["#first_container form:has(.btn_home_search):not(:has(> .row)) > :nth-child(", "#first_container form:has(.btn_home_search) > .row > :nth-child("].some((x) => p.trim().startsWith(x)))) return false;
+  const asked = decls.some((d) => /^--bd-user-named\s*:/i.test(d.trim()));
+  const body = decls.join("; ");
+  return pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, at) || pcssHeroPhoneCols(selector, decls, at) || pcssHeroBtnWidth(selector, decls, at) || pcssHeroIcon(selector, decls) || (!asked && (pcssHeroCorner(selector, decls, at) || pcssHeroUneven(selector, decls)));
+}
+// A recipe write takes out of hand rules the declarations that break the search (spacing, corners, icons drawn by
+// hand) and keeps the rest of each rule; a rule or @media group left empty goes. Returns the new text and what went.
+function pcssHeroClean(css, own) {
+  const scan = pcssScan(String(css || ""));
+  if (!scan || scan.error) return { css, removed: [] };
+  const edits = [];
+  const removed = [];
+  const gone = new Set();
+  const nl = css.includes("\r\n") ? "\r\n" : "\n";
+  for (const r of scan.rules) {
+    if (r.nested || own.has(r.sel + "|" + r.at)) continue;
+    const selector = css.slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
+    const decls = pcssDecls(css.slice(r.bodyStart, r.bodyEnd)).map((d) => d.trim()).filter(Boolean);
+    if (!pcssHeroBreaks(selector, decls, r.at)) continue;
+    let keep = decls.filter((d) => !pcssHeroBreaks(selector, [d], r.at));
+    if (pcssHeroBreaks(selector, keep, r.at) || (/::?(?:before|after)/i.test(selector) && !keep.some((d) => /^content\s*:/i.test(d)))) keep = [];
+    removed.push({ selector, ...(r.at ? { media: r.at } : {}), css: decls.filter((d) => !keep.includes(d)).join("; ") + ";" });
+    if (keep.length) {
+      const ind = r.group >= 0 ? "    " : "  ";
+      edits.push({ start: r.bodyStart, end: r.bodyEnd, text: nl + keep.map((d) => ind + d + ";").join(nl) + nl + (r.group >= 0 ? "  " : "") });
+    } else {
+      gone.add(r);
+      edits.push({ start: pcssCutStart(css, r.selStart), end: r.end, text: "", rule: r });
+    }
+  }
+  for (const g of scan.groups) {
+    const inside = scan.rules.filter((r) => r.selStart > g.bodyStart && r.end <= g.end);
+    if (!inside.length || !inside.every((r) => gone.has(r)) || scan.groups.some((h) => h !== g && h.preStart > g.bodyStart && h.end <= g.end)) continue;
+    for (let i = edits.length - 1; i >= 0; i--) if (edits[i].rule && inside.includes(edits[i].rule)) edits.splice(i, 1);
+    edits.push({ start: pcssCutStart(css, g.preStart), end: g.end, text: "" });
+  }
+  let out = css;
+  for (const e of edits.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+  return { css: out, removed };
+}
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
@@ -1400,7 +1545,7 @@ async function updatePageCss(config, args) {
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
   args = rec.args;
   // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
-  const checked = pcssValidate(args, rec.recipe ? { rules: 120, selector: 600 } : undefined);
+  const checked = pcssValidate(args, rec.recipe ? { rules: 200, selector: 600 } : undefined);
   if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });
   let seoId = null;
   if (args.seo_id !== undefined && args.seo_id !== null && args.seo_id !== "") {
@@ -1416,7 +1561,8 @@ async function updatePageCss(config, args) {
       const page = await pcssReadPage(config, seoId);
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
-      const plan = pcssPlan(R, checked.entries, !rec.recipe);
+      const clean = rec.recipe ? pcssHeroClean(R, rec.own) : { css: R, removed: [] };
+      const plan = pcssPlan(clean.css, checked.entries, !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const foot = rec.foot ? rec.foot(page.foot) : page.foot;
       const footSent = foot === page.foot ? undefined : foot;
@@ -1431,6 +1577,7 @@ async function updatePageCss(config, args) {
       };
       const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
       if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
+      if (clean.removed.length) out.hand_removed = { message: PCSS_CLEAN_MSG, rules: clean.removed };
       if (plan.next === R && footSent === undefined) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }

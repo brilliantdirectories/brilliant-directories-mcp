@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.678] - 2026-11-16
+
+### Fixed
+- Hero search recipe, phones: a field in the stacked card kept the desktop pill corners, so its focus outline drew a pill across the card's rows. The first row now takes the card's inner corner on top and is square below; the other rows are square.
+- Hero search recipe, desktop bar: the fields kept the radius value while the search button used the bar's inner corner, so radius 12 gave 12px fields beside a 3px button. The fields now use the button's corner. In a card, a large inset no longer turns the button and fields square: their corner keeps at least a quarter of the card's.
+- Dropdown text, select2 text and the search button wrapped onto a second line that spilled out of the field (BD's core CSS sets white-space: normal !important on every hero element).
+- The price slider kept 40px of side padding: in a four-column card its track was 93px of a 173px tile. It now has 24px, the same as the fields' text, and its two price labels sit at the track's ends, inside the tile at every width.
+- The bed and bath icons BD prints inside the Property search's dropdown text showed with field icons off and disappeared once a value was picked. They now show only with field_icons, in the same place as the other field icons, and a field_icons entry replaces or recolours them like any other.
+- Dividers no longer draw where a narrow hero column wraps the fields into rows.
+- A recipe write sent every rule of every look, including empty ones for looks the page does not have, and could pass the 120-rule limit. It now sends only the rules that are on or on the page; the limit for recipe writes is 200.
+- `updatePageCss` `rules`: a selector with anything after its pseudo-element (`::before:not(#_#_#_#_#_#_)`) is refused. Browsers drop such a rule whole, so a hand icon saved "successfully" never drew while its field's text still moved over for it. The hero refusal and the recipe text said to end the part with the marker, which put it after `::before`; they now say to put it on the bar, field or button, before any pseudo-element.
+- `updatePageCss` `rules`: CSS a browser drops without a word is refused with what is wrong: brackets that do not pair up, `:has()` inside `:has()`, a pseudo-element inside `:is()`/`:where()`/`:not()`/`:has()`, a line that is not `property: value`, an empty value, a `!` that is not a closing `!important`, and two declarations run together by a missing `;`.
+- Price slider on desktop: its box was held to the field height (48px on some sites) while the slider with its price labels and handles needs about 59px, so the handles hung 6px below the search box. The box now grows to fit, with the field height as its minimum.
+- Joined one-row bar: the search button sat flush against the last field, so a focused last field's outline touched it. The button now has the inset on its left as well as around it.
+- `updatePageCss` `rules`, hero search: a hand corner on the bar, a field or the button is refused at every width, not only under 992px, unless the user asked for that shape (`user_named: true`). A desktop-only hand corner (a 999px bar over the recipe's 28px) left the fields and the button with corners that no longer fit the bar. The bar-corner and multi-row refusals told the caller to write such a corner inside `@media (min-width: 992px)`; they now point to the recipe's `radius` value.
+- `updatePageCss` `rules`, hero search: a bar, field or button given corners of different sizes (`border-radius: 16px 28px 28px 16px`, or one corner changed after a shorthand) is refused unless the user asked for that shape (`user_named: true`), and listed in `hand_rules` on read. A hand rule like this left 60842's search card 16px on the left and 28px on the right at every width.
+- `updatePageCss` `rules`, hero search: an icon drawn by hand (`content` on a `::before`/`::after`) or a field's text padded over for one is refused and listed in `hand_rules` on read; `field_icons` and `button_icon` place icons and remove them when turned off.
+
+### Added
+- A recipe write cleans the hero search of hand rules that break it: it takes out only the breaking declarations (spacing, corners, icons drawn by hand, text moved for them), keeps the rest of each rule (background, border, shadow, fonts), drops a rule or `@media` group left empty, and returns what it took out in `hand_removed`. A corner rule written with `user_named: true` is saved with `--bd-user-named: 1` and left alone from then on. Before this, a read only listed such rules and the page stayed broken until the caller removed them.
+- `gap` (pixels, default 12, up to 48): the space between the fields and the search button, and between rows, when joined is off. `inset` goes up to 32.
+- Turning joined on with no word on dividers turns dividers on with it; `dividers: false` removes them. A page already joined keeps what it has.
+
 ## [6.59.677] - 2026-11-16
 
 ### Fixed
