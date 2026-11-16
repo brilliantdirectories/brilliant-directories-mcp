@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.665] - 2026-11-15
+
+### Fixed
+- `updatePageCss` `rules`, hero search: a hand rule ends the part that names the bar, a field or the button with `:not(#_#_#_#_#_#_)`, which outranks every rule of the search recipe whatever their order. The recipe's own rules carry up to 6 ids, so a hand rule ending in `:not(#_):not(#__)`, as the refusal asked for, lost to them on font size, padding and colour, and a hand-styled button kept the recipe's look.
+- A hand rule with the selector of one of the recipe's own rules is refused. It was written into that rule and the next recipe call rewrote it: a wider, bold button went back to the recipe's after a later colour change, and the space between the button's icon and its text was lost.
+- A hand rule that names the hero button or a hero field under `#first_container` without `form:has(.btn_home_search)` is refused with the prefix to use. It lost to the recipe and changed nothing, while the reply said it had: a request for a round button on square fields left the button square.
+- Corners and the button's width are no longer refused: `border-radius` on the bar, the fields or the button, and `padding-left`, `padding-right` and `min-width` on the button, go in a hand rule. Only the spacing that keeps the bar even (padding, margin, height, line-height, alignment) stays with `inset`, `height` and `title_gap`.
+- `createWidget` / `updateWidget`: code the site would print broken is refused, with nothing written. On the live page the backslash before a quote in `widget_javascript`, and every backslash inside a `<script>` in `widget_data`, are removed, so `"a\"b"` ended the string early and the whole `<script>` stopped, taking any other code in it along (a tabbed search's script stopped the hero video beside it). The refusal says to use the other quote mark or a backtick string, and to keep a regex such as `\d` in `widget_javascript`, where it survives. A `replace` edit is judged against the stored code, so backslashes already on the widget never block it.
+
 ## [6.59.664] - 2026-11-15
 
 ### Fixed

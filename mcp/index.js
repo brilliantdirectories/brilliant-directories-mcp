@@ -719,27 +719,54 @@ function pcssHeroSelect(p) {
   for (let i = 0; i < 3; i++) q = q.replace(/:(?:is|where|matches|-webkit-any)\(([^()]*)\)/gi, (m, g) => (g.split(",").some((a) => /^\s*select(?![\w-])[^\s>+~]*\s*$/i.test(a)) ? "select" : m)).replace(/\([^()]*\)/g, "");
   return p.includes("#first_container") && !/::?(before|after)/i.test(q) && /(^|[\s>+~])select(?![\w-])[^\s>+~]*$/i.test(q.trim());
 }
-// The search recipe sizes and spaces the hero search bar, its columns and the button (values inset, height, radius, title_gap);
-// a hand rule on those wins at one width and leaves the others uneven. Returns the properties such a rule sets, or null.
-const PCSS_HERO_GEO = /^(?:padding|margin|height|min-height|max-height|line-height|align-items|align-self|border-radius)(?:-[a-z-]+)?$/i;
+// The search recipe spaces the hero search bar, its columns and the button and sizes them (values inset, height, title_gap);
+// a hand rule on that spacing wins at one width and leaves the others uneven. Returns the properties such a rule sets, or null.
+// Corners and the button's own width (padding-left/right, min-width) stay free for a hand rule.
+const PCSS_HERO_GEO = /^(?:padding|margin|height|min-height|max-height|line-height|align-items|align-self)(?:-[a-z-]+)?$/i;
 function pcssHeroGeometry(selector, css) {
   const props = Array.from(new Set(pcssDecls(css).map((d) => d.slice(0, d.indexOf(":")).trim().toLowerCase()).filter((p) => PCSS_HERO_GEO.test(p))));
   if (!props.length) return null;
-  let field = false;
-  const hit = pcssSplitCommas(selector).some((part) => {
-    if (!part.includes("form:has(.btn_home_search)")) return false;
+  const out = new Set();
+  for (const part of pcssSplitCommas(selector)) {
+    if (!part.includes("form:has(.btn_home_search)")) continue;
     const fieldPart = /(?:input|select)\.form-control|\.select2-choice|\.dropdown-toggle/.test(part.split(/\s|>/).pop() || "") || /:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim());
     let q = part;
     for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
     q = q.replace(/\s*([>+~])\s*/g, "$1").trim();
-    if (q.includes("::")) return false;
+    if (q.includes("::")) continue;
     const last = q.split(/[\s>+~]/).pop();
-    if (fieldPart) { field = true; return true; }
-    return /\.btn_home_search(?![\w-])/.test(last) || /^(?:form|\.row|\.form-group)(?![\w-])/.test(last) || /form:has[^\s>+~]*(?:>\.row[^\s>+~]*)?>[^\s>+~]+$/.test(q);
-  });
-  if (!hit) return null;
-  const out = field ? props.filter((p) => /^(?:height|min-height|max-height|line-height|border-radius)$/.test(p)) : props;
-  return out.length ? out : null;
+    if (fieldPart) props.filter((p) => /^(?:height|min-height|max-height|line-height)$/.test(p)).forEach((p) => out.add(p));
+    else if (/\.btn_home_search(?![\w-])/.test(last)) props.filter((p) => !/^padding-(?:left|right|inline(?:-start|-end)?)$/.test(p)).forEach((p) => out.add(p));
+    else if (/^(?:form|\.row|\.form-group)(?![\w-])/.test(last) || /form:has[^\s>+~]*(?:>\.row[^\s>+~]*)?>[^\s>+~]+$/.test(q)) props.forEach((p) => out.add(p));
+  }
+  return out.size ? Array.from(out) : null;
+}
+// A hand rule on the hero search ends the part that names the bar, a field or the button with this: 6 ids, more than any
+// recipe rule carries (the battery checks it), so the hand rule wins whatever order the rules sit in.
+const PCSS_HERO_OWN = ":not(#_#_#_#_#_#_)";
+let _pcssRecipeKeys = null;
+function pcssRecipeKeys() {
+  if (_pcssRecipeKeys) return _pcssRecipeKeys;
+  const keys = new Set();
+  try {
+    const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe;
+    for (const r of R.rules.concat(...Object.values(R.sets))) keys.add(pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : ""));
+  } catch { return keys; }
+  _pcssRecipeKeys = keys;
+  return keys;
+}
+// Measured on a live page: BD prints widget_data with every backslash removed, and widget_javascript with the backslash
+// before a quote removed, so "a\"b" ends the string early and the whole <script> stops, with any other code in it.
+// A replace edit is judged against the stored field (orig), so code already on the widget never blocks it.
+function wdgScriptBackslash(args, orig) {
+  const o = orig || {};
+  const jsN = (v) => (typeof v === "string" ? v.match(/\\["']/g) || [] : []).length;
+  const dataN = (v) => (typeof v === "string" ? (v.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || []).join("").split("\\").length - 1 : 0);
+  const where = [];
+  if (jsN(args.widget_javascript) > jsN(o.widget_javascript)) where.push("widget_javascript has a backslash before a quote");
+  if (dataN(args.widget_data) > dataN(o.widget_data)) where.push("a <script> in widget_data has a backslash");
+  if (!where.length) return null;
+  return `${where.join(" and ")}. BD removes it when it prints the page, so the string ends early and the whole <script> stops running, with any other code in it. Write a quote inside a string with the other quote mark or a backtick string (\`it's\`), and keep scripts that need a backslash (such as a regex \\d) in widget_javascript.`;
 }
 function pcssSplitCommas(sel) {
   const parts = [];
@@ -832,19 +859,29 @@ function pcssValidate(args, lim) {
     }
     const star = pcssStarDisplay(`${selector}{${css}}`) || pcssHeroClip(`${selector}{${css}}`);
     if (star) { refused.push(star); continue; }
-    const geo = !lim && css.trim() !== "" && pcssHeroGeometry(selector, css);
-    if (geo) {
-      refused.push(`\`${selector.slice(0, 160)}\` sets ${geo.join(", ")} on the hero search bar, its columns, its fields or the search button. The search recipe sets those so they stay even at every width: call updatePageCss {recipe: "hero.search_box", values: {...}} with inset (the space inside the joined bar, around the button and between rows), height (fields and button), radius (corners) or title_gap (the space above the search).`);
+    // A recipe rule is rewritten whole by the next recipe call, so what a hand edit adds to it is lost then.
+    if (!lim && css.trim() !== "" && pcssRecipeKeys().has(pcssNorm(selector, false) + "|" + (media ? pcssNorm(media, true) : ""))) {
+      refused.push(`\`${selector.slice(0, 160)}\` is one of the search recipe's own rules: the next recipe call rewrites it and drops what you add. Write a rule of your own: start it with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
       continue;
     }
-    // The search recipe's rules carry :not(#_) or more; a hand rule on the hero search form without :not(#_):not(#__) loses to them.
-    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(":not(#_):not(#__)"))) {
-      refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without :not(#_):not(#__), so the search recipe's rules win over it. End the part that names a field or the button with :not(#_):not(#__).`);
+    const geo = !lim && css.trim() !== "" && pcssHeroGeometry(selector, css);
+    if (geo) {
+      refused.push(`\`${selector.slice(0, 160)}\` sets ${geo.join(", ")} on the hero search bar, its columns, its fields or the search button. The search recipe sets that spacing so it stays even at every width: call updatePageCss {recipe: "hero.search_box", values: {...}} with inset (the space inside the joined bar, around the button and between rows), height (fields and button) or title_gap (the space above the search). Corners, colours, fonts and the button's width (padding-left, padding-right, min-width) can go in a rule of your own.`);
+      continue;
+    }
+    // A hero field or the button named without the form loses to the recipe's rules, which all start with it.
+    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("#first_container") && !p.includes("form:has(.btn_home_search)") && /\.btn_home_search|\.select2-choice|\.form-control|\.dropdown-toggle/.test(p))) {
+      refused.push(`\`${selector.slice(0, 160)}\` names the hero search without #first_container form:has(.btn_home_search), so the search recipe's rules win over it. Start it with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
+      continue;
+    }
+    // Every recipe rule carries fewer ids than PCSS_HERO_OWN; a hand rule on the hero search form without it can lose to them.
+    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)") && !p.includes(PCSS_HERO_OWN))) {
+      refused.push(`\`${selector.slice(0, 160)}\` styles the hero search form without ${PCSS_HERO_OWN}, so the search recipe's rules can win over it. End the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
       continue;
     }
     // Select2 and Bootstrap-select hide a hero select on first use and show their own control, which the recipe pads.
     if (!lim && /padding|text-indent/i.test(css) && !selector.includes(".select2-choice") && pcssSplitCommas(selector).some((p) => pcssHeroSelect(p))) {
-      refused.push(`\`${selector.slice(0, 160)}\` pads a hero select. Select2 and Bootstrap-select hide that select when it is first used and show their own control, so its text moves back under an icon. Pad the visible control in the same rule: add the same field followed by :is(.select2-choice, .bootstrap-select > .dropdown-toggle):not(#_):not(#__):not(#___) to the selector.`);
+      refused.push(`\`${selector.slice(0, 160)}\` pads a hero select. Select2 and Bootstrap-select hide that select when it is first used and show their own control, so its text moves back under an icon. Pad the visible control in the same rule: add the same field followed by :is(.select2-choice, .bootstrap-select > .dropdown-toggle)${PCSS_HERO_OWN} to the selector.`);
       continue;
     }
     const key = pcssNorm(media, true) + " | " + pcssNorm(selector, false);
@@ -10097,6 +10134,8 @@ async function main() {
       if ((name === "createWidget" || name === "updateWidget") && args && typeof args === "object") {
         args.bootstrap_enabled = 4;
         delete args.widget_viewport;
+        const bs = wdgScriptBackslash(args, _widgetReplace && _widgetReplace.orig);
+        if (bs) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: "Nothing was written. " + bs }) }], isError: true };
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique
