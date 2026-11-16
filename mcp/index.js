@@ -1603,6 +1603,44 @@ function pcssRecipeRefresh(css) {
   return p.refused || p.next === undefined ? css : p.next;
 }
 const PCSS_REFRESHED_MSG = "The homepage search's recipe rules were from an older release and were brought up to the current one, with every value the site had set kept. Nothing the user sees changes except fixes made since.";
+// The joined search bar is filled with the field background; a button in it drawn see-through (glass) or in a colour
+// close to its text shows that fill, and its words and icon disappear. Under 1.5:1 they cannot be seen and it is refused;
+// a weaker contrast is the owner's colour choice.
+function pcssRgb(v) {
+  const m = /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+)\s*)?\)/i.exec(v);
+  if (m) return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])];
+  const h = /#([0-9a-f]{3}|[0-9a-f]{6})\b/i.exec(v);
+  if (!h) return /\bwhite\b/i.test(v) ? [255, 255, 255, 1] : /\bblack\b/i.test(v) ? [0, 0, 0, 1] : /\btransparent\b/i.test(v) ? [0, 0, 0, 0] : null;
+  const x = h[1].length === 3 ? h[1].split("").map((c) => c + c).join("") : h[1];
+  return [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2, 4), 16), parseInt(x.slice(4, 6), 16), 1];
+}
+function pcssLum(c) {
+  const l = c.slice(0, 3).map((x) => { const y = x / 255; return y <= 0.03928 ? y / 12.92 : Math.pow((y + 0.055) / 1.055, 2.4); });
+  return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2];
+}
+function pcssHeroContrast(entries, css) {
+  const out = [];
+  let fill = null;
+  try {
+    const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe;
+    const st = pcssRecipeState(R, css);
+    if (!st.on.joined) return out;
+    fill = pcssRgb(String(st.vals.field_background || R.values.field_background.token));
+  } catch { return out; }
+  if (!fill) return out;
+  for (const e of entries) {
+    if (!e.decls.length || !pcssSplitCommas(e.selector).some((p) => p.includes("form:has(.btn_home_search)") && /\.btn_home_search(?![\w-])[^\s>+~]*$/.test(p.trim()))) continue;
+    const get = (re) => { const d = e.decls.find((x) => re.test(x)); return d ? pcssRgb(d.slice(d.indexOf(":") + 1)) : null; };
+    const fg = get(/^color\s*:/i), bg = get(/^background(?:-color)?\s*:/i);
+    if (!fg || !bg) continue;
+    const a = bg[3];
+    const shown = [0, 1, 2].map((i) => Math.round(bg[i] * a + fill[i] * (1 - a)));
+    const L1 = pcssLum(fg), L2 = pcssLum(shown);
+    const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    if (ratio < 1.5) out.push("`" + e.selector.slice(0, 160) + "` gives the search button rgb(" + fg.slice(0, 3).join(", ") + ") text and icon on a background that shows as rgb(" + shown.join(", ") + "), " + (a < 1 ? "because it is see-through over the search bar's rgb(" + fill.slice(0, 3).join(", ") + ") fill, " : "") + "a contrast of " + ratio.toFixed(1) + ":1, so the button's words and icon cannot be seen. Give it a solid background that contrasts with its text, or a text colour that contrasts with the bar; a glass look reads only over a dark photo or video, not inside a light bar.");
+  }
+  return out;
+}
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
@@ -1629,6 +1667,8 @@ async function updatePageCss(config, args) {
       const R = page.css;
       const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font) : { css: R, removed: [] };
       const base = rec.recipe ? clean.css : pcssRecipeRefresh(clean.css);
+      const unread = rec.recipe ? [] : pcssHeroContrast(checked.entries, base);
+      if (unread.length) return fail("Nothing was written. " + unread.join(" "), { refused: unread });
       const plan = pcssPlan(base, rec.recipe ? checked.entries : pcssNestCorners(checked.entries, base), !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const foot = rec.foot ? rec.foot(page.foot) : page.foot;
@@ -3035,8 +3075,8 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   if (home && (isWidget || Number(home.seo_id) !== saved)) for (const f of VID_PAGE_FIELDS) if (vidKind(home[f])) found.push(`the home WebPage ${f} (${vidKind(home[f])})`);
   if (isWidget && (has || form) && saved && !savedOnHome) {
     const hero = String(got.values.custom_30 || "");
-    if (!has) return { hidden: `Widget ${saved} is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its search form and styles do not show there.${hero ? ` The hero search is drawn by "${hero}" (custom_30): change that widget, or style it with updatePageCss.` : ""}` };
-    return { hidden: `Widget ${saved} is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there.${hero ? ` The hero is drawn by "${hero}";` : ""} a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` };
+    if (!has) return { hidden: `Widget ${saved} is saved, but it is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so this change does not show there. A change the user asked for on the homepage is not done by this save, and is not reported as done.${hero ? ` The hero search is drawn by "${hero}" (custom_30): make the change in that widget, or style it with updatePageCss.` : ""}` };
+    return { hidden: `Widget ${saved} is saved, but it is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there. A video the user asked for on the homepage is not there after this save, and is not reported as there.${hero ? ` The hero is drawn by "${hero}";` : ""} a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` };
   }
   if (!savedOnHome || !found.length || (!has && !hadVid)) return null;
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
@@ -4569,6 +4609,31 @@ async function udsUndo(config, ds, idx, input) {
   return udsResult(config, idx, "applied", done.core.changed, done.core.unchanged, notes);
 }
 
+// A link setting that points inside the site is opened after the checks: one that is missing or sends the visitor back to
+// the homepage (/checkout with no plan does) is still saved, since the owner may make that page next, and the reply says so.
+async function udsDeadLinks(config, idx, plan) {
+  const out = [];
+  let site;
+  try { site = new URL(String(config.apiUrl || "")); } catch { return out; }
+  for (const e of plan) {
+    const x = idx.get(e.name);
+    if (!x || !/url/i.test(e.name) || typeof e.value !== "string") continue;
+    const v = e.value.trim();
+    if (!v || v.includes("%%%") || /^(?:#|mailto:|tel:|javascript:)/i.test(v)) continue;
+    let u;
+    try { u = new URL(v, site); } catch { continue; }
+    if (u.hostname.replace(/^www\./, "") !== site.hostname.replace(/^www\./, "") || (u.pathname === "/" && !u.search)) continue;
+    let why = "";
+    try {
+      const r = await fetch(u.href, { method: "GET", redirect: "manual" });
+      const to = r.headers.get("location");
+      if (r.status === 404 || r.status === 410) why = `is not a page on this site (${r.status})`;
+      else if (r.status >= 300 && r.status < 400 && to && new URL(to, u).pathname === "/") why = "sends visitors back to the homepage";
+    } catch { why = ""; }
+    if (why) out.push({ name: e.name, problem: `${x.label} (\`${e.name}\`): saved as sent, but ${v} ${why} right now, so the button goes nowhere until that page exists. If the user named this link, tell them; if it was chosen for them, BD's sign-up page is /join (or %%%default_signup_url%%%), its member search results page is /search, and listMenuItems shows the links the site's menus already use.` });
+  }
+  return out;
+}
 async function updateDesignSettings(config, args) {
   let ds;
   try {
@@ -4643,6 +4708,7 @@ async function updateDesignSettings(config, args) {
     if (p) problems.push({ name: e.name, problem: p });
   }
   const cross = await udsCross(config, ds, plan.filter((e) => idx.has(e.name)), R, lists, new Set(problems.map((p) => p.name)));
+  const deadLinks = await udsDeadLinks(config, idx, plan.filter((e) => idx.has(e.name) && !problems.some((q) => q.name === e.name)));
   for (const p of cross) problems.push(p);
   if (problems.length) return { status: "refused", problems };
   if (rows) {
@@ -4655,6 +4721,7 @@ async function updateDesignSettings(config, args) {
   }
   if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
   const notes = [UDS_NOTE_PAGE];
+  for (const d of deadLinks) notes.push(d.problem);
   for (const n of heroText.notes) notes.push(n);
   if (rowDup.length) notes.push(`${rowDup.join(", ")} left out of settings: home_rows sets the homepage rows in this call.`);
   for (const e of plan) {
@@ -11226,7 +11293,8 @@ async function main() {
         const vidRow = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
         const vid = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig, vidRow && typeof vidRow === "object" ? vidRow.widget_id : undefined, vidRow && typeof vidRow === "object" ? vidRow : null).catch(() => null);
         if (vid && vid.other) result.body.other_video = vid.other;
-        if (vid && vid.hidden) result.body.not_on_homepage = vid.hidden;
+        // First key of the reply, so a reader that stops at status: success still meets it.
+        if (vid && vid.hidden) { const rest = Object.assign({}, result.body); for (const k of Object.keys(rest)) delete result.body[k]; Object.assign(result.body, { not_on_homepage: vid.hidden }, rest); }
       }
       if ((name === "getWidget" || name === "updateWidget") && result.body && typeof result.body === "object" && result.body.status === "success") {
         const m = result.body.message;

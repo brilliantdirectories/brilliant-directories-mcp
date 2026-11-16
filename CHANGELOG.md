@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.683] - 2026-11-17
+
+### Fixed
+- `updateWidget` / `createWidget` on a search widget that is not on the homepage: the save's `not_on_homepage` note now says the save is done but a homepage change the user asked for is not, and it is the first key of the reply. On 60842 Butler, asked for search tabs on the homepage, edited an unused site widget, received the note behind `status: success` and reported the tabs as live; the homepage did not change.
+- `updatePageCss` `rules`: a search-button rule inside the joined hero bar whose text colour, over the bar's own fill, would be under 1.5:1 is refused, naming both colours and the ratio. On 60842 a glass button (white text, see-through background) inside the white bar saved and showed as white on white, with no words or icon. Weaker contrast is left to the owner's colours; BD's teal and white default is 2.6:1 and passes.
+- Background video kit (`hero.background`): a video file now hides the hero's own photo from the first paint, so the photo no longer flashes before the video's first frame. A YouTube background still shows the photo first and fades the video in, as before; where the kit removes the video by `data-from`, the photo returns.
+
+### Changed
+- `updateDesignSettings`: a hero button link inside the site that is missing (404/410) or that sends visitors to the homepage (/checkout with no plan does) is saved as sent, and the reply says the button goes nowhere until that page exists. The owner may make the page next, so the link is never refused; when the link was chosen for the user, the note names BD's sign-up page (/join) and search page (/search).
+
 ## [6.59.682] - 2026-11-16
 
 ### Changed
