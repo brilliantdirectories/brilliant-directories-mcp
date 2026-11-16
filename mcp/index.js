@@ -1571,6 +1571,24 @@ function pcssHeroClean(css, own, font) {
   for (const e of edits.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + e.text + out.slice(e.end);
   return { css: out, removed };
 }
+// A bar shape the user named on desktop carries the fields and the button with it: each inner corner is the bar's
+// corner less the inset, as the recipe draws them, so a pill button never sits in a square end. Removing the shape removes both.
+const PCSS_NEST_SEL = "#first_container form:has(.btn_home_search) :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice, .btn_home_search)" + PCSS_HERO_OWN;
+function pcssNestCorners(entries, css) {
+  const out = entries.slice();
+  let inset = "8px";
+  try { const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe; const v = pcssRecipeState(R, css).vals.inset; if (v !== undefined) inset = v + "px"; } catch { inset = "8px"; }
+  for (const e of entries) {
+    if (!pcssWide(e.media) || !pcssHeroParts(e.selector).some((x) => x.bar)) continue;
+    const sel = pcssNorm(PCSS_NEST_SEL, false);
+    if (out.some((x) => x.sel === sel && x.at === e.at)) continue;
+    const c = e.decls.includes(PCSS_USER_NAMED) && pcssHeroUneven(e.selector, e.decls) ? pcssCorners(e.decls) : null;
+    const inner = (v) => ((u) => `max(calc(${u} / 4), calc(${u} - 1px - ${inset}))`)(/^[\d.]+$/.test(v) ? v + "px" : v);
+    if (c) out.push({ selector: PCSS_NEST_SEL, media: e.media, at: e.at, sel, decls: [`border-radius: ${[c.tl, c.tr, c.br, c.bl].map((v) => inner(v || "0px")).join(" ")} !important`, PCSS_USER_NAMED], hasAfter: false, after: undefined, whole: false });
+    else if (css.includes(PCSS_NEST_SEL) && (!e.decls.length || e.whole || e.decls.some((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d)))) out.push({ selector: PCSS_NEST_SEL, media: e.media, at: e.at, sel, decls: [], hasAfter: false, after: undefined, whole: false });
+  }
+  return out;
+}
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
@@ -1596,7 +1614,7 @@ async function updatePageCss(config, args) {
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
       const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font) : { css: R, removed: [] };
-      const plan = pcssPlan(clean.css, checked.entries, !rec.recipe);
+      const plan = pcssPlan(clean.css, rec.recipe ? checked.entries : pcssNestCorners(checked.entries, clean.css), !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const foot = rec.foot ? rec.foot(page.foot) : page.foot;
       const footSent = foot === page.foot ? undefined : foot;

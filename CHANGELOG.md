@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.681] - 2026-11-16
+
+### Fixed
+- Hero search: a one-sided bar shape the user named on desktop (`border-radius: 16px 0 0 16px` with `user_named: true` inside `@media (min-width: 992px)`) left the fields and the search button as pills, so a pill button sat in the bar's square end (60842). `updatePageCss` now writes the inner corners with it: each corner is the bar's corner less the inset, as the recipe draws them (4px and 0 there). The rule is removed when the bar's shape is removed, made even, or replaced without a corner. A bare `0` corner is given its unit, since `calc(0 - 1px)` is invalid and the browser drops the declaration.
+- Recipe docs, `font_size`: an assistant asked to put the text "back to normal" sent `font_size: 16`, which fixes the text at 16px while the recipe's normal follows the height (18px at 64). The value text now says to send `"default"`, not a number, and gives the size at 56, 64 and 80.
+
 ## [6.59.680] - 2026-11-16
 
 ### Fixed
