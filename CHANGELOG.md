@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.686] - 2026-11-17
+
+### Fixed
+- Changing `custom_30` away from a hero widget this site has its own copy of is refused unless the call has `user_named: true`. The refusal names the copy's widget_id and its tabs, and says a change inside that search (one tab, its fields, their layout) is `updateWidget` on the copy. On 60842 "the search for the events" (a "Find Events" tab) replaced the whole two-tab search with Events Search.
+- Every `getDesignSettings` read of a `hero.*` block returns `hero_layout`, not only a homepage `find`. The line also says the two hero columns are centred vertically on each other on desktop; the `hero.secondary` note gives the one Home page CSS rule for top, bottom or centre (`#first_container .homepage_settings:has(.secondary-hero-content) { align-items: … }`), checked to win on the live page.
+- A refresh that is only scheduled is reported as `auto_cache_refresh: "scheduled"`, no longer as `auto_cache_refreshed: false`, which the tool descriptions told assistants to answer with `refreshSiteCache` after every write. `refreshSiteCache` now replaces a waiting refresh it covers instead of running it first. Pending refreshes run before the server exits on SIGTERM or SIGINT.
+- `layout_not_applied` fires only on CSS aimed at the hero search form (`btn_home_search`, `search_box` or `form` as a whole word), and now also catches `!important`, `display: grid` and `display: flex`. Before, `.platform-logos{display:flex}` and `.features .col-sm-4{flex:1}` were reported as not done.
+- The search-button contrast check no longer refuses a gradient or image background, a see-through bar, or a rule whose `.btn_home_search` sits only inside `:has()`.
+- Widget names in `[widget=…]` are matched ignoring case and outer spaces, as BD matches them. A widget written in another case was reported as not on the homepage.
+- The Extra Content video refusal needs autoplay on a YouTube, Vimeo or Wistia iframe too, and refuses only when the save changes the video code. A click-to-play embed, or a text edit of a widget that already holds a video, is no longer refused.
+- On a Blank or map hero, Extra Content Above and Below are not counted as on the homepage (BD does not print them there), and a video read-back no longer suggests them.
+- The "which video?" question again fires when the hero video sits in a widget in the hero primary or secondary column.
+- The About and Join text (`custom_155`, `custom_156`) count as homepage slots whenever they hold text; they no longer need `custom_153`.
+- The link check on design settings gives up after 5 seconds per link and runs only after the call passes its other checks.
+- A widget list read that is cut short (for example by the rate limit) is marked partial, and `not_on_homepage` is not reported from it.
+- `find` names the map hero's sidebar (`map_homepage_search_sidebar`) under `not_searched`.
+- A `custom_216` that is not a whole number from 3 to 12 is reported as an unknown width instead of NaN.
+
 ## [6.59.685] - 2026-11-17
 
 ### Fixed

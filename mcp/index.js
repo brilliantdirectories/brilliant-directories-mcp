@@ -1605,7 +1605,7 @@ function pcssRecipeRefresh(css) {
 const PCSS_REFRESHED_MSG = "The homepage search's recipe rules were from an older release and were brought up to the current one, with every value the site had set kept. Nothing the user sees changes except fixes made since.";
 // The joined search bar is filled with the field background; a button in it drawn see-through (glass) or in a colour
 // close to its text shows that fill, and its words and icon disappear. Under 1.5:1 they cannot be seen and it is refused;
-// a weaker contrast is the owner's colour choice.
+// a weaker contrast is the owner's colour choice. An image or gradient, or a see-through bar over the photo, is not judged.
 function pcssRgb(v) {
   const m = /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+)\s*)?\)/i.exec(v);
   if (m) return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])];
@@ -1627,9 +1627,10 @@ function pcssHeroContrast(entries, css) {
     if (!st.on.joined) return out;
     fill = pcssRgb(String(st.vals.field_background || R.values.field_background.token));
   } catch { return out; }
-  if (!fill) return out;
+  if (!fill || fill[3] < 1) return out;
   for (const e of entries) {
-    if (!e.decls.length || !pcssSplitCommas(e.selector).some((p) => p.includes("form:has(.btn_home_search)") && /\.btn_home_search(?![\w-])[^\s>+~]*$/.test(p.trim()))) continue;
+    if (!e.decls.length || !pcssSplitCommas(e.selector).some((p) => p.includes("form:has(.btn_home_search)") && /\.btn_home_search(?![\w-])[^\s>+~]*$/.test(p.trim().replace(/:has\((?:[^()]|\([^()]*\))*\)/g, "")))) continue;
+    if (e.decls.some((d) => /^background(?:-image)?\s*:/i.test(d) && /gradient\(|url\(/i.test(d)) || e.decls.some((d) => /^background-image\s*:/i.test(d) && !/:\s*none\b/i.test(d))) continue;
     const get = (re) => { const d = e.decls.find((x) => re.test(x)); return d ? pcssRgb(d.slice(d.indexOf(":") + 1)) : null; };
     const fg = get(/^color\s*:/i), bg = get(/^background(?:-color)?\s*:/i);
     if (!fg || !bg) continue;
@@ -2130,7 +2131,17 @@ function dsfCcRef(v) {
   return m ? { name: m[1].trim() } : { html: true };
 }
 
+// BD's widget() lowercases the name and the _ci column ignores case and trailing spaces, so [widget=promo video] prints
+// "Promo Video". A map of widget names keyed that way; the rows keep the site's own spelling.
+const dsfKey = (n) => String(n === undefined || n === null ? "" : n).trim().toLowerCase();
+class DsfNames extends Map {
+  get(k) { return super.get(dsfKey(k)); }
+  has(k) { return super.has(dsfKey(k)); }
+  set(k, v) { return super.set(dsfKey(k), v); }
+}
+
 // Every site widget (is_default false), name -> row with code. One request per 100 widgets, kept as long as the read cache.
+// A page that could not be read (rate limit) leaves the list partial and failed, and is not cached.
 async function dsfSiteWidgets(key, get) {
   const hit = _dsfWidgetCache.get(key);
   if (hit && Date.now() - hit.at < DS_TTL_MS) return hit.p;
@@ -2142,11 +2153,12 @@ async function dsfSiteWidgets(key, get) {
       const rows = Array.isArray(first.body.message) ? first.body.message.slice() : [];
       const total = Number(first.body.total_pages) || 1;
       const pages = done && done(rows) ? 1 : Math.min(total, DSF_MAX_PAGES);
+      let failed = false;
       if (pages > 1) {
         const more = await Promise.all(Array.from({ length: pages - 1 }, (x, i) => get("/api/v2/data_widgets/get", Object.assign({ page: i + 2 }, q))));
-        for (const r of more) if (ok(r) && Array.isArray(r.body.message)) rows.push(...r.body.message);
+        for (const r of more) if (ok(r) && Array.isArray(r.body.message)) rows.push(...r.body.message); else failed = true;
       }
-      return { rows, requests: pages, partial: pages > 1 && total > DSF_MAX_PAGES };
+      return { rows, requests: pages, partial: failed || (pages > 1 && total > DSF_MAX_PAGES), failed };
     };
     let got = await list({ property: "is_default", property_value: "false", limit: 100 });
     if (!got) return { error: true, requests: 1 };
@@ -2156,13 +2168,13 @@ async function dsfSiteWidgets(key, get) {
       const all = await list({ limit: 100 }, (rows) => rows.some((w) => w && "is_default" in w));
       if (all) { requests += all.requests; got = all; }
     }
-    const byName = new Map();
+    const byName = new DsfNames();
     for (const w of got.rows) if (w && w.widget_id && !udsYes(w.is_default) && !byName.has(w.widget_name)) byName.set(w.widget_name, w);
-    return { byName, requests, partial: got.partial };
+    return { byName, requests, partial: got.partial, failed: got.failed };
   })().catch(() => ({ error: true, requests: 1 }));
   const entry = { at: Date.now(), p };
   _dsfWidgetCache.set(key, entry);
-  p.then((r) => { if (r.error && _dsfWidgetCache.get(key) === entry) _dsfWidgetCache.delete(key); });
+  p.then((r) => { if ((r.error || r.failed) && _dsfWidgetCache.get(key) === entry) _dsfWidgetCache.delete(key); });
   return p;
 }
 
@@ -2540,8 +2552,8 @@ async function dsfFind(ds, got, text, key, get) {
   const missing = [];
   const seen = new Set();
   const want = (name, row, block, via, depth) => {
-    if (seen.has(name)) return;
-    seen.add(name);
+    if (seen.has(dsfKey(name))) return;
+    seen.add(dsfKey(name));
     const w = ws.byName ? ws.byName.get(name) : null;
     if (!w) { if (ws.byName) missing.push(name); return; }
     widgets.push({ w, row, block, via, depth });
@@ -2690,7 +2702,7 @@ async function dsfFind(ds, got, text, key, get) {
   }
   if (!hits.length && ws.byName) {
     const rest = [];
-    for (const [name, w] of ws.byName) if (/^homepage/i.test(name) && !seen.has(name)) rest.push({ w, row: null, block: null });
+    for (const w of ws.byName.values()) if (/^homepage/i.test(String(w.widget_name)) && !seen.has(dsfKey(w.widget_name))) rest.push({ w, row: null, block: null });
     const extra = rest.slice(0, DSF_MAX_WIDGETS);
     const off = [];
     for (const x of extra) {
@@ -2714,11 +2726,11 @@ async function dsfFind(ds, got, text, key, get) {
   const hl = out.hits.some((h) => /^hero/.test(h.block || "")) ? dsHeroLayout(values) : null;
   if (hl) out.hero_layout = hl;
   const sbs = dsHomeSidebars(ds, got);
-  if (sbs.length) out.not_searched = sbs.map((x) => `sidebar "${x.sidebar}" in row ${x.row} (${x.block}): the API does not list a sidebar's widgets; the owner sees them in the admin Sidebar Manager`);
+  if (sbs.length) out.not_searched = sbs.map((x) => `sidebar "${x.sidebar}" in ${x.at} (${x.block}): the API does not list a sidebar's widgets; the owner sees them in the admin Sidebar Manager`);
   out.searched = searched;
   if (skipped.length) out.skipped = skipped;
   if (missing.length) out.missing_widgets = missing;
-  if (ws.partial) out.widget_list = `only the first ${DSF_MAX_PAGES * 100} site widgets were read`;
+  if (ws.partial) out.widget_list = ws.failed ? "a page of the site widget list could not be read, so some site widgets were not searched" : `only the first ${DSF_MAX_PAGES * 100} site widgets were read`;
   if (els.length) {
     out.elements = els.slice(0, DSF_MAX_ELS).map((x) => ({ block: x.block, where: x.where, element: x.element, sets: x.sets }));
     if (els.length > DSF_MAX_ELS) out.more_elements = els.length - DSF_MAX_ELS;
@@ -3077,10 +3089,11 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
     else if (b && b.widget) want(dsExpand(ds.m, b.widget));
   }
   if (home && (isWidget || Number(home.seo_id) !== saved)) for (const f of VID_PAGE_FIELDS) if (vidKind(home[f])) found.push(`the home WebPage ${f} (${vidKind(home[f])})`);
-  if (isWidget && (has || form) && saved && !savedOnHome) {
+  if (isWidget && (has || form) && saved && !savedOnHome && !ws.partial) {
     const hero = String(got.values.custom_30 || "");
+    const extra = hero !== "Blank" && !/Map/.test(hero);
     if (!has) return { hidden: `Widget ${saved} is saved, but it is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so this change does not show there. A change the user asked for on the homepage is not done by this save, and is not reported as done.${hero ? ` The hero search is drawn by "${hero}" (custom_30): make the change in that widget, or style it with updatePageCss.` : ""}` };
-    return { hidden: `Widget ${saved} is saved, but it is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there. A video the user asked for on the homepage is not there after this save, and is not reported as there.${hero ? ` The hero is drawn by "${hero}";` : ""} a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` };
+    return { hidden: `Widget ${saved} is saved, but it is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there. A video the user asked for on the homepage is not there after this save, and is not reported as there.${hero && hero !== "Blank" ? ` The hero is drawn by "${hero}"${extra ? ";" : "."}` : ""}${extra ? ` a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` : ""}` };
   }
   if (!savedOnHome || !found.length || (!has && !hadVid)) return null;
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
@@ -3097,6 +3110,7 @@ function dsHeroLayout(v) {
   const a = String(v.custom_25 || "");
   const w216 = String(v.custom_216 || "");
   const w = w216 === "" ? 7 : Number(w216);
+  const bad = !(Number.isInteger(w) && w >= 3 && w <= 12);
   const pct = { 3: 25, 4: 30, 5: 40, 6: 50, 7: 60, 8: 70, 9: 75, 10: 80, 11: 90, 12: 100 }[w] || Math.round((w / 12) * 100);
   const msg = hero === DS_MSG_LINK || hero === DS_MSG_BUTTONS;
   const hide = hero === "Hide Homepage Hero Search";
@@ -3109,11 +3123,11 @@ function dsHeroLayout(v) {
   const what = hide ? "the member login form (custom_267 1, logged-out visitors only)" : box;
   const has = `H1 custom_130 (${st("custom_130")})` + (msg || hide ? `, H2 custom_131 (${st("custom_131")})` : "") + (hero === DS_MSG_LINK ? `, text editor custom_266 (${st("custom_266")})` : "") + (shown && place === "inside_primary" ? ", " + what : "");
   const why = w === 12 ? "custom_216 is 12" : a === "center" ? "custom_25 is center" : "secondary_hero_content_homepage is empty and search_box_placement is not inside_secondary";
-  const swide = w216 === "" ? "full width on its own line (custom_216 is empty, so this column gets no width; save custom_216 to put it beside the primary)" : `${12 - w} of 12 columns on desktop (admin label ${100 - pct}%, the rest after custom_216), full width under 992px`;
-  const second = sec ? `printed, holds its own text editor secondary_hero_content_homepage (${st("secondary_hero_content_homepage")})${shown && place === "inside_secondary" ? " and " + what : ""}; ${dsColPlace(v, false)}; ${swide}` : `not printed (${why})`;
+  const swide = w216 === "" ? "full width on its own line (custom_216 is empty, so this column gets no width; save custom_216 to put it beside the primary)" : bad ? "width unknown (custom_216 is not 3 to 12)" : `${12 - w} of 12 columns on desktop (admin label ${100 - pct}%, the rest after custom_216), full width under 992px`;
+  const second = sec ? `printed, holds its own text editor secondary_hero_content_homepage (${st("secondary_hero_content_homepage")})${shown && place === "inside_secondary" ? " and " + what : ""}; ${dsColPlace(v, false)}; ${swide}; on desktop the two hero columns are centred vertically on each other (align-items: center; top or bottom alignment is in the hero.secondary block note)` : `not printed (${why})`;
   const where = place === "inside_primary" ? "inside the hero primary column" : place === "inside_secondary" ? (sec ? "inside the hero secondary column" : "not shown: no hero secondary column prints") : place === "under" ? "under both hero columns, full width" : raw === "" ? "not shown: search_box_placement is stored empty" : `not shown: search_box_placement ${raw} is not under, inside_primary or inside_secondary`;
   const cta = hide ? (shown ? `only ${what}, ${where}` : "none: Hide Homepage Hero Search prints only the H1 and H2") : `${where}${login && /^(inside|under)/.test(where) ? (msg ? "; logged-out visitors see the member login form there instead, with no H1, H2 or custom_266 (custom_267 1)" : "; logged-out visitors see the member login form there instead (custom_267 1)") : ""}`;
-  return `Hero primary column (custom_30 is not Blank or a map): holds ${has}, a part printing only when set; ${dsColPlace(v, true)}; ${w} of 12 columns on desktop (custom_216 ${w216 === "" ? "empty, reads as 7" : w}, admin label ${pct}%), full width under 992px. Hero secondary column (prints only when custom_25 is not center, custom_216 is not 12, and secondary_hero_content_homepage has content or search_box_placement is inside_secondary): ${second}. ${sec ? "Widths: raise custom_216 to widen the hero primary column, lower it to widen the hero secondary column, 6 (50%) makes them equal. " : ""}${msg ? "Call to action (custom_30 " + hero.replace("Bootstrap Theme - Homepage Search - ", "") + ", always in the hero primary column)" : hide ? "Search (custom_30 Hide Homepage Hero Search)" : "Search box (search_box_placement " + (raw || "empty") + ")"}: ${cta}.`;
+  return `Hero primary column (custom_30 is not Blank or a map): holds ${has}, a part printing only when set; ${dsColPlace(v, true)}; ${bad ? `width unknown: custom_216 is ${JSON.stringify(w216)}, not a whole number from 3 to 12 (the admin saves 3 to 12; 7 when empty)` : `${w} of 12 columns on desktop (custom_216 ${w216 === "" ? "empty, reads as 7" : w}, admin label ${pct}%)`}, full width under 992px. Hero secondary column (prints only when custom_25 is not center, custom_216 is not 12, and secondary_hero_content_homepage has content or search_box_placement is inside_secondary): ${second}. ${sec ? "Widths: raise custom_216 to widen the hero primary column, lower it to widen the hero secondary column, 6 (50%) makes them equal. " : ""}${msg ? "Call to action (custom_30 " + hero.replace("Bootstrap Theme - Homepage Search - ", "") + ", always in the hero primary column)" : hide ? "Search (custom_30 Hide Homepage Hero Search)" : "Search box (search_box_placement " + (raw || "empty") + ")"}: ${cta}.`;
 }
 // Where a hero column sits (widget 1335): custom_25 right puts the hero primary column on the right and the hero secondary column on the left; anything else
 // but center keeps the primary on the left. The flex order that swaps them also applies on phones, where the columns stack.
@@ -3148,30 +3162,37 @@ function dsHomeSlots(ds, got) {
     if (String(v.custom_216) !== "12" && String(v.custom_25) !== "center") add("secondary_hero_content_homepage", "hero.secondary", "hero secondary column");
   }
   const about = dsDirectory(ds, got).homepage.rows.find((r) => r.block === "section.about-website-and-join-offer");
-  if (about && v.custom_153 !== undefined && String(v.custom_153 || "") !== "") for (const fld of ["custom_155", "custom_156"]) add(fld, about.block, `row ${about.row}`, about.row);
+  if (about) for (const fld of ["custom_155", "custom_156"]) add(fld, about.block, `row ${about.row}`, about.row);
   return out;
 }
 // Sidebars a homepage section prints. The API does not say which widgets a sidebar holds, so these are named, not read.
+// The map hero prints its own beside the map when custom_49 is 0 or 1, "Homepage with Map" when none is stored (widget 2291).
 function dsHomeSidebars(ds, got) {
   const v = (got && got.values) || {};
   const out = [];
+  const m49 = String(v.custom_49);
+  if (/Map/.test(String(v.custom_30 || "")) && (m49 === "0" || m49 === "1") && !(got.addons && got.addons.clickable_maps === false)) {
+    const n = v.map_homepage_search_sidebar === undefined || v.map_homepage_search_sidebar === null ? "Homepage with Map" : String(v.map_homepage_search_sidebar);
+    if (n) out.push({ sidebar: n, block: "hero", at: `the map hero, ${m49 === "0" ? "left" : "right"} of the map (map_homepage_search_sidebar)` });
+  }
   for (const r of dsDirectory(ds, got).homepage.rows) {
     const n = r.block === "section.events-calendar" ? (v.homepage_calendarSidebarToggle ? v.homepage_calendarSidebar : "") : r.block === "section.recent-blog-articles-with-sidebar" ? v.custom_269 : r.block === "section.recent-articles-with-sidebar" ? v.custom_271 : "";
-    if (n && String(n) !== "0") out.push({ sidebar: String(n), block: r.block, row: r.row });
+    if (n && String(n) !== "0") out.push({ sidebar: String(n), block: r.block, row: r.row, at: `row ${r.row}` });
   }
   return out;
 }
 // Every site widget name the homepage shows, nested ones included, mapped to where: "hero" (the hero widget and its hooks)
 // or "row N".
 function dsfHomeWalk(ds, got, ws, home) {
-  const at = new Map();
+  const at = new DsfNames();
   const want = (name, where) => {
     if (!name || at.has(name)) return;
     at.set(name, where);
     const w = ws.byName.get(name);
     if (w) for (const n of dsfRefs(w.widget_data)) want(n, where);
   };
-  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n, "hero");
+  const hero = String(got.values.custom_30 || "");
+  for (const n of [hero, ...(/Map/.test(hero) || hero === "Blank" ? [] : DS_EXTRA)]) want(n, "hero");
   for (const x of dsHomeSlots(ds, got)) want(x.name, x.where);
   for (const r of dsDirectory(ds, got).homepage.rows) {
     const m = /^content\.(\d+)$/.exec(r.block || "");
@@ -3218,7 +3239,7 @@ const wdgVidBits = (o) => {
 async function wdgRecipeLayout(config, args, name) {
   const data = String(args.widget_data || "");
   const css = [String(args.widget_style || "")].concat(data.match(/<style\b[^>]*>[\s\S]*?<\/style>/gi) || []).join("\n");
-  const hit = css.split("}").some((c) => { const i = c.lastIndexOf("{"); return i >= 0 && /form|\.row|col-|search/i.test(c.slice(0, i)) && /(?:^|[;{\s])(?:flex-wrap|flex|flex-basis|grid-template-columns)\s*:[^;!]*(?:;|$)/i.test(c.slice(i + 1)); });
+  const hit = css.split("}").some((c) => { const i = c.lastIndexOf("{"); return i >= 0 && /btn_home_search|search_box|(?<![\w-])form(?![\w-])/i.test(c.slice(0, i)) && /(?:^|[;{\s])(?:(?:flex-wrap|flex|flex-basis|grid-template-columns|grid-auto-flow)\s*:|display\s*:\s*(?:inline-)?(?:flex|grid)\b)/i.test(c.slice(i + 1)); });
   if (!hit || !name) return null;
   let ds;
   try { ds = dsLoad(); } catch { return null; }
@@ -3229,10 +3250,13 @@ async function wdgRecipeLayout(config, args, name) {
   if (!ws || !ws.byName || !home || !/form:has\(\.btn_home_search\)/.test(String(home.content_css || ""))) return null;
   const where = dsfHomeWalk(ds, got, ws, home).get(name);
   if (!where || !/^hero/.test(where)) return null;
-  return `The search-form layout in this save (flex, flex-wrap, flex-basis or columns) does not apply: the hero search recipe sets that layout with !important on #first_container form:has(.btn_home_search) and keeps each field at least 220px wide, so a request to put the fields in one row is not done and is not reported as done. ${got.values.search_box_placement === "inside_secondary" ? `The search box is in the hero secondary column, ${12 - Number(got.values.custom_216 || 7)} of 12 columns wide (12 minus custom_216); four or more fields wrap two to a row there. Tell the user, and offer a wider hero secondary column (lower custom_216) or fewer fields.` : got.values.search_box_placement === "inside_primary" ? `The search box is in the hero primary column, custom_216 ${got.values.custom_216 || "7"} of 12 columns wide; four or more fields wrap two to a row there. Tell the user, and offer a wider hero primary column (raise custom_216) or fewer fields.` : "The search box spans the full hero width, under both hero columns; four or more fields still wrap two to a row. Tell the user, and offer fewer fields."}`;
+  return `The search-form layout in this save (display, flex, flex-wrap, flex-basis or grid) does not apply: the hero search recipe sets that layout with !important on #first_container form:has(.btn_home_search) and keeps each field at least 220px wide, so a request to put the fields in one row is not done and is not reported as done. ${got.values.search_box_placement === "inside_secondary" ? `The search box is in the hero secondary column, ${12 - (Number(got.values.custom_216) || 7)} of 12 columns wide (12 minus custom_216); four or more fields wrap two to a row there. Tell the user, and offer a wider hero secondary column (lower custom_216) or fewer fields.` : got.values.search_box_placement === "inside_primary" ? `The search box is in the hero primary column, custom_216 ${got.values.custom_216 || "7"} of 12 columns wide; four or more fields wrap two to a row there. Tell the user, and offer a wider hero primary column (raise custom_216) or fewer fields.` : "The search box spans the full hero width, under both hero columns; four or more fields still wrap two to a row. Tell the user, and offer fewer fields."}`;
 }
 // Extra Content Above/Below print inside the hero's content row, so a playing video there covers that row only (a 33px
 // strip on 60842). The hero.background kit's script moves its .hero-bg-video layer behind the whole hero.
+// Only a save that changes the video tags stops: a text edit of a widget that already holds a video goes through.
+const WDG_AUTOPLAY = /<video\b[^>]*\bautoplay\b|<iframe\b[^>]*(?:youtube|vimeo|wistia)[^>]*[?&;]autoplay=(?:1|true)\b/i;
+const wdgVidTags = (o) => ((String(o.widget_data || "") + "\n" + String(o.widget_javascript || "")).match(/<(?:video|iframe|source)\b[^>]*>/gi) || []).join("\u0001");
 async function wdgHeroBgKit(config, tool, args, orig) {
   if (args.own_video === true || (tool !== "updateWidget" && tool !== "createWidget")) return null;
   if (!["widget_data", "widget_javascript"].some((f) => typeof args[f] === "string")) return null;
@@ -3242,10 +3266,11 @@ async function wdgHeroBgKit(config, tool, args, orig) {
     o = r && r.body && (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message && typeof r.body.message === "object" ? r.body.message : null);
   }
   const w = Object.assign({}, o || {}, args);
-  if (!DS_EXTRA.includes(String(w.widget_name || ""))) return null;
+  if (!DS_EXTRA.some((n) => dsfKey(n) === dsfKey(w.widget_name))) return null;
   const code = String(w.widget_data || "") + "\n" + String(w.widget_javascript || "");
-  if (!/<video\b[^>]*\bautoplay\b|<iframe\b[^>]*(?:youtube|vimeo)/i.test(code)) return null;
+  if (!WDG_AUTOPLAY.test(code)) return null;
   if (/hero-bg-video/.test(code) && /first_container[\s\S]*insertBefore/.test(code)) return null;
+  if (o && wdgVidTags(o) === wdgVidTags(w)) return null;
   return `Nothing was written. "${w.widget_name}" prints inside the hero's content row, under the title and search, so a video placed in it covers that row only, not the hero. A background video behind the whole hero is the kit in getDesignSettings {block: "hero.background"}: send its widget_data, widget_style and widget_javascript to this widget together; its script moves the video behind the hero. To keep a video in this row on purpose, send the same call with own_video: true.`;
 }
 async function wdgVideoWhich(config, tool, args, orig) {
@@ -3271,7 +3296,7 @@ async function wdgVideoWhich(config, tool, args, orig) {
   if (!where || /^hero/.test(where)) return null;
   let hv = null;
   for (const [n, w] of at) {
-    const x = w === "hero" && n !== name ? ws.byName.get(n) : null;
+    const x = /^hero/.test(w) && n !== dsfKey(name) ? ws.byName.get(n) : null;
     if (x && ["widget_data", "widget_javascript"].some((f) => vidKind(x[f]))) { hv = x; break; }
   }
   if (!hv) return null;
@@ -3813,6 +3838,10 @@ async function getDesignSettings(config, args) {
     if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
     if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css, home.content_footer_html);
   }
+  if (/^hero\./.test(b.id)) {
+    const hl = dsHeroLayout(got.values);
+    if (hl) out.hero_layout = hl;
+  }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
   if ((/^section\./.test(b.id) && b.widget) || hw) {
     const name = dsExpand(ds.m, hw || b.widget);
@@ -4173,6 +4202,18 @@ async function udsCross(config, ds, entries, R, lists, refused) {
   return out;
 }
 
+// Changing custom_30 takes the site's own copy of the current hero widget off the homepage; a change inside that search
+// (one tab, its fields) belongs in the copy. On 60842 "the search for the events" replaced a two-tab search with Events Search.
+async function udsOwnHero(config, cur, R, plan, named) {
+  if (named || !plan.some((e) => e.name === "custom_30")) return null;
+  const was = String(cur.custom_30 || "");
+  if (!was || was === String(R.custom_30 || "") || was === "Blank" || was === "Hide Homepage Hero Search") return null;
+  const ws = await dsfSiteWidgets(dsCacheKey(config), (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null));
+  const own = ws && ws.byName ? ws.byName.get(was) : null;
+  if (!own) return null;
+  const tabs = Array.from(String(own.widget_data || "").matchAll(/role=["']tab["'][^>]*>\s*([^<]{1,60}?)\s*</g)).map((m) => m[1]);
+  return { name: "custom_30", problem: `The hero is drawn by "${was}" (custom_30), and this site has its own copy of that widget (widget_id ${Number(own.widget_id)})${tabs.length ? `: a search with tabs ${tabs.map((t) => JSON.stringify(t)).join(", ")}` : " with its own code"}. Changing custom_30 takes that copy off the homepage. A change inside the current hero search (one tab, its fields, their layout) is updateWidget on widget_id ${Number(own.widget_id)}. Send custom_30 again with user_named: true only when the user asked to replace the hero search itself.` };
+}
 // Advisory notes on the planned state: add-on status, and a section placed in more than one row (the page shows it in each).
 function udsAdvice(ds, idx, plan, R, addons) {
   const m = ds.m;
@@ -4742,7 +4783,8 @@ async function udsDeadLinks(config, idx, plan) {
     if (u.hostname.replace(/^www\./, "") !== site.hostname.replace(/^www\./, "") || (u.pathname === "/" && !u.search)) continue;
     let why = "";
     try {
-      const r = await fetch(u.href, { method: "GET", redirect: "manual" });
+      const r = await fetch(u.href, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(5000) });
+      if (r.body) r.body.cancel().catch(() => {});
       const to = r.headers.get("location");
       if (r.status === 404 || r.status === 410) why = `is not a page on this site (${r.status})`;
       else if (r.status >= 300 && r.status < 400 && to && new URL(to, u).pathname === "/") why = "sends visitors back to the homepage";
@@ -4825,8 +4867,9 @@ async function updateDesignSettings(config, args) {
     if (p) problems.push({ name: e.name, problem: p });
   }
   const cross = await udsCross(config, ds, plan.filter((e) => idx.has(e.name)), R, lists, new Set(problems.map((p) => p.name)));
-  const deadLinks = await udsDeadLinks(config, idx, plan.filter((e) => idx.has(e.name) && !problems.some((q) => q.name === e.name)));
   for (const p of cross) problems.push(p);
+  const ownHero = problems.some((p) => p.name === "custom_30") ? null : await udsOwnHero(config, cur, R, plan, input.user_named);
+  if (ownHero) problems.push(ownHero);
   if (problems.length) return { status: "refused", problems };
   if (rows) {
     const gone = await udsRowsMissing(config, rows.blocks, R, new Set(entries.filter((e) => !e.gen).map((e) => e.name)), lists);
@@ -4837,6 +4880,7 @@ async function updateDesignSettings(config, args) {
     return Object.assign({ status: "unchanged", unchanged }, extra, wc ? { notes: udsWcssNotes(idx, wc) } : {});
   }
   if (plan.length > UDS_MAX) return { status: "refused", problems: [{ name: "settings", problem: `This call changes ${plan.length} settings; one call takes at most ${UDS_MAX}. Split it.` }] };
+  const deadLinks = await udsDeadLinks(config, idx, plan.filter((e) => idx.has(e.name)));
   const notes = [UDS_NOTE_PAGE];
   for (const d of deadLinks) notes.push(d.problem);
   for (const n of heroText.notes) notes.push(n);
@@ -6592,8 +6636,8 @@ function applyWriteLean(toolName, body, sentKeys) {
 // bandwidth, so refreshes are coalesced per site: writes in a burst share ONE
 // refresh that fires AUTO_REFRESH_DEBOUNCE_MS after the last write (never later
 // than AUTO_REFRESH_MAX_WAIT_MS after the first), and two refreshes never run at
-// once. The tool response therefore reports auto_cache_refreshed: false with
-// auto_cache_refresh: "scheduled" until the burst's refresh has actually run.
+// once. A scheduled refresh is reported as auto_cache_refresh: "scheduled" with no
+// auto_cache_refreshed key; auto_cache_refreshed: false means a refresh that failed.
 // BD_MCP_REFRESH_DEBOUNCE_MS=0 restores refresh-per-write (still serialised).
 //
 // A failed deferred refresh cannot reach a response already sent; it is logged to
@@ -6656,26 +6700,39 @@ async function autoRefreshCache(config, scope) {
   if (burst.timer) clearTimeout(burst.timer);
   const wait = Math.min(AUTO_REFRESH_DEBOUNCE_MS, Math.max(0, burst.firstAt + AUTO_REFRESH_MAX_WAIT_MS - now));
   burst.timer = setTimeout(() => runRefreshBurst(key, burst), wait);
-  return { ok: false, scheduled: true, message: `Refresh scheduled in about ${Math.ceil(wait / 1000)}s and shared with any further writes in this burst; the public site shows these writes after it runs. Call refreshSiteCache to force it now.` };
+  return { ok: false, scheduled: true, message: `Refresh scheduled in about ${Math.ceil(wait / 1000)}s and shared with any further writes in this burst; the public site shows these writes after it runs. No call is needed.` };
 }
 
 // Runs a refresh that is still waiting, so a tool that reads the public site
-// (renderWidget) or an explicit refreshSiteCache sees every earlier write.
+// (renderWidget) sees every earlier write.
 async function flushPendingRefresh(config) {
   const burst = _refreshBursts.get(config.apiUrl);
   if (burst && burst.timer) await runRefreshBurst(config.apiUrl, burst);
   else if (burst && burst.running) await burst.running;
 }
 
+// An explicit refreshSiteCache covers a waiting burst it includes (full, or the same single scope), so that burst is
+// dropped rather than run as a second refresh; one it does not cover still runs first.
+async function supersedePendingRefresh(config, scope) {
+  const burst = _refreshBursts.get(config.apiUrl);
+  if (burst && burst.timer && (!scope || (!burst.full && Array.from(burst.scopes).every((x) => x === scope)))) {
+    clearTimeout(burst.timer);
+    burst.timer = null;
+    burst.scopes = new Set();
+    burst.full = false;
+    burst.firstAt = 0;
+  }
+  await flushPendingRefresh(config);
+}
+
 function annotateAutoRefresh(out, refresh) {
-  out.auto_cache_refreshed = refresh.ok;
-  if (refresh.ok) return;
   if (refresh.scheduled) {
     out.auto_cache_refresh = "scheduled";
     out.auto_cache_refresh_note = refresh.message;
-  } else {
-    out.auto_cache_refresh_error = refresh.message;
+    return;
   }
+  out.auto_cache_refreshed = refresh.ok;
+  if (!refresh.ok) out.auto_cache_refresh_error = refresh.message;
 }
 
 // Tool -> refresh scope. "" means full refresh (no scope param); scopes are
@@ -10669,7 +10726,8 @@ async function main() {
         delete args.customize;
         if (args.widget_id === undefined || args.widget_id === null || args.widget_id === "") return { content: [{ type: "text", text: JSON.stringify({ status: "refused", problems: [WC_NO_ID] }) }], isError: true };
       }
-      if (name === "renderWidget" || name === "refreshSiteCache") await flushPendingRefresh(config);
+      if (name === "renderWidget") await flushPendingRefresh(config);
+      else if (name === "refreshSiteCache") await supersedePendingRefresh(config, args && typeof args === "object" && args.scope ? String(args.scope) : "");
       if ((name === "getWidget" || name === "renderWidget") && args && typeof args === "object") {
         const noId = args.widget_id === undefined || args.widget_id === null || args.widget_id === "";
         const wn = typeof args.widget_name === "string" ? args.widget_name.trim() : "";
@@ -11692,14 +11750,21 @@ async function main() {
     }
   });
 
-  // Graceful shutdown: drain in-flight HTTP requests before exit
+  // Graceful shutdown: run waiting cache refreshes and drain in-flight HTTP requests before exit
   let shuttingDown = false;
   const shutdown = (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
+    const bursts = [];
+    for (const [key, burst] of _refreshBursts) {
+      if (burst.timer) bursts.push(runRefreshBurst(key, burst));
+      else if (burst.running) bursts.push(burst.running);
+    }
+    let refreshed = !bursts.length;
+    if (bursts.length) Promise.all(bursts).then(() => { refreshed = true; });
     const inflight = IN_FLIGHT_REQUESTS.size;
-    if (inflight > 0) {
-      console.error(`[${signal}] Draining ${inflight} in-flight request(s)...`);
+    if (inflight > 0 || !refreshed) {
+      console.error(`[${signal}] Draining ${inflight} in-flight request(s) and ${bursts.length} cache refresh(es)...`);
       // 5000ms drain window on SIGTERM/SIGINT. Enough for most BD calls to
       // complete cleanly (BD median response is <500ms). Hard abort after
       // 5s so the user's MCP client doesn't hang waiting for us to exit.
@@ -11710,7 +11775,7 @@ async function main() {
         process.exit(0);
       }, 5000);
       const checkDrained = setInterval(() => {
-        if (IN_FLIGHT_REQUESTS.size === 0) {
+        if (IN_FLIGHT_REQUESTS.size === 0 && refreshed) {
           clearTimeout(drainTimeout);
           clearInterval(checkDrained);
           process.exit(0);

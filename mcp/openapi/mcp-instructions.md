@@ -978,7 +978,7 @@ Atomic — never a subset. Applies to every hero-enabled `seo_type`. On updates 
 
 ### Rule: WebPage cache refresh
 
-**Cache refresh is automatic on `createWebPage` / `updateWebPage`.** Both tools server-side fire `refreshCache(scope=web_pages)` on success (including hero/EAV-field writes) and return `auto_cache_refreshed: true` in the response. No manual call needed. If the response shows `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.
+**Cache refresh is automatic on `createWebPage` / `updateWebPage`.** Both tools server-side fire `refreshCache(scope=web_pages)` on success (including hero/EAV-field writes) and return `auto_cache_refreshed: true` in the response, or `auto_cache_refresh: "scheduled"` when the refresh is queued to run shortly together with other writes. Either is normal; no manual call needed. If the response shows `auto_cache_refreshed: false`, check `auto_cache_refresh_error` and retry `refreshSiteCache` once.
 
 ### Rule: Image sourcing
 
@@ -1343,7 +1343,7 @@ Enum silent-accept (applies across resources). BD's API does NOT strictly valida
 
 ### Rule: Cache refresh
 
-**Cache refresh.** `createWebPage` / `updateWebPage` / `createWidget` / `updateWidget` / `updatePostType` auto-flush cache server-side — response carries `auto_cache_refreshed: true` when the flush succeeded, `false` + `auto_cache_refresh_error` when it didn't. On `false`, retry `refreshSiteCache` once; on `true`, do nothing. For Menus / Categories, call `refreshSiteCache` once after a batch of edits so public nav / directory pages reflect the changes.
+**Cache refresh.** `createWebPage` / `updateWebPage` / `createWidget` / `updateWidget` / `updatePostType` auto-flush cache server-side — response carries `auto_cache_refreshed: true` when the flush succeeded, `auto_cache_refresh: "scheduled"` when it is queued to run shortly together with other writes, `false` + `auto_cache_refresh_error` when it didn't. On `false`, retry `refreshSiteCache` once; on `true` or `"scheduled"`, do nothing. For Menus / Categories, call `refreshSiteCache` once after a batch of edits so public nav / directory pages reflect the changes.
 
 ### Rule: No scaffolding tags
 
