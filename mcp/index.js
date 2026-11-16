@@ -870,6 +870,11 @@ function pcssCorners(decls) {
   }
   return Object.keys(c).length ? c : null;
 }
+// True when an @media applies only at 992px and wider, where the hero search is one row.
+function pcssWide(media) {
+  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
+  return !!m && Number(m[1]) >= 992;
+}
 // A hero bar, field or button whose corners are not all the same: the recipe draws them even and fits each inside the
 // one around it, so a lopsided shape reads as a mistake at every width unless the user asked for it.
 function pcssHeroUneven(selector, decls) {
@@ -1033,9 +1038,10 @@ function pcssValidate(args, lim) {
       refused.push(`\`${selector.slice(0, 160)}\` gives the search bar a corner over 28px outside @media (min-width: 992px). The bar stacks into rows under 992px, and at every width in the vertical layout, where a large corner turns it into an oval. Set the corners with the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}): it keeps a stacked bar at 28px or less by itself and fits the fields and the button inside the bar.`);
       continue;
     }
-    // A hero field or the button named without the form loses to the recipe's rules, which all start with it.
-    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => p.includes("#first_container") && !p.includes("form:has(.btn_home_search)") && /\.btn_home_search|\.select2-choice|\.form-control|\.dropdown-toggle/.test(p))) {
-      refused.push(`\`${selector.slice(0, 160)}\` names the hero search without #first_container form:has(.btn_home_search), so the search recipe's rules win over it. Start it with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
+    // A hero field or the button named through any hero wrapper but not the form loses to the recipe's rules, which all
+    // start with the form: the rule saves and nothing changes on the page.
+    if (!lim && css.trim() !== "" && pcssSplitCommas(selector).some((p) => PCSS_HERO_SCOPE.test(p) && !p.includes("form:has(.btn_home_search)") && /\.btn_home_search|\.select2-choice|\.form-control|\.dropdown-toggle/.test(p))) {
+      refused.push(`\`${selector.slice(0, 160)}\` names the hero search without #first_container form:has(.btn_home_search), so the search recipe's rules win over it and nothing would change on the page. Text size, height, corners and spacing come from the recipe's values (updatePageCss {recipe: "hero.search_box", values: {font_size, list_font_size, height, radius, inset, gap}}). Anything else: start the rule with #first_container form:has(.btn_home_search) and end the part that names the bar, a field or the button with ${PCSS_HERO_OWN}.`);
       continue;
     }
     const pseudo = css.trim() !== "" && pcssPseudoNotLast(selector);
@@ -1068,6 +1074,9 @@ function pcssValidate(args, lim) {
     const bw = entries.find((e) => e.decls.length && pcssHeroBtnWidth(e.selector, e.decls, e.media));
     const corner = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroCorner(e.selector, e.decls, e.media));
     if (corner) refused.push(`\`${corner.selector.slice(0, 160)}\` sets the corners of the hero search bar, a field or the button. The search recipe rounds all of them from one radius value and fits the fields and the button inside the bar's corner, at every width; a hand corner on one of them breaks that fit. The corners at every width come from the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}; 0 is square). Send a corner rule here only when the user asked for that shape, with user_named: true.`);
+    // A shape the user named still stops at 992px: under it the bar stacks into a card, and one rounded side makes it lopsided.
+    const narrow = args.user_named === true && entries.find((e) => e.decls.length && !pcssWide(e.media) && pcssHeroUneven(e.selector, e.decls));
+    if (narrow) refused.push("`" + narrow.selector.slice(0, 160) + "` gives the hero search bar, a field or the button corners of different sizes on screens under 992px, where the search stacks into a card of rows: one side rounded and the other square makes that card lopsided. Send the same rule inside media \"@media (min-width: 992px)\" with user_named: true; the one-row bar takes the shape and the stacked card keeps the recipe's even corners.");
     const uneven = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroUneven(e.selector, e.decls));
     if (uneven) refused.push("`" + uneven.selector.slice(0, 160) + "` gives the hero search bar, a field or the button corners of different sizes (" + Object.values(pcssCorners(uneven.decls)).join(" ") + "). The search recipe rounds every corner the same and fits the fields and the button inside the bar's corner, so a lopsided shape looks broken. Use the recipe's radius value (updatePageCss {recipe: \"hero.search_box\", values: {radius}}). Send uneven corners only when the user asked for that shape, with user_named: true.");
     const icon = entries.find((e) => e.decls.length && pcssHeroIcon(e.selector, e.decls));
@@ -1507,13 +1516,15 @@ function pcssHeroHandRules(css, own) {
 
 // A hand corner the user asked for (user_named) is saved with this, so the list and the cleanup leave its corners alone.
 const PCSS_CLEAN_MSG = "These declarations, written by hand on the hero search, broke the search recipe and were taken out of their rules; the rest of each rule stays. Tell the user what changed in plain words. If the user had asked for one of these corner shapes, send that rule again with user_named: true and it is kept from then on.";
+// The wrappers BD prints around the homepage hero search.
+const PCSS_HERO_SCOPE = /#first_container|\.hero_section_container|\.homepage_settings|\.search_box(?![\w-])/;
 const PCSS_USER_NAMED = "--bd-user-named: 1";
 // field_icons writes one rule per field slot, each part starting at the form (or its .row) > :nth-child(N of …): the recipe's own.
 function pcssHeroBreaks(selector, decls, at) {
   if (pcssSplitCommas(selector).every((p) => ["#first_container form:has(.btn_home_search):not(:has(> .row)) > :nth-child(", "#first_container form:has(.btn_home_search) > .row > :nth-child("].some((x) => p.trim().startsWith(x)))) return false;
   const asked = decls.some((d) => /^--bd-user-named\s*:/i.test(d.trim()));
   const body = decls.join("; ");
-  return pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, at) || pcssHeroPhoneCols(selector, decls, at) || pcssHeroBtnWidth(selector, decls, at) || pcssHeroIcon(selector, decls) || (!asked && (pcssHeroCorner(selector, decls, at) || pcssHeroUneven(selector, decls)));
+  return pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, at) || pcssHeroPhoneCols(selector, decls, at) || pcssHeroBtnWidth(selector, decls, at) || pcssHeroIcon(selector, decls) || (!asked && (pcssHeroCorner(selector, decls, at) || pcssHeroUneven(selector, decls))) || (asked && !pcssWide(at) && pcssHeroUneven(selector, decls));
 }
 // A recipe write takes out of hand rules the declarations that break the search (spacing, corners, icons drawn by
 // hand) and keeps the rest of each rule; a rule or @media group left empty goes. Returns the new text and what went.

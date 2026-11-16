@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.680] - 2026-11-16
+
+### Fixed
+- `updatePageCss` `rules`: a rule that names a hero search field or the button through `.hero_section_container`, `.homepage_settings` or `.search_box`, but not through the search form, is refused, as one through `#first_container` already was. The recipe's rules win over such a rule, so it saved and nothing changed on the page. On 145 an assistant asked for 20px text, 14px lists and a 64px bar wrote `.hero_section_container .form-control { font-size: 20px; height: 64px }` and reported all three as done. The refusal now names the recipe values for text size, height, corners and spacing.
+- Hero search corners of different sizes (one side rounded, the other square) are refused under 992px even when the user named the shape (`user_named: true`), and a recipe write removes such a rule already on the page. Under 992px the search stacks into a card of rows, and one rounded side made it lopsided on phones (60842). The shape is accepted inside `@media (min-width: 992px)`, where the bar is one row; the stacked card keeps the recipe's even corners.
+
 ## [6.59.679] - 2026-11-16
 
 ### Fixed
