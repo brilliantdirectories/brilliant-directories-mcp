@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.674] - 2026-11-15
+
+### Fixed
+- The two-forms check from 6.59.673 counted the word "required" anywhere in a widget, so adding a red-star label (`<span class="required">`), a `.required` CSS rule or a sentence saying a field is required to a homepage widget was refused. It now counts only what makes a field required: the `required` attribute on an input, select or textarea, or a script setting it (`.required = true`, `setAttribute("required")`, `.prop` / `.attr("required")`). 17/17 offline cases; 7/7 on 145 unchanged.
+
 ## [6.59.673] - 2026-11-15
 
 ### Fixed

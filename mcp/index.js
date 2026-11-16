@@ -2790,8 +2790,10 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
 // A homepage can show two forms: the hero search and a widget's own (a lead form, say). "Make the location field required"
-// fits both, so a save that adds required to a homepage widget while the hero shows a search stops and names both.
-const wdgReqN = (o) => ["widget_data", "widget_javascript"].reduce((n, f) => n + (o && typeof o[f] === "string" ? (o[f].match(/\brequired\b/gi) || []).length : 0), 0);
+// fits both, so a save that makes more fields required in a homepage widget while the hero shows a search stops and names both.
+// Counted: the required attribute on a field, or a script setting it; a "required" class, label or sentence is not.
+const WDG_REQ_RE = /<(?:input|select|textarea)\b[^>]*\srequired\b|\.required\s*=\s*(?:true|!0|1)\b|(?:setAttribute|\.attr|\.prop)\(\s*["']required["']/gi;
+const wdgReqN = (o) => ["widget_data", "widget_javascript"].reduce((n, f) => n + (o && typeof o[f] === "string" ? (o[f].match(WDG_REQ_RE) || []).length : 0), 0);
 async function wdgRequiredWhich(config, tool, args, orig) {
   if (args.own_form === true || !wdgReqN(args)) return null;
   let o = orig;
