@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.679] - 2026-11-16
+
+### Fixed
+- `updatePageCss` `rules`: the 678 check that refuses anything after a pseudo-element also refused valid CSS: `::-webkit-scrollbar:hover`, `::part(x):hover` and `::selection:window-inactive`. Those pseudo-classes after a pseudo-element are allowed again. Everything else after a pseudo-element is still refused.
+- `updatePageCss` `rules`: a selector or declaration holding an invisible control character is refused. A lost backslash in `\f236` turns `\f` into a form feed, and the browser then drops the rule without a word.
+- The recipe's bed and bath icons had a form feed where the backslash of `\f236`/`\f2cd` belonged, so they did not draw. Fixed in the recipe.
+- A recipe write that cleans a hand rule naming both hero elements and other elements now splits the rule. The other elements keep every declaration, and only the hero part loses the breaking ones.
+- Wrapped and button-below layouts: the theme's left margin on the search button is cancelled, so the button lines up with the fields.
+- A field icon no longer draws inside the search button's slot. `button_icon` is what places icons in the button.
+- `getDesignSettings` `recipe_now`: a value still at the recipe's own expression (a `calc()` or `max()`) reads back as `"default"`.
+- `widgetCustomize`: a site copy whose `<script>` holds a backslash is refused before it is created, and the message shows where the backslash is. BD prints a site copy from the database, which strips backslashes. A copy of User Search Scripts (2534) on 60842 lost the `\/` in a regex and broke every Select2 on the page: placeholders, the search box and the colours.
+
+### Added
+- Hero search recipe: `font_size` (12 to 28) sets the text of the fields, the placeholders, the search button and the open dropdown lists together. `list_font_size` (12 to 28) sets the open lists on their own: Select2 results, bootstrap-select menus, typeahead suggestions and Google address suggestions. When only `font_size` is set, the lists follow it. On phones the fields keep at least 16px, so iOS does not zoom in when a field is tapped.
+- With `font_size` in the call, a recipe write also removes a `font-size` written by hand on a hero field or the button, so all the text changes together.
+- Left unset, the text follows `height` (16px at the default 56px, about 23px at the 80px maximum; never under 16px). A set `font_size` stays when the height changes later.
+- Every recipe value (pixels and colours) takes `"default"`, which puts it back to the recipe's own, as `recipe_now` already reports it. `font_size: "default"` makes the text follow height again, and a list that was following the fields goes back with them; a list given its own size keeps it.
+
 ## [6.59.678] - 2026-11-16
 
 ### Fixed

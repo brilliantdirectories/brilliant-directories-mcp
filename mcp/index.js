@@ -815,6 +815,7 @@ function pcssHeroPhoneCols(selector, decls, media) {
 }
 // What a browser drops without a word: the whole rule for a bad selector, one declaration for a bad declaration.
 function pcssBroken(selector, css) {
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(selector + css)) return "it holds an invisible control character (a form feed or the like, often a lost backslash in \\f…), which breaks the rule";
   const sel = selector.replace(/"[^"]*"|'[^']*'/g, "\"\"");
   let d = 0;
   for (const c of sel) { if (c === "(") d++; if (c === ")" && --d < 0) break; }
@@ -845,12 +846,14 @@ function pcssBroken(selector, css) {
   return null;
 }
 // A browser drops the whole rule when anything follows a pseudo-element (`::before:not(#x)`), and saving it would look like success.
+// Pseudo-classes after the scrollbar pseudo-elements, ::part() and ::selection are valid (::-webkit-scrollbar-thumb:hover).
 function pcssPseudoNotLast(selector) {
   return pcssSplitCommas(selector).find((part) => {
     let q = part;
     for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
     const m = /::[\w-]+|:(?:before|after|first-line|first-letter)(?![\w-])/i.exec(q);
-    return !!m && q.slice(m.index + m[0].length).trim() !== "";
+    const tail = m ? q.slice(m.index + m[0].length).trim() : "";
+    return !!m && tail !== "" && !(/^::(?:-webkit-[\w-]+|part|selection)$/i.test(m[0]) && /^(?::[\w-]+)+$/.test(tail));
   }) || null;
 }
 // The corners a rule gives, in its own order; null when it leaves them all alone.
@@ -1352,7 +1355,7 @@ function pcssRecipeNow(R, cur, foot) {
   const st = pcssRecipeState(R, cur);
   const values = {};
   if (R.values.required) values.required = pcssReqNow(foot);
-  for (const k of Object.keys(R.values)) if (!R.values[k].set && !R.values[k].script) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token.replace(/^calc\((\d+px)\)$/, "$1");
+  for (const k of Object.keys(R.values)) if (!R.values[k].set && !R.values[k].script) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : ((t) => (/^\d+px$/.test(t) || PCSS_COLOUR.test(t) ? t : "default"))(R.values[k].token.replace(/^calc\((\d+px)\)$/, "$1"));
   return { looks_on: Object.keys(st.on).filter((k) => st.on[k]), values };
 }
 // field_icons as a list: field N's icon replaces the glyph of its own icon, or is added where it has none, and its text
@@ -1432,14 +1435,15 @@ function pcssRecipe(args, cur) {
       lookOn[k] = v;
       continue;
     }
+    if (v === "default") continue;
     if (spec.px) {
       const n = Number(typeof v === "string" ? v.trim().replace(/px$/i, "") : v);
-      if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}.`] };
+      if (!Number.isInteger(n) || n < spec.min || n > spec.max) return { refused: [`${k} is a whole number of pixels from ${spec.min} to ${spec.max}, or "default".`] };
       if (k === "title_gap" && n !== 20 && args.user_named !== true && parseInt(String((pcssRecipeNow(R, cur).values || {}).title_gap), 10) !== n) return { refused: ["title_gap is 20. Send another value only with user_named: true, when the user names the space under the sub-title."] };
       swaps.push([spec.token, n + "px"]);
       if (spec.minus2) swaps.push([spec.minus2, n - 2 + "px"]);
     } else {
-      if (typeof v !== "string" || !PCSS_COLOUR.test(v.trim())) return { refused: [`${k} is a colour: rgb(R, G, B), rgba(R, G, B, A) or #hex.`] };
+      if (typeof v !== "string" || !PCSS_COLOUR.test(v.trim())) return { refused: [`${k} is a colour: rgb(R, G, B), rgba(R, G, B, A) or #hex, or "default".`] };
       swaps.push([spec.token, v.trim()]);
     }
   }
@@ -1459,6 +1463,15 @@ function pcssRecipe(args, cur) {
   }
   // Joined turned on without a word on dividers brings the dividers with it; a page already joined keeps what it has.
   if (vals.joined === true && !st.on.joined && !Object.prototype.hasOwnProperty.call(vals, "dividers") && R.values.dividers) lookOn.dividers = true;
+  // Open lists follow the field text size unless the call or the page gives them their own; "default" sends a value back to the recipe's. A token that holds another
+  // (the font size holds the height) is swapped first, so the shorter one cannot break it.
+  const fontNow = Object.prototype.hasOwnProperty.call(vals, "font_size") ? (vals.font_size === "default" ? undefined : parseInt(String(vals.font_size), 10)) : st.vals.font_size;
+  const listOwn = Object.prototype.hasOwnProperty.call(vals, "list_font_size") ? vals.list_font_size !== "default" : (st.vals.list_font_size !== undefined && st.vals.list_font_size !== st.vals.font_size);
+  if (R.values.list_font_size && !listOwn) {
+    for (let i = swaps.length - 1; i >= 0; i--) if (swaps[i][0] === R.values.list_font_size.token) swaps.splice(i, 1);
+    if (fontNow !== undefined) swaps.push([R.values.list_font_size.token, fontNow + "px"]);
+  }
+  swaps.sort((a, b) => b[0].length - a[0].length);
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
   const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
@@ -1475,7 +1488,7 @@ function pcssRecipe(args, cur) {
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
   const own = new Set(all.map(([r]) => key(r)));
-  return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
+  return { args: { rules }, recipe: b.id, own, font: Object.prototype.hasOwnProperty.call(vals, "font_size"), looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
 const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack, or set the button's width where it stacks, which pushes it past the bar, or set the corners of the bar, a field or the button, which the recipe rounds from its radius value so each fits inside the other (keep those only when the user asked for that shape), or give the bar, a field or the button corners of different sizes (keep those only when the user asked for that shape), or draw a field or button icon by hand, or move a field's text over for one, which field_icons and button_icon do. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
@@ -1504,7 +1517,9 @@ function pcssHeroBreaks(selector, decls, at) {
 }
 // A recipe write takes out of hand rules the declarations that break the search (spacing, corners, icons drawn by
 // hand) and keeps the rest of each rule; a rule or @media group left empty goes. Returns the new text and what went.
-function pcssHeroClean(css, own) {
+// A rule that also names elements outside the search is split, and those keep every declaration. With font_size in
+// the call, a font-size written by hand on a field or the button goes too, so the text of all of them changes together.
+function pcssHeroClean(css, own, font) {
   const scan = pcssScan(String(css || ""));
   if (!scan || scan.error) return { css, removed: [] };
   const edits = [];
@@ -1515,11 +1530,19 @@ function pcssHeroClean(css, own) {
     if (r.nested || own.has(r.sel + "|" + r.at)) continue;
     const selector = css.slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
     const decls = pcssDecls(css.slice(r.bodyStart, r.bodyEnd)).map((d) => d.trim()).filter(Boolean);
-    if (!pcssHeroBreaks(selector, decls, r.at)) continue;
-    let keep = decls.filter((d) => !pcssHeroBreaks(selector, [d], r.at));
-    if (pcssHeroBreaks(selector, keep, r.at) || (/::?(?:before|after)/i.test(selector) && !keep.some((d) => /^content\s*:/i.test(d)))) keep = [];
-    removed.push({ selector, ...(r.at ? { media: r.at } : {}), css: decls.filter((d) => !keep.includes(d)).join("; ") + ";" });
-    if (keep.length) {
+    const brk = (ds) => pcssHeroBreaks(selector, ds, r.at) || (!!font && ds.some((d) => /^font-size\s*:/i.test(d)) && pcssHeroCorner(selector, ["border-radius: 0"], ""));
+    if (!brk(decls)) continue;
+    let keep = decls.filter((d) => !brk([d]));
+    if (brk(keep) || (/::?(?:before|after)/i.test(selector) && !keep.some((d) => /^content\s*:/i.test(d)))) keep = [];
+    const parts = pcssSplitCommas(selector).map((p) => p.trim());
+    const hero = parts.filter((p) => p.includes("form:has(.btn_home_search)"));
+    const other = parts.filter((p) => !p.includes("form:has(.btn_home_search)"));
+    removed.push({ selector: hero.join(", "), ...(r.at ? { media: r.at } : {}), css: decls.filter((d) => !keep.includes(d)).join("; ") + ";" });
+    if (other.length) {
+      const pad = r.group >= 0 ? "  " : "";
+      const block = (sel, ds) => pad + sel + " {" + nl + ds.map((d) => pad + "  " + d + ";").join(nl) + nl + pad + "}";
+      edits.push({ start: r.selStart, end: r.end, text: block(other.join(", "), decls).slice(pad.length) + (keep.length ? nl + block(hero.join(", "), keep) : "") });
+    } else if (keep.length) {
       const ind = r.group >= 0 ? "    " : "  ";
       edits.push({ start: r.bodyStart, end: r.bodyEnd, text: nl + keep.map((d) => ind + d + ";").join(nl) + nl + (r.group >= 0 ? "  " : "") });
     } else {
@@ -1561,7 +1584,7 @@ async function updatePageCss(config, args) {
       const page = await pcssReadPage(config, seoId);
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
-      const clean = rec.recipe ? pcssHeroClean(R, rec.own) : { css: R, removed: [] };
+      const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font) : { css: R, removed: [] };
       const plan = pcssPlan(clean.css, checked.entries, !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const foot = rec.foot ? rec.foot(page.foot) : page.foot;
@@ -3194,6 +3217,13 @@ async function widgetCustomize(config, c) {
   sanitizeScaffoldingInArgs(body);
   stripWidgetWrapperTagsInArgs(body);
   autoDefaultSystemTimestamps("createWidget", body, await getSiteTimezoneCached(config.apiUrl, config.apiKey));
+  // BD prints its own widget from a file, which keeps backslashes; a site copy is printed from the database, which removes
+  // them. So every backslash in the copy's scripts counts here, not only new ones (a copy of User Search Scripts lost Select2).
+  const bs = wdgScriptBackslash(body, {});
+  if (bs) {
+    const d = String(body.widget_data || ""), at = d.indexOf("\\", d.search(/<script\b/i));
+    return { status: "error", message: `The copy was not created. In the copy, ${bs}${at >= 0 ? ` Here: \`${d.slice(Math.max(0, at - 40), at + 20).replace(/\s+/g, " ")}\`.` : ""} BD's own widget keeps it because BD prints it from a file. Send customize again with a replace entry that rewrites that part without a backslash (in a regex, [/] for \\/ and [.] for \\.).` };
+  }
   let r = null;
   try { r = await makeRequest(config, "POST", "/api/v2/data_widgets/create", null, body); } catch (e) { return { status: "error", message: `Network error: ${(e && e.message) || String(e)}` }; }
   const b = r && r.body;
