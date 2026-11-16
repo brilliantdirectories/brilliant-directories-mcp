@@ -2782,7 +2782,7 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   let form = (tool === "updateWidget" || tool === "createWidget") && [args, orig, row].some((o) => o && /btn_home_search/.test(String(o.widget_data || "")));
   if (!form && !has && !hadVid && tool === "updateWidget" && args.widget_data === undefined && /^\d+$/.test(String(args.widget_id))) {
     const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
-    const w = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    const w = r && r.body && (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message && typeof r.body.message === "object" ? r.body.message : null);
     form = !!(w && /btn_home_search/.test(String(w.widget_data || "")));
   }
   if (!has && !hadVid && !form) return null;
@@ -2848,16 +2848,41 @@ function dsfHomeWalk(ds, got, ws, home) {
   }
   return at;
 }
+// Where a widget shows on the homepage, for widget reads and saves: a row section with a form or video of its own was taken
+// for the hero on 145 (icons, required, video fixes all landed in row 1).
+async function wdgHomeWhere(config, name) {
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  const [ws, home] = await Promise.all([dsfSiteWidgets(dsCacheKey(config), get), dsfHomePage(get)]);
+  if (!ws || !ws.byName) return null;
+  const where = dsfHomeWalk(ds, got, ws, home).get(name);
+  if (!where) return null;
+  if (where === "hero") return "In the hero, at the top of the homepage.";
+  const kind = dsMeta(ds, got.values, "custom_30", "kind");
+  const hero = dsRead(ds, got.values, "custom_30");
+  const w = ws.byName.get(name);
+  const form = !!w && /<form\b|\[form=|<input\b|<select\b/i.test(String(w.widget_data || ""));
+  return `In ${where} of the homepage, below the hero.` + (form && (kind === "member_search" || kind === "post_search") && hero ? ` The hero at the top has its own search form, "${hero}" (custom_30): its look, icons and required fields are set with updatePageCss {recipe: "hero.search_box"}, not in this widget. A request about the hero search, or the search at the top of the homepage, means that form.` : "");
+}
 // A homepage can show two videos: the hero's and a row widget's own. A save that changes the video code of a row widget
 // while the hero has a video stops and names both: "the background video" was fixed three times in the wrong one on 145.
-const wdgVidBits = (o) => ["widget_data", "widget_style", "widget_javascript"].map((f) => (o && typeof o[f] === "string" ? o[f].split("}").filter((c) => /iframe|video|youtube|vimeo/i.test(c)).join("}") : "")).join("\u0001");
+// The video code: CSS rules whose selector names an iframe or video, and the iframe and video tags. A script edit is not one.
+const wdgVidBits = (o) => {
+  const data = String((o && o.widget_data) || "");
+  const css = [String((o && o.widget_style) || "")].concat(data.match(/<style\b[^>]*>[\s\S]*?<\/style>/gi) || []).join("\n");
+  const rules = css.split("}").filter((c) => { const i = c.lastIndexOf("{"); return i >= 0 && /iframe|video|youtube|vimeo/i.test(c.slice(0, i)); });
+  return rules.join("}") + "\u0001" + (data.match(/<(?:iframe|video)\b[^>]*>/gi) || []).join("\u0001");
+};
 async function wdgVideoWhich(config, tool, args, orig) {
   if (args.own_video === true || tool !== "updateWidget" || !/^\d+$/.test(String(args.widget_id))) return null;
   if (!["widget_data", "widget_style", "widget_javascript"].some((f) => typeof args[f] === "string")) return null;
   let o = orig;
   if (!o || !o.widget_name) {
     const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
-    o = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    o = r && r.body && (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message && typeof r.body.message === "object" ? r.body.message : null);
     if (!o) return null;
   }
   if (wdgVidBits(Object.assign({}, o, args)) === wdgVidBits(o)) return null;
@@ -2895,7 +2920,7 @@ async function wdgRequiredWhich(config, tool, args, orig) {
   if ((!o || !o.widget_name) && tool === "updateWidget") {
     if (!/^\d+$/.test(String(args.widget_id))) return null;
     const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
-    o = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    o = r && r.body && (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message && typeof r.body.message === "object" ? r.body.message : null);
     if (!o) return null;
   }
   const after = Object.assign({}, o || {}, args);
@@ -10980,6 +11005,12 @@ async function main() {
         const vid = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig, vidRow && typeof vidRow === "object" ? vidRow.widget_id : undefined, vidRow && typeof vidRow === "object" ? vidRow : null).catch(() => null);
         if (vid && vid.other) result.body.other_video = vid.other;
         if (vid && vid.hidden) result.body.not_on_homepage = vid.hidden;
+      }
+      if ((name === "getWidget" || name === "updateWidget") && result.body && typeof result.body === "object" && result.body.status === "success") {
+        const m = result.body.message;
+        const row = Array.isArray(m) ? (m.length === 1 ? m[0] : null) : m && typeof m === "object" ? m : null;
+        const where = row && row.widget_name ? await wdgHomeWhere(config, String(row.widget_name)).catch(() => null) : null;
+        if (where) result.body.homepage = where;
       }
       if (/^(create|update)(Widget|WebPage)$/.test(name) && result.body && typeof result.body === "object" && result.body.status === "success" && vidIsBackground(args)) result.body.background_video = VID_BG_NOTE;
       // Hero readability bundle autofill — agent feedback listing which

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.677] - 2026-11-16
+
+### Fixed
+- The homepage two-videos and two-forms checks, and the not-on-homepage widget note, read the stored widget with `data_widgets/get/{id}` and took only a list as its answer. A reply carrying the row as one object made each check let the save through without a word: on 145 a real assistant save of a row widget's video passed while the same call from a test key was refused. They now read the row from either shape, as the replace path already did. Hosted logs a check that throws.
+- The two-videos check (6.59.676) counted any change to code that mentions a video, so a script edit next to a widget's video code (adding required to a field, measured on 145) was refused as a video change. It now compares only CSS rules whose selector names an iframe or video (in widget_style or a <style> in widget_data) and the iframe and video tags.
+
+### Added
+- getWidget and updateWidget on a widget the homepage shows return homepage: where it is (in the hero, or row N below the hero). For a row widget with a form of its own, while the hero shows a search, it names the hero search widget and says its look, icons and required fields are set with updatePageCss {recipe: "hero.search_box"}, not in that widget. On 145, icons for the hero search were added to the row 1 widget, chosen by its name from listWidgets.
+
 ## [6.59.676] - 2026-11-16
 
 ### Fixed
