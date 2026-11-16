@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.670] - 2026-11-15
+
+### Fixed
+- `getDesignSettings` `find`: a recipe's value names count as words of its block, so `find: "required"`, `"button_below"` or `"make the location field required"` names `hero.search_box`. A recipe block is also listed beside hits in the site's own code. Before, `find: "required"` found nothing, and once a hand-written script set `required`, it found only that script and suggested editing the field by hand. Asked to make a search field required, an assistant wrote its own script and copied the search widget instead of using the recipe value `required`.
+- `createWidget` / `updateWidget`: saving a site widget that holds a hero search form (`btn_home_search`) that the homepage does not show adds `not_on_homepage`, naming the widget that draws the hero search (`custom_30`). An assistant styled a copied search widget that no page used, and reported a visible change that never appeared.
+
 ## [6.59.669] - 2026-11-15
 
 ### Added

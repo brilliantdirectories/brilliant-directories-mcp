@@ -2412,7 +2412,7 @@ async function dsfFind(ds, got, text, key, get) {
     out.elements_say = DSF_LOOK_SAY;
   }
   if (home && DS_FULL_WIDTH.test(q)) out.page_option = dsPageOpt(home);
-  const named = hits.length ? [] : dsFind(ds, q).slice(0, 6);
+  const named = dsFind(ds, q).filter((b) => !hits.length || b.recipe).slice(0, 6);
   if (named.length) {
     out.settings = named.map((b) => `${b.id} ${b.title}`);
     out.settings_say = "Design settings named like this: getDesignSettings {block} lists them with their values.";
@@ -2722,9 +2722,16 @@ function vidKind(t) {
   if (typeof t !== "string" || !/autoplay/i.test(t)) return "";
   return /youtube(-nocookie)?\.com\/embed/i.test(t) ? "YouTube" : /player\.vimeo\.com\/video/i.test(t) ? "Vimeo" : /<video\b|\.(mp4|webm)\b/i.test(t) ? "video file" : "";
 }
-async function vidElsewhere(config, tool, args, orig, newId) {
+async function vidElsewhere(config, tool, args, orig, newId, row) {
   const has = YT_FIELDS.some((f) => vidKind(args[f]));
-  if (!has && !(orig && YT_FIELDS.some((f) => vidKind(orig[f])))) return null;
+  const hadVid = !!(orig && YT_FIELDS.some((f) => vidKind(orig[f])));
+  let form = (tool === "updateWidget" || tool === "createWidget") && [args, orig, row].some((o) => o && /btn_home_search/.test(String(o.widget_data || "")));
+  if (!form && !has && !hadVid && tool === "updateWidget" && args.widget_data === undefined && /^\d+$/.test(String(args.widget_id))) {
+    const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
+    const w = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    form = !!(w && /btn_home_search/.test(String(w.widget_data || "")));
+  }
+  if (!has && !hadVid && !form) return null;
   let ds;
   try { ds = dsLoad(); } catch { return null; }
   const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
@@ -2757,11 +2764,12 @@ async function vidElsewhere(config, tool, args, orig, newId) {
     else if (b && b.widget) want(dsExpand(ds.m, b.widget));
   }
   if (home && (isWidget || Number(home.seo_id) !== saved)) for (const f of VID_PAGE_FIELDS) if (vidKind(home[f])) found.push(`the home WebPage ${f} (${vidKind(home[f])})`);
-  if (isWidget && has && saved && !savedOnHome) {
+  if (isWidget && (has || form) && saved && !savedOnHome) {
     const hero = String(got.values.custom_30 || "");
+    if (!has) return { hidden: `Widget ${saved} is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its search form and styles do not show there.${hero ? ` The hero search is drawn by "${hero}" (custom_30): change that widget, or style it with updatePageCss.` : ""}` };
     return { hidden: `Widget ${saved} is not on the homepage: no homepage section, hero widget or widget nested in them shows it, so its video does not play there.${hero ? ` The hero is drawn by "${hero}";` : ""} a site widget named "${DS_EXTRA[0]}" or "${DS_EXTRA[1]}" prints inside the hero.` };
   }
-  if (!savedOnHome || !found.length) return null;
+  if (!savedOnHome || !found.length || (!has && !hadVid)) return null;
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
   return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
@@ -3085,7 +3093,7 @@ function dsFind(ds, q) {
   const exact = [];
   const part = [];
   for (const b of ds.m.blocks) {
-    const words = dsBlockNames(b).concat(b.fields.map((f) => f.l)).map((w) => String(w).toLowerCase());
+    const words = dsBlockNames(b).concat(b.fields.map((f) => f.l), b.recipe ? Object.keys(b.recipe.values) : []).map((w) => String(w).toLowerCase());
     const head = [b.id.toLowerCase(), b.title.toLowerCase()];
     if (head.includes(s) || words.includes(s)) exact.push(b);
     else {
@@ -3099,7 +3107,7 @@ function dsFind(ds, q) {
   if (!ws.length) return [];
   for (const b of ds.m.blocks) {
     const head = `${b.id} ${b.title}`.toLowerCase();
-    const labels = b.fields.map((f) => String(f.l).toLowerCase()).join(" | ");
+    const labels = b.fields.map((f) => String(f.l).toLowerCase()).concat(b.recipe ? Object.keys(b.recipe.values) : []).join(" | ");
     const score = ws.reduce((n, w) => n + (head.includes(w) ? 2 : labels.includes(w) ? 1 : 0), 0);
     if (score) part.push({ b, score, head: ws.some((w) => head.includes(w)) });
   }
@@ -10813,7 +10821,7 @@ async function main() {
       }
       if ((name === "createWidget" || name === "updateWidget" || name === "updateWebPage") && args && typeof args === "object" && result.body && typeof result.body === "object" && result.body.status === "success") {
         const vidRow = Array.isArray(result.body.message) ? result.body.message[0] : result.body.message;
-        const vid = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig, vidRow && typeof vidRow === "object" ? vidRow.widget_id : undefined).catch(() => null);
+        const vid = await vidElsewhere(config, name, args, _widgetReplace && _widgetReplace.orig, vidRow && typeof vidRow === "object" ? vidRow.widget_id : undefined, vidRow && typeof vidRow === "object" ? vidRow : null).catch(() => null);
         if (vid && vid.other) result.body.other_video = vid.other;
         if (vid && vid.hidden) result.body.not_on_homepage = vid.hidden;
       }
