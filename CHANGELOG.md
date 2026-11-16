@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.682] - 2026-11-16
+
+### Changed
+- `updatePageCss` `rules`: a write to a page that already holds the hero search recipe also brings the recipe's rules up to the current release, keeping every value the site set (height, radius, colours, text sizes, looks, icons). Before, only a recipe call did, so a site whose recipe was saved by an older release kept its old rules through any number of hand-rule edits. On 60842 the open Select2 lists stayed at 13px beside 16px fields, because the recipe was saved before list sizing existed. The reply carries `recipe_refreshed` when this happens. A page without the recipe is not given one, and hand rules are left as they are.
+
 ## [6.59.681] - 2026-11-16
 
 ### Fixed

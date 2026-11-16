@@ -1589,6 +1589,20 @@ function pcssNestCorners(entries, css) {
   }
   return out;
 }
+// A page that already holds the search recipe takes its current rules, with the site's own values, on any write, so a
+// site whose recipe was saved by an older release gets the later fixes the first time anything touches its CSS.
+function pcssRecipeRefresh(css) {
+  let R;
+  try { R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe; } catch { return css; }
+  if (!R || R.rules.filter((r) => r.css && css.includes(r.selector)).length < 3) return css;
+  const rec = pcssRecipe({ recipe: "hero.search_box", values: {} }, css);
+  if (rec.refused || !rec.args) return css;
+  const v = pcssValidate(rec.args, { rules: 200, selector: 600 });
+  if (v.refused || !v.entries) return css;
+  const p = pcssPlan(css, v.entries, false);
+  return p.refused || p.next === undefined ? css : p.next;
+}
+const PCSS_REFRESHED_MSG = "The homepage search's recipe rules were from an older release and were brought up to the current one, with every value the site had set kept. Nothing the user sees changes except fixes made since.";
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
@@ -1614,7 +1628,8 @@ async function updatePageCss(config, args) {
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
       const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font) : { css: R, removed: [] };
-      const plan = pcssPlan(clean.css, rec.recipe ? checked.entries : pcssNestCorners(checked.entries, clean.css), !rec.recipe);
+      const base = rec.recipe ? clean.css : pcssRecipeRefresh(clean.css);
+      const plan = pcssPlan(base, rec.recipe ? checked.entries : pcssNestCorners(checked.entries, base), !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
       const foot = rec.foot ? rec.foot(page.foot) : page.foot;
       const footSent = foot === page.foot ? undefined : foot;
@@ -1630,6 +1645,7 @@ async function updatePageCss(config, args) {
       const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
       if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
       if (clean.removed.length) out.hand_removed = { message: PCSS_CLEAN_MSG, rules: clean.removed };
+      if (base !== clean.css) out.recipe_refreshed = PCSS_REFRESHED_MSG;
       if (plan.next === R && footSent === undefined) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }
