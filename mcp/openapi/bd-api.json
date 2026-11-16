@@ -12078,7 +12078,7 @@
                   },
                   "values": {
                     "type": "object",
-                    "description": "Only with recipe: the look to change. Its block names the keys."
+                    "description": "Only with recipe: the look to change, or which of the search fields a visitor must fill. Its block names the keys."
                   },
                   "user_named": {
                     "type": "boolean",

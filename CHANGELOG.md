@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.669] - 2026-11-15
+
+### Added
+- Hero search recipe value `required`: `true` for every field, `false` for none, or a list with one entry per field in order (`true`, or `null` to leave a field optional). A visitor cannot search until each required field is filled: the browser points to an empty text field, and an empty Select2 or Bootstrap-select dropdown opens its list. A plain `required` attribute is not enough there: once Select2 or Bootstrap-select draws a dropdown, the real select is hidden, and the browser blocks the search without saying why. The price slider always has a value and is not counted. The setting is saved as one tagged script in the Home page's `content_footer_html`, next to any other code there. `getDesignSettings` reads it back in `recipe_now.values.required`. Tested on Select2 category chains, Select2 with location, and Property Search (Bootstrap-select, multi-select, price slider), at 1440 and 390.
+
 ## [6.59.668] - 2026-11-15
 
 ### Fixed

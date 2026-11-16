@@ -1139,13 +1139,16 @@ async function pcssReadPage(config, seoId) {
     return { error: `No page with seo_id ${seoId}.` };
   }
   const css = rows[0].content_css;
-  return { seo_id: String(rows[0].seo_id), css: css === undefined || css === null ? "" : String(css) };
+  const foot = rows[0].content_footer_html;
+  return { seo_id: String(rows[0].seo_id), css: css === undefined || css === null ? "" : String(css), foot: foot === undefined || foot === null ? "" : String(foot) };
 }
 
-async function pcssWrite(config, seoId, css) {
-  const result = css === ""
-    ? await makeRequest(config, "PUT", "/api/v2/list_seo/update", null, { seo_id: seoId }, ["content_css"])
-    : await makeRequest(config, "PUT", "/api/v2/list_seo/update", null, { seo_id: seoId, content_css: css });
+// foot is written only when it is not undefined; an empty field is cleared, as the API ignores "".
+async function pcssWrite(config, seoId, css, foot) {
+  const send = { seo_id: seoId };
+  const clear = [];
+  for (const [k, v] of [["content_css", css], ["content_footer_html", foot]]) if (v === "") clear.push(k); else if (v !== undefined) send[k] = v;
+  const result = await makeRequest(config, "PUT", "/api/v2/list_seo/update", null, send, clear.length ? clear : undefined);
   const httpErr = pcssHttpError(result);
   if (httpErr) return { error: httpErr };
   const body = result.body;
@@ -1179,7 +1182,7 @@ function pcssRecipeState(R, cur) {
   const pool = R.rules.concat(...Object.values(R.sets));
   for (const k of Object.keys(R.values)) {
     const spec = R.values[k];
-    if (spec.set) continue;
+    if (spec.set || spec.script) continue;
     for (const r of spec.read ? pool.filter((x) => x.selector === spec.read) : pool) {
       const decl = r.css.split(";").find((d) => d.includes(spec.token));
       const b = decl && body(r);
@@ -1194,11 +1197,26 @@ function pcssRecipeState(R, cur) {
   }
   return st;
 }
+// `required` lives in the Home page's content_footer_html as one tagged script; the rest of that field is left alone.
+const PCSS_REQ_TAG = /\n?<script data-bd-recipe="hero\.search_box" data-required="([^"]*)">[\s\S]*?<\/script>/g;
+function pcssReqNow(foot) {
+  const m = new RegExp(PCSS_REQ_TAG.source).exec(String(foot || ""));
+  if (!m) return false;
+  if (m[1] === "all") return true;
+  const n = m[1].split(" ").map(Number);
+  return Array.from({ length: Math.max(...n) }, (_, i) => (n.includes(i + 1) ? true : null));
+}
+function pcssReqFoot(R, foot, req) {
+  const rest = String(foot || "").replace(PCSS_REQ_TAG, "");
+  const want = req === true ? "all" : (req || []).map((x, i) => (x === true ? i + 1 : 0)).filter(Boolean).join(" ");
+  return want ? (rest ? rest + "\n" : "") + R.values.required.script.replace("%REQ%", want) : rest;
+}
 // The recipe as the page has it now: the looks that are on and every value in use (the default where the site set none).
-function pcssRecipeNow(R, cur) {
+function pcssRecipeNow(R, cur, foot) {
   const st = pcssRecipeState(R, cur);
   const values = {};
-  for (const k of Object.keys(R.values)) if (!R.values[k].set) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token.replace(/^calc\((\d+px)\)$/, "$1");
+  if (R.values.required) values.required = pcssReqNow(foot);
+  for (const k of Object.keys(R.values)) if (!R.values[k].set && !R.values[k].script) values[k] = st.vals[k] !== undefined ? (R.values[k].px ? st.vals[k] + "px" : st.vals[k]) : R.values[k].token.replace(/^calc\((\d+px)\)$/, "$1");
   return { looks_on: Object.keys(st.on).filter((k) => st.on[k]), values };
 }
 // field_icons as a list: field N's icon replaces the glyph of its own icon, or is added where it has none, and its text
@@ -1235,10 +1253,16 @@ function pcssRecipe(args, cur) {
   const swaps = [];
   const lookOn = {};
   let fieldIcons = [];
+  let required;
   for (const k of Object.keys(vals)) {
     const spec = R.values[k];
     if (!spec) return { refused: [`values takes ${Object.keys(R.values).join(", ")}; ${String(k).slice(0, 40)} is not one of them.`] };
     const v = vals[k];
+    if (spec.script) {
+      if (v !== true && v !== false && !(Array.isArray(v) && v.length <= 8 && v.every((e) => e === true || e === false || e === null))) return { refused: [`${k} is true for every field, false for none, or a list with one entry per field in order: true, or null to leave that field optional.`] };
+      required = v;
+      continue;
+    }
     if (spec.set) {
       if (spec.fields && Array.isArray(v)) {
         const bad = `${k} is true, false or a list with one entry per field in order: a Bootstrap Icons name, {icon, color}, {color}, or null to leave that field as it is.`;
@@ -1282,6 +1306,7 @@ function pcssRecipe(args, cur) {
   for (const k of Object.keys(R.values)) {
     if (Object.prototype.hasOwnProperty.call(vals, k)) continue;
     const spec = R.values[k];
+    if (spec.script) continue;
     if (spec.set) {
       if (!st.on[k]) continue;
       lookOn[k] = true;
@@ -1302,7 +1327,7 @@ function pcssRecipe(args, cur) {
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
   const own = new Set(rules.map((r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "")));
-  return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush };
+  return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
 function pcssHeroHandRules(css, own) {
@@ -1344,6 +1369,8 @@ async function updatePageCss(config, args) {
       const R = page.css;
       const plan = pcssPlan(R, checked.entries, !rec.recipe);
       if (plan.refused) return fail("Nothing was written. " + plan.refused.join(" "), { refused: plan.refused });
+      const foot = rec.foot ? rec.foot(page.foot) : page.foot;
+      const footSent = foot === page.foot ? undefined : foot;
       const out = {
         status: "success",
         seo_id: Number(page.seo_id),
@@ -1351,24 +1378,25 @@ async function updatePageCss(config, args) {
         results: plan.results,
         chars_before: R.length,
         chars_after: plan.next.length,
+        ...(rec.foot ? { required: pcssReqNow(foot), required_saved_in: "content_footer_html" } : {}),
       };
       const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
       if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
-      if (plan.next === R) {
+      if (plan.next === R && footSent === undefined) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }
       const again = await pcssReadPage(config, page.seo_id);
       if (again.error) return fail("Nothing was written. " + again.error);
-      if (again.css !== R) continue;
+      if (again.css !== R || again.foot !== page.foot) continue;
       const slot = await acquireMutateSlot(config.apiKey);
       if (slot.error) return fail("Nothing was written. " + slot.error);
-      const wrote = await pcssWrite(config, page.seo_id, plan.next);
+      const wrote = await pcssWrite(config, page.seo_id, plan.next, footSent);
       if (wrote.error) return fail(wrote.error);
       const stored = await pcssReadPage(config, page.seo_id).catch((err) => ({ error: String((err && err.message) || err) }));
-      if (!stored.error && stored.css !== plan.next) {
-        const back = await pcssWrite(config, page.seo_id, R);
+      if (!stored.error && (stored.css !== plan.next || stored.foot !== foot)) {
+        const back = await pcssWrite(config, page.seo_id, R, footSent === undefined ? undefined : page.foot);
         const check = back.error ? { error: back.error } : await pcssReadPage(config, page.seo_id);
-        const restored = !check.error && check.css === R;
+        const restored = !check.error && check.css === R && check.foot === page.foot;
         return fail(
           "The site did not store the CSS as sent. " + (restored ? "The previous CSS was put back." : "Putting the previous CSS back FAILED - read the page's content_css and restore it by hand."),
           { rolled_back: restored, stored_equals_sent: false }
@@ -3221,7 +3249,7 @@ async function getDesignSettings(config, args) {
     const home = await dsfHomePage(get);
     const on = home ? dsPageCssOn(out.css, home.content_css) : null;
     if (on) out.page_css = on;
-    if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css);
+    if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css, home.content_footer_html);
   }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
   if ((/^section\./.test(b.id) && b.widget) || hw) {
