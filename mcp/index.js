@@ -729,7 +729,7 @@ function pcssHeroGeometry(selector, css) {
   const out = new Set();
   for (const part of pcssSplitCommas(selector)) {
     if (!part.includes("form:has(.btn_home_search)")) continue;
-    const fieldPart = /(?:input|select)\.form-control|\.select2-choice|\.dropdown-toggle/.test(part.split(/\s|>/).pop() || "") || /:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim());
+    const fieldPart = /^(?:input|select|textarea)(?![\w-])|(?:input|select)\.form-control|\.select2-choice|\.dropdown-toggle/.test(part.split(/\s|>/).pop() || "") ||/:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim());
     let q = part;
     for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
     q = q.replace(/\s*([>+~])\s*/g, "$1").trim();
@@ -753,6 +753,30 @@ function pcssHeroBarCorner(selector, css, media) {
     for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
     return /^(?:form|\.row)(?![\w-])/.test(q.replace(/\s*([>+~])\s*/g, "$1").trim().split(/[\s>+~]/).pop());
   });
+}
+// The last compound of each selector part that names the hero search form, its .row, or a direct child of either.
+function pcssHeroParts(selector) {
+  return pcssSplitCommas(selector).filter((p) => p.includes("form:has(.btn_home_search)")).map((p) => {
+    let q = p;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    q = q.replace(/\s*([>+~])\s*/g, "$1").trim();
+    const bar = /^(?:form|\.row)(?![\w-])/.test(q.split(/[\s>+~]/).pop());
+    const child = !bar && /form:has[^\s>+~]*(?:>\.row[^\s>+~]*)?>[^\s>+~]+$/.test(q);
+    return { bar, child };
+  });
+}
+// A rule that makes the bar wrap into rows (grid, flex-wrap or full-width children): the recipe still draws a one-row oval.
+function pcssHeroBarLayout(selector, decls) {
+  const props = decls.map((d) => d.split(":")[0].trim().toLowerCase());
+  const val = (p) => (decls.find((d) => d.split(":")[0].trim().toLowerCase() === p) || "").toLowerCase();
+  return pcssHeroParts(selector).some(({ bar, child }) =>
+    (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-direction|flex-flow)$/.test(p)) || /grid/.test(val("display")) || /(?<!no)wrap/.test(val("flex-wrap")))) ||
+    (child && props.some((p) => /^(?:grid-(?:column|row|area)|order)$/.test(p) || ((p === "flex" || p === "flex-basis" || p === "width") && /100%/.test(val(p))))));
+}
+// A rule on the bar whose corners are all 28px or less.
+function pcssHeroBarRadius(selector, decls) {
+  const r = decls.filter((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d));
+  return r.length > 0 && pcssHeroParts(selector).some((x) => x.bar) && r.every((d) => !Array.from(d.matchAll(/(\d*\.?\d+)(px|%|r?em|v[wh])/gi)).some((x) => (x[2] === "px" ? Number(x[1]) > 28 : /em$/i.test(x[2]) ? Number(x[1]) > 1.75 : Number(x[1]) > 0)));
 }
 // A hand rule on the hero search ends the part that names the bar, a field or the button with this: 6 ids, more than any
 // recipe rule carries (the battery checks it), so the hand rule wins whatever order the rules sit in.
@@ -908,6 +932,12 @@ function pcssValidate(args, lim) {
     }
     seen.add(key);
     entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after, whole: r.whole === true || r.whole === "true" });
+  }
+  if (!lim && !refused.length) {
+    const wraps = entries.find((e) => pcssHeroBarLayout(e.selector, e.decls));
+    if (wraps && !entries.some((e) => pcssHeroBarRadius(e.selector, e.decls))) {
+      refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). Send in the same call a rule on the bar (#first_container form:has(.btn_home_search)${PCSS_HERO_OWN}) with border-radius of 28px or less, 0 for square. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
+    }
   }
   if (refused.length) return { refused: Array.from(new Set(refused)) };
   return { entries };

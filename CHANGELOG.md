@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.668] - 2026-11-15
+
+### Fixed
+- Hero search recipe: the text of the fields and the button, and the field and button icons, grow with `height`. At the default 56px they are the sizes they were (16px text, 18px and 20px icons); at 72px the text is about 21px; text never goes under 16px, so phones do not zoom into the fields. A request for bigger inputs raised only the fields' height by hand, leaving the button at 48px and the text at 16px.
+- `updatePageCss` `rules`, hero search: a rule that names the fields as bare `input`, `select` or `textarea` is checked like one naming `.form-control`, so a height set there is refused and points to `height`.
+
+### Added
+- Hero search recipe look `button_below`: the fields share the top row and the search button takes its own full-width row under them, as a card with corners of at most 28px, the fields' and button's corners following it, and the same space between rows. A request for "the inputs side by side with the button below" was built by hand with a grid on the search form: the button stayed half width, and the two-row form kept the one-row oval's 999px corners.
+
+### Changed
+- `updatePageCss` `rules`, hero search: a rule that lays the search out in more than one row (a grid or wrapping on the form, or a full-width or reordered field or button column) is refused unless the same call gives the form corners of 28px or less, or 0. Only a single row with the button in it is drawn as an oval; the refusal names `button_below` and the vertical layout.
+
 ## [6.59.667] - 2026-11-15
 
 ### Fixed
