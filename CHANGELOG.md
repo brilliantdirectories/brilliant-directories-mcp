@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.676] - 2026-11-16
+
+### Fixed
+- A homepage with two videos: `updateWidget` that changes the video code of a row widget (iframe, video, YouTube or Vimeo rules or markup) while the hero has a video of its own is refused before anything is written. The reply names both widgets and where each is, says when the hero video is built by hand (no cover on phones, YouTube's player showing) and points to `getDesignSettings {block: "hero.background"}` to rebuild it, and asks which video the user means when they did not say. `own_video: true` sends the save anyway. On 145, "the background video has black bars on phones" was fixed three times in the row 1 widget while the hero video stayed letterboxed.
+- Hero search hand rules: `updatePageCss` refuses a rule that sets the search button's `width` under 992px (the recipe sizes the stacked button to the bar with an 8px margin; a width of 100% pushed it 8px past the bar on 145), and a rule that sets corners on the bar, a field or the button under 992px (the recipe rounds them to match the desktop look; corners at every width come from `values.radius`). A corner rule the user asked for goes through with `user_named: true`. Both kinds are listed in `hand_rules` on the `hero.search_box` read and on recipe writes.
+- The refusal for a hero search laid out in more than one row no longer suggests "0 for square": its bar radius rule goes inside `@media (min-width: 992px)`, since the recipe already rounds the stacked bar. On 145 that hint produced square corners on phones under a pill on desktop.
+
 ## [6.59.675] - 2026-11-15
 
 ### Fixed

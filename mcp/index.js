@@ -773,6 +773,34 @@ function pcssHeroBarLayout(selector, decls) {
     (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-direction|flex-flow)$/.test(p)) || /grid/.test(val("display")) || /(?<!no)wrap/.test(val("flex-wrap")))) ||
     (child && props.some((p) => /^(?:grid-(?:column|row|area)|order)$/.test(p) || ((p === "flex" || p === "flex-basis" || p === "width") && /100%/.test(val(p))))));
 }
+// Under 992px the recipe rounds the stacked bar, fields and button to match the desktop look (values.radius sets them at
+// every width): a hand corner there squares or reshapes them on phones and tablets only.
+function pcssHeroCorner(selector, decls, media) {
+  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
+  if (m && Number(m[1]) >= 992) return false;
+  if (!decls.some((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d))) return false;
+  return pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    if (/:is\([^()]*(?:\.form-control|\.select2-choice|\.dropdown-toggle)[^()]*\)[^\s>+~]*$/.test(part.trim())) return true;
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    const last = q.replace(/\s*([>+~])\s*/g, "$1").trim().split(/[\s>+~]/).pop();
+    return /^(?:form|\.row)(?![\w-])|\.btn_home_search(?![\w-])|^(?:input|select|textarea)(?![\w-])|\.form-control|\.select2-choice|\.dropdown-toggle/.test(last);
+  });
+}
+// Under 992px the recipe sizes the stacked button as calc(100% - 16px) with an 8px margin: a hand width on the button
+// that reaches there pushes it past the bar's edge.
+function pcssHeroBtnWidth(selector, decls, media) {
+  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
+  if (m && Number(m[1]) >= 992) return false;
+  if (!decls.some((d) => d.split(":")[0].trim().toLowerCase() === "width")) return false;
+  return pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    let q = part;
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    return /\.btn_home_search(?![\w-])/.test(q.replace(/\s*([>+~])\s*/g, "$1").trim().split(/[\s>+~]/).pop());
+  });
+}
 // A rule that sets hero search fields side by side (grid columns on the bar, or a field narrower than the row) and reaches
 // phones: under 768px the recipe stacks every field and the button full width.
 function pcssHeroPhoneCols(selector, decls, media) {
@@ -950,9 +978,13 @@ function pcssValidate(args, lim) {
   if (!lim && !refused.length) {
     const cols = entries.find((e) => e.decls.length && pcssHeroPhoneCols(e.selector, e.decls, e.media));
     if (cols) refused.push(`\`${cols.selector.slice(0, 160)}\` puts the hero search fields side by side on phones as well: under 768px the search recipe stacks every field and the button full width, one per row. Send the same rule inside media "@media (min-width: 768px)" (or 992px), or use the recipe: button_below puts the fields in one row over a full-width button.`);
+    const bw = entries.find((e) => e.decls.length && pcssHeroBtnWidth(e.selector, e.decls, e.media));
+    const corner = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroCorner(e.selector, e.decls, e.media));
+    if (corner) refused.push(`\`${corner.selector.slice(0, 160)}\` sets the corners of the hero search bar, a field or the button under 992px, where the search recipe already rounds them to match the desktop look. The corners at every width come from the recipe's radius value (updatePageCss {recipe: "hero.search_box", values: {radius}}; 0 is square). Send a corner rule here only when the user asked for a different look on phones, with user_named: true.`);
+    if (bw) refused.push(`\`${bw.selector.slice(0, 160)}\` sets the hero search button's width under 992px, where the search recipe already sizes it to the bar (calc(100% - 16px) with an 8px margin): the button would stick out past the bar. Leave width out, or send the rule inside media "@media (min-width: 992px)".`);
     const wraps = entries.find((e) => pcssHeroBarLayout(e.selector, e.decls));
     if (wraps && !entries.some((e) => pcssHeroBarRadius(e.selector, e.decls))) {
-      refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). Send in the same call a rule on the bar (#first_container form:has(.btn_home_search)${PCSS_HERO_OWN}) with border-radius of 28px or less, 0 for square. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
+      refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). Send in the same call, inside media "@media (min-width: 992px)", a rule on the bar (#first_container form:has(.btn_home_search)${PCSS_HERO_OWN}) with border-radius of 28px or less; under 992px the recipe already rounds the stacked bar. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
     }
   }
   if (refused.length) return { refused: Array.from(new Set(refused)) };
@@ -1345,7 +1377,7 @@ function pcssRecipe(args, cur) {
   const own = new Set(rules.map((r) => pcssNorm(r.selector, false) + "|" + (r.media ? pcssNorm(r.media, true) : "")));
   return { args: { rules }, recipe: b.id, own, looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
-const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
+const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack, or set the button's width where it stacks, which pushes it past the bar, or set corners where it stacks, which the recipe already rounds to match the desktop look (keep those only when the user asked for that look on phones). Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
 function pcssHeroHandRules(css, own) {
   const scan = pcssScan(String(css || ""));
@@ -1355,7 +1387,7 @@ function pcssHeroHandRules(css, own) {
     if (own.has(r.sel + "|" + r.at)) continue;
     const selector = String(css).slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
     const body = String(css).slice(r.bodyStart, r.bodyEnd);
-    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at) || pcssHeroPhoneCols(selector, pcssDecls(body), r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
+    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at) || pcssHeroPhoneCols(selector, pcssDecls(body), r.at) || pcssHeroBtnWidth(selector, pcssDecls(body), r.at) || pcssHeroCorner(selector, pcssDecls(body), r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
   }
   return out;
 }
@@ -2795,6 +2827,63 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
   return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
+// Every site widget name the homepage shows, nested ones included, mapped to where: "hero" (the hero widget and its hooks)
+// or "row N".
+function dsfHomeWalk(ds, got, ws, home) {
+  const at = new Map();
+  const want = (name, where) => {
+    if (!name || at.has(name)) return;
+    at.set(name, where);
+    const w = ws.byName.get(name);
+    if (w) for (const n of dsfRefs(w.widget_data)) want(n, where);
+  };
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n, "hero");
+  for (const r of dsDirectory(ds, got).homepage.rows) {
+    const m = /^content\.(\d+)$/.exec(r.block || "");
+    const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
+    const where = `row ${r.row}`;
+    if (m && m[1] !== "1") want(dsfCcRef(got.values[`homepage_content_${m[1]}`]).name, where);
+    else if (m && home) for (const n of dsfRefs(home.content)) want(n, where);
+    else if (b && b.widget) want(dsExpand(ds.m, b.widget), where);
+  }
+  return at;
+}
+// A homepage can show two videos: the hero's and a row widget's own. A save that changes the video code of a row widget
+// while the hero has a video stops and names both: "the background video" was fixed three times in the wrong one on 145.
+const wdgVidBits = (o) => ["widget_data", "widget_style", "widget_javascript"].map((f) => (o && typeof o[f] === "string" ? o[f].split("}").filter((c) => /iframe|video|youtube|vimeo/i.test(c)).join("}") : "")).join("\u0001");
+async function wdgVideoWhich(config, tool, args, orig) {
+  if (args.own_video === true || tool !== "updateWidget" || !/^\d+$/.test(String(args.widget_id))) return null;
+  if (!["widget_data", "widget_style", "widget_javascript"].some((f) => typeof args[f] === "string")) return null;
+  let o = orig;
+  if (!o || !o.widget_name) {
+    const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
+    o = r && r.body && Array.isArray(r.body.message) ? r.body.message[0] : null;
+    if (!o) return null;
+  }
+  if (wdgVidBits(Object.assign({}, o, args)) === wdgVidBits(o)) return null;
+  let ds;
+  try { ds = dsLoad(); } catch { return null; }
+  const got = await dsValues(config, ds);
+  if (!got || got.error) return null;
+  const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
+  const [ws, home] = await Promise.all([dsfSiteWidgets(dsCacheKey(config), get), dsfHomePage(get)]);
+  if (!ws || !ws.byName) return null;
+  const at = dsfHomeWalk(ds, got, ws, home);
+  const name = String(o.widget_name);
+  const where = at.get(name);
+  if (!where || where === "hero") return null;
+  let hv = null;
+  for (const [n, w] of at) {
+    const x = w === "hero" && n !== name ? ws.byName.get(n) : null;
+    if (x && ["widget_data", "widget_javascript"].some((f) => vidKind(x[f]))) { hv = x; break; }
+  }
+  if (!hv) return null;
+  const id = Number(hv.widget_id);
+  const hand = !["widget_data", "widget_javascript"].some((f) => /hero-bg-video/.test(String(hv[f] || "")));
+  return `Nothing was written. The homepage has two videos: the hero video at the top, from widget ${id} "${hv.widget_name}", and the video in widget ${Number(args.widget_id)} "${name}", in ${where} below the hero. This changes the one in ${where}. `
+    + (hand ? `The hero video is built by hand: it does not cover the hero on phones and shows YouTube's player. Rebuild it in widget ${id} from getDesignSettings {block: "hero.background"}, which covers the hero at every size, hides the player and can play on computers only. ` : `The hero video is changed in widget ${id}, with the markup from getDesignSettings {block: "hero.background"}. `)
+    + `If the user said the hero, the top of the page or the background video, change widget ${id}. If they did not say which, ask them. To change this widget's video anyway, send the same call with own_video: true.`;
+}
 // A homepage can show two forms: the hero search and a widget's own (a lead form, say). "Make the location field required"
 // fits both, so a save that makes more fields required in a homepage widget while the hero shows a search stops and names both.
 // Counted: the required attribute on a field, or a script setting it; a "required" class, label or sentence is not.
@@ -2822,22 +2911,8 @@ async function wdgRequiredWhich(config, tool, args, orig) {
   const get = (path, query) => makeRequest(config, "GET", path, query, null).catch(() => null);
   const [ws, home] = await Promise.all([dsfSiteWidgets(dsCacheKey(config), get), dsfHomePage(get)]);
   if (!ws || !ws.byName) return null;
-  const seen = new Set();
-  const want = (name) => {
-    if (!name || seen.has(name)) return;
-    seen.add(name);
-    const w = ws.byName.get(name);
-    if (w) for (const n of dsfRefs(w.widget_data)) want(n);
-  };
-  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
-  for (const r of dsDirectory(ds, got).homepage.rows) {
-    const m = /^content\.(\d+)$/.exec(r.block || "");
-    const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
-    if (m && m[1] !== "1") want(dsfCcRef(got.values[`homepage_content_${m[1]}`]).name);
-    else if (m && home) for (const n of dsfRefs(home.content)) want(n);
-    else if (b && b.widget) want(dsExpand(ds.m, b.widget));
-  }
-  if (!names.some((n) => seen.has(n))) return null;
+  const at = dsfHomeWalk(ds, got, ws, home);
+  if (!names.some((n) => at.has(n))) return null;
   const forms = [...new Set((String(after.widget_data || "").match(/\[form=([\w-]+)\]/gi) || []).map((x) => x.slice(6, -1)))];
   const fl = forms.map((f) => `"${f}"`).join(", ");
   const label = `widget ${args.widget_id ? Number(args.widget_id) + " " : ""}"${names[names.length - 1]}"`;
@@ -10305,7 +10380,10 @@ async function main() {
         if (bs) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: "Nothing was written. " + bs }) }], isError: true };
         const which = await wdgRequiredWhich(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
         if (which) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: which }) }], isError: true };
+        const vwhich = await wdgVideoWhich(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
+        if (vwhich) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: vwhich }) }], isError: true };
         delete args.own_form;
+        delete args.own_video;
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique

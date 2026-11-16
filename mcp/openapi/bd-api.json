@@ -5698,6 +5698,10 @@
                   "customize": {
                     "type": "boolean"
                   },
+                  "own_video": {
+                    "type": "boolean",
+                    "description": "true: the video change is for this widget's own video, not the homepage hero video"
+                  },
                   "own_form": {
                     "type": "boolean",
                     "description": "true: the required being added belongs to this widget's own form, not the homepage hero search"
