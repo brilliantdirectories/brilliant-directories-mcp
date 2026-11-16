@@ -2555,6 +2555,7 @@ async function dsfFind(ds, got, text, key, get) {
   const ccRow = placed.get("content.1");
   if (home) for (const n of dsfRefs(home.content)) want(n, ccRow === undefined ? null : ccRow, "content.1", undefined, 0);
   for (const n of [String(values.custom_30 || ""), ...DS_EXTRA]) if (n && heroShown && (!ws.byName || ws.byName.has(n))) want(n, null, "hero.cta", undefined, 0);
+  for (const x of dsHomeSlots(ds, got)) if (!ws.byName || ws.byName.has(x.name)) want(x.name, x.row === undefined ? null : x.row, x.block, undefined, 0);
   const bdw = [];
   for (const x of secRows) {
     if (ws.byName && ws.byName.has(x.name)) want(x.name, x.row, x.block, undefined, 0);
@@ -2572,7 +2573,7 @@ async function dsfFind(ds, got, text, key, get) {
     if (x.via) base.via = x.via;
     for (const f of DSF_CODE) if (x.w[f]) sources.push({ hit: Object.assign({}, base, { field: f }), raw: String(x.w[f]), markup: f === "widget_data", kind: f === "widget_data" ? "text" : "code", shown, widget: x });
   };
-  for (const x of widgets) addWidget(x, x.row !== null || x.block === "hero.cta");
+  for (const x of widgets) addWidget(x, x.row !== null || /^hero\./.test(x.block));
   if (ws.byName) searched.push(`${widgets.length} site widgets on the homepage (rows, hero hooks, nested)`);
   else searched.push("site widgets: the widget list could not be read");
   for (const x of bdw) addWidget(x, true);
@@ -2711,6 +2712,8 @@ async function dsfFind(ds, got, text, key, get) {
   for (const h of out.hits) if (h.widget !== undefined && !h.in) h.in = /^hero\./.test(h.block || "") ? "hero" : h.row !== null && h.row !== undefined ? `row ${h.row}, below the hero` : undefined;
   const heroKind = dsMeta(ds, values, "custom_30", "kind");
   if (heroShown && (heroKind === "member_search" || heroKind === "post_search") && DSF_SEARCH_WORDS.test(q)) out.hero_search = `The search form in the hero, at the top of the homepage, is "${dsRead(ds, values, "custom_30")}" (custom_30). Its fields, button, look, required fields and the hand-written rules that break it: getDesignSettings {block: "hero.search_box"}. A hit "in" a row is a different section lower on the page.`;
+  const sbs = dsHomeSidebars(ds, got);
+  if (sbs.length) out.not_searched = sbs.map((x) => `sidebar "${x.sidebar}" in row ${x.row} (${x.block}): the API does not list a sidebar's widgets; the owner sees them in the admin Sidebar Manager`);
   out.searched = searched;
   if (skipped.length) out.skipped = skipped;
   if (missing.length) out.missing_widgets = missing;
@@ -3064,7 +3067,7 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
     else for (const f of ["widget_data", "widget_javascript"]) if (vidKind(w[f])) found.push(`widget ${Number(w.widget_id)} "${name}" ${f} (${vidKind(w[f])})`);
     for (const n of dsfRefs(w.widget_data)) want(n);
   };
-  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA, ...dsHomeSlots(ds, got).map((x) => x.name)]) want(n);
   for (const r of dsDirectory(ds, got).homepage.rows) {
     const m = /^content\.(\d+)$/.exec(r.block || "");
     const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
@@ -3082,6 +3085,35 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   if (!has) return { other: `This save took a video out, and an autoplaying video is still on the homepage: ${found.slice(0, 4).join("; ")}. It still loads and plays.` };
   return { other: `Another autoplaying video is already on the homepage: ${found.slice(0, 4).join("; ")}. Both load and play. If the video just saved takes its place, remove that one.` };
 }
+// Every homepage setting BD prints through replaceChars, which renders a [widget=] placed in it, with when it prints
+// (widgets 1335, 2041, 2461, 1381). Each widget named there is a homepage widget like a section's.
+const DS_MSG_LINK = "Bootstrap Theme - Homepage Search - Hero Message with Link";
+const DS_MSG_BUTTONS = "Bootstrap Theme - Homepage Search - Hero Message with Button Links";
+function dsHomeSlots(ds, got) {
+  const v = (got && got.values) || {};
+  const hero = String(v.custom_30 || "");
+  const out = [];
+  const add = (field, block, where, row) => { for (const name of dsfRefs(v[field])) out.push(Object.assign({ name, block, where }, row === undefined ? {} : { row })); };
+  if (hero && hero !== "Blank" && !/Map/.test(hero)) {
+    add("custom_130", "hero.primary", "hero");
+    if (hero === "Hide Homepage Hero Search" || hero === DS_MSG_LINK || hero === DS_MSG_BUTTONS) add("custom_131", "hero.primary", "hero");
+    if (hero === DS_MSG_LINK) add("custom_266", "hero.cta.text", "hero");
+    if (String(v.custom_216) !== "12" && String(v.custom_25) !== "center") add("secondary_hero_content_homepage", "hero.secondary", "hero second column");
+  }
+  const about = dsDirectory(ds, got).homepage.rows.find((r) => r.block === "section.about-website-and-join-offer");
+  if (about && v.custom_153 !== undefined && String(v.custom_153 || "") !== "") for (const fld of ["custom_155", "custom_156"]) add(fld, about.block, `row ${about.row}`, about.row);
+  return out;
+}
+// Sidebars a homepage section prints. The API does not say which widgets a sidebar holds, so these are named, not read.
+function dsHomeSidebars(ds, got) {
+  const v = (got && got.values) || {};
+  const out = [];
+  for (const r of dsDirectory(ds, got).homepage.rows) {
+    const n = r.block === "section.events-calendar" ? (v.homepage_calendarSidebarToggle ? v.homepage_calendarSidebar : "") : r.block === "section.recent-blog-articles-with-sidebar" ? v.custom_269 : r.block === "section.recent-articles-with-sidebar" ? v.custom_271 : "";
+    if (n && String(n) !== "0") out.push({ sidebar: String(n), block: r.block, row: r.row });
+  }
+  return out;
+}
 // Every site widget name the homepage shows, nested ones included, mapped to where: "hero" (the hero widget and its hooks)
 // or "row N".
 function dsfHomeWalk(ds, got, ws, home) {
@@ -3093,6 +3125,7 @@ function dsfHomeWalk(ds, got, ws, home) {
     if (w) for (const n of dsfRefs(w.widget_data)) want(n, where);
   };
   for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n, "hero");
+  for (const x of dsHomeSlots(ds, got)) want(x.name, x.where);
   for (const r of dsDirectory(ds, got).homepage.rows) {
     const m = /^content\.(\d+)$/.exec(r.block || "");
     const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;
@@ -3116,6 +3149,7 @@ async function wdgHomeWhere(config, name) {
   const where = dsfHomeWalk(ds, got, ws, home).get(name);
   if (!where) return null;
   if (where === "hero") return "In the hero, at the top of the homepage.";
+  if (where === "hero second column") return "In the hero's second column (Secondary Hero Content, secondary_hero_content_homepage), beside the hero title and search at the top of the homepage.";
   const kind = dsMeta(ds, got.values, "custom_30", "kind");
   const hero = dsRead(ds, got.values, "custom_30");
   const w = ws.byName.get(name);
@@ -4436,7 +4470,7 @@ async function udsHomeCss(config, ds, got) {
     if (inline) sources.push({ where: { widget_id: Number(w.widget_id), widget: name, field: "widget_data" }, css: inline });
     for (const n of dsfRefs(w.widget_data)) want(n);
   };
-  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA]) want(n);
+  for (const n of [String(got.values.custom_30 || ""), ...DS_EXTRA, ...dsHomeSlots(ds, got).map((x) => x.name)]) want(n);
   for (const r of dsDirectory(ds, got).homepage.rows) {
     const m = /^content\.(\d+)$/.exec(r.block || "");
     const b = !m && r.block ? ds.m.blocks.find((x) => x.id === r.block) : null;

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.684] - 2026-11-17
+
+### Fixed
+- Every homepage setting BD prints through `replaceChars` (which renders a `[widget=…]` placed in it) is now part of the homepage map: the hero title (`custom_130`), the subtitle (`custom_131`, in the Hide Search and both Message hero types), the Custom Content text editor (`custom_266`, Hero Message with Link), the hero's second column (`secondary_hero_content_homepage`) and the About Website and Join Offer text (`custom_155`, `custom_156`). A widget placed in any of them was skipped by the homepage `find`, the "where on the homepage" read-back, the check for another video still on the homepage, and the list of CSS that styles the homepage. On 60842 the owner asked to "remove the video on the left"; the video sat in a widget in the second column, the assistant could only see the background video, and removed that one. Each slot counts only when BD prints it (widgets 1335, 2041, 2461, 1381).
+- `find` names the sidebars a homepage section prints (events calendar, Recent Blog Articles with Sidebar, Recent Articles with Sidebar) under `not_searched`: the API does not list a sidebar's widgets.
+
+Proven on 60842 with a marker widget in each slot: every marker the homepage rendered, `find` returned in the right block, shown; a marker in a heading BD prints as plain text was neither rendered nor reported.
+
 ## [6.59.683] - 2026-11-17
 
 ### Fixed
