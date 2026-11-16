@@ -773,6 +773,20 @@ function pcssHeroBarLayout(selector, decls) {
     (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-direction|flex-flow)$/.test(p)) || /grid/.test(val("display")) || /(?<!no)wrap/.test(val("flex-wrap")))) ||
     (child && props.some((p) => /^(?:grid-(?:column|row|area)|order)$/.test(p) || ((p === "flex" || p === "flex-basis" || p === "width") && /100%/.test(val(p))))));
 }
+// A rule that sets hero search fields side by side (grid columns on the bar, or a field narrower than the row) and reaches
+// phones: under 768px the recipe stacks every field and the button full width.
+function pcssHeroPhoneCols(selector, decls, media) {
+  const m = /min-width\s*:\s*(\d+)px/i.exec(media || "");
+  if (m && Number(m[1]) >= 768) return false;
+  const val = (p) => (decls.find((d) => d.split(":")[0].trim().toLowerCase() === p) || "").slice(p.length + 1).replace(/!important/i, "").trim().toLowerCase();
+  const cols = val("grid-template-columns");
+  const rep = /repeat\(\s*(\d+)/.exec(cols);
+  let flat = cols;
+  for (let i = 0; i < 5; i++) flat = flat.replace(/\([^()]*\)/g, "");
+  const many = rep ? Number(rep[1]) > 1 : !/repeat\(\s*auto-/.test(cols) && flat.split(/\s+/).filter(Boolean).length > 1;
+  const part = ["width", "flex-basis", "flex", "max-width"].some((p) => { const x = /(\d*\.?\d+)%/.exec(val(p)); return x && Number(x[1]) > 0 && Number(x[1]) < 100; });
+  return pcssHeroParts(selector).some(({ bar, child }) => (bar && many) || (child && part));
+}
 // A rule on the bar whose corners are all 28px or less.
 function pcssHeroBarRadius(selector, decls) {
   const r = decls.filter((d) => /^border(?:-[a-z]+)*-radius\s*:/i.test(d));
@@ -934,6 +948,8 @@ function pcssValidate(args, lim) {
     entries.push({ selector, media, at: pcssNorm(media, true), sel: pcssNorm(selector, false), decls: pcssDecls(css), hasAfter, after, whole: r.whole === true || r.whole === "true" });
   }
   if (!lim && !refused.length) {
+    const cols = entries.find((e) => e.decls.length && pcssHeroPhoneCols(e.selector, e.decls, e.media));
+    if (cols) refused.push(`\`${cols.selector.slice(0, 160)}\` puts the hero search fields side by side on phones as well: under 768px the search recipe stacks every field and the button full width, one per row. Send the same rule inside media "@media (min-width: 768px)" (or 992px), or use the recipe: button_below puts the fields in one row over a full-width button.`);
     const wraps = entries.find((e) => pcssHeroBarLayout(e.selector, e.decls));
     if (wraps && !entries.some((e) => pcssHeroBarRadius(e.selector, e.decls))) {
       refused.push(`\`${wraps.selector.slice(0, 160)}\` lays the hero search out in more than one row, but the search recipe draws the bar as a one-row oval (corners up to 999px). Send in the same call a rule on the bar (#first_container form:has(.btn_home_search)${PCSS_HERO_OWN}) with border-radius of 28px or less, 0 for square. A recipe look may already do it: button_below (the button on its own row under the fields), or Search Box Layout custom_29 vertical (one field per row).`);
@@ -1338,7 +1354,7 @@ function pcssHeroHandRules(css, own) {
     if (own.has(r.sel + "|" + r.at)) continue;
     const selector = String(css).slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
     const body = String(css).slice(r.bodyStart, r.bodyEnd);
-    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
+    if (pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, r.at) || pcssHeroPhoneCols(selector, pcssDecls(body), r.at)) out.push(r.at ? { selector, media: r.at } : { selector });
   }
   return out;
 }
@@ -1381,7 +1397,7 @@ async function updatePageCss(config, args) {
         ...(rec.foot ? { required: pcssReqNow(foot), required_saved_in: "content_footer_html" } : {}),
       };
       const hand = pcssHeroHandRules(plan.next, rec.recipe ? rec.own : pcssRecipeKeys());
-      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
+      if (hand.length) out.hand_rules = { message: "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".", rules: hand };
       if (plan.next === R && footSent === undefined) {
         return { ...out, written: false, message: "Nothing to change: the page's CSS already matches.", notes: PCSS_NOTES };
       }
@@ -2802,7 +2818,7 @@ async function vidSourceDead(args, orig) {
   }));
   return bad.find(Boolean) || null;
 }
-const VID_BG_NOTE = "A background video stays under the content when its layer is position:absolute; inset:0; z-index:0; overflow:hidden inside a position:relative section, the tint is its own layer above it, and the content is position:relative with a higher z-index. It fills the section when an iframe has position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:177.78vh; min-width:100%; height:56.25vw; min-height:100%, and a <video> has width:100%; height:100%; object-fit:cover. Behind the homepage hero: getDesignSettings {block: \"hero.background\"} gives the widget markup that works as written.";
+const VID_BG_NOTE = "A background video stays under the content when its layer is position:absolute; inset:0; z-index:0; overflow:hidden inside a position:relative section, the tint is its own layer above it, and the content is position:relative with a higher z-index. It fills the section at any height when the layer also has container-type:size and an iframe has position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:max(100cqw,177.78cqh); height:max(100cqh,56.25cqw); max-width:none (sizes in vh and vw alone leave black bands when the section is shaped unlike the screen), and a <video> has width:100%; height:100%; object-fit:cover. Behind the homepage hero: getDesignSettings {block: \"hero.background\"} gives the widget markup that works as written.";
 function vidIsBackground(args) {
   return YT_FIELDS.some((f) => { const v = args && typeof args[f] === "string" ? args[f] : ""; return !!vidKind(v) && (/controls=0|background=1/i.test(v) || /<video\b[^>]*\bautoplay\b(?![^>]*\bcontrols\b)/i.test(v)); });
 }

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.671] - 2026-11-15
+
+### Fixed
+- `updatePageCss` `rules`, hero search: a rule that puts the fields side by side (grid columns on the form, or a field column narrower than 100%) and reaches phones is refused; under 768px the recipe stacks every field and the button full width. The refusal says to send the rule inside `@media (min-width: 768px)` or to use `button_below`. Such rules already on the page are listed in `hand_rules` on every write, with their removal. A two-column grid written by hand with no breakpoint kept a phone search in two cramped columns with a half-width button.
+- The note returned when a background video is saved now gives the sizing that covers the section at any height (`container-type:size` on the layer and `max(100cqw, 177.78cqh)` by `max(100cqh, 56.25cqw)` on the iframe), the same as the `hero.background` markup. The old `177.78vh` / `56.25vw` sizing left black bands on phones.
+
 ## [6.59.670] - 2026-11-15
 
 ### Fixed
