@@ -998,7 +998,72 @@ function pcssHeroClip(css) {
 }
 
 // Checks 1 to 6 of the tool's contract. Returns { entries } or { refused: [messages] }.
+// The hero search form as the homepage prints it: its parts in order (field_icons entry N styles part N), each part's
+// fields, and whether the part's own markup draws an icon. null when the page or the form cannot be read.
+function pcssHeroFields(html) {
+  const s = String(html || "");
+  const tagRe = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/g;
+  const VOID = /^(?:input|img|br|hr|meta|link|source|area|base|col|embed|wbr|track|param)$/i;
+  const cls = (a) => ((/\bclass\s*=\s*["']([^"']*)["']/i.exec(a) || [])[1] || "").split(/\s+/);
+  const kids = (h) => {
+    const out = [];
+    let d = 0;
+    let cur = null;
+    let t;
+    const re = new RegExp(tagRe.source, "g");
+    while ((t = re.exec(h))) {
+      const name = t[2].toLowerCase();
+      if (t[1] !== "/") {
+        if (d === 0) cur = { name, attrs: t[3], start: t.index };
+        if (VOID.test(name) || /\/\s*$/.test(t[3])) { if (d === 0) { cur.end = re.lastIndex; out.push(cur); cur = null; } } else d++;
+      } else if (d > 0) {
+        d--;
+        if (d === 0 && cur) { cur.end = re.lastIndex; out.push(cur); cur = null; }
+      }
+    }
+    return out.map((k) => Object.assign(k, { html: h.slice(k.start, k.end) }));
+  };
+  const forms = [];
+  const formRe = /<form\b[^>]*>/gi;
+  let f;
+  while ((f = formRe.exec(s))) {
+    const end = s.indexOf("</form>", f.index);
+    if (end < 0) break;
+    const body = s.slice(f.index + f[0].length, end);
+    formRe.lastIndex = end;
+    if (!body.includes("btn_home_search")) continue;
+    let parts = kids(body);
+    const row = parts.find((k) => cls(k.attrs).includes("row"));
+    if (row) parts = kids(row.html.slice(row.html.indexOf(">") + 1));
+    parts = parts.filter((k) => { const c = cls(k.attrs); return !/^(?:script|style)$/.test(k.name) && !c.includes("clearfix") && !(c.includes("hidden-xs") && c.includes("hidden-sm")) && !(k.name === "input" && /type\s*=\s*["']hidden/i.test(k.attrs)); });
+    forms.push(parts.map((k, i) => {
+      const h = k.html;
+      if (h.includes("btn_home_search")) return `${i + 1}: the search button`;
+      const ctl = Array.from(h.matchAll(/<(input|select|textarea)\b([^>]*)>/gi)).filter((c) => !/type\s*=\s*["']hidden/i.test(c[2]));
+      const names = ctl.map((c) => (/\bname\s*=\s*["']([^"']+)/i.exec(c[2]) || [])[1]).filter(Boolean);
+      const ph = ctl.map((c) => (/\bplaceholder\s*=\s*["']([^"']+)/i.exec(c[2]) || [])[1]).filter(Boolean);
+      const opt = (/<option\b[^>]*>\s*([^<]{1,60})/i.exec(h) || [])[1];
+      const ttl = (/<select\b[^>]*\btitle\s*=\s*["']([^"']+)/i.exec(h) || [])[1];
+      const label = (ph.length ? ph.join(" / ") : ttl || opt || names[0] || "field").trim();
+      const bare = h.replace(/<select\b[\s\S]*?<\/select>/gi, "");
+      const own = /<(?:i|span)\b[^>]*class\s*=\s*["'][^"']*(?:\bbi-|\bfa-|glyphicon-)|<svg\b/i.test(bare.replace(/<[^>]*class\s*=\s*["'][^"']*\b(?:input-group-addon|clear_content|fill_location)\b[\s\S]*?<\/(?:span|div|a|button)>/gi, ""));
+      const addon = /input-group-addon/.test(h);
+      const slider = /_slider/.test(h);
+      return `${i + 1}: ${label}${names.length ? " (" + names.join(", ") + ")" : ""}${slider ? ", a slider: no icon" : own ? ", draws its own icon in the search widget's markup" : addon ? ", BD's icon" : ""}`;
+    }));
+  }
+  return forms.length ? forms : null;
+}
+async function pcssHomeHtml(base) {
+  try {
+    const r = await fetch(String(base || "").replace(/\/+$/, "") + "/", { signal: AbortSignal.timeout(8000), headers: { "user-agent": "brilliant-directories-mcp" } });
+    return r.ok ? await r.text() : null;
+  } catch {
+    return null;
+  }
+}
 function pcssValidate(args, lim) {
+  if (!lim && args && args.recipe_undo === true) lim = { rules: 200, selector: 600 };
   const maxRules = lim ? lim.rules : PCSS_MAX_RULES, maxSel = lim ? lim.selector : PCSS_MAX_SELECTOR;
   const refused = [];
   const rulesIn = args && Array.isArray(args.rules) ? args.rules : null;
@@ -1341,7 +1406,7 @@ const PCSS_COLOUR = /^(?:rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*
 // What the page's CSS already holds for a recipe: the looks that are on, the values the site set, a chosen button icon.
 // A call changes only what it names, so asking for one look never undoes the others.
 function pcssRecipeState(R, cur) {
-  const st = { on: {}, vals: {}, icon: null };
+  const st = { on: {}, vals: {}, icon: null, fill: false };
   const scan = pcssScan(String(cur || ""));
   if (!scan || scan.error) return st;
   const bodies = new Map();
@@ -1352,6 +1417,7 @@ function pcssRecipeState(R, cur) {
     if (!spec.set) continue;
     const set = R.sets[spec.set] || [];
     st.on[k] = set.some((r) => (body(r) || "").trim() !== "");
+    if (spec.fill) st.fill = (R.sets[spec.fill] || []).some((r) => (body(r) || "").trim() !== "");
     if (spec.icons && st.on[k]) for (const r of set) { const m = r.css.includes("\\f52a") && /content:\s*"\\([0-9a-f]{4,5})"/i.exec(body(r) || ""); if (m) st.icon = m[1].toLowerCase(); }
   }
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1439,6 +1505,7 @@ function pcssRecipe(args, cur) {
   const lookOn = {};
   let fieldIcons = [];
   let required;
+  let fill;
   if (wipe) { fieldIcons = false; required = false; }
   for (const k of Object.keys(vals)) {
     const spec = R.values[k];
@@ -1466,6 +1533,7 @@ function pcssRecipe(args, cur) {
         continue;
       }
       if (spec.fields && v === false) fieldIcons = false;
+      if (spec.fields && (v === true || v === false)) fill = v;
       if (spec.icons && typeof v === "string") {
         const hex = R.icons && R.icons[v.trim().replace(/^(bi )?bi-/, "")];
         if (!hex) return { refused: [`${k} is true, false or a Bootstrap Icons name such as search or arrow-right; ${String(v).slice(0, 40)} is not one.`] };
@@ -1516,7 +1584,8 @@ function pcssRecipe(args, cur) {
   swaps.sort((a, b) => b[0].length - a[0].length);
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
-  const all = R.rules.map((r) => [r, !wipe]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
+  const fillOn = !wipe && (fill === undefined ? st.fill : fill);
+  const all = R.rules.map((r) => [r, !wipe]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), ((R.values.field_icons && R.values.field_icons.fill && R.sets[R.values.field_icons.fill]) || []).map((r) => [r, fillOn]), pcssFieldIcons(fieldIcons, String(cur || "")));
   // A rule that is off and not on the page is left out: sending it empty would remove nothing.
   const present = new Set();
   const scanned = pcssScan(String(cur || ""));
@@ -1746,7 +1815,7 @@ async function updatePageCss(config, args) {
       out.stored_equals_sent = stored.error ? "unverified" : true;
       if (stored.error) out.message = "The site accepted the write, but the page could not be read again to confirm it. " + stored.error;
       annotateAutoRefresh(out, refresh);
-      if (plan.undo.length) out.undo = { seo_id: Number(page.seo_id), rules: plan.undo };
+      if (plan.undo.length) out.undo = Object.assign({ seo_id: Number(page.seo_id), rules: plan.undo }, rec.recipe ? { recipe_undo: true } : {});
       out.notes = PCSS_NOTES;
       if (rec.flush_on) out.design_settings = await updateDesignSettings(config, { settings: { custom_32: "0" } }).catch((err) => ({ status: "error", message: String((err && err.message) || err) }));
       return out;
@@ -3908,6 +3977,8 @@ async function getDesignSettings(config, args) {
     const hand = b.recipe && home ? pcssHeroHandRules(home.content_css, pcssRecipeKeys()) : [];
     if (hand.length) out.hand_rules = { message: PCSS_HAND_MSG, rules: hand };
     if (b.recipe && home) out.recipe_now = pcssRecipeNow(b.recipe, home.content_css, home.content_footer_html);
+    const parts = b.recipe ? pcssHeroFields(await pcssHomeHtml(String(config.apiUrl || ""))) : null;
+    if (parts) out.search_parts = { note: "The search form's parts in order, as the homepage prints them: field_icons entry N styles part N, and a list leaves the parts it gives null as they are. A part that draws its own icon in the search widget's markup keeps it under field_icons: to remove or change that icon, edit the hero search widget (updateWidget), not the recipe.", forms: parts };
   }
   if (/^hero\./.test(b.id)) {
     const hl = dsHeroLayout(got.values);

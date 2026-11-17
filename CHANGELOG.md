@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.688] - 2026-11-17
+
+### Fixed
+- `field_icons: true` puts an icon in every field: the field's own icon where it has one (BD's location icon, bed and bath), otherwise one that fits the field by its name (search for keywords, geo-alt for location, layers for a category, diagram-3 and diagram-2 for sub-categories, calendar3 for dates, currency-dollar for price, house-door for property type, tag for status, briefcase for job type, funnel for any other). Sliders and parts that draw their own icon in the widget markup (a custom price range) get none, so no field shows two. Before, `true` styled only the icons BD's markup already had: "add icons to all the fields" left most fields without one. A list still changes only the fields it names, and never turns the others on (checked on 60842 and 19425 at 1440 and 390px).
+- `getDesignSettings {block: "hero.search_box"}` returns `search_parts`: the search form's parts in order, as the homepage prints them, each with its placeholder and field names, and which part draws its own icon in the search widget's markup. On 19425 "remove the icons from the price range inputs" removed the icons of fields 3 and 4 (status and type) and left the price icons, which are in the widget's markup.
+- The undo a recipe call returns can be sent back: it carries `recipe_undo: true`. Before, it was refused because it holds the recipe's own rules.
+
 ## [6.59.687] - 2026-11-17
 
 ### Fixed

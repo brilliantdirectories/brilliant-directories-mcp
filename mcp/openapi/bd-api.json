@@ -12100,6 +12100,10 @@
                     "type": "object",
                     "description": "Only with recipe: the look to change, or which of the search fields a visitor must fill. Its block names the keys."
                   },
+                  "recipe_undo": {
+                    "type": "boolean",
+                    "description": "Only as part of the undo a recipe call returned: send that undo whole, as it came."
+                  },
                   "remove": {
                     "type": "boolean",
                     "description": "Only with recipe, without values: true takes the recipe and every rule written on the hero search form off the Home page, so the search shows BD's own look again."
