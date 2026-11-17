@@ -1771,15 +1771,54 @@ function pcssLabelSwap(a, css, html) {
   }
   return rules.length ? `The search recipe is not on this homepage, and turning it on restyles the whole search (field shape, sizes, layout); this call only changes icons, and each of those fields already shows BD's icon from its text label. Swap those icons alone: updatePageCss {rules: [${rules.join(", ")}]}. Send the recipe when the user asks for the search's look to change, or with user_named: true when they asked for the recipe's look.` : null;
 }
+// A glyph swap written on BD's label icon (`#first_container i.fa-bed::before`, the plain-search path) reaches only the open
+// list once the recipe draws the field's icon: it becomes that field's recipe icon and is removed, so both show it (60030).
+function pcssLabelFold(css, html, vals) {
+  const scan = pcssScan(String(css || ""));
+  if (!html || !scan || scan.error) return [];
+  const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe;
+  const hexes = new Set(Object.values(R.icons).map((h) => String(h).toLowerCase()));
+  const swaps = new Map();
+  for (const r of scan.rules) {
+    if (r.at || r.nested) continue;
+    const selector = css.slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
+    const m = /^#first_container i\.((?:fa|glyphicon|bi)-[a-z0-9-]+)::?before$/i.exec(selector);
+    const body = css.slice(r.bodyStart, r.bodyEnd);
+    const hex = /content\s*:\s*["']\\([0-9a-f]{4,5})["']/i.exec(body);
+    if (!m || !hex || !/font-family\s*:\s*["']?bootstrap-icons/i.test(body) || !hexes.has(hex[1].toLowerCase())) continue;
+    const c = /(?:^|;)\s*color\s*:\s*([^;!]+)/i.exec(body);
+    swaps.set(m[1].toLowerCase(), { selector, hex: hex[1].toLowerCase(), color: c && PCSS_COLOUR.test(c[1].trim()) ? c[1].trim() : null });
+  }
+  if (!swaps.size) return [];
+  const given = Array.isArray(vals.field_icons) ? vals.field_icons : [];
+  const list = [];
+  const drop = new Set();
+  ((pcssHeroFields(html) || [])[0] || []).forEach((p, i) => {
+    for (const n of ((/\(([^)]*)\)/.exec(String(p)) || [])[1] || "").split(", ").filter(Boolean)) {
+      const at = html.search(new RegExp(`<select\\b[^>]*\\bname=["']${n.replace(/[^\w-]/g, "\\$&")}["']`, "i"));
+      const own = at >= 0 ? /<option\b[^>]*>\s*<i\b[^>]*class=["'][^"']*\b((?:fa|glyphicon|bi)-[a-z0-9-]+)/i.exec(html.slice(at, html.indexOf("</select>", at))) : null;
+      const s = own && swaps.get(own[1].toLowerCase());
+      if (!s) continue;
+      drop.add(s.selector);
+      const e = given[i];
+      const o = e && typeof e === "object" ? e : null;
+      if ((typeof e === "string" && e.trim()) || (o && o.icon !== undefined)) continue;
+      list[i] = { hex: s.hex, color: o && o.color !== undefined ? null : s.color };
+    }
+  });
+  return pcssFieldIcons(list, String(css)).map(([r]) => r).concat([...drop].map((selector) => ({ selector, css: "" })));
+}
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
   if (pre && pre.error) return fail("Nothing was written. " + pre.error);
   const rec = pcssRecipe(args || {}, pre ? pre.css : "");
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
-  const swap = pre && !rec.refused ? pcssLabelSwap(args, pre.css, await pcssHomeHtml(String(config.apiUrl || ""))) : null;
+  const html = pre ? await pcssHomeHtml(String(config.apiUrl || "")) : null;
+  const swap = pre ? pcssLabelSwap(args, pre.css, html) : null;
   if (swap) return fail("Nothing was written. " + swap, { refused: [swap] });
-  args = rec.args;
+  const fold = rec.recipe && rec.looks.includes("field_icons") ? pcssLabelFold(pre.css, html, (args && args.values) || {}) : [];
+  args = fold.length ? { ...rec.args, rules: rec.args.rules.concat(fold) } : rec.args;
   // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
   const checked = pcssValidate(args, rec.recipe ? { rules: 200, selector: 600 } : undefined);
   if (checked.refused) return fail("Nothing was written. " + checked.refused.join(" "), { refused: checked.refused });

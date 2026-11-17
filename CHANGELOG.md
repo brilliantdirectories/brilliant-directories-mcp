@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.691] - 2026-11-17
+
+### Fixed
+- A recipe call that leaves `field_icons` on takes over the glyph swaps written earlier on BD's label icons (`#first_container i.fa-bed::before`, the plain-search path): each becomes that field's own recipe icon and the hand rule is removed. Before, the recipe drew BD's old Font Awesome icon in the closed field while the hand rule kept the new icon in the open list, so one field showed two different icons. On 60030, after "give the bed and bath fields better icons" on the plain search, "add an icon to the property type field" put the old bed and bath icons back in the closed fields. A field the call names keeps the icon the call gives it.
+
 ## [6.59.690] - 2026-11-17
 
 ### Fixed
