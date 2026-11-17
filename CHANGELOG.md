@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.689] - 2026-11-17
+
+### Fixed
+- On a homepage search without the search recipe, `updateWidget` refuses an icon added beside a field whose text label already prints BD's icon (Beds `fa-bed`, Baths `fa-bath`), and hands back the one `updatePageCss` rule that swaps that icon's glyph for the chosen Bootstrap icon. It also refuses a `bi-` name that is not in Bootstrap Icons 1.13.1. On 60030 the assistant copied the Property Search widget, added `bi-bed` (no such icon, so Beds showed only the old icon) and `bi-droplet-half` beside BD's bath icon (two icons).
+
 ## [6.59.688] - 2026-11-17
 
 ### Fixed

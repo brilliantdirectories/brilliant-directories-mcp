@@ -3364,6 +3364,30 @@ async function wdgRecipeLayout(config, args, name) {
 // with !important: an icon added in the widget shows beside the recipe's and covers the text, and a size there does nothing (19425).
 const WDG_ICON_TAG = /<(?:i|span)\b[^>]*\bclass=["'][^"']*\b(?:bi|fa|glyphicon)\b[^"']*["']|<svg\b/gi;
 const WDG_FIELD_PART = /^(?:input|select|textarea)(?![\w-])|\.form-control|\.dropdown-toggle|\.bootstrap-select|\.btn_home_search|\.select2-choice/;
+// Beds and Baths print BD's icon from the field's text label (<option><i class='fa fa-bed'></i> Beds:), so an icon added
+// beside the select shows next to it (60030). The swap is one glyph rule on that icon; a bi- name must exist to draw.
+function wdgLabelIcons(data, old, html) {
+  const R = (dsLoad().m.blocks.find((x) => x.recipe) || {}).recipe || {};
+  const BI = R.icons || {};
+  const had = String(old || "").match(WDG_ICON_TAG) || [];
+  const s = String(data || "");
+  const re = new RegExp(WDG_ICON_TAG.source, "gi");
+  const say = [];
+  let m;
+  while ((m = re.exec(s))) {
+    const k = had.indexOf(m[0]);
+    if (k >= 0) { had.splice(k, 1); continue; }
+    const tag = s.slice(m.index, s.indexOf(">", m.index) + 1);
+    const name = (/\bbi-([a-z0-9-]+)/.exec(tag) || [])[1];
+    if (!name || !BI[name]) { if (!say.some((x) => x.startsWith(name ? `bi-${name} ` : "Icons here"))) say.push(name ? `bi-${name} is not a Bootstrap Icons 1.13.1 name, so it draws nothing.` : "Icons here are Bootstrap Icons: <i class=\"bi bi-NAME\">."); continue; }
+    const field = (/<select\b[^>]*\bname=["']([^"']+)/i.exec(s.slice(m.index)) || [])[1];
+    const at = field && html ? String(html).search(new RegExp(`<select\\b[^>]*\\bname=["']${field.replace(/[^\w-]/g, "\\$&")}["']`, "i")) : -1;
+    const opt = at >= 0 ? /<option\b[^>]*>\s*<i\b[^>]*class=["'][^"']*\b((?:fa|glyphicon|bi)-[a-z0-9-]+)[^>]*>\s*<\/i>\s*([^<]{0,40})/i.exec(String(html).slice(at, String(html).indexOf("</select>", at))) : null;
+    if (!opt) continue;
+    if (!say.some((x) => x.includes(`(${field})`))) say.push(`${opt[2].trim() || field} (${field}) already shows BD's icon ${opt[1]}, printed from the field's text label, so an icon added in the widget shows beside it. Swap that icon instead, with no widget edit: updatePageCss {rules: [{selector: "#first_container i.${opt[1]}::before", css: 'content: "\\${BI[name]}" !important; font-family: "bootstrap-icons" !important;'}]}.`);
+  }
+  return say.length ? `Nothing was written. ${say.join(" ")}` : null;
+}
 async function wdgHeroHand(config, tool, args, orig) {
   if (args.own_icons === true || tool !== "updateWidget") return null;
   if (!["widget_data", "widget_style"].some((f) => typeof args[f] === "string")) return null;
@@ -3390,7 +3414,8 @@ async function wdgHeroHand(config, tool, args, orig) {
   });
   if (!icons && !hand) return null;
   const home = await dsfHomePage((path, query) => makeRequest(config, "GET", path, query, null).catch(() => null));
-  if (!home || !/form:has\(\.btn_home_search\)/.test(String(home.content_css || ""))) return null;
+  if (!home) return null;
+  if (!/form:has\(\.btn_home_search\)/.test(String(home.content_css || ""))) return icons ? wdgLabelIcons(w.widget_data, o.widget_data, await pcssHomeHtml(String(config.apiUrl || ""))) : null;
   return `Nothing was written. ${icons ? "This save adds icons to the hero search's markup." : `\`${String(hand).slice(0, String(hand).lastIndexOf("{")).trim().slice(0, 160)}\` sets the size, padding or an icon of the hero search's fields or button.`} The search recipe in the Home page CSS draws the field icons and the button icon and sets the size of the fields and the button with !important: an icon added here shows beside the recipe's icon and covers the field's text, and a size set here does not apply. Use updatePageCss {recipe: "hero.search_box", values: {field_icons: [one entry per field in order: a Bootstrap Icons name, {icon, color}, {color} or null], button_icon, height, font_size}}; getDesignSettings {block: "hero.search_box"} shows recipe_now. For an icon the recipe cannot place (a field holding two inputs, such as a price range), send the same call with own_icons: true.`;
 }
 const WDG_AUTOPLAY = /<video\b[^>]*\bautoplay\b|<iframe\b[^>]*(?:youtube|vimeo|wistia)[^>]*[?&;]autoplay=(?:1|true)\b/i;
