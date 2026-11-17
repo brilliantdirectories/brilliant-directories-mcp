@@ -1042,7 +1042,7 @@ function pcssHeroFields(html) {
       const ctl = Array.from(h.matchAll(/<(input|select|textarea)\b([^>]*)>/gi)).filter((c) => !/type\s*=\s*["']hidden/i.test(c[2]));
       const names = ctl.map((c) => (/\bname\s*=\s*["']([^"']+)/i.exec(c[2]) || [])[1]).filter(Boolean);
       const ph = ctl.map((c) => (/\bplaceholder\s*=\s*["']([^"']+)/i.exec(c[2]) || [])[1]).filter(Boolean);
-      const opt = (/<option\b[^>]*>\s*([^<]{1,60})/i.exec(h) || [])[1];
+      const opt = (/<option\b[^>]*>\s*(?:<i\b[^>]*>\s*<\/i>\s*)?([^<]{1,60})/i.exec(h) || [])[1];
       const ttl = (/<select\b[^>]*\btitle\s*=\s*["']([^"']+)/i.exec(h) || [])[1];
       const label = (ph.length ? ph.join(" / ") : ttl || opt || names[0] || "field").trim();
       const bare = h.replace(/<select\b[\s\S]*?<\/select>/gi, "");
@@ -1478,6 +1478,7 @@ function pcssFieldIcons(list, cur) {
     if (!e || e.hex) {
       out.push([{ selector: sel(`:not(:has(.input-group-addon))${n4}::before`), css: glyph && `${glyph} position: absolute !important; top: 50% !important; left: 20px !important; transform: translateY(-50%) !important; z-index: 4; pointer-events: none; color: rgb(136, 136, 136);` }, !!glyph]);
       out.push([{ selector: sel(" .input-group-addon i:not(#_):not(#__)::before"), css: glyph }, !!glyph]);
+      out.push([{ selector: sel(" .dropdown-menu li .text > i:not(#_):not(#__)::before"), css: glyph && `content: "\\${e.hex}" !important; font-family: "bootstrap-icons" !important;` }, !!glyph]);
       out.push([{ selector: sel(" :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice):not(#_):not(#__):not(#___)"), css: glyph && "padding-left: 50px !important;" }, !!glyph]);
     }
     if (!e || e.color) for (const s of [` .input-group-addon${n4}:not(#_____)`, `${n4}:not(#_____)::before`]) out.push([{ selector: sel(s), css: e ? `color: ${e.color} !important;` : "" }, !!e]);
@@ -1745,12 +1746,39 @@ function pcssHeroContrast(entries, css) {
   }
   return out;
 }
+// The recipe's first write brings its whole look (pill fields, sizes, layout). A call that only changes the icons of
+// fields whose text label prints BD's icon (Beds fa-bed) gets the glyph swap for those icons instead (60030).
+function pcssLabelSwap(a, css, html) {
+  const v = a && a.values;
+  if (!html || a.user_named === true || /form:has\(\.btn_home_search\)/.test(String(css || "")) || !v || Object.keys(v).join() !== "field_icons" || !Array.isArray(v.field_icons)) return null;
+  const R = dsLoad().m.blocks.find((x) => x.id === "hero.search_box").recipe;
+  const parts = (pcssHeroFields(html) || [])[0] || [];
+  const rules = [];
+  for (let i = 0; i < v.field_icons.length; i++) {
+    const e = v.field_icons[i];
+    if (e === null || e === "" || e === undefined) continue;
+    const o = typeof e === "string" ? { icon: e } : e;
+    const hex = o && o.icon !== undefined ? R.icons[String(o.icon).trim().replace(/^(bi )?bi-/, "")] : null;
+    const names = ((/\(([^)]*)\)/.exec(String(parts[i] || "")) || [])[1] || "").split(", ").filter(Boolean);
+    let own = null;
+    for (const n of names) {
+      const at = html.search(new RegExp(`<select\\b[^>]*\\bname=["']${n.replace(/[^\w-]/g, "\\$&")}["']`, "i"));
+      const m = at >= 0 ? /<option\b[^>]*>\s*<i\b[^>]*class=["'][^"']*\b((?:fa|glyphicon|bi)-[a-z0-9-]+)/i.exec(html.slice(at, html.indexOf("</select>", at))) : null;
+      if (m) own = m[1];
+    }
+    if (!hex || !own) return null;
+    rules.push(`{selector: "#first_container i.${own}::before", css: 'content: "\\${hex}" !important; font-family: "bootstrap-icons" !important;${o.color ? ` color: ${o.color} !important;` : ""}'}`);
+  }
+  return rules.length ? `The search recipe is not on this homepage, and turning it on restyles the whole search (field shape, sizes, layout); this call only changes icons, and each of those fields already shows BD's icon from its text label. Swap those icons alone: updatePageCss {rules: [${rules.join(", ")}]}. Send the recipe when the user asks for the search's look to change, or with user_named: true when they asked for the recipe's look.` : null;
+}
 async function updatePageCss(config, args) {
   const fail = (message, extra) => ({ status: "error", message, ...(extra || {}) });
   const pre = args && args.recipe !== undefined && args.recipe !== null && (args.seo_id === undefined || args.seo_id === null || args.seo_id === "") ? await pcssReadPage(config, null) : null;
   if (pre && pre.error) return fail("Nothing was written. " + pre.error);
   const rec = pcssRecipe(args || {}, pre ? pre.css : "");
   if (rec.refused) return fail("Nothing was written. " + rec.refused.join(" "), { refused: rec.refused });
+  const swap = pre && !rec.refused ? pcssLabelSwap(args, pre.css, await pcssHomeHtml(String(config.apiUrl || ""))) : null;
+  if (swap) return fail("Nothing was written. " + swap, { refused: [swap] });
   args = rec.args;
   // The recipe sends BD's own measured rules: it may send more and longer rules than a hand-written call.
   const checked = pcssValidate(args, rec.recipe ? { rules: 200, selector: 600 } : undefined);

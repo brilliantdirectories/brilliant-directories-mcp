@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.690] - 2026-11-17
+
+### Fixed
+- On a homepage search without the search recipe, a recipe call whose values are only a `field_icons` list for fields whose text label prints BD's icon (Beds, Baths) is refused with the glyph-swap rules for those icons: turning the recipe on restyles the whole search. A call that names a look, or `user_named: true`, still turns the recipe on. On 60030, "give bed and bath better icons" turned a plain search into the joined recipe search.
+- A `field_icons` list entry also swaps the icon in the field's open dropdown list (bootstrap-select's first row), which kept BD's old bed and bath icons on 60030.
+- `search_parts` labels a field whose first option starts with an icon by that option's text ("Beds:"), not by the next option ("0+").
+
 ## [6.59.689] - 2026-11-17
 
 ### Fixed
