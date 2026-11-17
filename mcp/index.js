@@ -773,6 +773,33 @@ function pcssHeroBarLayout(selector, decls) {
     (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-direction|flex-flow)$/.test(p)) || /grid/.test(val("display")) || /(?<!no)wrap/.test(val("flex-wrap")))) ||
     (child && props.some((p) => /^(?:grid-(?:column|row|area)|order)$/.test(p) || ((p === "flex" || p === "flex-basis" || p === "width") && /100%/.test(val(p))))));
 }
+// A hand rule that sets how the hero search parts flow into rows: wrap or grid on the bar, a part's size or place in its row.
+// A recipe call that names joined or button_below takes these out, so the rows on the page are the ones the call asked for.
+function pcssHeroRowFlow(selector, decls) {
+  const props = decls.map((d) => d.split(":")[0].trim().toLowerCase());
+  const display = (decls.find((d) => d.split(":")[0].trim().toLowerCase() === "display") || "").toLowerCase();
+  return pcssHeroParts(selector).some(({ bar, child }) =>
+    (bar && (props.some((p) => /^(?:grid(?:-[a-z-]+)?|flex-wrap|flex-direction|flex-flow)$/.test(p)) || /grid/.test(display))) ||
+    (child && props.some((p) => /^(?:flex|flex-basis|flex-grow|flex-shrink|width|max-width|min-width|order|grid-(?:column|row|area))$/.test(p))));
+}
+// A line drawn by hand between hero search parts: a side border or a gradient on a part, or a thin ::before/::after on one.
+// The recipe's dividers draw one only between fields that share a row, never before the button; a hand line lands there too.
+function pcssHeroDivider(selector, decls) {
+  const has = (re) => decls.some((d) => re.test(d.trim()));
+  const side = has(/^border-(?:left|right|inline-start|inline-end)(?:-width|-style)?\s*:(?!\s*(?:0(?:px)?|none)\s*(?:!important)?\s*$)/i);
+  const grad = has(/^background(?:-image)?\s*:[^;]*linear-gradient/i);
+  const thin = has(/^width\s*:\s*[12]px/i);
+  return pcssSplitCommas(selector).some((part) => {
+    if (!part.includes("form:has(.btn_home_search)")) return false;
+    const pseudo = /::?(?:before|after)\s*$/i.test(part.trim());
+    let q = part.replace(/::?(?:before|after)\s*$/i, "");
+    for (let i = 0; i < 5; i++) q = q.replace(/\([^()]*\)/g, "");
+    q = q.replace(/\s*([>+~])\s*/g, "$1").trim();
+    const last = q.split(/[\s>+~]/).pop() || "";
+    const onPart = /form:has[^\s>+~]*(?:>\.row[^\s>+~]*)?>[^\s>+~]+(?:[+~][^\s>+~]+)*$/.test(q) || /^(?:input|select)(?![\w-])|\.form-control|\.select2-choice|\.dropdown-toggle|\.btn_home_search/.test(last);
+    return onPart && (pseudo ? side || thin : side || grad);
+  });
+}
 // The recipe rounds the bar, its fields and the button from one radius value, each fitting inside the one around it, at
 // every width: a hand corner on any of them breaks that fit.
 function pcssHeroCorner(selector, decls, media) {
@@ -1079,6 +1106,8 @@ function pcssValidate(args, lim) {
     if (narrow) refused.push("`" + narrow.selector.slice(0, 160) + "` gives the hero search bar, a field or the button corners of different sizes on screens under 992px, where the search stacks into a card of rows: one side rounded and the other square makes that card lopsided. Send the same rule inside media \"@media (min-width: 992px)\" with user_named: true; the one-row bar takes the shape and the stacked card keeps the recipe's even corners.");
     const uneven = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroUneven(e.selector, e.decls));
     if (uneven) refused.push("`" + uneven.selector.slice(0, 160) + "` gives the hero search bar, a field or the button corners of different sizes (" + Object.values(pcssCorners(uneven.decls)).join(" ") + "). The search recipe rounds every corner the same and fits the fields and the button inside the bar's corner, so a lopsided shape looks broken. Use the recipe's radius value (updatePageCss {recipe: \"hero.search_box\", values: {radius}}). Send uneven corners only when the user asked for that shape, with user_named: true.");
+    const divider = args.user_named !== true && entries.find((e) => e.decls.length && pcssHeroDivider(e.selector, e.decls));
+    if (divider) refused.push("`" + divider.selector.slice(0, 160) + "` draws a line between the hero search parts by hand. The lines come from the search recipe: updatePageCss {recipe: \"hero.search_box\", values: {dividers: true}} draws one between fields that share a row, none before the search button and none where the fields wrap into rows, and moves with the layout. Send a hand line only when the user asked for that line, with user_named: true.");
     const icon = entries.find((e) => e.decls.length && pcssHeroIcon(e.selector, e.decls));
     if (icon) refused.push("`" + icon.selector.slice(0, 160) + "` draws an icon in the hero search by hand, or moves a field's text to make room for one. Field icons, their colours and the button icon come from the search recipe: updatePageCss {recipe: \"hero.search_box\", values: {field_icons: [...], button_icon: ...}}. It places each icon and its field's text the same way in every field, and removes them when they are turned off.");
     if (bw) refused.push(`\`${bw.selector.slice(0, 160)}\` sets the hero search button's width under 992px, where the search recipe already sizes it to the bar (calc(100% - 16px) with an 8px margin): the button would stick out past the bar. Leave width out, or send the rule inside media "@media (min-width: 992px)".`);
@@ -1403,10 +1432,14 @@ function pcssRecipe(args, cur) {
   const R = b.recipe;
   const vals = args.values === undefined || args.values === null ? {} : args.values;
   if (typeof vals !== "object" || Array.isArray(vals)) return { refused: [`values is an object: ${Object.keys(R.values).join(", ")}.`] };
+  const wipe = args.remove === true;
+  if (args.remove !== undefined && args.remove !== true) return { refused: ["remove is true or left out."] };
+  if (wipe && Object.keys(vals).length) return { refused: ["Send remove: true without values."] };
   const swaps = [];
   const lookOn = {};
   let fieldIcons = [];
   let required;
+  if (wipe) { fieldIcons = false; required = false; }
   for (const k of Object.keys(vals)) {
     const spec = R.values[k];
     if (!spec) return { refused: [`values takes ${Object.keys(R.values).join(", ")}; ${String(k).slice(0, 40)} is not one of them.`] };
@@ -1462,7 +1495,7 @@ function pcssRecipe(args, cur) {
     const spec = R.values[k];
     if (spec.script) continue;
     if (spec.set) {
-      if (!st.on[k]) continue;
+      if (!st.on[k] || wipe) continue;
       lookOn[k] = true;
       if (spec.icons && st.icon && st.icon !== "f52a") swaps.push(["\\f52a", "\\" + st.icon]);
     } else if (st.vals[k] !== undefined) {
@@ -1483,7 +1516,7 @@ function pcssRecipe(args, cur) {
   swaps.sort((a, b) => b[0].length - a[0].length);
   // A look that is off, and a rule an earlier version saved (`retired`), is sent with empty css, which removes it.
   const looks = Object.keys(R.values).filter((k) => R.values[k].set);
-  const all = R.rules.map((r) => [r, true]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
+  const all = R.rules.map((r) => [r, !wipe]).concat(...looks.map((k) => (R.sets[R.values[k].set] || []).map((r) => [r, lookOn[k] === true])), (R.retired || []).map((r) => [r, false]), pcssFieldIcons(fieldIcons, String(cur || "")));
   // A rule that is off and not on the page is left out: sending it empty would remove nothing.
   const present = new Set();
   const scanned = pcssScan(String(cur || ""));
@@ -1497,7 +1530,7 @@ function pcssRecipe(args, cur) {
     return r.media ? { selector: r.selector, media: r.media, css } : { selector: r.selector, css };
   });
   const own = new Set(all.map(([r]) => key(r)));
-  return { args: { rules }, recipe: b.id, own, font: Object.prototype.hasOwnProperty.call(vals, "font_size"), looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
+  return { args: { rules }, recipe: b.id, own, font: Object.prototype.hasOwnProperty.call(vals, "font_size"), layout: ["joined", "button_below"].some((k) => Object.prototype.hasOwnProperty.call(vals, k)), wipe, radius: Object.prototype.hasOwnProperty.call(vals, "radius"), looks: looks.filter((k) => lookOn[k] === true), flush_on: lookOn.flush === true && !st.on.flush, ...(required !== undefined ? { foot: (f) => pcssReqFoot(R, f, required) } : {}) };
 }
 const PCSS_HAND_MSG = "These rules on the page were written by hand and break the hero search: they set the spacing of the bar or the button, which overrides inset, height and radius, or give the bar a corner over 28px where it stacks, which makes it an oval, or put the fields side by side on phones, where they stack, or set the button's width where it stacks, which pushes it past the bar, or set the corners of the bar, a field or the button, which the recipe rounds from its radius value so each fits inside the other (keep those only when the user asked for that shape), or give the bar, a field or the button corners of different sizes (keep those only when the user asked for that shape), or draw a field or button icon by hand, or move a field's text over for one, which field_icons and button_icon do. Remove each one: call updatePageCss with rules, each with its selector, its media when listed, and css set to \"\".";
 // Rules on the page, outside the recipe, that set the search bar's or button's spacing: they override inset, height and radius.
@@ -1524,13 +1557,13 @@ function pcssHeroBreaks(selector, decls, at) {
   if (pcssSplitCommas(selector).every((p) => ["#first_container form:has(.btn_home_search):not(:has(> .row)) > :nth-child(", "#first_container form:has(.btn_home_search) > .row > :nth-child("].some((x) => p.trim().startsWith(x)))) return false;
   const asked = decls.some((d) => /^--bd-user-named\s*:/i.test(d.trim()));
   const body = decls.join("; ");
-  return pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, at) || pcssHeroPhoneCols(selector, decls, at) || pcssHeroBtnWidth(selector, decls, at) || pcssHeroIcon(selector, decls) || (!asked && (pcssHeroCorner(selector, decls, at) || pcssHeroUneven(selector, decls))) || (asked && !pcssWide(at) && pcssHeroUneven(selector, decls));
+  return pcssHeroGeometry(selector, body) || pcssHeroBarCorner(selector, body, at) || pcssHeroPhoneCols(selector, decls, at) || pcssHeroBtnWidth(selector, decls, at) || pcssHeroIcon(selector, decls) || (!asked && (pcssHeroCorner(selector, decls, at) || pcssHeroUneven(selector, decls) || pcssHeroDivider(selector, decls))) || (asked && !pcssWide(at) && pcssHeroUneven(selector, decls));
 }
 // A recipe write takes out of hand rules the declarations that break the search (spacing, corners, icons drawn by
 // hand) and keeps the rest of each rule; a rule or @media group left empty goes. Returns the new text and what went.
 // A rule that also names elements outside the search is split, and those keep every declaration. With font_size in
 // the call, a font-size written by hand on a field or the button goes too, so the text of all of them changes together.
-function pcssHeroClean(css, own, font) {
+function pcssHeroClean(css, own, font, layout, wipe, radius) {
   const scan = pcssScan(String(css || ""));
   if (!scan || scan.error) return { css, removed: [] };
   const edits = [];
@@ -1541,9 +1574,10 @@ function pcssHeroClean(css, own, font) {
     if (r.nested || own.has(r.sel + "|" + r.at)) continue;
     const selector = css.slice(r.selStart, r.bodyStart - 1).replace(/\s+/g, " ").trim();
     const decls = pcssDecls(css.slice(r.bodyStart, r.bodyEnd)).map((d) => d.trim()).filter(Boolean);
-    const brk = (ds) => pcssHeroBreaks(selector, ds, r.at) || (!!font && ds.some((d) => /^font-size\s*:/i.test(d)) && pcssHeroCorner(selector, ["border-radius: 0"], ""));
+    const brk = (ds) => pcssHeroBreaks(selector, ds, r.at) || (!!font && ds.some((d) => /^font-size\s*:/i.test(d)) && pcssHeroCorner(selector, ["border-radius: 0"], "")) || (!!layout && pcssHeroRowFlow(selector, ds)) || (!!wipe && pcssSplitCommas(selector).some((p) => p.includes("form:has(.btn_home_search)"))) || (!!radius && pcssHeroCorner(selector, ds, r.at));
     if (!brk(decls)) continue;
-    let keep = decls.filter((d) => !brk([d]));
+    const named = decls.filter((d) => /^--bd-user-named\s*:/i.test(d));
+    let keep = decls.filter((d) => !brk([d].concat(named)));
     if (brk(keep) || (/::?(?:before|after)/i.test(selector) && !keep.some((d) => /^content\s*:/i.test(d)))) keep = [];
     const parts = pcssSplitCommas(selector).map((p) => p.trim());
     const hero = parts.filter((p) => p.includes("form:has(.btn_home_search)"));
@@ -1666,7 +1700,7 @@ async function updatePageCss(config, args) {
       const page = await pcssReadPage(config, seoId);
       if (page.error) return fail("Nothing was written. " + page.error);
       const R = page.css;
-      const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font) : { css: R, removed: [] };
+      const clean = rec.recipe ? pcssHeroClean(R, rec.own, rec.font, rec.layout, rec.wipe, rec.radius) : { css: R, removed: [] };
       const base = rec.recipe ? clean.css : pcssRecipeRefresh(clean.css);
       const unread = rec.recipe ? [] : pcssHeroContrast(checked.entries, base);
       if (unread.length) return fail("Nothing was written. " + unread.join(" "), { refused: unread });
@@ -2521,7 +2555,7 @@ async function dsfFind(ds, got, text, key, get) {
   const t0 = Date.now();
   const secRows = [];
   for (const r of dir.homepage.rows) {
-    const b = /^section\./.test(r.block || "") ? m.blocks.find((x) => x.id === r.block) : null;
+    const b = /^(?:section\.|home\.divider$)/.test(r.block || "") ? m.blocks.find((x) => x.id === r.block) : null;
     if (b && b.widget) secRows.push({ name: dsExpand(m, b.widget), row: r.row, block: r.block });
   }
   const [ws, home, mi, mn, bd] = await Promise.all([
@@ -2543,7 +2577,7 @@ async function dsfFind(ds, got, text, key, get) {
       const tl = /^%%%([A-Za-z0-9_]+)(~[a-z]+)?%%%$/.exec(String(v));
       const lt = tl ? dsLabelText(got.labels, tl[1]) : null;
       const row = placed.get(b.id);
-      const shown = /^(section|content)\./.test(b.id) ? row !== undefined : true;
+      const shown = /^(?:section\.|content\.|home\.divider$)/.test(b.id) ? row !== undefined : true;
       sources.push({ hit: Object.assign({ setting: f.n, block: b.id, label: f.l }, row !== undefined ? { row } : {}, lt !== null && tl ? { text_label: tl[1] } : {}), raw: lt !== null ? lt : String(v), markup: f.t !== "code" && f.t !== "img", kind: f.t === "text" || f.t === "area" || f.t === "html" ? "text" : "code", shown });
     }
   }
@@ -3066,6 +3100,8 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
   _dsfWidgetCache.delete(key);
   const [ws, home] = await Promise.all([dsfSiteWidgets(key, get), dsfHomePage(get)]);
   if (!ws || !ws.byName) return null;
+  const walk = dsfHomeWalk(ds, got, ws, home);
+  const place = (name) => { const p = walk.get(name); return p === "hero secondary column" ? `, in the hero secondary column (${dsColPlace(got.values, false)})` : p === "hero primary column" ? `, in the hero primary column (${dsColPlace(got.values, true)})` : p ? `, in the homepage ${p}` : ""; };
   const isWidget = tool === "updateWidget" || tool === "createWidget";
   const saved = Number(isWidget ? (args.widget_id || newId) : args.seo_id);
   const found = [];
@@ -3077,7 +3113,7 @@ async function vidElsewhere(config, tool, args, orig, newId, row) {
     const w = ws.byName.get(name);
     if (!w) return;
     if (isWidget && Number(w.widget_id) === saved) savedOnHome = true;
-    else for (const f of ["widget_data", "widget_javascript"]) if (vidKind(w[f])) found.push(`widget ${Number(w.widget_id)} "${name}" ${f} (${vidKind(w[f])})`);
+    else for (const f of ["widget_data", "widget_javascript"]) if (vidKind(w[f])) found.push(`widget ${Number(w.widget_id)} "${name}" ${f} (${vidKind(w[f])})${place(name)}`);
     for (const n of dsfRefs(w.widget_data)) want(n);
   };
   for (const n of [String(got.values.custom_30 || ""), ...(/Map/.test(String(got.values.custom_30 || "")) || got.values.custom_30 === "Blank" ? [] : DS_EXTRA), ...dsHomeSlots(ds, got).map((x) => x.name)]) want(n);
@@ -3255,6 +3291,39 @@ async function wdgRecipeLayout(config, args, name) {
 // Extra Content Above/Below print inside the hero's content row, so a playing video there covers that row only (a 33px
 // strip on 60842). The hero.background kit's script moves its .hero-bg-video layer behind the whole hero.
 // Only a save that changes the video tags stops: a text edit of a widget that already holds a video goes through.
+// The hero search's field icons, button icon and field size come from the search recipe in the Home page CSS, which wins
+// with !important: an icon added in the widget shows beside the recipe's and covers the text, and a size there does nothing (19425).
+const WDG_ICON_TAG = /<(?:i|span)\b[^>]*\bclass=["'][^"']*\b(?:bi|fa|glyphicon)\b[^"']*["']|<svg\b/gi;
+const WDG_FIELD_PART = /^(?:input|select|textarea)(?![\w-])|\.form-control|\.dropdown-toggle|\.bootstrap-select|\.btn_home_search|\.select2-choice/;
+async function wdgHeroHand(config, tool, args, orig) {
+  if (args.own_icons === true || tool !== "updateWidget") return null;
+  if (!["widget_data", "widget_style"].some((f) => typeof args[f] === "string")) return null;
+  let o = orig;
+  if ((!o || !o.widget_name) && /^\d+$/.test(String(args.widget_id))) {
+    const r = await makeRequest(config, "GET", `/api/v2/data_widgets/get/${Number(args.widget_id)}`, null, null).catch(() => null);
+    o = r && r.body && (Array.isArray(r.body.message) ? r.body.message[0] : r.body.message && typeof r.body.message === "object" ? r.body.message : null);
+  }
+  if (!o) return null;
+  const w = Object.assign({}, o, args);
+  if (!/btn_home_search/.test(String(w.widget_data || ""))) return null;
+  const count = (x) => (String(x || "").match(WDG_ICON_TAG) || []).length;
+  const icons = count(w.widget_data) > count(o.widget_data);
+  const rules = (css) => String(css || "").replace(/\/\*[\s\S]*?\*\//g, "").split("}").map((x) => x.replace(/\s+/g, " ").trim()).filter((x) => x.includes("{"));
+  const had = new Set(rules(o.widget_style));
+  const hand = rules(w.widget_style).filter((x) => !had.has(x)).find((x) => {
+    const i = x.lastIndexOf("{");
+    const body = x.slice(i + 1);
+    return x.slice(0, i).split(",").some((p) => {
+      if (/::?(?:before|after)/i.test(p) && /(?:^|;)\s*content\s*:\s*(?!none|normal|""|'')/i.test(body)) return true;
+      const last = p.replace(/\([^()]*\)/g, "").replace(/::?[a-z-]+/gi, "").trim().split(/[\s>+~]+/).pop() || "";
+      return WDG_FIELD_PART.test(last) && /(?:^|;)\s*(?:(?:min-|max-)?height|padding(?:-left|-right|-inline-start)?|font-size)\s*:/i.test(body);
+    });
+  });
+  if (!icons && !hand) return null;
+  const home = await dsfHomePage((path, query) => makeRequest(config, "GET", path, query, null).catch(() => null));
+  if (!home || !/form:has\(\.btn_home_search\)/.test(String(home.content_css || ""))) return null;
+  return `Nothing was written. ${icons ? "This save adds icons to the hero search's markup." : `\`${String(hand).slice(0, String(hand).lastIndexOf("{")).trim().slice(0, 160)}\` sets the size, padding or an icon of the hero search's fields or button.`} The search recipe in the Home page CSS draws the field icons and the button icon and sets the size of the fields and the button with !important: an icon added here shows beside the recipe's icon and covers the field's text, and a size set here does not apply. Use updatePageCss {recipe: "hero.search_box", values: {field_icons: [one entry per field in order: a Bootstrap Icons name, {icon, color}, {color} or null], button_icon, height, font_size}}; getDesignSettings {block: "hero.search_box"} shows recipe_now. For an icon the recipe cannot place (a field holding two inputs, such as a price range), send the same call with own_icons: true.`;
+}
 const WDG_AUTOPLAY = /<video\b[^>]*\bautoplay\b|<iframe\b[^>]*(?:youtube|vimeo|wistia)[^>]*[?&;]autoplay=(?:1|true)\b/i;
 const wdgVidTags = (o) => ((String(o.widget_data || "") + "\n" + String(o.widget_javascript || "")).match(/<(?:video|iframe|source)\b[^>]*>/gi) || []).join("\u0001");
 async function wdgHeroBgKit(config, tool, args, orig) {
@@ -3667,11 +3736,13 @@ function dsDirectory(ds, got) {
 // whole phrase wins over its words (logo text: the blocks naming most of the words, titles counting double).
 function dsFind(ds, q) {
   const s = q.toLowerCase();
+  const rowOpts = ((ds.idx.get("{row}") || {}).opts || []);
+  const rowName = (b) => { const o = b.widget ? rowOpts.find((p) => dsExpand(ds.m, p[0]) === dsExpand(ds.m, b.widget)) : null; return o ? String(o[1]).toLowerCase() : ""; };
   const exact = [];
   const part = [];
   for (const b of ds.m.blocks) {
     const words = dsBlockNames(b).concat(b.fields.map((f) => f.l), b.recipe ? Object.keys(b.recipe.values) : []).map((w) => String(w).toLowerCase());
-    const head = [b.id.toLowerCase(), b.title.toLowerCase()];
+    const head = [b.id.toLowerCase(), b.title.toLowerCase(), rowName(b)].filter(Boolean);
     if (head.includes(s) || words.includes(s)) exact.push(b);
     else {
       const score = (head.some((w) => w.includes(s)) ? 2 : 0) + (words.some((w) => w.includes(s)) ? 1 : 0);
@@ -3683,7 +3754,7 @@ function dsFind(ds, q) {
   const ws = s.split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !DSF_FILLER.has(dsfStem(w)) && !/^(and|for|with|update|change|make|set|edit)$/.test(w));
   if (!ws.length) return [];
   for (const b of ds.m.blocks) {
-    const head = `${b.id} ${b.title}`.toLowerCase();
+    const head = `${b.id} ${b.title} ${rowName(b)}`.toLowerCase();
     const labels = b.fields.map((f) => String(f.l).toLowerCase()).concat(b.recipe ? Object.keys(b.recipe.values) : []).join(" | ");
     const score = ws.reduce((n, w) => n + (head.includes(w) ? 2 : labels.includes(w) ? 1 : 0), 0);
     if (score) part.push({ b, score, head: ws.some((w) => head.includes(w)) });
@@ -3843,7 +3914,7 @@ async function getDesignSettings(config, args) {
     if (hl) out.hero_layout = hl;
   }
   const hw = /^hero\.(primary|cta)/.test(b.id) ? b.widget || dsHeroWidget(ds, got.values) : null;
-  if ((/^section\./.test(b.id) && b.widget) || hw) {
+  if ((/^(?:section\.|home\.divider$)/.test(b.id) && b.widget) || hw) {
     const name = dsExpand(ds.m, hw || b.widget);
     out = Object.assign({ block: out.block, title: out.title, widget: name }, out);
     const copy = await dsfCachedCopy(dsCacheKey(config), name);
@@ -4212,7 +4283,10 @@ async function udsOwnHero(config, cur, R, plan, named) {
   const own = ws && ws.byName ? ws.byName.get(was) : null;
   if (!own) return null;
   const tabs = Array.from(String(own.widget_data || "").matchAll(/role=["']tab["'][^>]*>\s*([^<]{1,60}?)\s*</g)).map((m) => m[1]);
-  return { name: "custom_30", problem: `The hero is drawn by "${was}" (custom_30), and this site has its own copy of that widget (widget_id ${Number(own.widget_id)})${tabs.length ? `: a search with tabs ${tabs.map((t) => JSON.stringify(t)).join(", ")}` : " with its own code"}. Changing custom_30 takes that copy off the homepage. A change inside the current hero search (one tab, its fields, their layout) is updateWidget on widget_id ${Number(own.widget_id)}. Send custom_30 again with user_named: true only when the user asked to replace the hero search itself.` };
+  const stem = (t) => t.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3 && x !== "search" && x !== "find").map((x) => x.replace(/s$/, ""));
+  const asked = stem(String(R.custom_30 || "").replace(/^Bootstrap Theme - Homepage Search - /, ""));
+  const tab = tabs.find((t) => stem(t).some((x) => asked.includes(x)));
+  return { name: "custom_30", problem: `The hero is drawn by "${was}" (custom_30), and this site has its own copy of that widget (widget_id ${Number(own.widget_id)})${tabs.length ? `: a search with tabs ${tabs.map((t) => JSON.stringify(t)).join(", ")}` : " with its own code"}.${tab ? ` Its "${tab}" tab is already that search on this homepage: a change to it (its fields, their layout, one row) is updateWidget on widget_id ${Number(own.widget_id)}, inside that tab.` : ""} Changing custom_30 takes that copy${tabs.length ? ", with every tab," : ""} off the homepage. A change inside the current hero search is updateWidget on widget_id ${Number(own.widget_id)}. Send custom_30 again with user_named: true only when the user asked to remove the current hero search${tabs.length ? " with all its tabs" : ""}.` };
 }
 // Advisory notes on the planned state: add-on status, and a section placed in more than one row (the page shows it in each).
 function udsAdvice(ds, idx, plan, R, addons) {
@@ -10926,12 +11000,15 @@ async function main() {
         if (bs) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: "Nothing was written. " + bs }) }], isError: true };
         const which = await wdgRequiredWhich(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
         if (which) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: which }) }], isError: true };
+        const handIcons = await wdgHeroHand(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
+        if (handIcons) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: handIcons }) }], isError: true };
         const kit = await wdgHeroBgKit(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
         if (kit) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: kit }) }], isError: true };
         const vwhich = await wdgVideoWhich(config, name, args, _widgetReplace && _widgetReplace.orig).catch(() => null);
         if (vwhich) return { content: [{ type: "text", text: JSON.stringify({ status: "error", message: vwhich }) }], isError: true };
         delete args.own_form;
         delete args.own_video;
+        delete args.own_icons;
       }
 
       // Slug uniqueness guard — universal helper. BD does NOT enforce unique

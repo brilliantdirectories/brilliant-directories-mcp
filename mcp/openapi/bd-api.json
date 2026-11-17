@@ -5605,6 +5605,10 @@
                     "type": "boolean",
                     "description": "true: the required being added belongs to this widget's own form, not the homepage hero search"
                   },
+                  "own_icons": {
+                    "type": "boolean",
+                    "description": "true: an icon in the hero search that the search recipe cannot place (a field holding two inputs, such as a price range)"
+                  },
                   "replace": {
                     "type": "array",
                     "description": "With copy_of: change part of the copied code: [{field, find, with}]. If find occurs more than once, add nth (1 = first) or all:true.",
@@ -5705,6 +5709,10 @@
                   "own_form": {
                     "type": "boolean",
                     "description": "true: the required being added belongs to this widget's own form, not the homepage hero search"
+                  },
+                  "own_icons": {
+                    "type": "boolean",
+                    "description": "true: an icon in the hero search that the search recipe cannot place (a field holding two inputs, such as a price range)"
                   },
                   "replace": {
                     "type": "array",
@@ -12091,6 +12099,10 @@
                   "values": {
                     "type": "object",
                     "description": "Only with recipe: the look to change, or which of the search fields a visitor must fill. Its block names the keys."
+                  },
+                  "remove": {
+                    "type": "boolean",
+                    "description": "Only with recipe, without values: true takes the recipe and every rule written on the hero search form off the Home page, so the search shows BD's own look again."
                   },
                   "user_named": {
                     "type": "boolean",

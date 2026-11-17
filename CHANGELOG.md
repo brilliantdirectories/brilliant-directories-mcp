@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.687] - 2026-11-17
+
+### Fixed
+- When a save leaves another autoplaying video on the homepage, the note says where that video is: "in the hero secondary column (the side opposite custom_25 right: on the left on desktop ...)", or its homepage row. On 60842 the assistant rebuilt the Extra Content video, reported "removed the left-side video", and left the video in the hero secondary column playing.
+- The refusal for changing `custom_30` away from the site's own hero copy names the tab that already is the asked-for search ("Its "Find Events" tab is already that search on this homepage"), and allows `user_named: true` only when the user asked to remove the current hero search with all its tabs. On 60842 the assistant resent with `user_named: true` for "the search for the events".
+- Hero search recipe: in the joined one-row bar the search button fills its slot (`width: 100%`, was `auto`). Hand CSS that put the fields in 2 x 2 left the button at its text width inside a half-width cell (seen on a 4-part category, sub-category and location search; reproduced on 60842: button 56px in a 179px slot, 179px after).
+- A recipe call that names `joined` or `button_below` takes out hand rules that lay the fields out in rows (flex-wrap or grid on the bar; flex, width or order on a field or the button) and lists them in `hand_removed`; the rest of each rule stays. Before, "make it 1 row" saved `joined` while the earlier hand 2 x 2 rules still decided the layout, and the assistant reported one row.
+- The joined one-row bar is at least 640px wide with 3 parts and 880px with 4, never wider than its column, so a narrower width set by hand still leaves room for one row (60842: a hand 50% bar of 384px rendered at 640px in one row).
+- A hand-cleanup keeps a corner shape the user named (`--bd-user-named`) when other declarations of the same rule are taken out; each declaration was tested alone, without the rule's marker.
+- `updateWidget` on a widget holding the hero search is refused when it adds icon tags to the markup, or CSS that sizes, pads or draws an icon on the fields or the button, while the Home page has the search recipe: the recipe's `!important` rules win, so the icon showed beside the recipe's and covered the field's text (19425). `own_icons: true` covers an icon the recipe cannot place, such as a field holding two inputs.
+- `field_icons: true` is described as what it does: it styles only the icons the site's search form already has. To give every field an icon the call sends a list with a name per field.
+- A line drawn by hand between hero search parts (a side border or a gradient on a part, a thin `::before`/`::after`) is refused unless the user asked for it (`user_named: true`), and a recipe write takes such lines out. The recipe's `dividers` draw a line only between fields that share a row, never before the search button; a hand `> *:not(:last-child) { border-right }` put one between the last field and the button.
+- The Hero Divider section is found as one. `getDesignSettings {block: "hero divider"}` opened a list of seven `hero.*` blocks before `home.divider`, and `find: "hero divider"` reported no hit on a homepage whose row 1 is the Hero Divider: section blocks are now also matched by their row name ("Homepage Hero Divider"), and the homepage walk and block reads treat `home.divider` as the section it is (its BD widget, its site copy, its row). Its note says what it is (a strip of up to three icons or images, not the hero, not the search bar's dividers, not the line under a section title) and that `home_rows` without `home.divider` takes it off (checked with a dry run on 60842).
+- A recipe call that names `radius` takes out hand corners on the bar, a field or the button, also ones the user asked for. Before, a 999px corner the user once asked for stayed through every later recipe call, a hero reset included.
+
+### Added
+- `updatePageCss {recipe: "hero.search_box", remove: true}`: takes the recipe, its required script and every rule written on the hero search form off the Home page, user-named ones included, so the search shows BD's own look again. A rule that also names elements outside the search keeps those. Checked on 60842: 139 hero search rules out (the recipe and the hand glass, hover and 999px corner rules), the hero button-link rules kept.
+- `button_icon_right` look on the hero search recipe: with `button_icon` and `button_text`, the icon sits right of the text (checked on 60842 at 1440 and 390px).
+
 ## [6.59.686] - 2026-11-17
 
 ### Fixed
