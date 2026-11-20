@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.692] - 2026-11-20
+
+### Fixed
+- The hero search recipe now reads correctly on right-to-left sites (Arabic, Hebrew, Persian, Urdu). Field icons, the text indent beside them, select2 arrows and clear buttons, keyword clear buttons, the field text and placeholder alignment, and the button gap use logical properties (`inset-inline-start/end`, `padding-inline`, `margin-inline`, `text-align: start`), so they sit on the correct side in both directions. Left-to-right sites render exactly as before.
+- Dropdown fields (bootstrap-select) align their button text, open list and multi-select tick mark to the reading direction.
+- The divider between fields in a single-row search moves to the right-hand edge of each later field on right-to-left sites, so it stays between the fields.
+
+### Maintenance
+- The release check fails when recipe CSS uses a one-sided `left`/`right` offset, margin, padding, text alignment or an unequal four-value shorthand, so direction-bound rules cannot return.
+
 ## [6.59.691] - 2026-11-17
 
 ### Fixed

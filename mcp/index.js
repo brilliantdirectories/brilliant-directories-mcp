@@ -1476,10 +1476,10 @@ function pcssFieldIcons(list, cur) {
     const sel = (suffix) => slot.map((p) => p + suffix).join(", ");
     const glyph = e && e.hex ? `content: "\\${e.hex}" !important; font-family: "bootstrap-icons" !important; font-size: 18px !important; font-weight: normal !important; line-height: 1 !important;` : "";
     if (!e || e.hex) {
-      out.push([{ selector: sel(`:not(:has(.input-group-addon))${n4}::before`), css: glyph && `${glyph} position: absolute !important; top: 50% !important; left: 20px !important; transform: translateY(-50%) !important; z-index: 4; pointer-events: none; color: rgb(136, 136, 136);` }, !!glyph]);
+      out.push([{ selector: sel(`:not(:has(.input-group-addon))${n4}::before`), css: glyph && `${glyph} position: absolute !important; top: 50% !important; inset-inline-start: 20px !important; transform: translateY(-50%) !important; z-index: 4; pointer-events: none; color: rgb(136, 136, 136);` }, !!glyph]);
       out.push([{ selector: sel(" .input-group-addon i:not(#_):not(#__)::before"), css: glyph }, !!glyph]);
       out.push([{ selector: sel(" .dropdown-menu li .text > i:not(#_):not(#__)::before"), css: glyph && `content: "\\${e.hex}" !important; font-family: "bootstrap-icons" !important;` }, !!glyph]);
-      out.push([{ selector: sel(" :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice):not(#_):not(#__):not(#___)"), css: glyph && "padding-left: 50px !important;" }, !!glyph]);
+      out.push([{ selector: sel(" :is(input.form-control, select.form-control, .bootstrap-select > .dropdown-toggle, .select2-choice):not(#_):not(#__):not(#___)"), css: glyph && "padding-inline-start: 50px !important;" }, !!glyph]);
     }
     if (!e || e.color) for (const s of [` .input-group-addon${n4}:not(#_____)`, `${n4}:not(#_____)::before`]) out.push([{ selector: sel(s), css: e ? `color: ${e.color} !important;` : "" }, !!e]);
   }

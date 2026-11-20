@@ -936,6 +936,41 @@ let designMapStatus = "";
   }
 }
 
+// CHECK 16: Recipe CSS reads both ways. Sites can be right-to-left (Arabic, Hebrew), so a one-sided offset,
+// margin, padding or text-align in recipe CSS (map, npm generator, Worker generator) must be the logical form
+// (inset-inline-start, margin-inline-end, text-align: start). Zero, auto, 50% (centring) and equal pairs pass.
+{
+  const SIDED = /(?<![-\w])((?:margin|padding)-)?(left|right):\s*([^;!"`]+?)\s*(?:!important)?\s*(?=[;"`]|$)/g;
+  const oneSided = (css) => {
+    const bad = [];
+    for (const m of css.matchAll(SIDED)) {
+      const value = m[3].trim();
+      if (/^(0|0px|auto|50%)$/.test(value)) continue;
+      const other = (m[1] || "") + (m[2] === "left" ? "right" : "left");
+      if (css.split(/;/).some((d) => d.trim().replace(/\s*!important$/, "").replace(/\s+/g, " ") === other + ": " + value)) continue;
+      bad.push(m[0].trim());
+    }
+    for (const m of css.matchAll(/(?<![-\w])(?:padding|margin):([^;!"`]*)/g)) {
+      const sides = m[1].trim().split(/\s+(?![^(]*\))/);
+      if (sides.length === 4 && sides[1] !== sides[3]) bad.push(m[0].trim());
+    }
+    const align = css.match(/text-align:\s*(left|right)\b/);
+    if (align) bad.push(align[0]);
+    return bad;
+  };
+  const sources = [];
+  const walk = (v) => { if (typeof v === "string") sources.push(["map", v]); else if (v && typeof v === "object") Object.values(v).forEach(walk); };
+  try { walk(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "mcp", "openapi", "design-settings-map.json"), "utf8"))); } catch (e) {}
+  for (const [label, file] of [["npm generator", path.join(__dirname, "..", "mcp", "index.js")], ["Worker generator", path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts")]]) {
+    if (!fs.existsSync(file)) continue;
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) if (/\bcss:/.test(line)) sources.push([label, line]);
+  }
+  for (const [label, css] of sources) {
+    if (!/!important/.test(css)) continue;
+    for (const b of oneSided(css)) err(`Recipe CSS (${label}) uses "${b}", which stays on the same side in a right-to-left site. Use the logical property (inset-inline-start/end, margin-/padding-inline-start/end, text-align: start).`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
