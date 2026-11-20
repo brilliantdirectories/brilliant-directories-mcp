@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.693] - 2026-11-20
+
+### Fixed
+- The hero search recipe keeps each dropdown field at the search field height while the page loads. BD hides a `selectpicker` dropdown until its script builds the button, so multi-field searches (property, events, jobs and member searches with dropdowns) collapsed a row and jumped back about half a second after the page appeared. Measured on a property search, layout shift fell from 0.06-0.20 to about 0.02 on desktop and from about 0.3 to 0.03 on tablet.
+
 ## [6.59.692] - 2026-11-20
 
 ### Fixed
