@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.694] - 2026-11-20
+
+### Changed
+- The `hero.background` recipe crossfades a video file's loop: a second muted copy fades in over the last 2 seconds and the two swap, so the video no longer jumps back to its first frame. If the second copy fails to load or play, the plain loop takes over. Visitors who prefer reduced motion get the plain loop. YouTube is unchanged.
+
 ## [6.59.693] - 2026-11-20
 
 ### Fixed
