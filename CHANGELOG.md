@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.698] - 2026-11-23
+
+### Fixed
+- `createLead` `auto_match` lists every requirement (add-on with auto-match on, searchable member plans, coordinates or `auto_geocode=1` with the site's `google_maps_server_side_api_key`) and how to check a zero-match success (`listLeadMatches`, then `getLead` `lat`/`lng`).
+
 ## [6.59.697] - 2026-11-23
 
 ### Fixed

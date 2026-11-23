@@ -3386,7 +3386,7 @@
                       0,
                       1
                     ],
-                    "description": "Set `1` to match the lead to members by category and location during create and email each matched member. Requires the lead system add-on with auto-match enabled on the lead form, plus `lat`, `lng` and `location_type` (Google address type: `locality`, `postal_code`, `administrative_area_level_1`, `country`). Bounds searches (always for `country`) also need `nelat`, `nelng`, `swlat`, `swlng`. `lead_location` text alone matches no members, and the call still returns success. Create-only: `matchLead` matches only specified members. Ignored when `users_to_match` is set. Default `0` = no matching."
+                    "description": "Set `1` to match the lead to members by category and location during create and email each matched member. Requires: the lead system add-on with auto-match enabled on the lead form; members on searchable plans; lead coordinates - `lat`, `lng`, `location_type` (Google address type: `locality`, `postal_code`, `administrative_area_level_1`, `country`; bounds searches, always for `country`, also need `nelat`, `nelng`, `swlat`, `swlng`) or `auto_geocode=1` to fill them from `lead_location` (needs the `google_maps_server_side_api_key` Advanced Setting). A missing requirement still returns success with no matches: check `listLeadMatches`, then `getLead` `lat`/`lng`. Create-only: `matchLead` matches only specified members. Ignored when `users_to_match` is set. Default `0` = no matching."
                   },
                   "users_to_match": {
                     "type": "string",
