@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.700] - 2026-11-23
+
+### Fixed
+- `sub_sub_id` on leads goes to BD instead of straight to `users_meta`, so BD checks it: `createLead` with `sub_sub_id` and no `sub_id` now returns BD's error "The sub_id is required when sending a sub_sub_id" (before: the lead was created with `sub_id=0`). Same on npm and the hosted Worker.
+- `createLead` documents `sub_id` and `sub_sub_id`; `updateLead` documents `sub_sub_id`, each with its `listSubCategories` lookup.
+
 ## [6.59.699] - 2026-11-23
 
 ### Fixed

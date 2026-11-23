@@ -3372,6 +3372,14 @@
                     "type": "integer",
                     "description": "Top category ID. Discover via `listTopCategories`."
                   },
+                  "sub_id": {
+                    "type": "integer",
+                    "description": "Sub-category ID under `top_id`. Discover via `listSubCategories` with `profession_id` = `top_id`."
+                  },
+                  "sub_sub_id": {
+                    "type": "integer",
+                    "description": "Sub-sub-category ID under `sub_id`. Requires `sub_id`. Discover via `listSubCategories` with `master_id` = `sub_id`."
+                  },
                   "send_lead_email_notification": {
                     "type": "integer",
                     "enum": [
@@ -3524,6 +3532,10 @@
                   "sub_id": {
                     "type": "integer",
                     "description": "Sub-category ID. Same `lead_matches` consideration as `top_id`."
+                  },
+                  "sub_sub_id": {
+                    "type": "integer",
+                    "description": "Sub-sub-category ID under `sub_id`. Send with `sub_id`. Same `lead_matches` consideration as `top_id`."
                   },
                   "lead_notes": {
                     "type": "string",
