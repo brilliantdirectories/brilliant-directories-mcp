@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.699] - 2026-11-23
+
+### Fixed
+- `createLead` `auto_match`: BD now geocodes `lead_location` text for auto-match when the site has `google_maps_server_side_api_key`, so text alone meets the coordinate requirement on those sites; `auto_geocode=1` is no longer needed for it.
+
 ## [6.59.698] - 2026-11-23
 
 ### Fixed
