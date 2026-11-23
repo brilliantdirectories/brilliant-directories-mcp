@@ -8,7 +8,7 @@ _Source: https://support.brilliantdirectories.com/support/solutions/articles/120
 
 ### Lead email notifications
 - `send_lead_email_notification=1` on `createLead` activates email notifications to site admin and/or matched members. Default: off — leads created via API are silent.
-- For the full auto-matching flow (finds members by category/location/service-area and emails them), call `matchLead` separately after creating the lead.
+- Automatic matching (finds members by category/location/service-area) runs only at create time: pass `auto_match=1` on `createLead`. `users_to_match` routes the lead to listed members instead.
 
 ---
 
@@ -32,11 +32,11 @@ Supports pagination + filtering.
 ### 4. Match Lead
 `POST /api/v2/leads/match`
 
-**Required:** `lead_id`
+**Required:** `lead_id`, `users_to_match` (comma-separated member IDs or emails)
 
-Triggers automatic matching — system finds members matching category, location, and service area, then sends notification emails.
+Matches the lead to the listed members only; it does not search by category or location. `send_lead_email_notification=1` emails each matched member.
 
-**Response:** `{ "status": "success", "message": "Lead matched to 5 members" }`
+**Response:** `{ "status": "success", "message": { "succes_matches": "sample@example.com - ID#1", "fail_matches": "" } }`. Without `users_to_match`: `{ "status": "error", "message": "Nothing to Match" }`.
 
 ### 5. Update Lead
 `PUT /api/v2/leads/update`

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.695] - 2026-11-23
+
+### Fixed
+- `createLead` / `updateLead` forward `auto_match`, `users_to_match`, `send_lead_email_notification`, `top_category_name`, `sub_category_name` and `sub_sub_category_name` to BD's leads controller instead of writing them to `users_meta`. Before, a lead created with `auto_match=1` or `users_to_match` was never matched and never emailed, while the call reported success; a category change by name never changed the category. Sixth instance of the inverse-routing-vs-controller-intercept class.
+- `matchLead` takes the `users_to_match` BD requires (and `send_lead_email_notification`). With only `lead_id`, every call was refused with "Nothing to Match". Its description no longer claims it auto-matches by category and location: BD's match endpoint matches only the listed members; automatic matching runs only at create time with `auto_match=1`.
+- `updateLead` advertises the leads table's real `status` column instead of `lead_status`, which wrote a `users_meta` row and left the lead's status unchanged.
+
 ## [6.59.694] - 2026-11-20
 
 ### Changed

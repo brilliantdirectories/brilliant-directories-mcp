@@ -3386,7 +3386,7 @@
                       0,
                       1
                     ],
-                    "description": "Set to `1` to run the match step inline during create (equivalent to calling `matchLead` immediately after). Default `0` = no match step fires. When combined with `users_to_match`, the match step still fires but the category/location/service-area matching ALGORITHM is bypassed — the lead routes ONLY to the specified members."
+                    "description": "Set to `1` to run BD's automatic matching inline during create - members found by category, location and service area (lead system add-on). The only way to auto-match a lead: `matchLead` matches only the members you list. Default `0` = no match step fires. When combined with `users_to_match`, the match step still fires but the category/location/service-area matching ALGORITHM is bypassed — the lead routes ONLY to the specified members."
                   },
                   "users_to_match": {
                     "type": "string",
@@ -3409,14 +3409,14 @@
             }
           }
         },
-        "description": "Create a new lead record. Writes live data.\n\n**Use when:** importing leads from an external form, CSV, or web-scrape. Default is SILENT - no notification emails fire unless you pass `send_lead_email_notification=1`, and no member routing happens unless you pass `auto_match=1` (inline) or call `matchLead` afterward. `top_id` (category) is required - look it up via `listTopCategories`.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n\n- `top_id` - category ID; discover via `listTopCategories`\n\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n\n- Response includes `lead_id` AND `token` - token may be needed for customer-facing URLs\n\n- After creating, call `matchLead` to trigger member notifications\n\n**See also:** `updateLead` (modify existing).\n\n**Operational rules (from BD support article 12000091106):**\n\n- `send_lead_email_notification=1` - activates lead email notifications to the site admin and/or matched members. Default is off: leads created via API are silent unless this flag is set. For the full auto-matching flow (finds members by category/location and emails them), call `matchLead` separately after creating the lead (or pass `auto_match=1` on this call to run inline).\n\n**Targeting specific members (override auto-match):** set `users_to_match` to a comma-separated list of member IDs or emails (e.g. `6099,6100` or `user1@example.com,user2@example.com`, mixed OK). This BYPASSES the normal category/location/service-area matching and routes the lead to ONLY those members. Typically paired with `auto_match=1` (to run the match step inline) and `send_lead_email_notification=1` (to fire the matched-member email). Common pattern when an external system already knows who should receive the lead.\n\n"
+        "description": "Create a new lead record. Writes live data.\n\n**Use when:** importing leads from an external form, CSV, or web-scrape. Default is SILENT - no notification emails fire unless you pass `send_lead_email_notification=1`, and no member routing happens unless you pass `auto_match=1` or `users_to_match`. `top_id` (category) is required - look it up via `listTopCategories`.\n\n**Required:** `lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`.\n\n**Parameter interactions:**\n\n- `top_id` - category ID; discover via `listTopCategories`\n\n- All 6 required fields (`lead_name`, `lead_email`, `lead_phone`, `lead_message`, `lead_location`, `top_id`) must be supplied together\n\n- Response includes `lead_id` AND `token` - token may be needed for customer-facing URLs\n\n- To route an existing lead to specific members later, call `matchLead` with `users_to_match`\n\n**See also:** `updateLead` (modify existing).\n\n**Operational rules (from BD support article 12000091106):**\n\n- `send_lead_email_notification=1` - activates lead email notifications to the site admin and/or matched members. Default is off: leads created via API are silent unless this flag is set. For automatic matching (finds members by category/location and emails them), pass `auto_match=1` on this call - it cannot be run later.\n\n**Targeting specific members (override auto-match):** set `users_to_match` to a comma-separated list of member IDs or emails (e.g. `6099,6100` or `user1@example.com,user2@example.com`, mixed OK). This BYPASSES the normal category/location/service-area matching and routes the lead to ONLY those members. Typically paired with `auto_match=1` (to run the match step inline) and `send_lead_email_notification=1` (to fire the matched-member email). Common pattern when an external system already knows who should receive the lead.\n\n"
       }
     },
     "/api/v2/leads/match": {
       "post": {
         "operationId": "matchLead",
-        "summary": "Auto-match lead to members",
-        "description": "Triggers automatic matching - system finds members matching category, location, and service area, then sends notification emails.\n\n**Use when:** you've just created a lead (or need to re-distribute an existing one) and want BD to automatically email eligible members in matching category + location + service area. SIDE EFFECT: sends real emails to real members. Confirm with the user before calling on production data.\n\n**Required:** `lead_id`.\n\n**Parameter interactions:**\n\n- Side effect: sends notification emails to ALL members whose category, location, and service area match the lead\n\n- Not a dry-run - emails go out immediately. Not rate-limited per lead\n\n- `lead_id` must reference an existing lead created via `createLead`\n\n**Returns:** `{ status: \"success\"|\"error\", message: ... }` - BD's standard response envelope.\n\n",
+        "summary": "Match a lead to listed members",
+        "description": "Match an existing lead to the members you list in `users_to_match`. BD matches only those members - it does not search by category, location or service area here. Automatic matching runs only at create time (`createLead` with `auto_match=1`).\n\n**Use when:** routing a lead to members you already know, or sending an existing lead to more members.\n\n**Required:** `lead_id`, `users_to_match`.\n\n**Parameter interactions:**\n\n- `send_lead_email_notification=1` emails each matched member - not a dry-run, emails go out immediately. Confirm with the user before using it on production data\n\n- Without the flag the matches are recorded and no email sends\n\n**Returns:** `{ status: \"success\", message: { succes_matches, fail_matches } }` (`succes_matches` is BD's spelling). Without `users_to_match` BD answers `Nothing to Match`.\n\n",
         "tags": [
           "Leads"
         ],
@@ -3427,11 +3427,24 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "lead_id"
+                  "lead_id",
+                  "users_to_match"
                 ],
                 "properties": {
                   "lead_id": {
                     "type": "integer"
+                  },
+                  "users_to_match": {
+                    "type": "string",
+                    "description": "Comma-separated member `user_id` values or member emails (mixable), e.g. `239` | `6099,6100` | `239,user1@example.com`."
+                  },
+                  "send_lead_email_notification": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "description": "Set `1` to email each matched member. Default `0` = matches recorded, no email."
                   }
                 }
               }
@@ -3516,7 +3529,7 @@
                     "type": "string",
                     "description": "Owner-to-member notes about the lead (e.g. \"phone number verified\"). Visible to the matched member; never shown to the submitter. Leave blank unless the user asks."
                   },
-                  "lead_status": {
+                  "status": {
                     "type": "integer",
                     "enum": [
                       1,

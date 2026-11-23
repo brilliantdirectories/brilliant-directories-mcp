@@ -7072,6 +7072,8 @@ const WRAPPER_INTERACTION_FIELDS = new Set([
   "subscription_schema", "profession_schema", "photos_schema",
   "tags", "services_schema", "user_clicks_schema",
   "post_promo",
+  "auto_match", "users_to_match", "send_lead_email_notification",
+  "top_category_name", "sub_category_name", "sub_sub_category_name",
 ]);
 
 // EAV split-storage routing (mirror of Worker's EAV_ROUTES). Two routing
