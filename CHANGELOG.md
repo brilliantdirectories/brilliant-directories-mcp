@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.701] - 2026-11-23
+
+### Fixed
+- `createLead` / `updateLead` state that a `top_id`, `sub_id` or `sub_sub_id` that does not exist, or is not under the sent parent, is not saved, and that the response `notices` names each skipped ID. BD now keeps the lead in that case (create used to refuse it; update used to save the bad ID).
+
 ## [6.59.700] - 2026-11-23
 
 ### Fixed
