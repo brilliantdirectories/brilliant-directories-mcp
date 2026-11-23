@@ -522,6 +522,7 @@ const VERIFIED_EQUIVALENT_DRIFT = {
   validateRequiredFieldType:     { accesses: [3, 0] }, // worker uses `(args as any).x` cast (3 access sites: field_required, field_id, field_type — last 2 added v6.41.85 for updateFormField record lookup)
 };
 const NPM_PATH = path.join(__dirname, "..", "mcp", "index.js");
+const SHARED_VALIDATION_PATH = path.join(__dirname, "..", "mcp", "input-validation.js");
 const WORKER_PATH = path.join(__dirname, "..", "..", "brilliant-directories-mcp-hosted", "src", "index.ts");
 function extractFunctionBody(source, fnName) {
   // Find `function fnName(...) {` then return the brace-balanced body. Works
@@ -859,11 +860,29 @@ try {
 // updates still bounce. Either side losing its clause reopens the class.
 {
   const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
-  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
-  for (const [label, src, nullClause] of [["mcp/index.js", npmSrc, "val === null"], ["Worker index.ts", workerSrc, "v === null"]]) {
+  const sharedSrc = fs.readFileSync(SHARED_VALIDATION_PATH, "utf8");
+  for (const [label, src, nullClause] of [["mcp/index.js", npmSrc, "val === null"], ["mcp/input-validation.js", sharedSrc, "v === null"]]) {
     if (!src.includes("EMPTY_STRING_CREATE_OMISSION")) err(`Empty-string create-omission strip missing in ${label}.`);
     else if (!src.includes(nullClause)) err(`Null create-omission clause missing in ${label}.`);
   }
+}
+
+// CHECK 17: one copy of tool-argument validation. Both transports must load
+// mcp/input-validation.js (no local copy) and pin the same exact zod version,
+// so the same call is accepted or rejected with the same message on npm and Worker.
+{
+  const npmSrc = fs.readFileSync(NPM_PATH, "utf8");
+  const workerSrc = fs.readFileSync(WORKER_PATH, "utf8");
+  if (!npmSrc.includes('require("./input-validation.js")')) err("mcp/index.js does not load ./input-validation.js.");
+  if (!workerSrc.includes('from "../../brilliant-directories-mcp/mcp/input-validation.js"')) err("Worker index.ts does not import mcp/input-validation.js.");
+  for (const [label, src] of [["mcp/index.js", npmSrc], ["Worker index.ts", workerSrc]]) {
+    for (const fn of ["jsonSchemaToZodShape", "coerceNumericString", "acceptsUnknownParams"]) {
+      if (new RegExp(`function\\s+${fn}\\s*\\(`).test(src)) err(`${label} defines its own ${fn}(); use the one in mcp/input-validation.js.`);
+    }
+  }
+  const npmZod = (JSON.parse(fs.readFileSync(path.join(__dirname, "..", "mcp", "package.json"), "utf8")).dependencies || {}).zod;
+  const workerZod = (JSON.parse(fs.readFileSync(path.join(WORKER_PATH, "..", "..", "package.json"), "utf8")).dependencies || {}).zod;
+  if (!npmZod || npmZod !== workerZod || !/^\d+\.\d+\.\d+$/.test(npmZod)) err(`zod must be pinned to the same exact version in mcp/package.json (${npmZod}) and the Worker package.json (${workerZod}).`);
 }
 
 // CHECK 15: Design settings map (mcp/openapi/design-settings-map.json, served by

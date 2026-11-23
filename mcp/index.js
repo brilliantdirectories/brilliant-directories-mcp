@@ -109,7 +109,12 @@ const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio
 const {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  McpError,
+  ErrorCode,
 } = require("@modelcontextprotocol/sdk/types.js");
+const { getParseErrorMessage } = require("@modelcontextprotocol/sdk/server/zod-compat.js");
+const { z } = require("zod");
+const { jsonSchemaToZodShape, acceptsUnknownParams } = require("./input-validation.js");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -10253,10 +10258,26 @@ async function main() {
     return { tools };
   });
 
+  // Same argument check, error text and unknown-key handling as the Worker's SDK.
+  const inputValidators = {};
+  for (const tool of tools) {
+    const shape = jsonSchemaToZodShape(z, tool.inputSchema.properties, new Set(tool.inputSchema.required || []), tool.name.startsWith("create"));
+    const routingMode = EAV_ROUTES[tool.name] && EAV_ROUTES[tool.name].routingMode;
+    inputValidators[tool.name] = acceptsUnknownParams(tool.name, routingMode) ? z.object(shape).passthrough() : z.object(shape);
+  }
+
   // Call tool
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name } = request.params;
     let args = request.params.arguments;
+    if (inputValidators[name]) {
+      const parsed = inputValidators[name].safeParse(args || {});
+      if (!parsed.success) {
+        const message = new McpError(ErrorCode.InvalidParams, `Input validation error: Invalid arguments for tool ${name}: ${getParseErrorMessage(parsed.error)}`).message;
+        return { content: [{ type: "text", text: message }], isError: true };
+      }
+      args = parsed.data;
+    }
     coerceStringifiedFilterArrays(args);
 
     // Synthetic tool: getBrandKit - intercept BEFORE the toolMap lookup so the handler

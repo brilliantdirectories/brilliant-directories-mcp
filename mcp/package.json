@@ -1,7 +1,7 @@
 {
   "name": "brilliant-directories-mcp",
   "mcpName": "io.github.brilliantdirectories/brilliant-directories-mcp",
-  "version": "6.59.701",
+  "version": "6.59.702",
   "description": "Official MCP server for Brilliant Directories — manage members, posts, leads, reviews, and more.",
   "main": "index.js",
   "bin": {
@@ -9,6 +9,7 @@
   },
   "files": [
     "index.js",
+    "input-validation.js",
     "openapi/",
     "README.md",
     "LICENSE"
@@ -51,7 +52,8 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.2"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "3.25.76"
   },
   "engines": {
     "node": ">=18"

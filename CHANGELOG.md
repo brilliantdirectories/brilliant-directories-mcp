@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.702] - 2026-11-23
+
+### Fixed
+- The npm server now checks every tool call against the tool's input schema before anything is sent, exactly as the hosted server does: a missing required field or a wrong type returns `MCP error -32602: Input validation error: ...` naming the field, numbers sent as text are accepted, and keys a tool does not define are dropped (tools that take custom fields keep them). Before, npm sent such calls to the site, which could save an empty record or the text `[object Object]`.
+- Argument validation lives in one file, `mcp/input-validation.js`, used by both servers, with `zod` pinned to the same version in both.
+
 ## [6.59.701] - 2026-11-23
 
 ### Fixed
