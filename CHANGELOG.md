@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.697] - 2026-11-23
+
+### Fixed
+- `createLead` `auto_match` states what matching needs: `lat`, `lng` and `location_type`, plus the bounds fields for a bounds search. With `lead_location` text alone BD's member search builds invalid bounds SQL and matches nobody while the call returns success (proven on a live site: 0 matches; the same lead with `lat`/`lng`/`location_type=locality` matched 3 members).
+- `matchLead` summary reads "Match a lead to specified members".
+
 ## [6.59.696] - 2026-11-23
 
 ### Fixed

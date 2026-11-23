@@ -3386,7 +3386,7 @@
                       0,
                       1
                     ],
-                    "description": "Set `1` to match the lead to members by category, location and service area during create and email each matched member (requires the lead system add-on). Create-only: `matchLead` matches only listed members. Ignored when `users_to_match` is set. Default `0` = no matching."
+                    "description": "Set `1` to match the lead to members by category and location during create and email each matched member. Requires the lead system add-on with auto-match enabled on the lead form, plus `lat`, `lng` and `location_type` (Google address type: `locality`, `postal_code`, `administrative_area_level_1`, `country`). Bounds searches (always for `country`) also need `nelat`, `nelng`, `swlat`, `swlng`. `lead_location` text alone matches no members, and the call still returns success. Create-only: `matchLead` matches only specified members. Ignored when `users_to_match` is set. Default `0` = no matching."
                   },
                   "users_to_match": {
                     "type": "string",
@@ -3415,7 +3415,7 @@
     "/api/v2/leads/match": {
       "post": {
         "operationId": "matchLead",
-        "summary": "Match a lead to members",
+        "summary": "Match a lead to specified members",
         "description": "Match an existing lead to the members listed in `users_to_match`. Matches only those members - no category, location or service-area search. Category/location matching runs only on create (`createLead` `auto_match=1`).\n\n**Use when:** routing a lead to known members, or sending an existing lead to more members.\n\n**Required:** `lead_id`, `users_to_match`.\n\n**Parameter interactions:**\n\n- `send_lead_email_notification=1` emails each matched member immediately. Confirm with the user before using it on production data\n\n- Without the flag, matches are recorded and no email sends\n\n**Returns:** `{ status: \"success\", message: { succes_matches, fail_matches } }` (`succes_matches` spelled as returned). Missing `users_to_match` returns `Nothing to Match`.\n\n",
         "tags": [
           "Leads"
