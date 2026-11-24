@@ -9881,6 +9881,41 @@
                     "type": "object",
                     "description": "1 to 100 name: value pairs."
                   },
+                  "replace": {
+                    "type": "array",
+                    "description": "Change part of website_css, website_head or website_footer: [{field, find, with}]. If find occurs more than once, add nth (1 = first) or all:true. All or nothing; returns an undo.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string",
+                          "enum": [
+                            "website_css",
+                            "website_head",
+                            "website_footer"
+                          ]
+                        },
+                        "find": {
+                          "type": "string"
+                        },
+                        "with": {
+                          "type": "string"
+                        },
+                        "nth": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "all": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "find",
+                        "with"
+                      ]
+                    }
+                  },
                   "home_rows": {
                     "type": "array",
                     "description": "Homepage sections top to bottom (max 15): getDesignSettings block ids. A plain id keeps the section's spacing and background. Send {block, top_spacing, bottom_spacing, background} only to change them (others kept); background rgb(R, G, B) switches the row colour on, \"\" off. Unlisted sections leave the homepage; rows below are emptied."

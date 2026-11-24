@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.704] - 2026-11-23
+
+### Added
+- `updateDesignSettings` changes the sitewide code settings `website_css`, `website_head` and `website_footer` (before: refused). A small edit is `replace` [{field, find, with}] as on widgets; the result's undo restores the earlier value. A value with a PHP syntax error is refused by the site with the error and line. After a change to these settings the homepage is loaded; if the code stops every page part way when it runs, the change is put back and the reply says why.
+- `getDesignSettings` `find` searches the sitewide CSS, HEAD and footer code.
+
 ## [6.59.703] - 2026-11-23
 
 ### Fixed

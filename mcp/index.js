@@ -2271,7 +2271,7 @@ const DSF_PAGE_FIELDS = ["content", "content_css", "content_head", "content_foot
 const DSF_SEARCH_WORDS = /\b(search(es|ing)?|fields?|buttons?|location|category|keywords?|drop-?downs?)\b/i;
 const DSF_MARKUP = new Set(["widget_data", "content", "content_footer_html", "menu_name", "html", "area", "text"]);
 const DSF_TEXT_TYPES = new Set(["text", "area", "html", "code", "embed", "img"]);
-const DSF_SETTING_BLOCKS = new Set(["general.header", "general.logo", "general.footer", "general.announcement"]);
+const DSF_SETTING_BLOCKS = new Set(["general.header", "general.logo", "general.footer", "general.announcement", "code.css", "code.head", "code.footer"]);
 // The home page record's own width option, which no design setting holds.
 const DS_FULL_WIDTH = /full[ -]?(screen|width|bleed)|edge[ -]to[ -]edge|page width|boxed/i;
 function dsPageOpt(home) {
@@ -2722,7 +2722,7 @@ async function dsfFind(ds, got, text, key, get) {
       sources.push({ hit: Object.assign({ setting: f.n, block: b.id, label: f.l }, row !== undefined ? { row } : {}, lt !== null && tl ? { text_label: tl[1] } : {}), raw: lt !== null ? lt : String(v), markup: f.t !== "code" && f.t !== "img", kind: f.t === "text" || f.t === "area" || f.t === "html" ? "text" : "code", shown });
     }
   }
-  searched.push("homepage, header, footer and announcement settings");
+  searched.push("homepage, header, footer and announcement settings, and the sitewide CSS, HEAD and footer code");
   const widgets = [];
   const missing = [];
   const seen = new Set();
@@ -4322,7 +4322,6 @@ async function udsSiteProblem(config, lists, site, v, R, label) {
 
 function udsRefused(x, name, label) {
   if (name === "homepage_content_1") return `${label} is tied to the Home page record and is not changed by this tool.`;
-  if (x.f.t === "code") return `\`${name}\` holds site-wide code and is not changed by this tool.`;
   if (x.f.t === "embed") return `${label} takes embed code and is not changed by this tool yet.`;
   if (x.f.t === "hidden") return "This divider setting is copied into its row by the settings page; change the row instead.";
   return `${label} is never written as a design setting.` + (x.f.note ? ` ${x.f.note.split(". ")[0].replace(/\.$/, "")}.` : "");
@@ -4349,6 +4348,7 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
   const label = `${x.label} (\`${e.name}\`)`;
   const cc = /^homepage_content_([2-9]|10)$/.test(e.name);
   if (f.refuse && !cc) return udsRefused(x, e.name, label);
+  if (f.t === "code") return null;
   if (v.includes("\\")) return `${label}: backslashes are removed when the page prints this value.`;
   if (cc) {
     if (v === "") return null;
@@ -4360,7 +4360,7 @@ async function udsCheck(config, ds, idx, e, R, addons, lists) {
     if (got.error) return `${label} could not be checked: ${got.error}`;
     return got.rows.some((r) => r.widget_name === w[1] && r.widget_id && !udsYes(r.is_default)) ? null : `No site widget named ${w[1]}. Create it first.`;
   }
-  if (f.t === "code" || f.t === "embed") return `${label} is not changed by this tool yet.`;
+  if (f.t === "embed") return `${label} is not changed by this tool yet.`;
   if (f.addon && udsAddonOff(f.addon, addons)) return `${x.label} needs the ${f.addon} add-on, which is not active on this site.`;
   if (f.t === "color") {
     if (v === "" || udsColour(v, e.name)) return null;
@@ -4773,7 +4773,7 @@ function udsWhere(r) {
   const w = r.where;
   if (w.widget_id) return { place: `site widget ${w.widget_id} "${w.widget}"`, fix: `updateWidget {widget_id: ${w.widget_id}, replace:[{field:"${w.field || "widget_style"}", find:"${r.sets}", with}]}` };
   if (w.page && w.field !== "content_css") return { place: `a <style> in the home page's ${w.field}`, fix: `updateWebPage {seo_id: ${w.seo_id}, ${w.field}} with that rule changed` };
-  if (UDS_SITE[w.field]) return { place: `the sitewide ${UDS_SITE[w.field]} (${w.field})`, fix: `updatePageCss with a selector that wins over it, more specific or !important (these tools do not edit ${w.field})` };
+  if (UDS_SITE[w.field]) return { place: `the sitewide ${UDS_SITE[w.field]} (${w.field})`, fix: `updateDesignSettings {settings:{${w.field}: <its value with that rule changed>}}` };
   return { place: "the home page CSS", fix: "updatePageCss" };
 }
 const udsStyles = (html) => [...String(html || "").matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n");
@@ -5035,7 +5035,54 @@ async function udsDeadLinks(config, idx, plan) {
   }
   return out;
 }
+// `replace` on the site-code settings: the stored value with the substitutions applied is sent as that setting,
+// so every check and the undo run exactly as if the caller had sent the whole value.
+const UDS_CODE_FIELDS = ["website_css", "website_head", "website_footer"];
+async function udsReplacePrepare(config, args) {
+  const parse = (v) => { if (typeof v !== "string") return v; try { return JSON.parse(v); } catch (err) { return v; } };
+  const list = parse(args.replace);
+  const settings = parse(args.settings);
+  if (args.undo !== undefined && args.undo !== null) return { problems: [{ name: "replace", problem: "Send undo alone." }] };
+  if (settings !== undefined && settings !== null && (typeof settings !== "object" || Array.isArray(settings))) return { problems: [{ name: "settings", problem: "Send settings as {name: value}." }] };
+  const names = Array.isArray(list) ? Array.from(new Set(list.map((e) => (e && typeof e === "object" ? e.field : null)).filter((f) => UDS_CODE_FIELDS.includes(f)))) : [];
+  const both = names.filter((n) => settings && Object.prototype.hasOwnProperty.call(settings, n));
+  if (both.length) return { problems: both.map((n) => ({ name: n, problem: "Send the whole value in settings or replace entries, not both." })) };
+  const c = await udsContext(config, names.length ? names : UDS_CODE_FIELDS);
+  if (c.error) return { error: c.error };
+  const plan = dsfReplacePlan(c.cur, list, UDS_CODE_FIELDS);
+  if (plan.problems) return { problems: plan.problems.map((p) => ({ name: "replace", problem: p })) };
+  const out = Object.assign({}, args, { settings: Object.assign({}, settings || {}, plan.fields) });
+  delete out.replace;
+  return { args: out };
+}
+
+// Site code runs on every page. PHP that parses but fails when it runs cuts every page short, so after a change to
+// it the homepage is loaded; a cut-short page or a server error puts the change back at once.
+async function udsCodeHealth(config, base, changed, res) {
+  const names = changed.map((c) => c.name).filter((n) => UDS_CODE_FIELDS.includes(n));
+  if (!names.length || !res || !res.undo) return res;
+  let r = null, html = "";
+  try {
+    r = await fetch(String(base || "").replace(/\/+$/, "") + "/?bdmcp_check=" + Date.now(), { signal: AbortSignal.timeout(15000), headers: { "user-agent": "brilliant-directories-mcp" } });
+    html = await r.text();
+  } catch (err) {
+    r = null;
+  }
+  if (!r) return Object.assign({}, res, { notes: (res.notes || []).concat(`The homepage could not be loaded to check ${names.join(", ")}; open it and confirm it still shows in full.`) });
+  if (r.status < 500 && /<\/html>/i.test(html)) return res;
+  const back = await updateDesignSettings(config, { undo: res.undo });
+  const tail = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(-200);
+  const put = back && back.status === "applied" ? "The change was put back." : `Putting it back failed: ${JSON.stringify(back).slice(0, 300)}. Send the undo below.`;
+  return { status: "refused", problems: names.map((n) => ({ name: n, problem: `Saved, but every page then stopped part way (HTTP ${r.status}; the page ends: "${tail}"): the code fails when it runs. ${put}` })), undo: res.undo };
+}
+
 async function updateDesignSettings(config, args) {
+  if (args && args.replace !== undefined && args.replace !== null) {
+    const rp = await udsReplacePrepare(config, args);
+    if (rp.error) return { status: "error", message: rp.error };
+    if (rp.problems) return { status: "refused", problems: rp.problems };
+    args = rp.args;
+  }
   let ds;
   try {
     ds = dsLoad();
@@ -5146,7 +5193,7 @@ async function updateDesignSettings(config, args) {
   if (!done.core) return done;
   if (!done.core.changed.length) return Object.assign({ status: "unchanged", unchanged: unchanged.concat(done.core.unchanged) }, extra);
   if (done.core.cache !== "success") notes.push(`The site's settings cache was not refreshed (${done.core.cache}); call refreshSiteCache.`);
-  return udsResult(config, idx, "applied", done.core.changed, unchanged.concat(done.core.unchanged), notes, extra);
+  return udsCodeHealth(config, config.apiUrl, done.core.changed, await udsResult(config, idx, "applied", done.core.changed, unchanged.concat(done.core.unchanged), notes, extra));
 }
 
 // Batch variant: up to 50 URLs probed in parallel (5 axes' pooled candidates),
