@@ -3812,6 +3812,27 @@
                   "lead_response": {
                     "type": "string"
                   },
+                  "match_price": {
+                    "type": "number"
+                  },
+                  "lead_points": {
+                    "type": "integer"
+                  },
+                  "lead_match_notes": {
+                    "type": "string"
+                  },
+                  "lead_viewed": {
+                    "type": "integer"
+                  },
+                  "lead_rating": {
+                    "type": "number"
+                  },
+                  "lead_chosen": {
+                    "type": "integer"
+                  },
+                  "lead_accepted": {
+                    "type": "integer"
+                  },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
                   }
@@ -6518,6 +6539,30 @@
                     ],
                     "description": "Form-level toggle. When `\"1\"`, BD collapses each field's `field_text` (label) into placeholder text inside the input. Per-field `field_placeholder` is overridden when this is on."
                   },
+                  "form_action": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "get"
+                    ],
+                    "description": "**post** = form submits via POST body (default, most forms). **get** = form submits as URL query string (use for bookmarkable search/filter forms)."
+                  },
+                  "form_layout": {
+                    "type": "string",
+                    "enum": [
+                      "bootstrapvertical",
+                      "bootstrap"
+                    ],
+                    "description": "**bootstrapvertical** = Labels Above Inputs (canonical default). **bootstrap** = Labels Left of Inputs (canonical default for Member-dashboard class — `form_action_type=default`). User override wins in either case."
+                  },
+                  "form_class": {
+                    "type": "string",
+                    "description": "CSS class applied to every field — UI consistency insurance. Canonical: `form-control`. Per-field `input_class` layers extra CSS on top."
+                  },
+                  "form_email_recipient": {
+                    "type": "string",
+                    "description": "Comma-separated email list to receive submission notifications. Used only when `form_email_on=1`. Empty = site default admin recipient."
+                  },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
                   }
@@ -7330,6 +7375,27 @@
                   "menu_active": {
                     "type": "integer"
                   },
+                  "menu_location": {
+                    "type": "string"
+                  },
+                  "menu_div_id": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "menu_div_class": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "menu_div_css": {
+                    "type": "string"
+                  },
+                  "menu_div_code": {
+                    "type": "string"
+                  },
+                  "menu_effects": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
                   }
@@ -7583,6 +7649,23 @@
                   },
                   "menu_active": {
                     "type": "integer"
+                  },
+                  "master_id": {
+                    "type": "integer",
+                    "description": "0 for top-level, parent item ID for sub-items"
+                  },
+                  "menu_target": {
+                    "type": "string",
+                    "enum": [
+                      "_blank",
+                      "_self"
+                    ]
+                  },
+                  "menu_class": {
+                    "type": "string"
+                  },
+                  "menu_icon": {
+                    "type": "string"
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"
@@ -8719,6 +8802,10 @@
                   },
                   "tag_name": {
                     "type": "string"
+                  },
+                  "group_tag_id": {
+                    "type": "integer",
+                    "description": "Tag group this tag belongs to (from `listTagGroups`). **BD does NOT enforce FK** — passing `0` or a nonexistent group_tag_id is silently accepted and produces an orphan tag (live observed). Verify the group exists before passing."
                   },
                   "_clear_fields": {
                     "$ref": "#/components/schemas/_ClearFields"

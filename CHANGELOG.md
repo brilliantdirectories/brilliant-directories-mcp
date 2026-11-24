@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.59.703] - 2026-11-23
+
+### Fixed
+- Update tools accept the settings their create tools already accept, so a change no longer reports success while saving nothing: `updateMenu` (`menu_location`, `menu_div_id`, `menu_div_class`, `menu_div_css`, `menu_div_code`, `menu_effects`), `updateMenuItem` (`master_id`, `menu_target`, `menu_class`, `menu_icon`), `updateForm` (`form_action`, `form_layout`, `form_class`, `form_email_recipient`), `updateLeadMatch` (`match_price`, `lead_points`, `lead_match_notes`, `lead_viewed`, `lead_rating`, `lead_chosen`, `lead_accepted`), `updateTag` (`group_tag_id`). Each field was saved and read back on a live site through both servers.
+
 ## [6.59.702] - 2026-11-23
 
 ### Fixed
